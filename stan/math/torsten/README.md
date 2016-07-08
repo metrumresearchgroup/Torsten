@@ -4,3 +4,7 @@
 * A flexible mechanism that handles the event schedule of clinical trials
 
 This prototype is still under development and has been uploaded to facilitate working with the community of Stan developers. The current prototype was written by Charles Margossian, Bill Gillespie, and Metrum Research Group, LLC.
+
+Licensing
+---------
+The Torsten library is licensed under the BSD 3-clause license. 
