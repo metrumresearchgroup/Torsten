@@ -57,4 +57,7 @@
 #include <stan/math/rev/mat/functor/cvodes_ode_data.hpp>
 #include <stan/math/rev/mat/functor/integrate_ode_bdf.hpp>
 
+// include torsten
+#include <stan/math/torsten/mat.hpp>
+
 #endif
