@@ -1,23 +1,19 @@
-// version 0.8
+#ifndef STAN_MATH_TORSTEN_PKMODEL_CLASS_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_CLASS_HPP
 
-#ifndef PKMODEL_CLASS_HPP
-#define PKMODEL_CLASS_HPP
-
-#include <stan/model/model_header.hpp>
-using std::vector;
-
+#include <iostream>
+#include <stan/math/torsten/PKModel/functions.hpp>
 
 /**
  *	This class contains some basic structural information about a 
  *	compartment model 
  *	
- *	  nParameter: the number of parameters at each event
- *	  F1Index: the index of the F1 parameter 
- *	  tlagIndex: the index of the tlag parameter
- *	  nCmt: number of compartments 
+ *	nParameter: the number of parameters at each event
+ *	F1Index: the index of the F1 parameter 
+ *	tlagIndex: the index of the tlag parameter
+ *	nCmt: number of compartments 
  *
  */
-
 class PKModel{   
 
 private:					
@@ -82,8 +78,6 @@ public:
 		print(tlag1Index,false);
 		print(nCmt,true);
 	}
-
 };
-
 
 #endif

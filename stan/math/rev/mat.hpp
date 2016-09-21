@@ -58,6 +58,6 @@
 #include <stan/math/rev/mat/functor/integrate_ode_bdf.hpp>
 
 // include torsten
-#include <stan/math/torsten/mat.hpp>
+#include <stan/math/torsten/torsten.hpp>
 
 #endif

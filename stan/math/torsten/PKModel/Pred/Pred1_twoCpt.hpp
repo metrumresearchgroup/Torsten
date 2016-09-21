@@ -1,11 +1,8 @@
-// Pred1 v1.0 - PROTOTYPE
-
-#ifndef PKMODEL_PRED_PRED1_TWOCPT_HPP
-#define PKMODEL_PRED_PRED1_TWOCPT_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_TWOCPT_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_TWOCPT_HPP
 
 #include <iostream>
-#include "PolyExp.hpp"
-using std::vector;
+#include <stan/math/torsten/PKModel/Pred/PolyExp.hpp>
 
 /**
  * Two compartment model with first order absorption
@@ -31,20 +28,15 @@ using std::vector;
  *              compartment model (Pred passes a dummy ODE system function)
  *   @return an eigen vector that contains predicted amount in each compartment 
  *           at the current event. 
- * 
  */
-
-typedef vector<double> dvector;
-typedef vector<int> ivector;
-
 template<typename T_time, typename T_rate, typename T_parameters, typename F>
 Matrix<typename promote_args< T_time, T_rate, T_parameters>::type, 1, Dynamic> 
 Pred1_two(const T_time& dt,
 		  const ModelParameters<T_time, T_parameters>& parameter, 
 		  const Matrix<typename promote_args<T_time, T_rate, T_parameters>::type, 1, Dynamic>& init, 
 		  const vector<T_rate>& rate,
-          const F& f)
-{
+          const F& f) {
+	using std::vector;
 	typedef typename promote_args<T_time, T_rate, T_parameters>::type scalar;
 	
 	T_parameters CL, Q, V2, V3, ka, k10, k12, k21, ksum;

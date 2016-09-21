@@ -1,25 +1,18 @@
-// version 0.8
-
-#ifndef PKMODEL_CONVERT_HPP
-#define PKMODEL_CONVERT_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_UNPROMOTE_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_UNPROMOTE_HPP
 
 #include <iostream>
-using std::vector;
-using stan::math::var;
+#include <stan/math/rev/core.hpp>
+#include <stan/math/fwd/core.hpp>
 
-// DEV: may need to overload functions to work on fvar.
-//      also probably doing something a little bit wrong if I am using
-//      this function. 
-
+// DEV: Not a big fan of having to use this function. 
 
 /**
  * Functions that converts an autodiff variable into a double. 
  * The variable will either be a stan::math::var
  * or a double (in which case it will not be modified).
- *
  */
-
-double unpromote(var x) {return x.val();}
-double unpromote(double x) {return x;}
+inline double unpromote(stan::math::var x) { return x.val(); }
+inline double unpromote(double x) { return x; }
 
 #endif

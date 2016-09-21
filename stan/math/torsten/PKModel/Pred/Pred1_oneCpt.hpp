@@ -1,15 +1,8 @@
-// version 0.8
-
-#ifndef PKMODEL_PRED_PRED1_ONECPT_HPP
-#define PKMODEL_PRED_PRED1_ONECPT_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_ONECPT_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_ONECPT_HPP
 
 #include <iostream>
-#include "PolyExp.hpp"
-
-using std::vector;
-using boost::math::tools::promote_args;
-using Eigen::Matrix;
-using Eigen::Dynamic;
+#include <stan/math/torsten/PKModel/Pred/PolyExp.hpp>
 
 /**
  * One compartment model with first order absorption
@@ -37,19 +30,18 @@ using Eigen::Dynamic;
  *           at the current event. 
  * 
  */
-
-
-typedef vector<double> dvector;
-typedef vector<int> ivector;
-
 template<typename T_time, typename T_rate, typename T_parameters, typename F>
 Matrix<typename promote_args< T_time, T_rate, T_parameters>::type, 1, Dynamic> 
 Pred1_one(const T_time& dt,
 		  const ModelParameters<T_time, T_parameters>& parameter, 
 		  const Matrix<typename promote_args<T_time, T_rate, T_parameters>::type, 1, Dynamic>& init, 
 		  const vector<T_rate>& rate,
-		  const F& f)
-{
+		  const F& f) {
+
+	using std::vector;
+	using boost::math::tools::promote_args;
+	using Eigen::Matrix;
+	using Eigen::Dynamic;
 
 	typedef typename promote_args<T_time, T_rate, T_parameters>::type scalar;
 	
@@ -68,9 +60,7 @@ Pred1_one(const T_time& dt,
 	alpha[0] = k10;
 	alpha[1] = ka;
 	
-	if((init[0]!=0)||(rate[0]!=0))
-	{
-	
+	if((init[0]!=0)||(rate[0]!=0)) {
 		pred(0,0)=init[0]*exp(-ka*dt) + rate[0]*(1-exp(-ka*dt))/ka;
 		a[0] = ka/(ka-alpha[0]);
 		a[1] = -a[0];
@@ -78,8 +68,7 @@ Pred1_one(const T_time& dt,
 				   PolyExp(dt,0,rate[0],dt,0,false,a,alpha,2);
 	}
 			
-	if((init[1]!=0)||(rate[1]!=0))
-	{
+	if((init[1]!=0)||(rate[1]!=0)) {
 		a[0]=1;
 		pred(0,1) += PolyExp(dt,init[1],0,0,0,false,a,alpha,1)
 				   + PolyExp(dt,0,rate[1],dt,0,false,a,alpha,1);

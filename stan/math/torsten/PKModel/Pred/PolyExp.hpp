@@ -1,13 +1,13 @@
-// version 0.8
-
-#ifndef PKMODEL_POLYEXP_HPP
-#define PKMODEL_POLYEXP_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_POLYEXP_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_POLYEXP_HPP
 
 #include <iostream>
 #include <math.h>
 
-using std::vector;
-using boost::math::tools::promote_args;
+// DEV
+// Code is not optimized. Instead of using FOR loops for a and alpha, we coud use matrix 
+// operations. On the other hand, seeing most models have a relatively low number of 
+// compartments, efficiency gain would probably be very small. 
 
 /**
  *	PolyExp calculates portions of analytical solutions to certain ODEs.
@@ -48,28 +48,25 @@ using boost::math::tools::promote_args;
  * @return sum of exponentials or convolution of sum with a step function 
  * 
  */
-
-// DEV
-// Code is not optimized. Instead of using FOR loops for a and alpha, we coud use matrix 
-// operations. On the other hand, seeing most models have a relatively low number of 
-// compartments, efficiency gain would probably be very small. 
-
-template<typename T_x, typename T_dose, typename T_rate, typename T_xinf, typename T_tau,
-		 typename T_a, typename T_alpha>	
+template<typename T_x, typename T_dose, typename T_rate, typename T_xinf, 
+  typename T_tau, typename T_a, typename T_alpha>	
 typename promote_args<T_x, T_dose, T_rate, 
-		              typename promote_args<T_xinf, T_tau, T_a, T_alpha>::type>::type
+  typename promote_args<T_xinf, T_tau, T_a, T_alpha>::type>::type
 PolyExp(const T_x& x, 
-		    const T_dose& dose,
-		    const T_rate& rate,
-		    const T_xinf& xinf, 
-		    const T_tau& tau,
-	      const bool& ss, 
-	      const vector<T_a>& a,
-	      const vector<T_alpha>& alpha, 
-	      const int& n)
-{	
+		const T_dose& dose,
+		const T_rate& rate,
+		const T_xinf& xinf, 
+		const T_tau& tau,
+	    const bool& ss, 
+	    const vector<T_a>& a,
+	    const vector<T_alpha>& alpha, 
+	    const int& n) {
+
+	using std::vector;
+	using boost::math::tools::promote_args;
+	      	
 	typedef typename promote_args<T_x, T_dose, T_rate, 
-		        typename promote_args<T_xinf, T_tau, T_a, T_alpha>::type>::type scalar;
+	  typename promote_args<T_xinf, T_tau, T_a, T_alpha>::type>::type scalar;
 
 	scalar result=0, bolusResult, dx, nlntv ;
 	double inf=std::numeric_limits<double>::max(); // define "infinity" - or rather the 

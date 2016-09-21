@@ -1,9 +1,14 @@
-// version 0.8
+#ifndef STAN_MATH_TORSTEN_PKMODELONECPT_HPP
+#define STAN_MATH_TORSTEN_PKMODELONECPT_HPP
+
+#include <Eigen/Dense>
+#include <stan/math/torsten/PKModel/PKModel.hpp>
+#include <boost/math/tools/promotion.hpp>
 
 /**
  * Computes the predicted amounts in each compartment at each event
  * for a one compartment model with first oder absorption. 
- * *
+ *
  * @tparam T0 type of scalars for the model parameters.
  * @tparam T1 type of scalar for time of events. 
  * @tparam T2 type of scalar for amount at each event.
@@ -27,17 +32,6 @@
  *         at each event. 
  */
 
-#include <stan/model/model_header.hpp>
-#include <Eigen/Dense>
-#include "PKModel/PKModel.hpp"
-#include <boost/math/tools/promotion.hpp>
-
-using std::vector;
-using Eigen::Dynamic;
-using Eigen::Matrix;
-using boost::math::tools::promote_args;
-
-
 template <typename T0, typename T1, typename T2, typename T3, typename T4> 
 Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> 
 PKModelOneCpt(const vector< Matrix<T0, Dynamic, 1> >& pMatrix, 
@@ -48,26 +42,34 @@ PKModelOneCpt(const vector< Matrix<T0, Dynamic, 1> >& pMatrix,
 			  const vector<int>& evid,
 			  const vector<int>& cmt,
 			  const vector<int>& addl,
-			  const vector<int>& ss) 
-{  
+			  const vector<int>& ss) {
+			  
+	using std::vector;
+	using Eigen::Dynamic;
+	using Eigen::Matrix;
+	using boost::math::tools::promote_args;
+    // using stan::math::check_positive_finite;
+  
 	PKModel model("OneCptModel"); 
-  static const char* function("PKModelOneCpt"); 
-  Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> pred;
+  	static const char* function("PKModelOneCpt"); 
+  	Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> pred;
   
 	pmetricsCheck(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, function, model);
 	for(int i=0; i<pMatrix.size(); i++) {
-	  stan::math::check_positive_finite(function, "PK parameter CL", pMatrix[i](0,0));
-	  stan::math::check_positive_finite(function, "PK parameter V2", pMatrix[i](1,0));
-	  stan::math::check_positive_finite(function, "PK parameter ka", pMatrix[i](2,0));
+	  check_positive_finite(function, "PK parameter CL", pMatrix[i](0,0));
+	  check_positive_finite(function, "PK parameter V2", pMatrix[i](1,0));
+	  check_positive_finite(function, "PK parameter ka", pMatrix[i](2,0));
 	}
 	
-  //Construct Pred functions for the model.
-  Pred1_structure new_Pred1("OneCptModel");
-  PredSS_structure new_PredSS("OneCptModel");
-  Pred1 = new_Pred1;
-  PredSS = new_PredSS; 
+  	//Construct Pred functions for the model.
+  	Pred1_structure new_Pred1("OneCptModel");
+  	PredSS_structure new_PredSS("OneCptModel");
+  	Pred1 = new_Pred1;
+  	PredSS = new_PredSS; 
 
-  pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model, dummy_ode());
+  	pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model, dummy_ode());
     
-  return pred;
+  	return pred;
 }
+
+#endif

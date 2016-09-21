@@ -1,10 +1,8 @@
-// PredSS v0.1 - UNFINISHED
-
-#ifndef PKMODEL_PRED_PREDSS_TWOCPT_HPP
-#define PKMODEL_PRED_PREDSS_TWOCPT_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_TWOCPT_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_TWOCPT_HPP
 
 #include <iostream>
-#include "PolyExp.hpp"
+#include <stan/math/torsten/PKModel/Pred/PolyExp.hpp>
 
 using std::vector;
 using boost::math::tools::promote_args;
@@ -16,7 +14,7 @@ using Eigen::Dynamic;
  * Calculate amount in each compartment at the end of a steady-state dosing interval
  * or during a steady-state constant input (if ii=0)
  * 
- *  If the initial time equals the time of the event, than the code does 
+ *  If the initial time equals the time of the event, then the code does 
  *	not run the ode integrator, and sets the predicted amount equal to the 
  *	initial condition. This can happen when we are dealing with events that 
  *	occur simultaneously. The change to the predicted amount caused by bolus 
@@ -37,21 +35,21 @@ using Eigen::Dynamic;
  *   @return an eigen vector that contains predicted amount in each compartment 
  *           at the current event. 
  */
-
-typedef vector<double> dvector;
-
-template<typename T_time, typename T_amt, typename T_rate, typename T_ii, typename T_parameters, typename F>
+template<typename T_time, typename T_amt, typename T_rate, typename T_ii,
+  typename T_parameters, typename F>
 Matrix<typename promote_args< T_time, T_amt, T_rate, 
-		typename promote_args< T_ii, T_parameters>::type>::type, 1, Dynamic>  
+  typename promote_args< T_ii, T_parameters>::type>::type, 1, Dynamic>  
 PredSS_two(const ModelParameters<T_time, T_parameters>& parameter, 
 		   const T_amt& amt, 
 		   const T_rate& rate,
 		   const T_ii& ii, 
 		   const int& cmt,
-           const F& f)
-{
+           const F& f) {
+           
 	typedef typename promote_args< T_time, T_amt, T_rate, 
-			  typename promote_args< T_ii, T_parameters>::type>::type scalar;    
+	  typename promote_args< T_ii, T_parameters>::type>::type scalar;    
+    
+    double inf = std::numeric_limits<double>::max(); // "infinity"
     
     T_parameters CL, Q, V2, V3, ka, k10, k12, k21, ksum;
     vector<scalar> a(3,0);
@@ -72,10 +70,8 @@ PredSS_two(const ModelParameters<T_time, T_parameters>& parameter,
     alpha[1] = (ksum - sqrt(ksum*ksum - 4*k10*k21))/2;
     alpha[2] = ka;
     
-    if(rate==0) //bolus dose
-    {
-        if(cmt==1)
-        {
+    if(rate==0) {  //bolus dose
+        if(cmt==1) {
             pred(0,0) = PolyExp(ii,amt,0,0,ii,true,a,alpha,3);
             a[0] = ka*(k21-alpha[0])/((ka-alpha[0])*(alpha[1]-alpha[0]));
             a[1] = ka*(k21-alpha[1])/((ka-alpha[1])*(alpha[0]-alpha[1]));
@@ -87,8 +83,7 @@ PredSS_two(const ModelParameters<T_time, T_parameters>& parameter,
             pred(0,2) = PolyExp(ii,amt,0,0,ii,true,a,alpha,3);
         }
         
-        else if(cmt==2)
-        {
+        else if(cmt==2) {
             a[0] = (k21-alpha[0])/(alpha[1]-alpha[0]);
             a[1] = (k21 - alpha[1])/(alpha[0]-alpha[1]);
             pred(0,1) = PolyExp(ii,amt,0,0,ii,true,a,alpha,2);
@@ -97,8 +92,7 @@ PredSS_two(const ModelParameters<T_time, T_parameters>& parameter,
             pred(0,2) = PolyExp(ii,amt,0,0,ii,true,a,alpha,3);
         }
         
-        else //cmt=3
-        {
+        else {  //cmt=3
             a[0] = k21/(alpha[1]-alpha[0]);
             a[1] = -a[0];
             pred(0,1) = PolyExp(ii,amt,0,0,ii,true,a,alpha,2);
@@ -108,10 +102,8 @@ PredSS_two(const ModelParameters<T_time, T_parameters>& parameter,
         }
     }
         
-    else if(ii>0) //multiple truncated infusions
-    {
-        if(cmt==1)
-        {        
+    else if(ii>0) {  //multiple truncated infusions
+        if(cmt==1) {        
             a[2]=1;
             pred(0,0) = PolyExp(ii,0,rate,amt/rate,ii,true,a,alpha,3);
             a[0] = ka*(k21-alpha[0])/((ka-alpha[0])*(alpha[1]-alpha[0]));
@@ -124,8 +116,7 @@ PredSS_two(const ModelParameters<T_time, T_parameters>& parameter,
             pred(0,2) = PolyExp(ii,0,rate,amt/rate,ii,true,a,alpha,3);
         }
     
-        else if(cmt==2)
-        {
+        else if(cmt==2) {
             a[0] = (k21-alpha[0])/(alpha[1]-alpha[0]);
             a[1] = (k21-alpha[1])/(alpha[0]-alpha[1]);
             pred(0,1) = PolyExp(ii,0,rate,amt/rate,ii,true,a,alpha,2);
@@ -134,8 +125,7 @@ PredSS_two(const ModelParameters<T_time, T_parameters>& parameter,
             pred(0,2) = PolyExp(ii,0,rate,amt/rate,ii,true,a,alpha,2);
         }
             
-        else //cmt=3
-        {
+        else {  //cmt=3
             a[0] = k21/(alpha[1]-alpha[0]);
             a[1] = -a[0];
             pred(0,1)=PolyExp(ii,0,rate,amt/rate,ii,true,a,alpha,2);
@@ -145,10 +135,8 @@ PredSS_two(const ModelParameters<T_time, T_parameters>& parameter,
         }
     }
     
-    else //constant infusion
-    {
-        if(cmt==1)
-        {
+    else {  //constant infusion
+        if(cmt==1) {
             a[2] = 1;
             pred(0,0) = PolyExp(0,0,rate,inf,0,true,a,alpha,3);
             a[0] = ka*(k21-alpha[0])/((ka-alpha[0])*(alpha[1]-alpha[0]));
@@ -161,8 +149,7 @@ PredSS_two(const ModelParameters<T_time, T_parameters>& parameter,
             pred(0,2) = PolyExp(0,0,rate,inf,0,true,a,alpha,3);
         }
         
-        else if(cmt==2)
-        {
+        else if(cmt==2) {
             a[0] = (k21-alpha[0])/(alpha[1]-alpha[0]);
             a[1] = (k21-alpha[1])/(alpha[0]-alpha[1]);
             pred(0,1) = PolyExp(0,0,rate,inf,0,true,a,alpha,2);
@@ -171,8 +158,7 @@ PredSS_two(const ModelParameters<T_time, T_parameters>& parameter,
             pred(0,2) = PolyExp(0,0,rate,inf,0,true,a,alpha,2);
         }
         
-        else //cmt=3
-        {
+        else {  //cmt=3
             a[0] = k21/(alpha[1]-alpha[0]);
             a[1] = -a[0];
             pred(0,1) = PolyExp(0,0,rate,inf,0,true,a,alpha,2);
@@ -183,8 +169,6 @@ PredSS_two(const ModelParameters<T_time, T_parameters>& parameter,
     }
  
     return pred;
-        
 }
-
 
 #endif

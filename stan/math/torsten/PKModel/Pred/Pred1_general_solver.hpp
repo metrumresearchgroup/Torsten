@@ -1,11 +1,8 @@
-// version 0.8
-
-#ifndef PKMODEL_PRED_PRED1_GENERAL_SOLVER_HPP
-#define PKMODEL_PRED_PRED1_GENERAL_SOLVER_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_GENERAL_SOLVER_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_GENERAL_SOLVER_HPP
 
 #include <iostream>
-#include "unpromote.hpp"
-using std::vector;
+#include <stan/math/torsten/PKModel/Pred/unpromote.hpp>
 
 /**
  *	General compartment model using the built-in ODE solver. 
@@ -35,15 +32,15 @@ using std::vector;
  *      - figure out how to handle when rate is data or autodiff  
  *	
  */
-
 template<typename T_time, typename T_rate, typename T_parameters, typename F>
 Matrix<typename promote_args< T_time, T_rate, T_parameters>::type, 1, Dynamic> 
 Pred1_general_solver(const T_time& dt,
-		  			         const ModelParameters<T_time, T_parameters>& parameter, 
-		 			           const Matrix<typename promote_args<T_time, T_rate, T_parameters>::type, 1, Dynamic>& init, 
-		  			         const vector<T_rate>& rate,
-		  			         const F& f)
-{
+		  			 const ModelParameters<T_time, T_parameters>& parameter, 
+		 			 const Matrix<typename promote_args<T_time, T_rate, T_parameters>::type, 1, Dynamic>& init, 
+		  			 const vector<T_rate>& rate,
+		  			 const F& f) {
+	using std::vector;
+
 	typedef typename promote_args<T_time, T_rate, T_parameters>::type scalar;
 	assert(init.cols() == rate.size());
 	
@@ -73,26 +70,22 @@ Pred1_general_solver(const T_time& dt,
 	//for(int i=0; i<nCmt; i++){theta[np + i] = rate[i];}
 	for(int i=0; i<init_vector.size(); i++){init_vector[i] = init(0,i);}
 	
-		
 	if(EventTime_d[0] == InitTime_d) pred = init;
-	else{
+	else {
 	  
 		// call ODE integrator		
 		pred_V = pmetrics_solver(f, init_vector, InitTime_d,  
-								             EventTime_d, theta, rate_d, 
-								             idummy);     
+								 EventTime_d, theta, rate_d, 
+								 idummy);     
 						
 		//Convert vector in row-major vector (eigen Matrix)
 		pred.resize(pred_V[0].size());
-		for(int i=0; i < pred_V[0].size(); i++)
-		{
+		for(int i=0; i < pred_V[0].size(); i++) {
 			pred(0,i) = pred_V[0][i];
 		}
 	}
 		
 	return pred;	
-
 }
 
-		
 #endif

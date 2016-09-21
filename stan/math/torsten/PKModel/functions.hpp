@@ -1,17 +1,17 @@
-// version 0.8
 // Define a few simple functions. I guess I didn't deem them worthy of 
 // having their own file, but this might not be the best approach
-// Maybe I should deprecate the print functions. 
-// - CHECK
+// FIX ME: deprecate the print functions. 
+// FIX ME: each function should have its own header file
+// FIX ME: using statements should be inside the scope of functions
 
-#ifndef PKMODEL_FUNCTIONS_HPP
-#define PKMODEL_FUNCTIONS_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_FUNCTIONS_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_FUNCTIONS_HPP
 
+#include <vector>
 #include <iostream>
 #include <string>
-#include <stan/model/model_header.hpp>
 #include <Eigen/Dense>
-#include "SearchReal.hpp"
+#include <stan/math/torsten/PKModel/SearchReal.hpp>
 
 using std::vector;
 using std::string;
@@ -19,28 +19,27 @@ using stan::math::var;
 using Eigen::Dynamic;
 using Eigen::Matrix;
 
-/*
- *  Define some simple and handy functions.
+/**
+ * Define some simple and handy functions.
  *
- *  print(): print input and skips a line if second argument is TRUE.
- *  Function is overloaded for AutoDiff variables
+ * print(): print input and skips a line if second argument is TRUE.
+ * Function is overloaded for AutoDiff variables
  *
- *  printpMatrix(): print the variable type of elements in Matrix,
- *  and the elements contained inside the matrix.
+ * printpMatrix(): print the variable type of elements in Matrix,
+ * and the elements contained inside the matrix.
  *
- *  line(): skips a line
+ * line(): print an empty line
  *
- *  Marker(): prints 'marker', followed by the number of
- *  the marker. Useful for tracking lines at which errors occur.
+ * Marker(): prints 'marker', followed by the number of
+ * the marker. Useful for tracking lines at which errors occur.
  *
- *  find_time(): determines whether a value is present inside
- *  a vector. Used to determine if times in the Events Schedule
- *  are present in the ModelParameterHistory object.
+ * find_time(): determines whether a value is present inside
+ * a vector. Used to determine if times in the Events Schedule
+ * are present in the ModelParameterHistory object.
  *
- *  void_function(): the void function does nothing. It can be used
- *	as a dummy function to call Pred for models that use analytical 
- *  solutions and do not require a system of ODEs to be solved. 
- *
+ * void_function(): the void function does nothing. It can be used
+ * as a dummy function to call Pred for models that use analytical 
+ * solutions and do not require a system of ODEs to be solved. 
  */
 
 ////////// FOR DEVELOPMENT PURPOSES ////////////// 
@@ -108,7 +107,6 @@ bool find_time(vector<T> v, T time)
 
 
 // construct dummy ODE 
-
 template <typename T0, typename T1, typename T2, typename T3>
 inline
 std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>

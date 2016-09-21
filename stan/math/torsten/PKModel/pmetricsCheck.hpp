@@ -1,4 +1,9 @@
-// version 0.8
+#ifndef STAN_MATH_TORSTEN_PKMODEL_PMETRICSCHECK_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_PMETRICSCHECK_HPP
+
+#include <Eigen/Dense>
+#include <vector>
+#include <stan/math/torsten/PKModel/PKModel_class.hpp>
 
 /**
  * Checks that the arguments the user inputs in the Torsten
@@ -31,92 +36,83 @@
  * 
  */
 
-
-#include <stan/model/model_header.hpp>
-#include "PKModel_class.hpp"
-#include "Event.hpp"
-#include "Rate.hpp"
-#include "ModelParameters.hpp"
-
-using std::vector;
-using Eigen::Dynamic;
-
 template <typename T0, typename T1, typename T2, typename T3, typename T4> 
-void pmetricsCheck(const vector< Matrix<T0, Dynamic, 1> >& pMatrix, 
-                   const vector<T1>& time,
-                   const vector<T2>& amt,
-                   const vector<T3>& rate,
-                   const vector<T4>& ii,
-                   const vector<int>& evid,
-                   const vector<int>& cmt,
-                   const vector<int>& addl,
-                   const vector<int>& ss,
+void pmetricsCheck(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >& pMatrix, 
+                   const std::vector<T1>& time,
+                   const std::vector<T2>& amt,
+                   const std::vector<T3>& rate,
+                   const std::vector<T4>& ii,
+                   const std::vector<int>& evid,
+                   const std::vector<int>& cmt,
+                   const std::vector<int>& addl,
+                   const std::vector<int>& ss,
                    const char* function,
-                   PKModel& model) 
-{
+                   PKModel& model) {
+	
+	using std::vector;
+	using Eigen::Dynamic;
+	using stan::math::invalid_argument;  
   
-  // TEST ARGUMENTS FOR EVENT SCHEDULE
+  	if(!(time.size()>0)) invalid_argument(function,
+      "length of time vector,", time.size(), "", 
+      "needs to be positive and greater than 0!");
   
-  if(!(time.size()>0)) invalid_argument(function,
-     "length of time vector,", time.size(), "", "needs to be positive and greater than 0!");
+  	std::string message = ", but must be the same as the length of the time array: " 
+      + boost::lexical_cast<string>(time.size()) + "!"; 
+      const char* length_error = message.c_str();
   
-  std::string message = ", but must be the same as the length of the time array: " 
-  + boost::lexical_cast<string>(time.size()) + "!"; 
-  const char* length_error = message.c_str();
-  
-  if (!(amt.size()==time.size())) invalid_argument(function,
+  	if (!(amt.size()==time.size())) invalid_argument(function,
       "the length of the amount (amt) array is", amt.size(), "",
       length_error);
-  if (!(rate.size()==time.size())) invalid_argument(function,
+  	if (!(rate.size()==time.size())) invalid_argument(function,
       "the length of the rate array is", rate.size(), "",
       length_error);
-  if (!(evid.size()==time.size())) invalid_argument(function,
+  	if (!(evid.size()==time.size())) invalid_argument(function,
       "the length of the event ID (evid) array is", evid.size(), "",
       length_error);
-  if (!(cmt.size()==time.size())) invalid_argument(function,
+  	if (!(cmt.size()==time.size())) invalid_argument(function,
       "the length of the compartment (cmt) array is", cmt.size(), "",
       length_error);  
   
+  	std::string message2 = ", but must be either 1 or the same as the length of the time array: " 
+  	+ boost::lexical_cast<string>(time.size()) + "!"; 
+  	const char* length_error2 = message2.c_str();  
   
-  std::string message2 = ", but must be either 1 or the same as the length of the time array: " 
-  + boost::lexical_cast<string>(time.size()) + "!"; 
-  const char* length_error2 = message2.c_str();  
-  
-  if (!(ii.size()==time.size())||(ii.size()==1)) invalid_argument(function,
+  	if (!(ii.size()==time.size())||(ii.size()==1)) invalid_argument(function,
       "the length of the interdose interval (ii) array is", ii.size(), "",
       length_error2);
-  if (!(addl.size()==time.size())||(addl.size()==1)) invalid_argument(function,
+  	if (!(addl.size()==time.size())||(addl.size()==1)) invalid_argument(function,
       "the length of the additional dosing (addl) array is", ii.size(), "",
       length_error2);
-  if (!(ss.size()==time.size())||(ss.size()==1)) invalid_argument(function,
+  	if (!(ss.size()==time.size())||(ss.size()==1)) invalid_argument(function,
       "the length of the steady state approximation (ss) array is", ss.size(), "",
       length_error2);
   
   
-  std::string message3 = ", but must be the same as the length of the additional dosing (addl) array: " 
-  + boost::lexical_cast<string>(addl.size()) + "!"; 
-  const char* length_error3 = message3.c_str();     
-  if (!(ss.size()==time.size())||(ss.size()==1)) invalid_argument(function,
+  	std::string message3 = ", but must be the same as the length of the additional dosing (addl) array: " 
+  	  + boost::lexical_cast<string>(addl.size()) + "!"; 
+  	const char* length_error3 = message3.c_str();     
+  	if (!(ss.size()==time.size())||(ss.size()==1)) invalid_argument(function,
       "the length of steady state approximation (ss) array is", ss.size(), "",
       length_error3);
+
+
+  	// TEST ARGUMENTS FOR PARAMETERS
   
+  	if (!((pMatrix.size()==time.size())||(pMatrix.size()==1)))
+  	  invalid_argument(function, "length of the parameter (2d) vector,",
+  	  pMatrix.size(), "", length_error2);
+  	if(!(pMatrix[0].size()>0)) invalid_argument(function,
+      "the number of parameters per event is", pMatrix[0].size(),
+      "", "but must be greater than 0!");
   
+  	std::string message4 = ", but must equal the number of parameters in the model: " 
+  	  + boost::lexical_cast<string>(model.GetNParameter()) + "!"; 
+  	const char* length_error4 = message4.c_str();    
   
-  
-  // TEST ARGUMENTS FOR PARAMETERS
-  
-  if (!((pMatrix.size()==time.size())||(pMatrix.size()==1))) invalid_argument(function,
-      "length of the parameter (2d) vector,", pMatrix.size(), "",
-      length_error2);
-  if(!(pMatrix[0].size()>0)) invalid_argument(function,
-     "the number of parameters per event is", pMatrix[0].size(), "", "but must be greater than 0!");
-  
-  std::string message4 = ", but must equal the number of parameters in the model: " 
-  + boost::lexical_cast<string>(model.GetNParameter()) + "!"; 
-  const char* length_error4 = message4.c_str();    
-  
-  if (!(pMatrix[0].size() == model.GetNParameter())) invalid_argument(function,
-      "The number of parameters per event (length of a vector in the first argument; reminder, the first argument is an array of vectors) is", pMatrix[0].size(), "", 
-      length_error4);
-  
+  	if (!(pMatrix[0].size() == model.GetNParameter())) invalid_argument(function,
+      "The number of parameters per event (length of a vector in the first argument; reminder, the first argument is an array of vectors) is",
+      pMatrix[0].size(), "", length_error4);
 }
+
+#endif

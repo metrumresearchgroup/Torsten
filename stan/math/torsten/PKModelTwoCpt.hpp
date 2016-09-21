@@ -1,4 +1,9 @@
-// version 0.8
+#ifndef STAN_MATH_TORSTEN_PKMODELTWOCPT_HPP
+#define STAN_MATH_TORSTEN_PKMODELTWOCPT_HPP
+
+#include <Eigen/Dense>
+#include <stan/math/torsten/PKModel/PKModel.hpp>
+#include <boost/math/tools/promotion.hpp>
 
 /**
  * Computes the predicted amounts in each compartment at each event
@@ -26,16 +31,6 @@
  * @return a matrix with predicted amount in each compartment 
  *         at each event. 
  */
-
-#include <stan/model/model_header.hpp>
-#include <Eigen/Dense>
-#include "PKModel/PKModel.hpp"
-#include <boost/math/tools/promotion.hpp>
-using std::vector;
-using Eigen::Dynamic;
-using Eigen::Matrix;
-using boost::math::tools::promote_args;
-
 template <typename T0, typename T1, typename T2, typename T3, typename T4> 
 Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> 
 PKModelTwoCpt(const vector< Matrix<T0, Dynamic, 1> >& pMatrix, 
@@ -46,9 +41,13 @@ PKModelTwoCpt(const vector< Matrix<T0, Dynamic, 1> >& pMatrix,
 			  const vector<int>& evid,
 			  const vector<int>& cmt,
 			  const vector<int>& addl,
-			  const vector<int>& ss) 							 
-{
-	PKModel model("TwoCptModel"); //Define class of model
+			  const vector<int>& ss) {
+  using std::vector;
+  using Eigen::Dynamic;
+  using Eigen::Matrix;
+  using boost::math::tools::promote_args;
+
+  PKModel model("TwoCptModel"); //Define class of model
   static const char* function("PKModelTwoCpt");
   
   pmetricsCheck(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, function, model);
@@ -72,3 +71,4 @@ PKModelTwoCpt(const vector< Matrix<T0, Dynamic, 1> >& pMatrix,
   return pred;
 }
 
+#endif

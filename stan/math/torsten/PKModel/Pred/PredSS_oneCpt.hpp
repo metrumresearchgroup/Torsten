@@ -1,12 +1,8 @@
-// version 0.8
-
-#ifndef PKMODEL_PRED_PREDSS_ONECPT_HPP
-#define PKMODEL_PRED_PREDSS_ONECPT_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_ONECPT_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_ONECPT_HPP
 
 #include <iostream>
-#include "PolyExp.hpp"
-
-
+#include <stan/math/torsten/PKModel/Pred/PolyExp.hpp>
 
 using std::vector;
 using boost::math::tools::promote_args;
@@ -39,22 +35,17 @@ using Eigen::Dynamic;
  *   @return an eigen vector that contains predicted amount in each compartment 
  *           at the current event. 
  */
-
-
-double inf=std::numeric_limits<double>::max(); //define the highest value a double can 
-											   //take in C++ as "infinity"
-
 template<typename T_time, typename T_amt, typename T_rate, typename T_ii, 
-		 typename T_parameters, typename F>
+  typename T_parameters, typename F>
 Matrix<typename promote_args< T_time, T_amt, T_rate, 
-		typename promote_args< T_ii, T_parameters>::type>::type, 1, Dynamic>  
+  typename promote_args< T_ii, T_parameters>::type>::type, 1, Dynamic>  
 PredSS_one(const ModelParameters<T_time, T_parameters>& parameter, 
-		       const T_amt& amt, 
-		       const T_rate& rate,
-		       const T_ii& ii, 
-		       const int& cmt,
-		       const F& f)
-{
+		   const T_amt& amt, 
+		   const T_rate& rate,
+		   const T_ii& ii, 
+		   const int& cmt,
+		   const F& f) {
+	
 	typedef typename promote_args< T_time, T_amt, T_rate, 
 			  typename promote_args< T_ii, T_parameters>::type>::type scalar;
 	
@@ -69,73 +60,60 @@ PredSS_one(const ModelParameters<T_time, T_parameters>& parameter,
 	V2 = parameter.RealParameters[1];
 	ka = parameter.RealParameters[2];
 		
-	{
-		k10 = CL/V2;
-		alpha[0] = k10;
-		alpha[1] = ka;
+	k10 = CL/V2;
+	alpha[0] = k10;
+	alpha[1] = ka;
 		
-		if(rate==0) //bolus dose 
-		{
-			if(cmt==1)
-			{
-				a[0]=0;
-				a[1]=1;
-				pred(0,0)=PolyExp(ii,amt,0,0,ii,true,a,alpha,2);
-				a[0]=ka/(ka-alpha[0]);
-				a[1]=-a[0];
-				pred(0,1)=PolyExp(ii,amt,0,0,ii,true,a,alpha,2);
-			}
-			
-			else //cmt=2
-			{
-				a[0]=1;
-				pred(0,1)=PolyExp(ii,amt,0,0,ii,true,a,alpha,1);
-			}
+	if(rate==0) {  //bolus dose 
+		if(cmt==1) {
+			a[0]=0;
+			a[1]=1;
+			pred(0,0)=PolyExp(ii,amt,0,0,ii,true,a,alpha,2);
+			a[0]=ka/(ka-alpha[0]);
+			a[1]=-a[0];
+			pred(0,1)=PolyExp(ii,amt,0,0,ii,true,a,alpha,2);
 		}
-		
-		else if (ii>0) //multiple truncated infusions
-		{
-			if(cmt==1)
-			{	
-				a[0]=0;
-				a[1]=1;
-				pred(0,0)=PolyExp(ii,0,rate,amt/rate,ii,true,a,alpha,2);
-				a[0]=ka/(ka-alpha[0]);
-				a[1]=-a[0];
-				pred(0,1)=PolyExp(ii,0,rate,amt/rate,ii,true,a,alpha,2);
-			}
 			
-			else //cmt=2
-			{
-				a[0]=1;
-				pred(0,1)=PolyExp(ii,0,rate,amt/rate,ii,true,a,alpha,1);
-			}
-		}
-		
-		else //constant infusion
-		{
-			if(cmt==1)
-			{
-				a[0]=0;
-				a[1]=1;
-				pred(0,0)=PolyExp(0,0,rate,0,0,true,a,alpha,2);
-				a[0]=ka/(ka-alpha[0]);
-				a[1]=-a[0];
-				pred(0,1)=PolyExp(0,0,rate,0,0,true,a,alpha,2);
-			}
-			
-			else //cmt=2
-			{
-				a[0]=1;
-				pred(0,1)=PolyExp(0,0,rate,0,0,true,a,alpha,1);
-			}
+		else { //cmt=2
+			a[0]=1;
+			pred(0,1)=PolyExp(ii,amt,0,0,ii,true,a,alpha,1);
 		}
 	}
-	
+		
+	else if (ii>0) { //multiple truncated infusions
+		if(cmt==1) {	
+			a[0]=0;
+			a[1]=1;
+			pred(0,0)=PolyExp(ii,0,rate,amt/rate,ii,true,a,alpha,2);
+			a[0]=ka/(ka-alpha[0]);
+			a[1]=-a[0];
+			pred(0,1)=PolyExp(ii,0,rate,amt/rate,ii,true,a,alpha,2);
+		}
+			
+		else {  //cmt=2
+			a[0]=1;
+			pred(0,1)=PolyExp(ii,0,rate,amt/rate,ii,true,a,alpha,1);
+		}
+	}
+		
+	else {  //constant infusion
+		if(cmt==1) {
+			a[0]=0;
+			a[1]=1;
+			pred(0,0)=PolyExp(0,0,rate,0,0,true,a,alpha,2);
+			a[0]=ka/(ka-alpha[0]);
+			a[1]=-a[0];
+			pred(0,1)=PolyExp(0,0,rate,0,0,true,a,alpha,2);
+		}
+			
+		else {  //cmt=2
+			a[0]=1;
+			pred(0,1)=PolyExp(0,0,rate,0,0,true,a,alpha,1);
+		}
+	}
 	
 	return pred;
 	
 }
-
 
 #endif

@@ -1,13 +1,8 @@
-// version 0.8
-
-#ifndef PKMODEL_SEARCHREAL_HPP
-#define PKMODEL_SEARCHREAL_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_SEARCHREAL_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_SEARCHREAL_HPP
 
 #include <iostream>
-using std::vector;
-using stan::math::var;
-
-//DEV: may need to overload functions to work on fvar.
+#include <vector>
 
 int min(int a, int b); //forward declare 
 
@@ -21,14 +16,12 @@ int min(int a, int b); //forward declare
  * @tparam: type of scalar in input vector 
  * @param[in]: v searched vector
  * @param[in]: numltm maximum index
- * @param[srchNum]: searched Number 
+ * @param[in]: srchNum searched Number 
  * @return: index of largest value <= srchNum
  *
  */
-
 template<typename T>
-inline int SearchReal(std::vector<T> v, int numltm, T srchNum)
-{
+inline int SearchReal(std::vector<T> v, int numltm, T srchNum) {
 
 	int first=0, last, mid, real_limit;
 	
@@ -38,28 +31,23 @@ inline int SearchReal(std::vector<T> v, int numltm, T srchNum)
 	
 	if(srchNum < v[first]) mid = first;
 	else if(srchNum >= v[last]) mid = last+1;
-	else 
-	{
-		while(first <= last)
-		{
+	else {
+		while(first <= last) {
 			mid = (first+last)/2; 
 			if (srchNum < v[mid]) last = mid-1;
 			else if (srchNum > v[mid]) first = mid+1;
 			else first = last + 1;
 		}
 	
-		while(srchNum >= v[mid]){mid += 1;}
+		while(srchNum >= v[mid]){ mid += 1; }
 	}
 	
 	return mid;
 }
 
-
-inline int min(int a, int b)
-{
+inline int min(int a, int b) {
 	if(a < b) return a;
 	else return b;
 }
-
 
 #endif

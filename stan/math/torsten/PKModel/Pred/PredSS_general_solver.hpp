@@ -1,7 +1,5 @@
-// version 0.8
-
-#ifndef PKMODEL_PRED_PREDSS_GENERAL_SOLVER_HPP
-#define PKMODEL_PRED_PREDSS_GENERAL_SOLVER_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_GENERAL_SOLVER_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_GENERAL_SOLVER_HPP
 
 #include <iostream>
 
@@ -34,22 +32,19 @@ using Eigen::Dynamic;
  *   @return an eigen vector that contains predicted amount in each compartment 
  *           at the current event. 
  */
-
-
 typedef vector<double> dvector;
-template<typename T_time, typename T_amt, typename T_rate, typename T_ii, typename T_parameters,
-		 typename F>
+template<typename T_time, typename T_amt, typename T_rate, 
+  typename T_ii, typename T_parameters, typename F>
 Matrix<typename promote_args< T_time, T_amt, T_rate, 
-		typename promote_args< T_ii, T_parameters>::type>::type, 1, Dynamic>  
+  typename promote_args< T_ii, T_parameters>::type>::type, 1, Dynamic>  
 PredSS_general_solver(const ModelParameters<T_time, T_parameters>& parameter, 
-		   			          const T_amt& amt, 
-		   			          const T_rate& rate,
-		   			          const T_ii& ii, 
-		   			          const int& cmt,
-		   			          const F& f)
-{
+		   			  const T_amt& amt, 
+		   			  const T_rate& rate,
+		   			  const T_ii& ii, 
+		   			  const int& cmt,
+		   			  const F& f) {
 	typedef typename promote_args< T_time, T_amt, T_rate, 
-			  typename promote_args< T_ii, T_parameters>::type>::type scalar;    
+	  typename promote_args< T_ii, T_parameters>::type>::type scalar;    
     
     std::cout << "ERROR: General Compartment Model using ODE integrator (bdf or rk45) does not handle Steady State events." << std::endl;
     abort();
@@ -58,6 +53,5 @@ PredSS_general_solver(const ModelParameters<T_time, T_parameters>& parameter,
     return pred;
         
 }
-
 
 #endif
