@@ -48,7 +48,7 @@ PKModelOneCpt(const vector< Matrix<T0, Dynamic, 1> >& pMatrix,
 	using Eigen::Dynamic;
 	using Eigen::Matrix;
 	using boost::math::tools::promote_args;
-    // using stan::math::check_positive_finite;
+    using stan::math::check_positive_finite;
   
 	PKModel model("OneCptModel"); 
   	static const char* function("PKModelOneCpt"); 

@@ -3,15 +3,15 @@
 // system of linear ODE expressed through a matrix, but this is 
 // still work in progress 
 
-#ifndef PKMODEL_PRED1_HPP
-#define PKMODEL_PRED1_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_PRED1_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_PRED1_HPP
 
 #include <iostream>
 #include <Eigen/Dense>
-#include "Pred/Pred1_oneCpt.hpp"
-#include "Pred/Pred1_twoCpt.hpp"
-#include "Pred/Pred1_general_solver.hpp"
-// #include "Pred/Pred1_sa.hpp"
+#include <stan/math/prim/scal/err/check_finite.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_oneCpt.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_twoCpt.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_general_solver.hpp>
 
 using std::vector;
 using namespace Eigen;
@@ -20,16 +20,16 @@ using std::string;
 typedef Matrix<double, Dynamic, Dynamic> DMatrix;
 
 /**
- *   The Functor of Pred1, which predicts amounts in each compartment at one event. 
- *   Defines a class of Pred1 functions (functors). The key components is the constructors
- *   used to create the pred operator. Calls the different versions of Pred1 stored in the
- *   Pred directory.
+ *   The Functor of Pred1, which predicts amounts in each compartment 
+ *   at one event. Defines a class of Pred1 functions (functors). The 
+ *   key components is the constructors used to create the pred operator.
+ *   Calls the different versions of Pred1 stored in the Pred directory.
  *
  *   Built-in Model types:
  *       1 - One Compartment Model with first-order absorption
  *       2 - Two Compartment Model with first-order absorption
- *		   3 - General Compartment Model using numerical ODE solver
- *		   4 - EXPERIMENTAL: PKPD model using semi-analytical solver 
+ *		 3 - General Compartment Model using numerical ODE solver
+ *		 4 - EXPERIMENTAL: PKPD model using semi-analytical solver 
  *		   
  *	 @tparam T_time type of scalar for time
  *	 @tparam T_rate type of scalar for rate
@@ -43,10 +43,8 @@ typedef Matrix<double, Dynamic, Dynamic> DMatrix;
  *              compartment model.
  *   @return an eigen vector that contains predicted amount in each compartment 
  *           at the current event.      
- *        
  */
-
-struct Pred1_structure{
+struct Pred1_structure {
 
 private:
     string modeltype;
@@ -54,17 +52,14 @@ private:
     
 public:
     
-    Pred1_structure() //default constructor
-    {
+    Pred1_structure() {  //default constructor
         Matrix<double,1,1> init_Matrix;
         init_Matrix(0,0) = 0;
         modeltype = "default";
         K = init_Matrix; // Matrix = [0]
     }
     
-    
-    Pred1_structure(string p_modeltype) //constructor for standard models
-    {
+    Pred1_structure(string p_modeltype) {  //constructor for standard models
         Matrix<double,1,1> init_Matrix;
         init_Matrix(0,0) = 0;
         
@@ -72,29 +67,31 @@ public:
         K = init_Matrix; // Matrix = [0]
     }
 
-  // constructor for operator 
 	template<typename T_time, typename T_rate, typename T_parameters, typename F>
 	Matrix<typename promote_args< T_time, T_rate, T_parameters>::type, 1, Dynamic> 
-    operator()(const T_time& dt,
-    		       const ModelParameters<T_time, T_parameters>& parameter,
-    		       const Matrix<typename promote_args<T_time, T_rate, T_parameters>::type, 1, Dynamic>& init, 
-    		       const vector<T_rate>& rate,
-    		       const F& f)
-    {
+    operator()( const T_time& dt,
+    		    const ModelParameters<T_time, T_parameters>& parameter,
+    		    const Matrix<typename promote_args<T_time, T_rate,
+    		      T_parameters>::type, 1, Dynamic>& init, 
+    		    const vector<T_rate>& rate,
+    		    const F& f) {
+    	
+    	stan::math::check_finite("Pred1", "initial values", init);
+
     	typedef typename promote_args< T_time, T_rate, T_parameters>::type scalar; 
     	
-        if(modeltype == "OneCptModel") return Pred1_one(dt, parameter, init, rate, f);
-        else if(modeltype == "TwoCptModel") return Pred1_two(dt, parameter, init, rate, f);
-        else if(modeltype == "GeneralCptModel") return Pred1_general_solver(dt, parameter, init, rate, f); 
-        // else if(modeltype == "GeneralCptModel_sa") return Pred1_sa(dt, parameter, init, rate, f);
-        else
-        {
-        	Matrix<scalar, 1, Dynamic> default_pred = Matrix<scalar, 1, Dynamic>::Zero(1);
+        if(modeltype == "OneCptModel")
+          return Pred1_one(dt, parameter, init, rate, f);
+        else if(modeltype == "TwoCptModel")
+          return Pred1_two(dt, parameter, init, rate, f);
+        else if(modeltype == "GeneralCptModel")
+          return Pred1_general_solver(dt, parameter, init, rate, f); 
+        else {
+        	Matrix<scalar, 1, Dynamic> default_pred =
+        	  Matrix<scalar, 1, Dynamic>::Zero(1);
          	return default_pred;
         }
     }
-    
 };
-
 
 #endif

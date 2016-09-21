@@ -1,13 +1,11 @@
-// version 0.8
-
-#ifndef PKMODEL_PREDSS_HPP
-#define PKMODEL_PREDSS_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_PREDSS_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_PREDSS_HPP
 
 #include <iostream>
 #include <Eigen/Dense>
-#include "Pred/PredSS_oneCpt.hpp"
-#include "Pred/PredSS_twoCpt.hpp"
-#include "Pred/PredSS_general_solver.hpp"
+#include <stan/math/torsten/PKmodel/Pred/PredSS_oneCpt.hpp>
+#include <stan/math/torsten/PKmodel/Pred/PredSS_twoCpt.hpp>
+#include <stan/math/torsten/PKmodel/Pred/PredSS_general_solver.hpp>
 
 using std::vector;
 using namespace Eigen;
@@ -25,7 +23,7 @@ typedef Matrix<double, Dynamic, Dynamic> DMatrix;
  *   Built-in Model types:
  *       1 - One Compartment Model with first-order absorption
  *       2 - Two Compartment Model with first-order absorption
- *		   3 - General Compartment Model using numerical ODE solver
+ *		 3 - General Compartment Model using numerical ODE solver
  *		   
  *	 @tparam T_time type of scalar for time
  *	 @tparam T_amt type of scalar for amount
@@ -42,18 +40,15 @@ typedef Matrix<double, Dynamic, Dynamic> DMatrix;
  *              compartment model.
  *   @return an eigen vector that contains predicted amount in each compartment 
  *           at the current event.      
- *
  */
-
-struct PredSS_structure{
+struct PredSS_structure {
     
 private:
     string modeltype;
     DMatrix K;
     
 public:
-    PredSS_structure(string p_modeltype) //constructor for standard models
-    {
+    PredSS_structure(string p_modeltype) {  //constructor for standard models
         Matrix<double,1,1> init_Matrix;
         init_Matrix(0,0) = 0;
         
@@ -63,30 +58,31 @@ public:
     
     // constructor for operator
     template<typename T_time, typename T_amt, typename T_rate, typename T_ii, 
-    		 typename T_parameters, typename F>
+      typename T_parameters, typename F>
 	Matrix<typename promote_args< T_time, T_amt, T_rate, 
-		typename promote_args< T_ii, T_parameters>::type>::type, Dynamic, 1>  
+	  typename promote_args< T_ii, T_parameters>::type>::type, Dynamic, 1>  
     operator()(const ModelParameters<T_time, T_parameters>& parameter, 
-    		       const T_amt& amt, 
-    		       const T_rate& rate,
+    		   const T_amt& amt, 
+    		   const T_rate& rate,
                const T_ii& ii, 
                const int& cmt,
-               const F& f)
-    {
+               const F& f) {
+       	
+       	stan::math::check_finite("PredSS", "initial values", init);
+       	
        	typedef typename promote_args< T_time, T_rate, T_parameters>::type scalar; 
   
-        if(modeltype == "OneCptModel") return PredSS_one(parameter, amt, rate, ii, cmt, f);
-        else if(modeltype == "TwoCptModel") return PredSS_two(parameter, amt, rate, ii, cmt, f);
-        else if(modeltype == "GeneralCptModel_solver") 
-        					return PredSS_general_solver(parameter, amt, rate, ii, cmt, f);
-        else
-        { 
+        if(modeltype == "OneCptModel")
+          return PredSS_one(parameter, amt, rate, ii, cmt, f);
+        else if(modeltype == "TwoCptModel")
+          return PredSS_two(parameter, amt, rate, ii, cmt, f);
+        else if(modeltype == "GeneralCptModel_solver")
+          return PredSS_general_solver(parameter, amt, rate, ii, cmt, f);
+        else { 
         	Matrix<scalar, 1, Dynamic> default_pred = Matrix<scalar, 1, Dynamic>::Zero(1);
          	return default_pred;
         }
-        
     }  
-    
 };
 
 #endif
