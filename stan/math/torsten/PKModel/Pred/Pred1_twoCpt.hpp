@@ -36,7 +36,10 @@ Pred1_two(const T_time& dt,
 		  const Matrix<typename promote_args<T_time, T_rate, T_parameters>::type, 1, Dynamic>& init, 
 		  const vector<T_rate>& rate,
           const F& f) {
-	using std::vector;
+	
+    stan::math::check_finite("Pred1", "initial values", init);
+    
+    using std::vector;
 	typedef typename promote_args<T_time, T_rate, T_parameters>::type scalar;
 	
 	T_parameters CL, Q, V2, V3, ka, k10, k12, k21, ksum;

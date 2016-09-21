@@ -38,6 +38,8 @@ Pred1_one(const T_time& dt,
 		  const vector<T_rate>& rate,
 		  const F& f) {
 
+    stan::math::check_finite("Pred1", "initial values", init);
+    
 	using std::vector;
 	using boost::math::tools::promote_args;
 	using Eigen::Matrix;

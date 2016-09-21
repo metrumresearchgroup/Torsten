@@ -76,8 +76,6 @@ public:
     		    const vector<T_rate>& rate,
     		    const F& f) {
     	
-    	stan::math::check_finite("Pred1", "initial values", init);
-
     	typedef typename promote_args< T_time, T_rate, T_parameters>::type scalar; 
     	
         if(modeltype == "OneCptModel")
