@@ -67,9 +67,7 @@ public:
                const T_ii& ii, 
                const int& cmt,
                const F& f) {
-       	
-       	stan::math::check_finite("PredSS", "initial values", init);
-       	
+       	      	
        	typedef typename promote_args< T_time, T_rate, T_parameters>::type scalar; 
   
         if(modeltype == "OneCptModel")
