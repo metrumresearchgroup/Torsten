@@ -7,6 +7,7 @@
 #include <stan/math/torsten/PKModel/Pred/Pred1_oneCpt.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_twoCpt.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_general_solver.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_linCpt.hpp>
 
 using std::vector;
 using namespace Eigen;
@@ -64,17 +65,17 @@ public:
     		   const vector<T_rate>& rate,
     		   const F& f,
     		   const Matrix<T_system, Dynamic, Dynamic> system) {
-    	
+
     	typedef typename promote_args< T_time, T_rate, T_parameters>::type scalar; 
-    	
+
         if(modeltype == "OneCptModel")
           return Pred1_one(dt, parameter, init, rate); 
         else if(modeltype == "TwoCptModel")
           return Pred1_two(dt, parameter, init, rate);
         else if(modeltype == "GeneralCptModel")
           return Pred1_general_solver(dt, parameter, init, rate, f); 
-        // else if(modeltype == "linCptModel")
-        //  return Pred1_linCptModel(dt, parameter, init, rate, system);
+        else if(modeltype == "linCptModel")
+          return Pred1_linCpt(dt, init, rate, system);
         else {
         	Matrix<scalar, 1, Dynamic> default_pred =
         	  Matrix<scalar, 1, Dynamic>::Zero(1);

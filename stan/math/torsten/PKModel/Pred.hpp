@@ -167,7 +167,7 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
 		   && (((event.ss==1)||(event.ss==2))||(event.ss==3))) { //steady dose event
 			pred1 = 
 			  PredSS(parameter, parameters.GetValue(i,F1Index+event.cmt-1)*event.amt,
-			    event.rate, event.ii, event.cmt, f);
+			    event.rate, event.ii, event.cmt, f, system);
 
 			if(event.ss==2) init += pred1;//steady state without reset
 			else init = pred1; //steady state with reset (ss=1)

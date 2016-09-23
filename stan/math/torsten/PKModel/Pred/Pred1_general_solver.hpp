@@ -30,7 +30,6 @@
  *	
  *	DEV - initial times no longer need to be data, but can be autodiff variable 
  *      - figure out how to handle when rate is data or autodiff  
- *	
  */
 template<typename T_time, typename T_rate, typename T_parameters, typename F>
 Matrix<typename promote_args< T_time, T_rate, T_parameters>::type, 1, Dynamic> 
