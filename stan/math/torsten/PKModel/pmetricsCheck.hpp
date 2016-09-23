@@ -88,7 +88,6 @@ void pmetricsCheck(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >& pM
       "the length of the steady state approximation (ss) array is", ss.size(), "",
       length_error2);
   
-  
   	std::string message3 = ", but must be the same as the length of the additional dosing (addl) array: " 
   	  + boost::lexical_cast<string>(addl.size()) + "!"; 
   	const char* length_error3 = message3.c_str();     
@@ -98,21 +97,12 @@ void pmetricsCheck(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >& pM
 
 
   	// TEST ARGUMENTS FOR PARAMETERS
-  
-  	if (!((pMatrix.size()==time.size())||(pMatrix.size()==1)))
+  	if (!((pMatrix.size() == time.size())||(pMatrix.size() == 1)))
   	  invalid_argument(function, "length of the parameter (2d) vector,",
   	  pMatrix.size(), "", length_error2);
-  	if(!(pMatrix[0].size()>0)) invalid_argument(function,
+  	if(!(pMatrix[0].size() > 0)) invalid_argument(function,
       "the number of parameters per event is", pMatrix[0].size(),
       "", "but must be greater than 0!");
-  
-  	std::string message4 = ", but must equal the number of parameters in the model: " 
-  	  + boost::lexical_cast<string>(model.GetNParameter()) + "!"; 
-  	const char* length_error4 = message4.c_str();    
-  
-  	if (!(pMatrix[0].size() == model.GetNParameter())) invalid_argument(function,
-      "The number of parameters per event (length of a vector in the first argument; reminder, the first argument is an array of vectors) is",
-      pMatrix[0].size(), "", length_error4);
 }
 
 #endif

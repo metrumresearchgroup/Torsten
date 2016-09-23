@@ -18,25 +18,20 @@
  *	 @tparam T_time type of scalar for time
  *	 @tparam T_rate type of scalar for rate
  *	 @tparam T_parameters type of scalar for model parameters
- *	 @tparam F type of ODE system function (no required ODE system here, so Pred 
- *	                                        passes a dummy ODE system function)
  *	 @param[in] dt time between current and previous event
  *	 @param[in] parameter model parameters at current event
  *	 @param[in] init amount in each compartment at previous event
  *	 @param[in] rate rate in each compartment
- *	 @param[in] f functor for base ordinary differential equation that defines 
- *              compartment model (Pred passes a dummy ODE system function)
  *   @return an eigen vector that contains predicted amount in each compartment 
  *           at the current event. 
  */
-template<typename T_time, typename T_rate, typename T_parameters, typename F>
+template<typename T_time, typename T_rate, typename T_parameters>
 Matrix<typename promote_args< T_time, T_rate, T_parameters>::type, 1, Dynamic> 
 Pred1_two(const T_time& dt,
 		  const ModelParameters<T_time, T_parameters>& parameter, 
 		  const Matrix<typename promote_args<T_time, T_rate, T_parameters>::type, 1, Dynamic>& init, 
-		  const vector<T_rate>& rate,
-          const F& f) {
-	
+		  const vector<T_rate>& rate) {
+
     stan::math::check_finite("Pred1", "initial values", init);
     
     using std::vector;

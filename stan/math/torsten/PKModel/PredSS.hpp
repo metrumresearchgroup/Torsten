@@ -71,9 +71,9 @@ public:
        	typedef typename promote_args< T_time, T_rate, T_parameters>::type scalar; 
   
         if(modeltype == "OneCptModel")
-          return PredSS_one(parameter, amt, rate, ii, cmt, f);
+          return PredSS_one(parameter, amt, rate, ii, cmt);
         else if(modeltype == "TwoCptModel")
-          return PredSS_two(parameter, amt, rate, ii, cmt, f);
+          return PredSS_two(parameter, amt, rate, ii, cmt);
         else if(modeltype == "GeneralCptModel_solver")
           return PredSS_general_solver(parameter, amt, rate, ii, cmt, f);
         else { 

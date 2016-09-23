@@ -58,60 +58,47 @@ public:
 	// When befriending a template function, cannot do a partial instantiation.
 	// Either all or none of the terms must be instantiate. Since we need to use 
 	// template for Rate, we do not instantiate any of the template arguments. 	
-	template<typename T_1, typename T_2, typename T_3, typename F> 
+	template<typename T_1, typename T_2, typename T_3> //, typename F> 
 	friend Matrix<typename promote_args< T_1, T_2, T_3>::type, 1, Dynamic> 
 	Pred1_one(const T_1&,
 			  const ModelParameters<T_1, T_3>&,
 			  const Matrix<typename promote_args<T_1, T_2, T_3>::type, 1, Dynamic>& init,
-			  const vector<T_2>& rate,
-			  const F& f);
+			  const vector<T_2>& rate);
 	
-	template<typename T_1, typename T_2, typename T_3, typename F> 
+	template<typename T_1, typename T_2, typename T_3> 
 	friend Matrix<typename promote_args< T_1, T_2, T_3>::type, 1, Dynamic> 
 	Pred1_two(const T_1&,
 			  const ModelParameters<T_1, T_3>&,
 			  const Matrix<typename promote_args<T_1, T_2, T_3>::type, 1, Dynamic>& init,
-			  const vector<T_2>& rate,
-			  const F& f);
+			  const vector<T_2>& rate);
 			  
-	template<typename T_1, typename T_2, typename T_3, typename T_4, typename T_5, typename F>
+	template<typename T_1, typename T_2, typename T_3, typename T_4, typename T_5>
 	friend Matrix<typename promote_args< T_1, T_2, T_3, 
 							typename promote_args<T_4, T_5>::type>::type, 1, Dynamic>
 	PredSS_one(const ModelParameters<T_1, T_5>& parameter, 
 		   const T_2& amt, 
 		   const T_3& rate,
 		   const T_4& ii, 
-		   const int& cmt,
-		   const F& f);		
+		   const int& cmt);		
 	
-	template<typename T_1, typename T_2, typename T_3, typename T_4, typename T_5,
-	  typename F>
+	template<typename T_1, typename T_2, typename T_3, typename T_4, typename T_5>
 	friend Matrix<typename promote_args< T_1, T_2, T_3, 
 							typename promote_args<T_4, T_5>::type>::type, 1, Dynamic>	   
 	PredSS_two(const ModelParameters<T_1, T_5>& parameter, 
 			   const T_2& amt, 
 			   const T_3& rate,
 			   const T_4& ii, 
-		   	   const int& cmt,
-		   	   const F& f);							  
+		   	   const int& cmt);							  
 
 	template<typename T_1, typename T_2, typename T_3, typename F>
 	friend
 	Matrix<typename promote_args< T_1, T_2, T_3>::type, 1, Dynamic> 
 	Pred1_general_solver(const T_1& dt,
 		  				 const ModelParameters<T_1, T_3>& parameter, 
-		 				 const Matrix<typename promote_args<T_1, T_2, T_3>::type, 1, Dynamic>& init, 
+		 				 const Matrix<typename promote_args<T_1, T_2, T_3>::type, 1,
+		 				   Dynamic>& init, 
 		  				 const vector<T_2>& rate,
 		  				 const F& f);
-	
-	template<typename T_1, typename T_2, typename T_3, typename F>
-	friend
-	Matrix<typename promote_args< T_1, T_2, T_3>::type, 1, Dynamic> 
-	Pred1_sa(const T_1& dt,
-             const ModelParameters<T_1, T_3>& parameter, 
-             const Matrix<typename promote_args<T_1, T_2, T_3>::type, 1, Dynamic>& init, 
-             const vector<T_2>& rate,
-             const F& f);
 	
 	template<typename T_1, typename T_2, typename T_3, typename F>
 	friend
@@ -121,7 +108,8 @@ public:
                const Matrix<typename promote_args<T_1, T_2, T_3>::type, 1, Dynamic>& init, 
                const vector<T_2>& rate);	
 
-	template <typename T0, typename T1, typename T2, typename T3, typename T4, typename F> 
+	template <typename T0, typename T1, typename T2, typename T3, typename T4,
+	  typename F, typename T5> 
 	friend
 	Matrix<typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> 
 	Pred(const vector< Matrix<T0, Dynamic, 1> >& pMatrix,
@@ -134,14 +122,15 @@ public:
    	     const vector<int>& addl,
    	     const vector<int>& ss,
     	 PKModel model,
-    	 const F& f);
+    	 const F& f,
+    	 const Matrix<T5, Dynamic, Dynamic>& system);
 };
 
 
 /**
- * The ModelParameterHistory class defines objects that contain a vector of ModelParameters,
- * along with a series of functions that operate on them.  
- * 
+ * The ModelParameterHistory class defines objects that contain a vector 
+ * of ModelParameters, along with a series of functions that operate on
+ * them.  
  */
 template<typename T_time, typename T_parameters>
 class ModelParameterHistory{
@@ -191,8 +180,7 @@ public:
 		
 	struct by_time {
 		bool operator()(ModelParameters<T_time, T_parameters> const &a, 
-									ModelParameters<T_time, T_parameters> const &b)
-		{
+		  ModelParameters<T_time, T_parameters> const &b) {
 			return a.time < b.time;
 		}
 	};
@@ -325,7 +313,8 @@ public:
 	friend class ModelParameters<T_time, T_parameters>;
 	template<typename T1, typename T2, typename T3, typename T4> friend class Events;
 	
-	template <typename T0, typename T1, typename T2, typename T3, typename T4, typename F> 
+	template <typename T0, typename T1, typename T2, typename T3, typename T4,
+	  typename F, typename T5> 
 	friend
 	Matrix<typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> 
 	Pred(const vector< Matrix<T0, Dynamic, 1> >& pMatrix,
@@ -338,7 +327,8 @@ public:
    	     const vector<int>& addl,
    	     const vector<int>& ss,
     	 PKModel model,
-    	 const F& f);
+    	 const F& f,
+    	 const Matrix<T5, Dynamic, Dynamic>& system);
 };
 		
 #endif

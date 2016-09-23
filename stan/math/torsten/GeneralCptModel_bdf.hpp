@@ -44,18 +44,19 @@
  *         at each event. 
  */
 template <typename T0, typename T1, typename T2, typename T3, typename T4, typename F> 
-Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> 
+Eigen::Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Eigen::Dynamic,
+  Eigen::Dynamic> 
 generalCptModel_bdf(const F& f,
                     const int nCmt,
-			        const vector< Matrix<T0, Dynamic, 1> >& pMatrix, 
-			        const vector<T1>& time,
-			        const vector<T2>& amt,
-			        const vector<T3>& rate,
-			        const vector<T4>& ii,
-			        const vector<int>& evid,
-			        const vector<int>& cmt,
-			        const vector<int>& addl,
-			        const vector<int>& ss,
+			        const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >& pMatrix, 
+			        const std::vector<T1>& time,
+			        const std::vector<T2>& amt,
+			        const std::vector<T3>& rate,
+			        const std::vector<T4>& ii,
+			        const std::vector<int>& evid,
+			        const std::vector<int>& cmt,
+			        const std::vector<int>& addl,
+			        const std::vector<int>& ss,
 			        double rel_tol = 1e-10,
                     double abs_tol = 1e-10,
                     long int max_num_steps = 1e8) {
@@ -69,20 +70,25 @@ generalCptModel_bdf(const F& f,
   F1Index = nParameters - 2*nCmt;
   tlag1Index = nParameters - nCmt;
   PKModel model(nParameters, F1Index, tlag1Index, nCmt);
-  static const char* function("generalCptModel_bdf");
-  Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> pred;
-	
+  
+  // Check arguments
+  static const char* function("generalCptModel_bdf");	
   pmetricsCheck(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, function, model);
 
   // define functors used in Pred()
   Pred1_structure new_Pred1("GeneralCptModel");
-  PredSS_structure new_PredSS("GeneralCptModel");
+  PredSS_structure new_PredSS("error");
   Pred1 = new_Pred1;
   PredSS = new_PredSS; // WARNING: PredSS returns an error message and aborts program
   pmetrics_solver_structure new_pmetrics_solver(rel_tol, abs_tol, max_num_steps, "bdf");
   pmetrics_solver = new_pmetrics_solver;
-        
-  pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model, f);
+
+  // Construct dummy matrix for last argument of pred
+  Eigen::Matrix<double, Dynamic, Dynamic> dummy_system(0,0);
+
+Matrix <typename promote_args<typename promote_args<T0, T1, T2, T3, T4>::type,
+    double>::type, Dynamic, Dynamic> pred;
+  pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model, f, dummy_system);
         
   return pred;
 }

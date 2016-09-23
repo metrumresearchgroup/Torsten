@@ -3,26 +3,23 @@
 
 #include <Eigen/Dense>
 
-using Eigen::Matrix;
-using Eigen::Dynamic; 
-using boost::math::tools::promote_args;
-using namespace stan::math;
-using std::vector;
-
 /**
  * Every Torsten function calls Pred.
  * 
- * Predicts the amount in each compartment for each event, given the event schedule and 
- * the parameters of the model. 
+ * Predicts the amount in each compartment for each event,
+ * given the event schedule and the parameters of the model. 
  *
- * Proceeds in two steps. First, computes all the events that are not included
- * in the original data set but during which the amounts in the system are
- * updated. Secondly, predicts the amounts in each compartment sequentially by going
- * through the augmented schedule of events. The returned pred Matrix only contains the amounts 
- * in the event originally specified by the users. 
+ * Proceeds in two steps. First, computes all the events that
+ * are not included in the original data set but during which
+ * the amounts in the system are updated. Secondly, predicts 
+ * the amounts in each compartment sequentially by going 
+ * through the augmented schedule of events. The returned pred
+ * Matrix only contains the amounts in the event originally 
+ * specified by the users. 
  *
- * This function is valid for all models. What changes from one model to the other are the
- * Pred1 and PredSS functions, which calculate the amount at an individual event. 
+ * This function is valid for all models. What changes from one
+ * model to the other are the Pred1 and PredSS functions, which 
+ * calculate the amount at an individual event. 
  *  
  * @tparam T_parameters type of scalar for the model parameters
  * @tparam T_time type of scalar for time
@@ -43,27 +40,39 @@ using std::vector;
  *                    (4) reset AND dosing 
  * @param[in] cmt compartment number at each event 
  * @param[in] addl additional dosing at each event 
- * @param[in] ss steady state approximation at each event (0: no, 1: yes)
- * @parem[in] model basic structural information on compartment model
- * @param[in] f functor for base ordinary differential equation that defines 
- *            compartment model.
+ * @param[in] ss steady state approximation at each event
+ * (0: no, 1: yes)
+ * @parem[in] model basic structural information on compartment
+ * model
+ * @param[in] f functor for base ordinary differential equation
+ * that defines compartment model. Used for ODE integrators.
+ * @param[in] SystemODE matrix describing linear ODE system that
+ * defines compartment model. Used for matrix exponential solutions.
  * @return a matrix with predicted amount in each compartment 
- *         at each event. 
+ * at each event. 
  */
 template <typename T_parameters, typename T_time, typename T_amt, typename T_rate, 
-		  typename T_ii, typename F> 
-Matrix<typename promote_args<T_parameters, T_time, T_amt, T_rate, T_ii>::type, Dynamic, Dynamic> 
-Pred(const vector< Matrix<T_parameters, Dynamic, 1> >& pMatrix,
-     const vector<T_time>& time,
-     const vector<T_amt>& amt, 
-     const vector<T_rate>& rate,
-     const vector<T_ii>& ii,
-     const vector<int>& evid,
-     const vector<int>& cmt,
-     const vector<int>& addl,
-     const vector<int>& ss,
+		  typename T_ii, typename F, typename T_s> 
+Eigen::Matrix<typename promote_args<T_parameters, T_time, T_amt, T_rate, T_ii>::type, 
+  Eigen::Dynamic, Eigen::Dynamic> 
+Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatrix,
+     const std::vector<T_time>& time,
+     const std::vector<T_amt>& amt, 
+     const std::vector<T_rate>& rate,
+     const std::vector<T_ii>& ii,
+     const std::vector<int>& evid,
+     const std::vector<int>& cmt,
+     const std::vector<int>& addl,
+     const std::vector<int>& ss,
      PKModel model,
-     const F& f) {
+     const F& f,
+     const Eigen::Matrix<T_s, Eigen::Dynamic, Eigen::Dynamic>& system) {
+    
+    using Eigen::Matrix;
+	using Eigen::Dynamic; 
+	using boost::math::tools::promote_args;
+	using namespace stan::math;
+	using std::vector;
      
 	typedef typename promote_args<T_parameters, T_time, T_amt, T_rate, T_ii>::type scalar; 
 	
@@ -150,7 +159,7 @@ Pred(const vector< Matrix<T_parameters, Dynamic, 1> >& pMatrix,
 		}
 		else {
 			dt = event.time - tprev;
-			pred1 = Pred1(dt, parameter, init, rate2.rate, f);
+			pred1 = Pred1(dt, parameter, init, rate2.rate, f, system);
 			init = pred1;
 		}
 		

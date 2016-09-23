@@ -2,8 +2,9 @@
 #define STAN_MATH_TORSTEN_PKMODELONECPT_HPP
 
 #include <Eigen/Dense>
-#include <stan/math/torsten/PKModel/PKModel.hpp>
 #include <boost/math/tools/promotion.hpp>
+#include <stan/math/torsten/PKModel/PKModel.hpp>
+#include <stan/math/torsten/PKModel/dummy_ode.hpp>
 
 /**
  * Computes the predicted amounts in each compartment at each event
@@ -33,43 +34,58 @@
  */
 
 template <typename T0, typename T1, typename T2, typename T3, typename T4> 
-Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> 
-PKModelOneCpt(const vector< Matrix<T0, Dynamic, 1> >& pMatrix, 
-			  const vector<T1>& time,
-			  const vector<T2>& amt,
-			  const vector<T3>& rate,
-			  const vector<T4>& ii,
-			  const vector<int>& evid,
-			  const vector<int>& cmt,
-			  const vector<int>& addl,
-			  const vector<int>& ss) {
+Eigen::Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Eigen::Dynamic,
+  Eigen::Dynamic> 
+PKModelOneCpt(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >& pMatrix, 
+			  const std::vector<T1>& time,
+			  const std::vector<T2>& amt,
+			  const std::vector<T3>& rate,
+			  const std::vector<T4>& ii,
+			  const std::vector<int>& evid,
+			  const std::vector<int>& cmt,
+			  const std::vector<int>& addl,
+			  const std::vector<int>& ss) {
 			  
-	using std::vector;
-	using Eigen::Dynamic;
-	using Eigen::Matrix;
-	using boost::math::tools::promote_args;
-    using stan::math::check_positive_finite;
+  using std::vector;
+  using Eigen::Dynamic;
+  using Eigen::Matrix;
+  using boost::math::tools::promote_args;
+  using stan::math::check_positive_finite;
   
-	PKModel model("OneCptModel"); 
-  	static const char* function("PKModelOneCpt"); 
-  	Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> pred;
-  
-	pmetricsCheck(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, function, model);
-	for(int i=0; i<pMatrix.size(); i++) {
-	  check_positive_finite(function, "PK parameter CL", pMatrix[i](0,0));
-	  check_positive_finite(function, "PK parameter V2", pMatrix[i](1,0));
-	  check_positive_finite(function, "PK parameter ka", pMatrix[i](2,0));
-	}
-	
-  	//Construct Pred functions for the model.
-  	Pred1_structure new_Pred1("OneCptModel");
-  	PredSS_structure new_PredSS("OneCptModel");
-  	Pred1 = new_Pred1;
-  	PredSS = new_PredSS; 
+  PKModel model("OneCptModel"); 
+  	 
+  // Check arguments
+  static const char* function("PKModelOneCpt");
+  pmetricsCheck(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, function, model);
+  for(int i=0; i<pMatrix.size(); i++) {
+	check_positive_finite(function, "PK parameter CL", pMatrix[i](0,0));
+	check_positive_finite(function, "PK parameter V2", pMatrix[i](1,0));
+    check_positive_finite(function, "PK parameter ka", pMatrix[i](2,0));
+  }
+  std::string message4 = ", but must equal the number of parameters in the model: " 
+    + boost::lexical_cast<string>(model.GetNParameter()) + "!"; 
+  const char* length_error4 = message4.c_str();    
+  if (!(pMatrix[0].size() == model.GetNParameter()))
+    stan::math::invalid_argument(function,
+    "The number of parameters per event (length of a vector in the first argument) is",
+    pMatrix[0].size(), "", length_error4);
 
-  	pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model, dummy_ode());
+  // Construct Pred functions for the model.
+  
+  Pred1_structure new_Pred1("OneCptModel");
+  PredSS_structure new_PredSS("OneCptModel");
+  Pred1 = new_Pred1;
+  PredSS = new_PredSS; 
+  	
+  // Construct dummy matrix for last argument of pred
+  Eigen::Matrix<double, Dynamic, Dynamic> dummy_system(0,0);
+
+  Matrix <typename promote_args<typename promote_args<T0, T1, T2, T3, T4>::type,
+    double>::type, Dynamic, Dynamic> pred;
+  pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model,
+    dummy_ode(), dummy_system);
     
-  	return pred;
+  return pred;
 }
 
 #endif

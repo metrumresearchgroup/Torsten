@@ -1,8 +1,3 @@
-// version 0.8
-// DEV - I lay the foundation for models that are based on a
-// system of linear ODE expressed through a matrix, but this is 
-// still work in progress 
-
 #ifndef STAN_MATH_TORSTEN_PKMODEL_PRED1_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_PRED1_HPP
 
@@ -48,42 +43,38 @@ struct Pred1_structure {
 
 private:
     string modeltype;
-    DMatrix K;
     
 public:
     
     Pred1_structure() {  //default constructor
-        Matrix<double,1,1> init_Matrix;
-        init_Matrix(0,0) = 0;
         modeltype = "default";
-        K = init_Matrix; // Matrix = [0]
     }
     
     Pred1_structure(string p_modeltype) {  //constructor for standard models
-        Matrix<double,1,1> init_Matrix;
-        init_Matrix(0,0) = 0;
-        
         modeltype = p_modeltype;
-        K = init_Matrix; // Matrix = [0]
     }
 
-	template<typename T_time, typename T_rate, typename T_parameters, typename F>
+	template <typename T_time, typename T_parameters, typename T_rate, typename F,
+      typename T_system>
 	Matrix<typename promote_args< T_time, T_rate, T_parameters>::type, 1, Dynamic> 
-    operator()( const T_time& dt,
-    		    const ModelParameters<T_time, T_parameters>& parameter,
-    		    const Matrix<typename promote_args<T_time, T_rate,
-    		      T_parameters>::type, 1, Dynamic>& init, 
-    		    const vector<T_rate>& rate,
-    		    const F& f) {
+    operator()(const T_time& dt,
+    		   const ModelParameters<T_time, T_parameters>& parameter,
+    		   const Matrix<typename promote_args<T_time, T_rate,
+    		     T_parameters, T_system>::type, 1, Dynamic>& init, 
+    		   const vector<T_rate>& rate,
+    		   const F& f,
+    		   const Matrix<T_system, Dynamic, Dynamic> system) {
     	
     	typedef typename promote_args< T_time, T_rate, T_parameters>::type scalar; 
     	
         if(modeltype == "OneCptModel")
-          return Pred1_one(dt, parameter, init, rate, f);
+          return Pred1_one(dt, parameter, init, rate); 
         else if(modeltype == "TwoCptModel")
-          return Pred1_two(dt, parameter, init, rate, f);
+          return Pred1_two(dt, parameter, init, rate);
         else if(modeltype == "GeneralCptModel")
           return Pred1_general_solver(dt, parameter, init, rate, f); 
+        // else if(modeltype == "linCptModel")
+        //  return Pred1_linCptModel(dt, parameter, init, rate, system);
         else {
         	Matrix<scalar, 1, Dynamic> default_pred =
         	  Matrix<scalar, 1, Dynamic>::Zero(1);

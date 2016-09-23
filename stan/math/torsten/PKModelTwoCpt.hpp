@@ -2,13 +2,14 @@
 #define STAN_MATH_TORSTEN_PKMODELTWOCPT_HPP
 
 #include <Eigen/Dense>
-#include <stan/math/torsten/PKModel/PKModel.hpp>
 #include <boost/math/tools/promotion.hpp>
+#include <stan/math/torsten/PKModel/PKModel.hpp>
+#include <stan/math/torsten/PKModel/dummy_ode.hpp>
 
 /**
  * Computes the predicted amounts in each compartment at each event
- * for a two compartments model with first oder absorption. 
- * *
+ * for a two compartment model with first oder absorption. 
+ *
  * @tparam T0 type of scalars for the model parameters.
  * @tparam T1 type of scalar for time of events. 
  * @tparam T2 type of scalar for amount at each event.
@@ -32,16 +33,17 @@
  *         at each event. 
  */
 template <typename T0, typename T1, typename T2, typename T3, typename T4> 
-Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> 
-PKModelTwoCpt(const vector< Matrix<T0, Dynamic, 1> >& pMatrix, 
-			  const vector<T1>& time,
-			  const vector<T2>& amt,
-			  const vector<T3>& rate,
-			  const vector<T4>& ii,
-			  const vector<int>& evid,
-			  const vector<int>& cmt,
-			  const vector<int>& addl,
-			  const vector<int>& ss) {
+Eigen::Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Eigen::Dynamic,
+  Eigen::Dynamic> 
+PKModelTwoCpt(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >& pMatrix, 
+			  const std::vector<T1>& time,
+			  const std::vector<T2>& amt,
+			  const std::vector<T3>& rate,
+			  const std::vector<T4>& ii,
+			  const std::vector<int>& evid,
+			  const std::vector<int>& cmt,
+			  const std::vector<int>& addl,
+			  const std::vector<int>& ss) {
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
@@ -50,6 +52,7 @@ PKModelTwoCpt(const vector< Matrix<T0, Dynamic, 1> >& pMatrix,
   PKModel model("TwoCptModel"); //Define class of model
   static const char* function("PKModelTwoCpt");
   
+  // Check arguments
   pmetricsCheck(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, function, model);
   for(int i=0; i<pMatrix.size(); i++) {
     stan::math::check_positive_finite(function, "PK parameter CL", pMatrix[i](0,0));
@@ -57,7 +60,13 @@ PKModelTwoCpt(const vector< Matrix<T0, Dynamic, 1> >& pMatrix,
     stan::math::check_positive_finite(function, "PK parameter V2", pMatrix[i](2,0));
     stan::math::check_positive_finite(function, "PK parameter V3", pMatrix[i](3,0));
     stan::math::check_positive_finite(function, "PK parameter ka", pMatrix[i](4,0));
-  }  
+  }
+  std::string message4 = ", but must equal the number of parameters in the model: " 
+    + boost::lexical_cast<string>(model.GetNParameter()) + "!"; 
+  const char* length_error4 = message4.c_str();    
+  if (!(pMatrix[0].size() == model.GetNParameter())) invalid_argument(function,
+      "The number of parameters per event (length of a vector in the first argument) is",
+      pMatrix[0].size(), "", length_error4);  
   
   //Construct Pred functions for the model.
   Pred1_structure new_Pred1("TwoCptModel");
@@ -65,8 +74,13 @@ PKModelTwoCpt(const vector< Matrix<T0, Dynamic, 1> >& pMatrix,
   Pred1 = new_Pred1;
   PredSS = new_PredSS;
         
-  Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> pred;
-  pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model, dummy_ode());
+  // Construct dummy matrix for last argument of pred
+  Eigen::Matrix<double, Dynamic, Dynamic> dummy_system(0,0);
+
+  Matrix <typename promote_args<typename promote_args<T0, T1, T2, T3, T4>::type,
+    double>::type, Dynamic, Dynamic> pred;
+  pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model,
+    dummy_ode(), dummy_system);
 
   return pred;
 }

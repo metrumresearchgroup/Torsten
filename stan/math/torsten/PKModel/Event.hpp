@@ -130,7 +130,7 @@ public:
 	template<typename T1, typename T2> friend class RateHistory;
 
 	template <typename T0, typename T1, typename T2, typename T3, 
-		typename T4, typename F> 
+		typename T4, typename F, typename T5> 
 	friend
 	Matrix<typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> 
 	Pred(const vector< Matrix<T0, Dynamic, 1> >& pMatrix,
@@ -143,7 +143,8 @@ public:
        	 const vector<int>& addl,
          const vector<int>& ss,
      	 PKModel model,
-     	 const F& f);													 
+     	 const F& f,
+     	 const Matrix<T5, Dynamic, Dynamic>& system);													 
 };
 
 /**
@@ -357,7 +358,7 @@ public:
 	  RateHistory<T_time,T_rate>& rates);
 								 
 	template <typename T0, typename T1, typename T2,
-	  typename T3, typename T4, typename F> 
+	  typename T3, typename T4, typename F, typename T5> 
 	friend
 	Matrix<typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> 
 	Pred(const vector< Matrix<T0, Dynamic, 1> >& pMatrix,
@@ -370,7 +371,8 @@ public:
          const vector<int>& addl,
          const vector<int>& ss,
          PKModel model,
-         const F& f);			
+         const F& f,
+         const Matrix<T5, Dynamic, Dynamic>& system);			
 };
 
 #endif
