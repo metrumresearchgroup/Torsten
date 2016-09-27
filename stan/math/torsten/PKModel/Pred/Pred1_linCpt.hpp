@@ -15,17 +15,17 @@
  *	occur simultaneously. The change to the predicted amount caused by bolus 
  *	dosing events is handled later in the main Pred function. 
  *	
- *	 @tparam T_time type of scalar for time
- *	 @tparam T_rate type of scalar for rate
- *	 @tparam T_parameters type of scalar for model parameters
- *   @tparam T_system type of element in system matrix
- *	 @param[in] dt time between current and previous event
- *	 @param[in] parameter model parameters at current event
- *	 @param[in] init amount in each compartment at previous event
- *	 @param[in] rate rate in each compartment
- *   @param[in] system matrix describing linear ODE system
- *   @return an eigen vector that contains predicted amount in each compartment 
- *           at the current event. 
+ * @tparam T_time type of scalar for time
+ * @tparam T_rate type of scalar for rate
+ * @tparam T_parameters type of scalar for model parameters
+ * @tparam T_system type of element in system matrix
+ * @param[in] dt time between current and previous event
+ * @param[in] parameter model parameters at current event
+ * @param[in] init amount in each compartment at previous event
+ * @param[in] rate rate in each compartment
+ * @param[in] system matrix describing linear ODE system
+ * @return an eigen vector that contains predicted amount in each compartment 
+ *   at the current event. 
  */
 template<typename T_time, typename T_rate, typename T_system>
 Matrix<typename promote_args< T_time, T_rate, T_system>::type, 1, Dynamic> 
