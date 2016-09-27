@@ -9,11 +9,11 @@
  * Calculates the amount in each compartment at dt time units after the time
  * of the initial condition.
  * 
- *  If the initial time equals the time of the event, than the code does 
- *	not run the ode integrator, and sets the predicted amount equal to the 
- *	initial condition. This can happen when we are dealing with events that 
- *	occur simultaneously. The change to the predicted amount caused by bolus 
- *	dosing events is handled later in the main Pred function. 
+ * If the initial time equals the time of the event, than the code does 
+ * not run the ode integrator, and sets the predicted amount equal to the 
+ * initial condition. This can happen when we are dealing with events that 
+ * occur simultaneously. The change to the predicted amount caused by bolus 
+ * dosing events is handled later in the main Pred function. 
  *	
  * @tparam T_time type of scalar for time
  * @tparam T_rate type of scalar for rate
