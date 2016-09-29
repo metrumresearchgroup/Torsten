@@ -1,45 +1,43 @@
 #include <stan/math/rev/mat.hpp>
+#include <stan/math/prim/mat/fun/matrix_exp_pade.hpp>
 #include <gtest/gtest.h>
 #include <test/unit/math/rev/mat/fun/expect_matrix_eq.hpp>
 #include <test/unit/math/rev/mat/fun/util.hpp>
-#include <cstdlib>
-#include <ctime>
 
-TEST(MathMatrix, matrix_exp_1x1) {
-       
+TEST(MathMatrix, matrix_exp_pade_1x1) {
+    
     stan::math::matrix_v m1(1,1), m2(1,1), m1_exp;
     m1 << 0;
     m2 << 1;
-    m1_exp = matrix_exp(m1);
+    m1_exp = stan::math::matrix_exp_pade(m1);
     expect_matrix_eq(m2, m1_exp);
     
     AVEC x = createAVEC(m1(0,0));
     VEC g;
     m1_exp(0,0).grad(x,g);
-    EXPECT_FLOAT_EQ(m1_exp(0,0).val(), g[0]); 
-    
+    EXPECT_FLOAT_EQ(m1_exp(0,0).val(), g[0]);
 }
 
-TEST(MathMatrix, matrix_exp_2x2) {
-    
+TEST(MathMatrix, matrix_exp_pade_2x2) {
+
     using stan::math::matrix_v;
-    
+
     // example from Moler & Van Loan, 2003
     for (size_t k = 0; k < 2; k++) {
     	for (size_t l = 0; l < 2; l++) {
-    				 
+
+    		matrix_v m1(2,2), m2(2,2), m1_exp;
+    
     		AVAR a = -1.0, b = -17.0;
-			
-			matrix_v m1(2,2), m2(2,2), m1_exp;
+   
     		m1 << -2*a + 3*b, 1.5*a - 1.5*b, -4*a + 4*b, 3*a - 2*b;
    			m2 << -.735759, .551819, -1.471518, 1.103638;
-    		m1_exp = matrix_exp(m1);
+    		m1_exp = stan::math::matrix_exp_pade(m1);
     		expect_matrix_eq(m2, m1_exp);
-    		
-    		matrix_v dm1_exp_da(2,2), dm1_exp_db(2,2);
-    		AVAR exp_a = exp(a), exp_b = exp(b);
-    		dm1_exp_da << -2 * exp_a, 1.5 * exp_a, -4 * exp_a, 3 * exp_a;
-    		dm1_exp_db << 3 * exp_b, -1.5 * exp_b, 4 * exp_b, -2 * exp_b;
+
+			matrix_v dm1_exp_da(2,2), dm1_exp_db(2,2);
+    		dm1_exp_da << -2*exp(a), 1.5*exp(a), -4*exp(a), 3*exp(a);
+    		dm1_exp_db << 3*exp(b), -1.5*exp(b), 4*exp(b), -2*exp(b);
     
     		AVEC x = createAVEC(a, b);
     		VEC g;
@@ -48,28 +46,10 @@ TEST(MathMatrix, matrix_exp_2x2) {
     		EXPECT_FLOAT_EQ(dm1_exp_db(k, l).val(), g[1]);
     	}
     }
- 
+
 }
 
-TEST(MathMatrix, matrix_exp_2x2_2) {
-
-	// make sure matrix_exp doesn't use matrix_exp_2x2,
-	// which would return NaN for this matrix
-	// Compare to result from http://comnuan.com/cmnn01015/
-	// Don't test derivatives, since goal is to see that 
-	// matrix_exp picks the right algorithm
-	stan::math::matrix_v m(2, 2), exp_m(2, 2);
-	
-	m << -0.999984, 0.511211,
-	     -0.736924, -0.0826997;
-	
-	exp_m << 0.2746483852, 0.2893267425,
-	         -0.4170720513, 0.7937977746;
-	         
-	expect_matrix_eq(exp_m, stan::math::matrix_exp(m));
-}
-
-TEST(MathMatrix, matrix_exp_3x3) {
+TEST(MathMatrix, matrix_exp_pade_3x3) {
 
 	using stan::math::matrix_v;
 
@@ -85,7 +65,7 @@ TEST(MathMatrix, matrix_exp_3x3) {
     		m2 << 245.95891, -182.43047, -49.11821,
     			  93.41549, -67.3433, -18.68310,
     			  842.54120, -631.90590, -168.14036;
-    		m1_exp = matrix_exp(m1);
+    		m1_exp = stan::math::matrix_exp_pade(m1);
     		expect_matrix_eq(m2, m1_exp);
     		
     		matrix_v dm1_exp_da(3,3), dm1_exp_db(3,3), dm1_exp_dc(3,3);
@@ -145,25 +125,25 @@ TEST(MathMatrix, matrix_exp_10x10) {
 		
 			matrix_v diag_elements_v = diag_elements.cast<var>();
 			matrix_v exp_diag_elements = stan::math::exp(diag_elements_v);
-			
+
 			matrix_v A = S.cast<var>() * diag_elements_v.asDiagonal()
 			  * S_inv.cast<var>(),
 			  exp_A = S.cast<var>() * exp_diag_elements.asDiagonal()
 			    * S_inv.cast<var>(),
-			  expm_A = stan::math::matrix_exp(A);
+			  expm_A = stan::math::matrix_exp_pade(A);
 
 			if (exp_A(k, l).val() == 0)
 			  EXPECT_NEAR(exp_A(k, l).val(), expm_A(k, l).val(), 5e-10);
 			else if (stan::math::abs(exp_A(k, l)) < 1e-10)
 			  EXPECT_NEAR(exp_A(k, l).val(), expm_A(k, l).val(), 1e-11);
 			else EXPECT_FLOAT_EQ(exp_A(k, l).val(), expm_A(k, l).val());
-			
+
 			AVEC x(size, 0);
 			for(int i = 0; i < size; i++) x[i] = diag_elements_v(i);
 			VEC g;
 			expm_A(k, l).grad(x, g);
 			matrix_v dA(size, size), dA_exp(size, size);
-			
+
 			for(int i = 0; i < size; i++) {
 				dA.setZero();
 				dA(i, i) = exp(x[i]);
@@ -175,13 +155,4 @@ TEST(MathMatrix, matrix_exp_10x10) {
 			}
 		}
 	}		
-}
-		
-
-TEST(MathMatrix, matrix_exp_exceptions) {
-    stan::math::matrix_v m1(0,0), m2(1,2);
-    m2 << 1, 2;
-    
-    EXPECT_THROW(matrix_exp(m1), std::invalid_argument);
-    EXPECT_THROW(matrix_exp(m2), std::invalid_argument);
 }
