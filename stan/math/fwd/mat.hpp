@@ -21,7 +21,6 @@
 #include <stan/math/fwd/mat/fun/log_determinant.hpp>
 #include <stan/math/fwd/mat/fun/log_softmax.hpp>
 #include <stan/math/fwd/mat/fun/log_sum_exp.hpp>
-#include <stan/math/fwd/mat/fun/matrix_exp.hpp>
 #include <stan/math/fwd/mat/fun/mdivide_left.hpp>
 #include <stan/math/fwd/mat/fun/mdivide_left_ldlt.hpp>
 #include <stan/math/fwd/mat/fun/mdivide_left_tri_low.hpp>
@@ -35,8 +34,6 @@
 #include <stan/math/fwd/mat/fun/rows_dot_product.hpp>
 #include <stan/math/fwd/mat/fun/rows_dot_self.hpp>
 #include <stan/math/fwd/mat/fun/softmax.hpp>
-#include <stan/math/fwd/mat/fun/sort_asc.hpp>
-#include <stan/math/fwd/mat/fun/sort_desc.hpp>
 #include <stan/math/fwd/mat/fun/squared_distance.hpp>
 #include <stan/math/fwd/mat/fun/sum.hpp>
 #include <stan/math/fwd/mat/fun/tcrossprod.hpp>

@@ -132,6 +132,7 @@ endif
 	@echo '  - clean         : Basic clean. Leaves doc and compiled libraries intact.'
 	@echo '  - clean-deps    : Removes dependency files for tests. If tests stop building,'
 	@echo '                    run this target.'
+	@echo '  - clean-libraries : Removes binaries built for libraries including CVODES.'
 	@echo '  - clean-all     : Cleans up all of Stan.'
 	@echo ''
 	@echo '--------------------------------------------------------------------------------'
@@ -152,6 +153,8 @@ clean:
 	$(shell find test -type f -name "*_test.d" -exec rm {} +)
 	$(shell find test -type f -name "*_test.d.*" -exec rm {} +)
 	$(shell find test -type f -name "*_test.xml" -exec rm {} +)
+	$(shell find test -type f -name "*.o" -exec rm {} +)
+	$(shell find test -type f -name "lib*.so" -exec rm {} +)
 
 clean-doxygen:
 	$(RM) -r doc/api
@@ -162,8 +165,7 @@ clean-deps:
 	$(shell find . -type f -name '*.d.*' -exec rm {} +)
 	$(RM) $(shell find stan -type f -name '*.dSYM') $(shell find stan -type f -name '*.d.*')
 
-clean-all: clean clean-doxygen clean-deps
+clean-all: clean clean-doxygen clean-deps clean-libraries
 	@echo '  removing generated test files'
 	$(shell find test/prob -name '*_generated_*_test.cpp' -type f -exec rm {} +)
 	$(RM) $(wildcard test/gtest.o test/libgtest* test/prob/generate_tests$(EXE))
-	$(RM) $(wildcard $(CVODES)/lib/*)
