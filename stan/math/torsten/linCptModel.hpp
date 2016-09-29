@@ -56,7 +56,7 @@ linCptModel(const Eigen::Matrix<T0, Eigen::Dynamic, Eigen::Dynamic>& system,
 			const std::vector<int>& cmt,
 			const std::vector<int>& addl,
 			const std::vector<int>& ss) {
-  
+
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
@@ -84,7 +84,7 @@ linCptModel(const Eigen::Matrix<T0, Eigen::Dynamic, Eigen::Dynamic>& system,
   Pred1_structure new_Pred1("linCptModel");
   PredSS_structure new_PredSS("linCptModel");
   Pred1 = new_Pred1;
-  PredSS = new_PredSS; // WARNING: PredSS returns an error message and aborts program
+  PredSS = new_PredSS;
 
   Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> pred;
   pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model,

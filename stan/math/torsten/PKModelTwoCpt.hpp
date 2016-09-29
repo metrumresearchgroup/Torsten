@@ -64,9 +64,9 @@ PKModelTwoCpt(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >& pMatrix
   std::string message4 = ", but must equal the number of parameters in the model: " 
     + boost::lexical_cast<string>(model.GetNParameter()) + "!"; 
   const char* length_error4 = message4.c_str();    
-  if (!(pMatrix[0].size() == model.GetNParameter())) invalid_argument(function,
-      "The number of parameters per event (length of a vector in the first argument) is",
-      pMatrix[0].size(), "", length_error4);  
+  if (!(pMatrix[0].size() == model.GetNParameter())) stan::math::invalid_argument(function,
+    "The number of parameters per event (length of a vector in the first argument) is",
+    pMatrix[0].size(), "", length_error4);  
   
   //Construct Pred functions for the model.
   Pred1_structure new_Pred1("TwoCptModel");
