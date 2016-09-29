@@ -42,13 +42,16 @@ Pred1_linCpt(const T_time& dt,
 
   typedef typename promote_args<T_time, T_rate, T_system>::type scalar;
 
-  Matrix<scalar, 1, Dynamic> dt_rate(rate.size());
-  for(int i=0; i < rate.size(); i++) dt_rate(i) = dt * rate[i];
-  Matrix<scalar, Dynamic, Dynamic> dt_system = dt * system;
-  Matrix<scalar, Dynamic, 1> pred = stan::math::matrix_exp(dt_system)
-    * init.transpose();
- 
-  return pred.transpose() + dt_rate;
+  if(dt == 0) return init;
+  else {
+    Matrix<scalar, 1, Dynamic> dt_rate(rate.size());
+    for(int i=0; i < rate.size(); i++) dt_rate(i) = dt * rate[i];
+    Matrix<scalar, Dynamic, Dynamic> dt_system = dt * system;
+    Matrix<scalar, Dynamic, 1> pred = stan::math::matrix_exp(dt_system)
+      * init.transpose();
+      
+    return pred.transpose() + dt_rate;
+  }
 }
 
 #endif

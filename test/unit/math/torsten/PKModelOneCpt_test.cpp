@@ -6,7 +6,7 @@ using std::vector;
 using Eigen::Matrix;
 using Eigen::Dynamic;
 
-TEST(Torsten, PKModelOneCpt_SingleDose) {
+TEST(Torsten, linCptModel_SingleDose) {
 
 	vector<Matrix<double, Dynamic, 1> > pMatrix(1);
 	pMatrix[0].resize(7);
@@ -61,7 +61,7 @@ TEST(Torsten, PKModelOneCpt_SingleDose) {
 }
 
 
-TEST(Torsten, PKModelOneCpt_SS) {
+TEST(Torsten, linCptModel_SS) {
 
 	vector<Matrix<double, Dynamic, 1> > pMatrix(1);
 	pMatrix[0].resize(7);
