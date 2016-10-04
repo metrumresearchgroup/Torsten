@@ -2,6 +2,7 @@
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_LINCPT_HPP
 
 #include <iostream>
+#include <stan/math/prim/mat.hpp>
 #include <stan/math/prim/mat/fun/matrix_exp.hpp>
 
 /**
@@ -39,18 +40,35 @@ Pred1_linCpt(const T_time& dt,
   using boost::math::tools::promote_args;
   using Eigen::Matrix;
   using Eigen::Dynamic;
+  using stan::math::matrix_exp;
+  using stan::math::mdivide_left;
 
   typedef typename promote_args<T_time, T_rate, T_system>::type scalar;
 
   if(dt == 0) return init;
   else {
-    Matrix<scalar, 1, Dynamic> dt_rate(rate.size());
-    for(int i=0; i < rate.size(); i++) dt_rate(i) = dt * rate[i];
-    Matrix<scalar, Dynamic, Dynamic> dt_system = dt * system;
-    Matrix<scalar, Dynamic, 1> pred = stan::math::matrix_exp(dt_system)
-      * init.transpose();
+    
+    bool rate_zeros = true;
+    for(int i = 0; i < rate.size(); i++)
+      if (rate[i] != 0) rate_zeros = false;
       
-    return pred.transpose() + dt_rate;
+    if (rate_zeros) {
+      Matrix<scalar, Dynamic, Dynamic> dt_system = dt * system;
+      Matrix<scalar, Dynamic, 1> pred = matrix_exp(dt_system)
+        * init.transpose();
+      return pred.transpose();
+    }
+    else {
+      int nCmt = system.cols();
+      Matrix<scalar, Dynamic, 1> rate_vec(rate.size()), x(nCmt), x2(nCmt);
+      for(int i = 0; i < rate.size(); i++) rate_vec(i) = rate[i];
+      x = mdivide_left(system, rate_vec);
+      x2 = x + init.transpose();
+      Matrix<scalar, Dynamic, Dynamic> dt_system = dt * system;
+      Matrix<scalar, Dynamic, 1> pred = matrix_exp(dt_system) * x2;
+      pred -= x;
+      return pred.transpose();
+    }
   }
 }
 

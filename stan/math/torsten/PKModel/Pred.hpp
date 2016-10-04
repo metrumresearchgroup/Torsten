@@ -91,41 +91,41 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
 	nCmt = model.GetNCmt();
 	F1Index = model.GetF1Index();
 	tlag1Index = model.GetTLagIndex();
-    
+
 	zeros = Matrix<scalar, 1, Dynamic>::Zero(nCmt);	
     tlagIndexes.assign(nCmt,0);
     tlagCmts.assign(nCmt,0);
-        
+
 	EventHistory<scalar, scalar, scalar, scalar> 
-					events(time, amt, rate, ii, evid, cmt, addl, ss);
+	  events(time, amt, rate, ii, evid, cmt, addl, ss);
     ModelParameterHistory<scalar, scalar> parameters(time, pMatrix);
     RateHistory<scalar, scalar> rates;
-    
+
     events.Sort();
     parameters.Sort();
     //rates.Sort();
-                
+
 	nKeep = events.get_size();
 	np = pMatrix[0].size() * pMatrix.size();
-		
+
 	assert((np > 0)&&(np % nParameter == 0));
     events.AddlDoseEvents();
-        
+
     parameters.CompleteParameterHistory(events);
-    
+
     for(i=0;i<nCmt;i++) {
         tlagIndexes[i] = tlag1Index + i;
         tlagCmts[i] = i + 1;
     }
-             
+
     events.AddLagTimes(parameters, tlagIndexes, tlagCmts);    
 	rates.MakeRates(events, nCmt); 
     parameters.CompleteParameterHistory(events); 
-	
+
 	init = zeros; 
 	tprev = events.get_time(0);
 	ikeep = 0;
-	
+
 	// Construct the output matrix pred
 	// The matrix needs to be a dynamically-sized matrix to be returned 
 	// by the function. The matrix is resized, but the resize function
@@ -135,7 +135,7 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
 	// we need to set the values of each element to 0. 	 
 	Matrix<scalar, Dynamic, Dynamic> 
 	  pred = Matrix<scalar, Dynamic, Dynamic>::Zero(nKeep, nCmt);
-    
+
 	//////////////////////////////////////////////////////////////////////////////
 	//COMPUTE PREDICTIONS
 
@@ -150,7 +150,7 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
         for(j=0;j<nCmt;j++) {
 			rate2.rate[j] *= parameters.GetValue(i, F1Index+j);
 		}
-		
+
 		parameter = parameters.GetModelParameters(i);
 
 		if((event.evid == 3)||(event.evid == 4)) {  //reset events
@@ -162,7 +162,7 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
 			pred1 = Pred1(dt, parameter, init, rate2.rate, f, system);
 			init = pred1;
 		}
-		
+
 		if(((event.evid==1)||(event.evid==4))
 		   && (((event.ss==1)||(event.ss==2))||(event.ss==3))) { //steady dose event
 			pred1 = 
@@ -172,7 +172,7 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
 			if(event.ss==2) init += pred1;//steady state without reset
 			else init = pred1; //steady state with reset (ss=1)
 		}
-		
+
 		if(((event.evid==1)||(event.evid==4))&&(event.rate==0)) //bolus dose
 			init(0,event.cmt-1) += parameters.GetValue(i, F1Index+event.cmt-1)*event.amt;
 
@@ -182,7 +182,7 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
 		}
 
 		tprev = event.time;
-	
+
 	}
 	
 	return pred;

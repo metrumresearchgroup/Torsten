@@ -2,21 +2,14 @@
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_LINCPT_HPP
 
 #include <stan/math/prim/mat.hpp>
-#include <stan/math/rev/mat.hpp>
-#include <stan/math/fwd/mat.hpp>
+#include <stan/math/prim/mat/fun/matrix_exp.hpp>
 #include <iostream>
-
-using std::vector;
-using boost::math::tools::promote_args;
-using Eigen::Matrix;
-using Eigen::Dynamic;
 
 /**
  * General compartment model using built-in ODE solver. 
  * Calculate amount in each compartment at the end of a
  * steady-state dosing interval or during a steady-state
  * constant input (if ii=0)
- * 
  * 
  * Model using numerical ODE solver are not available for
  * steady state. If data contains a steady state event, 
@@ -47,6 +40,10 @@ PredSS_linCpt(const T_amt& amt,
 		   	  const Eigen::Matrix<T_system, Eigen::Dynamic,
 		   	    Eigen::Dynamic> system) {
 
+  using std::vector;
+  using boost::math::tools::promote_args;
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
   using stan::math::matrix_exp;
   using stan::math::mdivide_left;
 
@@ -71,17 +68,22 @@ PredSS_linCpt(const T_amt& amt,
     amounts(cmt - 1) = rate;
     double t = amt / rate;
     assert(t <= ii);
+
     amounts = mdivide_left(system, amounts);
-    Matrix<scalar, Dynamic, Dynamic> t_system = t * system; // Check - case where t and system don't have the same type
+    // CHECK - case where t and system have different types
+    Matrix<scalar, Dynamic, Dynamic> t_system = t * system;
     pred = matrix_exp(t_system) * amounts;
     pred -= amounts;
 
     workMatrix = - matrix_exp(ii_system);
     for(int i = 0; i < nCmt; i++) workMatrix(i, i) += 1;
-    pred = mdivide_left(workMatrix, pred);
-    t = t - ii;
+
+    Matrix<scalar, Dynamic, 1> pred_t = pred.transpose();
+    pred_t = mdivide_left(workMatrix, pred_t);
+    t = ii - t;
     t_system = t * system;
-    pred = matrix_exp(t_system) * pred;      
+    pred_t = matrix_exp(t_system) * pred_t;
+    pred = pred_t.transpose();
   }
 
   else {  // constant infusion
