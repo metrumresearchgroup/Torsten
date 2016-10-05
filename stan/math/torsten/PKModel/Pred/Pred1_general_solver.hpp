@@ -2,7 +2,7 @@
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_GENERAL_SOLVER_HPP
 
 #include <iostream>
-#include <stan/math/torsten/PKModel/pred/unpromote.hpp>
+#include <stan/math/torsten/PKModel/Pred/unpromote.hpp>
 
 /**
  *	General compartment model using the built-in ODE solver. 

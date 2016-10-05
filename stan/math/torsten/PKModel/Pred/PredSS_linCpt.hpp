@@ -66,7 +66,7 @@ PredSS_linCpt(const T_amt& amt,
 
   else if (ii > 0) {  // multiple truncated infusions
     amounts(cmt - 1) = rate;
-    double t = amt / rate;
+    scalar t = amt / rate;
     assert(t <= ii);
 
     amounts = mdivide_left(system, amounts);

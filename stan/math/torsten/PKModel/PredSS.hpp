@@ -3,10 +3,10 @@
 
 #include <iostream>
 #include <Eigen/Dense>
-#include <stan/math/torsten/PKmodel/Pred/PredSS_oneCpt.hpp>
-#include <stan/math/torsten/PKmodel/Pred/PredSS_twoCpt.hpp>
-#include <stan/math/torsten/PKmodel/Pred/PredSS_general_solver.hpp>
-#include <stan/math/torsten/PKmodel/Pred/PredSS_linCpt.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_oneCpt.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_twoCpt.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_general_solver.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_linCpt.hpp>
 
 using std::vector;
 

@@ -5,6 +5,6 @@
 #include <stan/math/torsten/GeneralCptModel_rk45.hpp>
 #include <stan/math/torsten/PKModelOneCpt.hpp>
 #include <stan/math/torsten/PKModelTwoCpt.hpp>
-#include <stan/math/torsten/LinCptModel.hpp>
+#include <stan/math/torsten/linCptModel.hpp>
 
 #endif
