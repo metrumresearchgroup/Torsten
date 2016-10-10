@@ -9,13 +9,13 @@
  * Linear compartment model.
  * Calculates the amount in each compartment at dt time units after the time
  * of the initial condition.
- * 
- * If the initial time equals the time of the event, than the code does 
- * not run the ode integrator, and sets the predicted amount equal to the 
- * initial condition. This can happen when we are dealing with events that 
- * occur simultaneously. The change to the predicted amount caused by bolus 
- * dosing events is handled later in the main Pred function. 
- *	
+ *
+ * If the initial time equals the time of the event, than the code does
+ * not run the ode integrator, and sets the predicted amount equal to the
+ * initial condition. This can happen when we are dealing with events that
+ * occur simultaneously. The change to the predicted amount caused by bolus
+ * dosing events is handled later in the main Pred function.
+ *
  * @tparam T_time type of scalar for time
  * @tparam T_rate type of scalar for rate
  * @tparam T_parameters type of scalar for model parameters
@@ -25,13 +25,13 @@
  * @param[in] init amount in each compartment at previous event
  * @param[in] rate rate in each compartment
  * @param[in] system matrix describing linear ODE system
- * @return an eigen vector that contains predicted amount in each compartment 
- *   at the current event. 
+ * @return an eigen vector that contains predicted amount in each compartment
+ *   at the current event.
  */
 template<typename T_time, typename T_rate, typename T_system>
-Matrix<typename promote_args< T_time, T_rate, T_system>::type, 1, Dynamic> 
+Matrix<typename promote_args< T_time, T_rate, T_system>::type, 1, Dynamic>
 Pred1_linCpt(const T_time& dt,
-		     const Eigen::Matrix<typename 
+		     const Eigen::Matrix<typename
 		       promote_args<T_time, T_rate, T_system>::type, 1,
 		       Eigen::Dynamic>& init,
 		     const vector<T_rate>& rate,
@@ -42,18 +42,19 @@ Pred1_linCpt(const T_time& dt,
   using Eigen::Dynamic;
   using stan::math::matrix_exp;
   using stan::math::mdivide_left;
+  using stan::math::multiply;
 
   typedef typename promote_args<T_time, T_rate, T_system>::type scalar;
 
   if(dt == 0) return init;
   else {
-    
+
     bool rate_zeros = true;
     for(int i = 0; i < rate.size(); i++)
       if (rate[i] != 0) rate_zeros = false;
-      
+
     if (rate_zeros) {
-      Matrix<scalar, Dynamic, Dynamic> dt_system = dt * system;
+      Matrix<scalar, Dynamic, Dynamic> dt_system = multiply(dt, system);
       Matrix<scalar, Dynamic, 1> pred = matrix_exp(dt_system)
         * init.transpose();
       return pred.transpose();
@@ -64,7 +65,7 @@ Pred1_linCpt(const T_time& dt,
       for(int i = 0; i < rate.size(); i++) rate_vec(i) = rate[i];
       x = mdivide_left(system, rate_vec);
       x2 = x + init.transpose();
-      Matrix<scalar, Dynamic, Dynamic> dt_system = dt * system;
+      Matrix<scalar, Dynamic, Dynamic> dt_system = multiply(dt, system);
       Matrix<scalar, Dynamic, 1> pred = matrix_exp(dt_system) * x2;
       pred -= x;
       return pred.transpose();
