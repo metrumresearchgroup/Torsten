@@ -32,10 +32,9 @@ using Eigen::Dynamic;
  *   @return an eigen vector that contains predicted amount in each compartment 
  *           at the current event. 
  */
-typedef vector<double> dvector;
 template<typename T_time, typename T_amt, typename T_rate, 
   typename T_ii, typename T_parameters, typename F>
-Matrix<typename promote_args< T_time, T_amt, T_rate, 
+Matrix<typename promote_args<T_time, T_amt, T_rate, 
   typename promote_args< T_ii, T_parameters>::type>::type, 1, Dynamic>  
 PredSS_general_solver(const ModelParameters<T_time, T_parameters>& parameter, 
 		   			  const T_amt& amt, 
@@ -43,14 +42,16 @@ PredSS_general_solver(const ModelParameters<T_time, T_parameters>& parameter,
 		   			  const T_ii& ii, 
 		   			  const int& cmt,
 		   			  const F& f) {
-	typedef typename promote_args< T_time, T_amt, T_rate, 
-	  typename promote_args< T_ii, T_parameters>::type>::type scalar;    
+  typedef typename promote_args< T_time, T_amt, T_rate, 
+    typename promote_args< T_ii, T_parameters>::type>::type scalar;    
+
+  std::cout << "ERROR: General Compartment Model using ODE integrator" 
+            << " (bdf or rk45) does not handle Steady State events." 
+            << std::endl;
+  abort(); // FIX ME: throw an exception, not abort.
     
-    std::cout << "ERROR: General Compartment Model using ODE integrator (bdf or rk45) does not handle Steady State events." << std::endl;
-    abort();
-    
-    Matrix<scalar, 1, Dynamic> pred = Matrix<scalar, 1, Dynamic>::Zero(3);
-    return pred;
+  Matrix<scalar, 1, Dynamic> pred = Matrix<scalar, 1, Dynamic>::Zero(3);
+  return pred;
         
 }
 

@@ -3,15 +3,13 @@
 
 #include <iostream>
 #include <Eigen/Dense>
-#include <stan/math/torsten/PKmodel/Pred/PredSS_oneCpt.hpp>
-#include <stan/math/torsten/PKmodel/Pred/PredSS_twoCpt.hpp>
-#include <stan/math/torsten/PKmodel/Pred/PredSS_general_solver.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_oneCpt.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_twoCpt.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_general_solver.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_linCpt.hpp>
 
 using std::vector;
-using namespace Eigen;
 
-typedef vector<double> dvector;
-typedef Matrix<double, Dynamic, Dynamic> DMatrix; 
 
 /**
  *   The Functor of PredSS, which predicts amounts in each compartment at one event, where
@@ -45,20 +43,15 @@ struct PredSS_structure {
     
 private:
     string modeltype;
-    DMatrix K;
     
 public:
-    PredSS_structure(string p_modeltype) {  //constructor for standard models
-        Matrix<double,1,1> init_Matrix;
-        init_Matrix(0,0) = 0;
-        
+    PredSS_structure(string p_modeltype) { 
         modeltype = p_modeltype;
-        K = init_Matrix; // Matrix = [0]
     }
     
     // constructor for operator
     template<typename T_time, typename T_amt, typename T_rate, typename T_ii, 
-      typename T_parameters, typename F>
+      typename T_parameters, typename F, typename T_system>
 	Matrix<typename promote_args< T_time, T_amt, T_rate, 
 	  typename promote_args< T_ii, T_parameters>::type>::type, Dynamic, 1>  
     operator()(const ModelParameters<T_time, T_parameters>& parameter, 
@@ -66,16 +59,19 @@ public:
     		   const T_rate& rate,
                const T_ii& ii, 
                const int& cmt,
-               const F& f) {
+               const F& f,
+               const Matrix<T_system, Dynamic, Dynamic> system) {
        	      	
        	typedef typename promote_args< T_time, T_rate, T_parameters>::type scalar; 
   
         if(modeltype == "OneCptModel")
-          return PredSS_one(parameter, amt, rate, ii, cmt, f);
+          return PredSS_one(parameter, amt, rate, ii, cmt);
         else if(modeltype == "TwoCptModel")
-          return PredSS_two(parameter, amt, rate, ii, cmt, f);
+          return PredSS_two(parameter, amt, rate, ii, cmt);
         else if(modeltype == "GeneralCptModel_solver")
           return PredSS_general_solver(parameter, amt, rate, ii, cmt, f);
+        else if(modeltype == "linCptModel")
+          return PredSS_linCpt(amt, rate, ii, cmt, system);
         else { 
         	Matrix<scalar, 1, Dynamic> default_pred = Matrix<scalar, 1, Dynamic>::Zero(1);
          	return default_pred;

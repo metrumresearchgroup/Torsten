@@ -25,26 +25,22 @@ using Eigen::Dynamic;
  *	 @tparam T_rate type of scalar for rate
  *	 @tparam T_ii type of scalar for interdose interval
  *	 @tparam T_parameters type of scalar for model parameters
- *	 @tparam F type of ODE system function (dummy function)
  *	 @param[in] parameter model parameters at current event
  *	 @param[in] rate
  *	 @param[in] ii interdose interval
  *	 @param[in] cmt compartment in which the event occurs 
- *	 @param[in] f functor for base ordinary differential equation that defines 
- *              compartment model (dummy function)
  *   @return an eigen vector that contains predicted amount in each compartment 
  *           at the current event. 
  */
 template<typename T_time, typename T_amt, typename T_rate, typename T_ii,
-  typename T_parameters, typename F>
+  typename T_parameters>
 Matrix<typename promote_args< T_time, T_amt, T_rate, 
   typename promote_args< T_ii, T_parameters>::type>::type, 1, Dynamic>  
 PredSS_two(const ModelParameters<T_time, T_parameters>& parameter, 
 		   const T_amt& amt, 
 		   const T_rate& rate,
 		   const T_ii& ii, 
-		   const int& cmt,
-           const F& f) {
+		   const int& cmt) {
            
 	typedef typename promote_args< T_time, T_amt, T_rate, 
 	  typename promote_args< T_ii, T_parameters>::type>::type scalar;    

@@ -6,7 +6,7 @@
 
 /**
  *	This class contains some basic structural information about a 
- *	compartment model 
+ *	compartment model. 
  *	
  *	nParameter: the number of parameters at each event
  *	F1Index: the index of the F1 parameter 
@@ -21,16 +21,14 @@ private:
 
 public:
 	
-	PKModel()
-	{
+	PKModel() {
 		nParameter=0;
 		F1Index=0;
 		tlag1Index=0;
 		nCmt=0;
 	}
 
-	PKModel(int p_nParameter, int p_F1Index, int p_tlag1Index, int p_nCmt) 
-	{
+	PKModel(int p_nParameter, int p_F1Index, int p_tlag1Index, int p_nCmt) {
 		nParameter = p_nParameter;
 		F1Index = p_F1Index;
 		tlag1Index = p_tlag1Index;
@@ -38,26 +36,22 @@ public:
 	}
 	
 	// model specific constructor
-	PKModel(string p_nCmt)
-	{
+	PKModel(string p_nCmt) {
 		// class constructor for one and two compartment(s) model. 
 		assert((p_nCmt=="OneCptModel")||(p_nCmt=="TwoCptModel"));
-		if(p_nCmt=="OneCptModel")
-		{
+		if(p_nCmt=="OneCptModel") {
 			nParameter = 7;
 			F1Index = 3;
 			tlag1Index = 5;
 			nCmt = 2;
 		}
-		else if (p_nCmt=="TwoCptModel")
-		{
+		else if (p_nCmt=="TwoCptModel") {
 			nParameter = 11;
 			F1Index = 5;
 			tlag1Index = 8;
 			nCmt = 3;
 		}
-		else 
-		{
+		else {
 			nParameter = 0;
 			F1Index = 0;
 			tlag1Index = 0;
@@ -71,8 +65,7 @@ public:
 	int GetTLagIndex(){return tlag1Index;}
 	int GetNCmt(){return nCmt;} 
 	
-	void Print()
-	{
+	void Print() {
 		print(nParameter,false);
 		print(F1Index,false);
 		print(tlag1Index,false);

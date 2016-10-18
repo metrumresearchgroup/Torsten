@@ -56,8 +56,7 @@ inline void print(stan::math::var x, bool skipline){
 	}
 
 
-void printpMatrix(vector <Matrix <var, Dynamic, 1> > pMatrix)
-	{	
+void printpMatrix(vector <Matrix <var, Dynamic, 1> > pMatrix) {	
 		print("PMatrix contains var.",true);
 		int i, j;
 		for(i=0;i<pMatrix.size();i++){
@@ -68,8 +67,7 @@ void printpMatrix(vector <Matrix <var, Dynamic, 1> > pMatrix)
 		}
 	}
 
-void printpMatrix(vector < Matrix <double, Dynamic, 1> > pMatrix)
-	{	
+void printpMatrix(vector < Matrix <double, Dynamic, 1> > pMatrix) {
 		print("PMatrix contains double.",true);
 		int i, j;
 		for(i=0;i<pMatrix.size();i++){
@@ -83,8 +81,7 @@ void printpMatrix(vector < Matrix <double, Dynamic, 1> > pMatrix)
 void line() {print(" ",true);}
 
 int marker_count = 0; //define global variable
-void Marker()
-{
+void Marker() {
 	print("MARKER",false);
 	print(marker_count,true);
 	marker_count++;
@@ -94,8 +91,7 @@ void Marker()
 ////////// REQUIRED FOR TORSTEN //////////////
 
 template<typename T>
-bool find_time(vector<T> v, T time)
-{
+bool find_time(vector<T> v, T time) {
 	int k, size;
 	bool found=false;
 	size = v.size();
@@ -104,38 +100,5 @@ bool find_time(vector<T> v, T time)
 	if((k <= size) && (time == v[k-1])) found = true; 
 	return found;
 }
-
-
-// construct dummy ODE 
-template <typename T0, typename T1, typename T2, typename T3>
-inline
-std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
-f(const T0& t,
-  const vector<T1>& x,
-  const vector<T2>& parms,
-  const vector<T3>& rate,
-  const vector<int>& dummy,
-  std::ostream* pstream__)
-{
-		typedef typename boost::math::tools::promote_args<T0, T1, T2, T3>::type scalar;
-		vector<scalar> returned_vector = vector<scalar>(0,scalar(0));
-		return returned_vector;
-}		
-
-struct dummy_ode
-{
-	template <typename T0, typename T1, typename T2, typename T3>
-	inline
-	vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
-	operator()(const T0& t,
-			   const vector<T1>& x,
-			   const vector<T2>& parms,
-			   const vector<T3>& rate,
-			   const vector<int>& dummy, 
-			   std::ostream* pstream__) const
-			   {
-			   		return f(t, x, parms, rate, dummy, pstream__);
-			   }
-};
 
 #endif
