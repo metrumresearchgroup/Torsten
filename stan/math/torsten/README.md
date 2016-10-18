@@ -12,7 +12,7 @@ Licensing
 ---------
 The Torsten library is licensed under the BSD 3-clause license. 
 
-Update
+Updates
 ------
 09/27 (0.81)
 * Add linCptModel (linear compartmental model) function
