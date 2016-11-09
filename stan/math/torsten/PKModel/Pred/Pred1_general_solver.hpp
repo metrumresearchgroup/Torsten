@@ -45,6 +45,7 @@ Pred1_general_solver(const T_time& dt,
 
   T_time EventTime = parameter.time; // time of current event
   T_time InitTime = EventTime - dt;  // time of previous event	
+  
   // Convert time parameters to fixed data for ODE integrator
   vector<double> EventTime_d = vector<double>(1, double(0));
   EventTime_d[0] = unpromote(EventTime);
@@ -69,7 +70,7 @@ Pred1_general_solver(const T_time& dt,
 	pred.resize(pred_V[0].size());
 	for(int i=0; i < pred_V[0].size(); i++) pred(0,i) = pred_V[0][i];
   }
-  return pred;	
+  return pred;
 }
 
 #endif
