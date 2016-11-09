@@ -40,7 +40,7 @@ struct oneCptModelODE_functor {
 TEST(Torsten, genCpt_One_SingleDose) {
   using std::vector;
 
-  double rel_err = 1e-4;
+  double rel_err = 1e-6;
   
   vector<Matrix<double, Eigen::Dynamic, 1> > pMatrix(1);
   pMatrix[0].resize(7);
@@ -143,7 +143,7 @@ struct oneCptModelODE_abstime_functor {
 TEST(Torsten, genCptrk45_One_abstime_SingleDose) {
   using std::vector;
 
-  double rel_err = 1e-4;
+  double rel_err = 1e-6;
   
   vector<Matrix<double, Eigen::Dynamic, 1> > pMatrix(1);
   pMatrix[0].resize(9);
