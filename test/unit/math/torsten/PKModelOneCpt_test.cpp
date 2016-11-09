@@ -6,7 +6,7 @@ using std::vector;
 using Eigen::Matrix;
 using Eigen::Dynamic;
 
-TEST(Torsten, PKModelOneCpt_SingleDose) {
+TEST(Torsten, PKModelOneCpt_MultipleDoses) {
 
 	vector<Matrix<double, Dynamic, 1> > pMatrix(1);
 	pMatrix[0].resize(7);
@@ -177,3 +177,51 @@ TEST(Torsten, PKModelOneCpt_SS_rate) {
 		EXPECT_NEAR(amounts(i, 1), x(i, 1), std::max(amounts(i, 1), x(i, 1)) * 1e-6);
 	}
 }
+
+// NOT A TEST: but contains interesting information
+// for future development.
+/*
+TEST(Torsten, time_order_bug_) {
+    
+    vector<Matrix<double, Dynamic, 1> > pMatrix(1);
+    pMatrix[0].resize(7);
+    pMatrix[0](0) = 10; // CL
+    pMatrix[0](1) = 80; // Vc
+    pMatrix[0](2) = 1.2; // ka
+    pMatrix[0](3) = 1; // F1
+    pMatrix[0](4) = 1; // F2
+    pMatrix[0](5) = 0; // tlag1
+    pMatrix[0](6) = 0; // tlag2
+    
+    vector<double> time(11);
+    time[0] = 0.0;
+    for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
+    time[9] = 4.0;
+    time[10] = 1.5;
+    
+    vector<double> amt(11, 0);
+    amt[0] = 1000;
+    amt[10] = 200;
+    
+    vector<double> rate(11, 0);
+    
+    vector<int> cmt(11, 2);
+    cmt[0] = 1;
+    cmt[11] = 1;
+    
+    vector<int> evid(11, 0);
+    evid[0] = 1;
+    evid[11] = 1;
+    
+    vector<double> ii(11, 0);
+    ii[0] = 0.25;
+    
+    vector<int> addl(11, 0);
+    addl[0] = 14;
+    
+    vector<int> ss(11, 0);
+    
+    Matrix<double, Dynamic, Dynamic> x;
+    x = PKModelOneCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+}
+*/
