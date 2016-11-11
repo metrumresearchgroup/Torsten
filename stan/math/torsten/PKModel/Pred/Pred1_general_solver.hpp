@@ -30,10 +30,11 @@
  *	
  *	DEV - figure out how to handle when rate is data or autodiff  
  */
-template<typename T_time, typename T_rate, typename T_parameters, typename F>
+template<typename T_time, typename T_rate, typename T_parameters, 
+  typename T_system, typename F>
 Matrix<typename promote_args< T_time, T_rate, T_parameters>::type, 1, Dynamic> 
 Pred1_general_solver(const T_time& dt,
-		  			 const ModelParameters<T_time, T_parameters>& parameter, 
+		  			 const ModelParameters<T_time, T_parameters, T_system>& parameter, 
 		 			 const Matrix<typename promote_args<T_time, T_rate,
 		 			   T_parameters>::type, 1, Dynamic>& init, 
 		  			 const vector<T_rate>& rate,

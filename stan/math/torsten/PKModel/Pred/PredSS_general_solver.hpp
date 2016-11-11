@@ -33,10 +33,10 @@ using Eigen::Dynamic;
  *           at the current event. 
  */
 template<typename T_time, typename T_amt, typename T_rate, 
-  typename T_ii, typename T_parameters, typename F>
+  typename T_ii, typename T_parameters, typename T_system, typename F>
 Matrix<typename promote_args<T_time, T_amt, T_rate, 
   typename promote_args< T_ii, T_parameters>::type>::type, 1, Dynamic>  
-PredSS_general_solver(const ModelParameters<T_time, T_parameters>& parameter, 
+PredSS_general_solver(const ModelParameters<T_time, T_parameters, T_system>& parameter, 
 		   			  const T_amt& amt, 
 		   			  const T_rate& rate,
 		   			  const T_ii& ii, 

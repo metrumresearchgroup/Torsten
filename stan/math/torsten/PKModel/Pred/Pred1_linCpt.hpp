@@ -28,14 +28,14 @@
  * @return an eigen vector that contains predicted amount in each compartment
  *   at the current event.
  */
-template<typename T_time, typename T_rate, typename T_system>
-Matrix<typename promote_args< T_time, T_rate, T_system>::type, 1, Dynamic>
+template<typename T_time, typename T_parameters, typename T_system, typename T_rate>
+Matrix<typename promote_args< T_time, T_system, T_rate>::type, 1, Dynamic>
 Pred1_linCpt(const T_time& dt,
+		     const ModelParameters<T_time, T_parameters, T_system>& parameter,
 		     const Eigen::Matrix<typename
-		       promote_args<T_time, T_rate, T_system>::type, 1,
+		       promote_args<T_time, T_system, T_rate>::type, 1,
 		       Eigen::Dynamic>& init,
-		     const vector<T_rate>& rate,
-		     const Eigen::Matrix<T_system, Eigen::Dynamic, Eigen::Dynamic> system) {
+		     const vector<T_rate>& rate) {
 
   using boost::math::tools::promote_args;
   using Eigen::Matrix;
@@ -44,10 +44,11 @@ Pred1_linCpt(const T_time& dt,
   using stan::math::mdivide_left;
   using stan::math::multiply;
 
-  typedef typename promote_args<T_time, T_rate, T_system>::type scalar;
+  typedef typename promote_args<T_time, T_system, T_rate>::type scalar;
 
-  if(dt == 0) return init;
+  if (dt == 0) return init;
   else {
+    Matrix<T_system, Dynamic, Dynamic> system = parameter.K; 
 
     bool rate_zeros = true;
     for(int i = 0; i < rate.size(); i++)

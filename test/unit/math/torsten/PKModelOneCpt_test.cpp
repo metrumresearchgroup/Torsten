@@ -178,50 +178,62 @@ TEST(Torsten, PKModelOneCpt_SS_rate) {
 	}
 }
 
-// NOT A TEST: but contains interesting information
-// for future development.
-/*
-TEST(Torsten, time_order_bug_) {
+TEST(Torsten, PKModelOneCpt_MultipleDoses_timePara) {
+
+    int nEvent = 11;
     
-    vector<Matrix<double, Dynamic, 1> > pMatrix(1);
-    pMatrix[0].resize(7);
-    pMatrix[0](0) = 10; // CL
-    pMatrix[0](1) = 80; // Vc
-    pMatrix[0](2) = 1.2; // ka
-    pMatrix[0](3) = 1; // F1
-    pMatrix[0](4) = 1; // F2
-    pMatrix[0](5) = 0; // tlag1
-    pMatrix[0](6) = 0; // tlag2
-    
-    vector<double> time(11);
-    time[0] = 0.0;
-    for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
-    time[9] = 4.0;
-    time[10] = 1.5;
-    
-    vector<double> amt(11, 0);
-    amt[0] = 1000;
-    amt[10] = 200;
-    
-    vector<double> rate(11, 0);
-    
-    vector<int> cmt(11, 2);
-    cmt[0] = 1;
-    cmt[11] = 1;
-    
-    vector<int> evid(11, 0);
-    evid[0] = 1;
-    evid[11] = 1;
-    
-    vector<double> ii(11, 0);
-    ii[0] = 0.25;
-    
-    vector<int> addl(11, 0);
-    addl[0] = 14;
-    
-    vector<int> ss(11, 0);
-    
-    Matrix<double, Dynamic, Dynamic> x;
-    x = PKModelOneCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+	vector<Matrix<double, Dynamic, 1> > pMatrix(nEvent);
+	
+	for (int i = 0; i < nEvent; i++) {
+	  pMatrix[i].resize(7);
+	  if (i < 6) pMatrix[i](0) = 10; // CL
+	  else pMatrix[i](0) = 50; // CL is piece-wise constant
+	  pMatrix[i](1) = 80; // Vc
+	  pMatrix[i](2) = 1.2; // ka
+	  pMatrix[i](3) = 1; // F1
+	  pMatrix[i](4) = 1; // F2
+	  pMatrix[i](5) = 0; // tlag1
+	  pMatrix[i](6) = 0; // tlag2
+	}
+
+	vector<double> time(nEvent);
+	time[0] = 0.0;
+	for(int i = 1; i < nEvent; i++) time[i] = time[i - 1] + 2.5;
+
+	vector<double> amt(nEvent, 0);
+	amt[0] = 1000;
+	
+	vector<double> rate(nEvent, 0);
+	
+	vector<int> cmt(nEvent, 2);
+	cmt[0] = 1;
+	
+	vector<int> evid(nEvent, 0);
+	evid[0] = 1;
+
+	vector<double> ii(nEvent, 0);
+	ii[0] = 12;
+	
+	vector<int> addl(nEvent, 0);
+	addl[0] = 1;
+	
+	vector<int> ss(nEvent, 0);
+
+	Matrix<double, Dynamic, Dynamic> x;
+	x = PKModelOneCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+
+	Matrix<double, Dynamic, Dynamic> amounts(nEvent, 2);
+	amounts << 1000.0, 0.0,
+			   4.978707e+01, 761.1109513,
+			   2.478752e+00, 594.7341503,
+			   1.234098e-01, 437.0034049,
+			   6.144212e-03, 319.8124495,
+			   5.488119e+02, 670.0046601,
+			   2.732374e+01, 323.4948561,
+			   1.360369e+00, 76.9219400,
+			   6.772877e-02, 16.5774607,
+			   3.372017e-03, 3.4974152,
+			   1.678828e-04, 0.7342228;
+			   
+	expect_matrix_eq(amounts, x);
 }
-*/

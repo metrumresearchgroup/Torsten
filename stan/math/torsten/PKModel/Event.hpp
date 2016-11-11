@@ -15,7 +15,8 @@ using boost::math::tools::promote_args;
 template <typename T_time, typename T_amt, 
   typename T_rate, typename T_ii> class EventHistory; 
 template <typename T_time, typename T_amt> class RateHistory;
-template<typename T_time, typename T_parameters> class ModelParameterHistory; 
+template<typename T_time, typename T_parameters, typename T_system>
+  class ModelParameterHistory; 
 
 /**
  * The Event class defines objects that contain the elements of an event,
@@ -126,25 +127,26 @@ public:
 	
 	// declare friends
 	friend class EventHistory<T_time,T_amt,T_rate,T_ii>;
-	template<typename T1, typename T2> friend class ModelParameterHistory;
+	template<typename T1, typename T2, typename T3> friend class ModelParameterHistory;
 	template<typename T1, typename T2> friend class RateHistory;
 
-	template <typename T0, typename T1, typename T2, typename T3, 
-		typename T4, typename F, typename T5> 
+	template <typename T_0, typename T_1, typename T_2, typename T_3,
+	  typename T_4, typename F, typename T_5>
 	friend
-	Matrix<typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> 
-	Pred(const vector< Matrix<T0, Dynamic, 1> >& pMatrix,
-     	 const vector<T1>& time,
-     	 const vector<T2>& amt, 
-     	 const vector<T3>& rate,
-    	 const vector<T4>& ii,
+	Matrix<typename promote_args<T_0, T_1, T_2, T_3,
+	 typename promote_args<T_4, T_5>::type >::type, Dynamic, Dynamic>
+	Pred(const vector< Matrix<T_0, Dynamic, 1> >& pMatrix,
+     	 const vector<T_1>& time,
+     	 const vector<T_2>& amt, 
+     	 const vector<T_3>& rate,
+    	 const vector<T_4>& ii,
   	   	 const vector<int>& evid,
     	 const vector<int>& cmt,
-       	 const vector<int>& addl,
+         const vector<int>& addl,
          const vector<int>& ss,
      	 PKModel model,
      	 const F& f,
-     	 const Matrix<T5, Dynamic, Dynamic>& system);													 
+     	 const std::vector<Matrix<T_5, Dynamic, Dynamic> >& system);													 
 };
 
 /**
@@ -304,8 +306,8 @@ public:
 	   * @param[in] tlagCmts compartment in which the time lag occurs 
 	   * @return - modified events that account for absorption lag times
 	   */
-	template<typename T_parameters> 
-	void AddLagTimes(ModelParameterHistory<T_time, T_parameters> Parameters, 
+	template<typename T_parameters, typename T_system> 
+	void AddLagTimes(ModelParameterHistory<T_time, T_parameters, T_system> Parameters, 
 					vector<int> tlagIndexes, vector<int> tlagCmts) {
     	int i, j, evid, cmt, ipar,
 	      nlag=tlagIndexes.size(), nEvent=Events.size(), pSize=Parameters.get_size();
@@ -350,29 +352,30 @@ public:
 	
     // declare friends
 	friend class Event<T_time, T_amt, T_rate, T_ii>; 
-	template<typename T1, typename T2> friend class ModelParameterHistory;	
+	template<typename T1, typename T2, typename T3> friend class ModelParameterHistory;	
 	template<typename T1, typename T2> friend class RateHistory;
 	
 	template<typename T_parameters> 
 	friend void MakeRates(EventHistory<T_time,T_amt,T_rate,T_ii>& events,
 	  RateHistory<T_time,T_rate>& rates);
 								 
-	template <typename T0, typename T1, typename T2,
-	  typename T3, typename T4, typename F, typename T5> 
+	template <typename T_0, typename T_1, typename T_2, typename T_3,
+	  typename T_4, typename F, typename T_5>
 	friend
-	Matrix<typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> 
-	Pred(const vector< Matrix<T0, Dynamic, 1> >& pMatrix,
-         const vector<T1>& time,
-         const vector<T2>& amt, 
-         const vector<T3>& rate,
-         const vector<T4>& ii,
-         const vector<int>& evid,
-         const vector<int>& cmt,
+	Matrix<typename promote_args<T_0, T_1, T_2, T_3,
+	 typename promote_args<T_4, T_5>::type >::type, Dynamic, Dynamic>
+	Pred(const vector< Matrix<T_0, Dynamic, 1> >& pMatrix,
+     	 const vector<T_1>& time,
+     	 const vector<T_2>& amt, 
+     	 const vector<T_3>& rate,
+    	 const vector<T_4>& ii,
+  	   	 const vector<int>& evid,
+    	 const vector<int>& cmt,
          const vector<int>& addl,
          const vector<int>& ss,
-         PKModel model,
-         const F& f,
-         const Matrix<T5, Dynamic, Dynamic>& system);			
+     	 PKModel model,
+     	 const F& f,
+     	 const std::vector<Matrix<T_5, Dynamic, Dynamic> >& system);			
 };
 
 #endif

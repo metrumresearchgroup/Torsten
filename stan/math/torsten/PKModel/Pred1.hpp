@@ -57,14 +57,13 @@ public:
 
 	template <typename T_time, typename T_parameters, typename T_rate, typename F,
       typename T_system>
-	Matrix<typename promote_args< T_time, T_rate, T_parameters>::type, 1, Dynamic> 
+	Matrix<typename promote_args< T_time, T_rate, T_parameters, T_system>::type, 1, Dynamic> 
     operator()(const T_time& dt,
-    		   const ModelParameters<T_time, T_parameters>& parameter,
+    		   const ModelParameters<T_time, T_parameters, T_system>& parameter,
     		   const Matrix<typename promote_args<T_time, T_rate,
     		     T_parameters, T_system>::type, 1, Dynamic>& init, 
     		   const vector<T_rate>& rate,
-    		   const F& f,
-    		   const Matrix<T_system, Dynamic, Dynamic> system) {
+    		   const F& f) {
 
     	typedef typename promote_args< T_time, T_rate, T_parameters>::type scalar; 
 
@@ -75,7 +74,7 @@ public:
         else if(modeltype == "GeneralCptModel")
           return Pred1_general_solver(dt, parameter, init, rate, f); 
         else if(modeltype == "linCptModel")
-          return Pred1_linCpt(dt, init, rate, system);
+          return Pred1_linCpt(dt, parameter, init, rate);
         else {
         	Matrix<scalar, 1, Dynamic> default_pred =
         	  Matrix<scalar, 1, Dynamic>::Zero(1);
