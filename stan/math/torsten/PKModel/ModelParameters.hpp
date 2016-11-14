@@ -152,9 +152,10 @@ private:
 	vector< ModelParameters<T_time, T_parameters, T_system> > MPV;
 	
 public:
-	ModelParameterHistory(vector<T_time> p_time, 
-						  vector< Matrix<T_parameters, Dynamic, 1> > p_RealParameters,
-						  vector< Matrix<T_system, Dynamic, Dynamic> > p_K) {
+	template<typename T0, typename T1, typename T3>
+	ModelParameterHistory(vector<T0> p_time, 
+						  vector< Matrix<T1, Dynamic, 1> > p_RealParameters,
+						  vector< Matrix<T3, Dynamic, Dynamic> > p_K) {
 		int nParameters = std::max(p_RealParameters.size(), p_K.size()); 
 		vector<T_parameters> col;
 		MPV.resize(nParameters);

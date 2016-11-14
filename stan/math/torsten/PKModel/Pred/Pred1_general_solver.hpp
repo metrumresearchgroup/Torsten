@@ -54,7 +54,7 @@ Pred1_general_solver(const T_time& dt,
   vector<double> rate_d = vector<double>(rate.size(), double(0));
   for(int i = 0; i < rate.size(); i++) rate_d[i] = unpromote(rate[i]);
 		
-  vector<scalar> theta = parameter.RealParameters;
+  vector<T_parameters> theta = parameter.RealParameters;
   vector<scalar> init_vector = vector<scalar>(init.cols(), scalar(0));
   for(int i = 0; i < init_vector.size(); i++) init_vector[i] = init(0, i);
 

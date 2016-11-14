@@ -3,9 +3,9 @@
 
 #include <gtest/gtest.h>
 
-void expect_near_matrix_eq(const Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>& a,
-                      const Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>& b,
-                      const double rel_err) {
+void expect_near_matrix_eq(const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& a,
+                           const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& b,
+                           const double rel_err) {
   EXPECT_EQ(a.rows(), b.rows());
   EXPECT_EQ(a.cols(), b.cols());
   double err;

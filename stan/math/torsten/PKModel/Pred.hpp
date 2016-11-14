@@ -68,7 +68,7 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
      const F& f,
      const std::vector<Eigen::Matrix<T_system,
        Eigen::Dynamic, Eigen::Dynamic> >& system) {
-  
+
     using Eigen::Matrix;
 	using Eigen::Dynamic;
 	using boost::math::tools::promote_args;
@@ -81,9 +81,9 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
 	int i, iRate=0, j, np, ikeep, nParameter, nCmt, F1Index, tlag1Index, nKeep;
 	scalar dt, tprev;
 	Matrix<scalar, 1, Dynamic> init, pred1, zeros; //row-major vector
-	Event<T_time, T_amt, T_rate, T_ii> event;
-	ModelParameters<T_time, T_parameters, T_system> parameter;
-	Rate<T_time, T_rate> rate2, initRate;
+	Event<scalar, scalar, scalar, scalar> event;
+	ModelParameters<scalar, T_parameters, T_system> parameter;
+	Rate<scalar, scalar> rate2, initRate;
 	vector<int> tlagIndexes, tlagCmts;
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -98,11 +98,11 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
     tlagIndexes.assign(nCmt,0);
     tlagCmts.assign(nCmt,0);
 
-	EventHistory<T_time, T_amt, T_rate, T_ii>
+	EventHistory<scalar, scalar, scalar, scalar>
 	  events(time, amt, rate, ii, evid, cmt, addl, ss);
-    ModelParameterHistory<T_time, T_parameters, T_system>
+    ModelParameterHistory<scalar, T_parameters, T_system>
       parameters(time, pMatrix, system);
-    RateHistory<T_time, T_rate> rates;
+    RateHistory<scalar, scalar> rates;
 
     events.Sort();
     parameters.Sort();
@@ -171,7 +171,7 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
 		if (((event.evid == 1) || (event.evid == 4))
 		   && (((event.ss == 1) || (event.ss == 2)) || (event.ss == 3))) { //steady dose event
 			pred1 =
-			  PredSS(parameter, parameters.GetValue(i,F1Index+event.cmt-1) * event.amt,
+			  PredSS(parameter, parameters.GetValue(i, F1Index+event.cmt-1) * event.amt,
 			    event.rate, event.ii, event.cmt, f);
 
 			if(event.ss == 2) init += pred1;//steady state without reset
