@@ -52,9 +52,9 @@
  * at each event.
  */
 template <typename T_parameters, typename T_time, typename T_amt, typename T_rate,
-		  typename T_ii, typename F, typename T_s>
-Eigen::Matrix<typename promote_args<T_parameters, T_time, T_amt, T_rate, T_ii>::type,
-  Eigen::Dynamic, Eigen::Dynamic>
+		  typename T_ii, typename F, typename T_system>
+Eigen::Matrix<typename promote_args<T_parameters, T_time, T_amt, T_rate,
+	 typename promote_args<T_ii, T_system>::type >::type, Eigen::Dynamic, Eigen::Dynamic>
 Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatrix,
      const std::vector<T_time>& time,
      const std::vector<T_amt>& amt,
@@ -66,22 +66,24 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
      const std::vector<int>& ss,
      PKModel model,
      const F& f,
-     const Eigen::Matrix<T_s, Eigen::Dynamic, Eigen::Dynamic>& system) {
-
+     const std::vector<Eigen::Matrix<T_system,
+       Eigen::Dynamic, Eigen::Dynamic> >& system) {
+  
     using Eigen::Matrix;
 	using Eigen::Dynamic;
 	using boost::math::tools::promote_args;
 	using namespace stan::math;
 	using std::vector;
 
-	typedef typename promote_args<T_parameters, T_time, T_amt, T_rate, T_ii>::type scalar;
+	typedef typename promote_args<T_parameters, T_time, T_amt, T_rate,
+	 typename promote_args<T_ii, T_system>::type >::type scalar;
 
 	int i, iRate=0, j, np, ikeep, nParameter, nCmt, F1Index, tlag1Index, nKeep;
 	scalar dt, tprev;
 	Matrix<scalar, 1, Dynamic> init, pred1, zeros; //row-major vector
-	Event<scalar, scalar, scalar, scalar> event;
-	ModelParameters<scalar, scalar> parameter;
-	Rate<scalar, scalar> rate2, initRate;
+	Event<T_time, T_amt, T_rate, T_ii> event;
+	ModelParameters<T_time, T_parameters, T_system> parameter;
+	Rate<T_time, T_rate> rate2, initRate;
 	vector<int> tlagIndexes, tlagCmts;
 
 	//////////////////////////////////////////////////////////////////////////////
@@ -96,19 +98,19 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
     tlagIndexes.assign(nCmt,0);
     tlagCmts.assign(nCmt,0);
 
-	EventHistory<scalar, scalar, scalar, scalar>
+	EventHistory<T_time, T_amt, T_rate, T_ii>
 	  events(time, amt, rate, ii, evid, cmt, addl, ss);
-    ModelParameterHistory<scalar, scalar> parameters(time, pMatrix);
-    RateHistory<scalar, scalar> rates;
+    ModelParameterHistory<T_time, T_parameters, T_system>
+      parameters(time, pMatrix, system);
+    RateHistory<T_time, T_rate> rates;
 
     events.Sort();
     parameters.Sort();
-    //rates.Sort();
 
 	nKeep = events.get_size();
 	np = pMatrix[0].size() * pMatrix.size();
 
-	assert((np > 0)&&(np % nParameter == 0));
+	assert((np > 0) && (np % nParameter == 0));
     events.AddlDoseEvents();
 
     parameters.CompleteParameterHistory(events);
@@ -125,6 +127,9 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
 	init = zeros;
 	tprev = events.get_time(0);
 	ikeep = 0;
+	
+	// line();
+	// for(int i = 0; i < events.Events.size(); i++) events.Print(i);
 
 	// Construct the output matrix pred
 	// The matrix needs to be a dynamically-sized matrix to be returned
@@ -142,8 +147,8 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
 	for(i=0;i<events.get_size();i++) {
 		event = events.GetEvent(i);
 
-        //Use index iRate instead of i to find rate at matching time, given there is
-        //one rate per time, not per event.
+        // Use index iRate instead of i to find rate at matching time, given there is
+        // one rate per time, not per event.
         if(rates.Rates[iRate].time != events.Events[i].time) iRate++;
         rate2 = rates.GetRate(iRate);
 
@@ -159,32 +164,29 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
 		}
 		else {
 			dt = event.time - tprev;
-			pred1 = Pred1(dt, parameter, init, rate2.rate, f, system);
+			pred1 = Pred1(dt, parameter, init, rate2.rate, f);
 			init = pred1;
 		}
 
-		if(((event.evid==1)||(event.evid==4))
-		   && (((event.ss==1)||(event.ss==2))||(event.ss==3))) { //steady dose event
+		if (((event.evid == 1) || (event.evid == 4))
+		   && (((event.ss == 1) || (event.ss == 2)) || (event.ss == 3))) { //steady dose event
 			pred1 =
-			  PredSS(parameter, parameters.GetValue(i,F1Index+event.cmt-1)*event.amt,
-			    event.rate, event.ii, event.cmt, f, system);
+			  PredSS(parameter, parameters.GetValue(i,F1Index+event.cmt-1) * event.amt,
+			    event.rate, event.ii, event.cmt, f);
 
-			if(event.ss==2) init += pred1;//steady state without reset
+			if(event.ss == 2) init += pred1;//steady state without reset
 			else init = pred1; //steady state with reset (ss=1)
 		}
 
-		if(((event.evid==1)||(event.evid==4))&&(event.rate==0)) //bolus dose
+		if (((event.evid == 1) || (event.evid == 4)) && (event.rate == 0)) //bolus dose
 			init(0,event.cmt-1) += parameters.GetValue(i, F1Index+event.cmt-1)*event.amt;
 
 		if (event.keep) {
 			pred.row(ikeep) = init;
 			ikeep++;
 		}
-
 		tprev = event.time;
-
 	}
-
 	return pred;
 }
 

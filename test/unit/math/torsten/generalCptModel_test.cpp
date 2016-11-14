@@ -140,7 +140,7 @@ struct oneCptModelODE_abstime_functor {
 };
 
 
-TEST(Torsten, genCptrk45_One_abstime_SingleDose) {
+TEST(Torsten, genCpt_One_abstime_SingleDose) {
   using std::vector;
 
   double rel_err = 1e-6;
@@ -205,4 +205,73 @@ TEST(Torsten, genCptrk45_One_abstime_SingleDose) {
 			  
   expect_near_matrix_eq(amounts, x_rk45, rel_err);
   expect_near_matrix_eq(amounts, x_bdf, rel_err);
+}
+
+TEST(Torsten, genCpOne_MultipleDoses_timePara) {
+    double rel_err_rk45 = 1e-6;
+    double rel_err_bdf = 1e-4;
+
+    int nEvent = 11;
+	vector<Matrix<double, Dynamic, 1> > pMatrix(nEvent);
+	
+	for (int i = 0; i < nEvent; i++) {
+	  pMatrix[i].resize(7);
+	  if (i < 6) pMatrix[i](0) = 10; // CL
+	  else pMatrix[i](0) = 50; // CL is piece-wise constant
+	  pMatrix[i](1) = 80; // Vc
+	  pMatrix[i](2) = 1.2; // ka
+	  pMatrix[i](3) = 1; // F1
+	  pMatrix[i](4) = 1; // F2
+	  pMatrix[i](5) = 0; // tlag1
+	  pMatrix[i](6) = 0; // tlag2
+	}
+
+	vector<double> time(nEvent);
+	time[0] = 0.0;
+	for(int i = 1; i < nEvent; i++) time[i] = time[i - 1] + 2.5;
+
+	vector<double> amt(nEvent, 0);
+	amt[0] = 1000;
+	
+	vector<double> rate(nEvent, 0);
+	
+	vector<int> cmt(nEvent, 2);
+	cmt[0] = 1;
+	
+	vector<int> evid(nEvent, 0);
+	evid[0] = 1;
+
+	vector<double> ii(nEvent, 0);
+	ii[0] = 12;
+	
+	vector<int> addl(nEvent, 0);
+	addl[0] = 1;
+	
+	vector<int> ss(nEvent, 0);
+
+    Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_rk45;
+    x_rk45 = generalCptModel_rk45(oneCptModelODE_functor(), 2,
+                                  pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
+                                  1e-8, 1e-8, 1e8);
+  
+    Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_bdf;
+    x_bdf = generalCptModel_bdf(oneCptModelODE_functor(), 2,
+                                pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
+                                1e-8, 1e-8, 1e8);
+
+	Matrix<double, Dynamic, Dynamic> amounts(nEvent, 2);
+	amounts << 1000.0, 0.0,
+			   4.978707e+01, 761.1109513,
+			   2.478752e+00, 594.7341503,
+			   1.234098e-01, 437.0034049,
+			   6.144212e-03, 319.8124495,
+			   5.488119e+02, 670.0046601,
+			   2.732374e+01, 323.4948561,
+			   1.360369e+00, 76.9219400,
+			   6.772877e-02, 16.5774607,
+			   3.372017e-03, 3.4974152,
+			   1.678828e-04, 0.7342228;
+			   
+    expect_near_matrix_eq(amounts, x_rk45, rel_err_rk45);
+    expect_near_matrix_eq(amounts, x_bdf, rel_err_bdf);
 }

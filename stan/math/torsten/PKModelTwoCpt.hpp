@@ -75,12 +75,14 @@ PKModelTwoCpt(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >& pMatrix
   PredSS = new_PredSS;
         
   // Construct dummy matrix for last argument of pred
-  Eigen::Matrix<double, Dynamic, Dynamic> dummy_system(0,0);
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> dummy_system;
+  std::vector<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> > 
+    dummy_systems(1, dummy_system);
 
   Matrix <typename promote_args<typename promote_args<T0, T1, T2, T3, T4>::type,
     double>::type, Dynamic, Dynamic> pred;
   pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model,
-    dummy_ode(), dummy_system);
+    dummy_ode(), dummy_systems);
 
   return pred;
 }

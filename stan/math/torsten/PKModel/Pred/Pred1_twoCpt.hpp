@@ -25,11 +25,12 @@
  *   @return an eigen vector that contains predicted amount in each compartment 
  *           at the current event. 
  */
-template<typename T_time, typename T_rate, typename T_parameters>
+template<typename T_time, typename T_rate, typename T_parameters, typename T_system>
 Matrix<typename promote_args< T_time, T_rate, T_parameters>::type, 1, Dynamic> 
 Pred1_two(const T_time& dt,
-		  const ModelParameters<T_time, T_parameters>& parameter, 
-		  const Matrix<typename promote_args<T_time, T_rate, T_parameters>::type, 1, Dynamic>& init, 
+		  const ModelParameters<T_time, T_parameters, T_system>& parameter, 
+		  const Matrix<typename promote_args<T_time, T_rate, T_parameters>::type,
+		    1, Dynamic>& init, 
 		  const vector<T_rate>& rate) {
 
     stan::math::check_finite("Pred1", "initial values", init);

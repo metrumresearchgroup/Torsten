@@ -83,12 +83,14 @@ generalCptModel_bdf(const F& f,
   pmetrics_solver_structure new_pmetrics_solver(rel_tol, abs_tol, max_num_steps, "bdf");
   pmetrics_solver = new_pmetrics_solver;
 
-  // Construct dummy matrix for last argument of pred
-  Eigen::Matrix<double, Dynamic, Dynamic> dummy_system(0,0);
+    // Construct dummy matrix for last argument of pred
+  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> dummy_system;
+  std::vector<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> > 
+    dummy_systems(1, dummy_system);
 
 Matrix <typename promote_args<typename promote_args<T0, T1, T2, T3, T4>::type,
     double>::type, Dynamic, Dynamic> pred;
-  pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model, f, dummy_system);
+  pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model, f, dummy_systems);
         
   return pred;
 }

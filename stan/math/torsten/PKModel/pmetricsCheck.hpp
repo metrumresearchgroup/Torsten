@@ -102,7 +102,7 @@ void pmetricsCheck(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >& pM
   	  pMatrix.size(), "", length_error2);
   	if(!(pMatrix[0].size() > 0)) invalid_argument(function,
       "the number of parameters per event is", pMatrix[0].size(),
-      "", "but must be greater than 0!");
+      "", " but must be greater than 0!");
 }
 
 #endif

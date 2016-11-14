@@ -46,7 +46,8 @@ template <typename T0, typename T1, typename T2, typename T3,
   typename T4, typename T5>
 Eigen::Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Eigen::Dynamic,
   Eigen::Dynamic>
-linCptModel(const Eigen::Matrix<T0, Eigen::Dynamic, Eigen::Dynamic>& system,
+linCptModel(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic,
+              Eigen::Dynamic> >& system,
 			const std::vector< Eigen::Matrix<T1, Eigen::Dynamic, 1> >& pMatrix,
 			const std::vector<T2>& time,
 			const std::vector<T3>& amt,
@@ -63,19 +64,17 @@ linCptModel(const Eigen::Matrix<T0, Eigen::Dynamic, Eigen::Dynamic>& system,
   using boost::math::tools::promote_args;
 
   static const char* function("linCptModel");
-  stan::math::check_square(function, "system matrix", system);
-  int nCmt = system.cols();
+  for (int i = 0; i < system.size(); i++) {
+    stan::math::check_square(function, "system matrix", system[i]);
+  // Need to check all matrices have the same dimension
+  }
+  int nCmt = system[0].cols();
 
   int nParameters, F1Index, tlag1Index;
   nParameters = pMatrix[0].rows();
   F1Index = nParameters - 2*nCmt;
   tlag1Index = nParameters - nCmt;
   PKModel model(nParameters, F1Index, tlag1Index, nCmt);
-
-  /*int F1Index, tlag1Index;
-  F1Index = 0;
-  tlag1Index = nCmt;
-  PKModel model(0, F1Index, tlag1Index, nCmt);*/
   
   // Check arguments
   pmetricsCheck(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, function, model);
