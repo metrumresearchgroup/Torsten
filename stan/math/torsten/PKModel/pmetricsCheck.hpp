@@ -4,6 +4,8 @@
 #include <Eigen/Dense>
 #include <vector>
 #include <stan/math/torsten/PKModel/PKModel_class.hpp>
+#include <stan/math/prim/scal/err/invalid_argument.hpp>
+#include <boost/lexical_cast.hpp>
 
 /**
  * Checks that the arguments the user inputs in the Torsten
@@ -50,6 +52,7 @@ void pmetricsCheck(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >& pM
                    PKModel& model) {
 	
 	using std::vector;
+	using std::string;
 	using Eigen::Dynamic;
 	using stan::math::invalid_argument;  
   

@@ -1,4 +1,5 @@
-#include <stan/math/rev/mat.hpp>
+// #include <stan/math/prim/mat.hpp>
+#include <stan/math/torsten/torsten.hpp>
 #include <gtest/gtest.h>
 #include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
 

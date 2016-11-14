@@ -21,7 +21,6 @@ vector<T> ExtractVector(Matrix<T, Dynamic, 1> matrix, int n, string str) {
 	using std::vector;
 	using std::string;
 	using namespace Eigen;
-	using stan::math::var;
 
 	int i, length;
 	vector<T> ExtVec; 

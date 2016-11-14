@@ -15,7 +15,7 @@
 
 using std::vector;
 using std::string;
-using stan::math::var;
+// using stan::math::var;
 using Eigen::Dynamic;
 using Eigen::Matrix;
 
@@ -50,13 +50,13 @@ inline void print(printtype T, bool skipline){
 	else std::cout<<T<<" ";
 	}
 
-inline void print(stan::math::var x, bool skipline){
+/* inline void print(stan::math::var x, bool skipline){
 	if(skipline==true) std::cout<< x.val() <<std::endl;
 	else std::cout<<x.val()<<" ";
-	}
+	} */
 
 
-void printpMatrix(vector <Matrix <var, Dynamic, 1> > pMatrix) {	
+/* void printpMatrix(vector <Matrix <var, Dynamic, 1> > pMatrix) {	
 		print("PMatrix contains var.",true);
 		int i, j;
 		for(i=0;i<pMatrix.size();i++){
@@ -65,7 +65,7 @@ void printpMatrix(vector <Matrix <var, Dynamic, 1> > pMatrix) {
 			}
 			print(" ",true);
 		}
-	}
+	} */
 
 void printpMatrix(vector < Matrix <double, Dynamic, 1> > pMatrix) {
 		print("PMatrix contains double.",true);

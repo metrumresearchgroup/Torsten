@@ -10,7 +10,6 @@
 using Eigen::Matrix;
 using Eigen::Dynamic;
 using std::vector;
-using stan::math::var;
 using boost::math::tools::promote_args;
 
 template<typename T_time, typename T_parameters, typename T_system> 

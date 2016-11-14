@@ -8,7 +8,6 @@
 // the scope of functions
 using std::vector;
 using namespace Eigen;
-using stan::math::var;
 using boost::math::tools::promote_args;
 
 //forward declaration
