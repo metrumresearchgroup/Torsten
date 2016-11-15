@@ -1,4 +1,3 @@
-// #include <stan/math/prim/mat.hpp>
 #include <stan/math/torsten/torsten.hpp>
 #include <gtest/gtest.h>
 #include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
@@ -9,15 +8,15 @@ using Eigen::Dynamic;
 
 TEST(Torsten, PKModelOneCpt_MultipleDoses) {
 
-	vector<Matrix<double, Dynamic, 1> > pMatrix(1);
+	vector<vector<double> > pMatrix(1);
 	pMatrix[0].resize(7);
-	pMatrix[0](0) = 10; // CL
-	pMatrix[0](1) = 80; // Vc
-	pMatrix[0](2) = 1.2; // ka
-	pMatrix[0](3) = 1; // F1
-	pMatrix[0](4) = 1; // F2
-	pMatrix[0](5) = 0; // tlag1
-	pMatrix[0](6) = 0; // tlag2
+	pMatrix[0][0] = 10; // CL
+	pMatrix[0][1] = 80; // Vc
+	pMatrix[0][2] = 1.2; // ka
+	pMatrix[0][3] = 1; // F1
+	pMatrix[0][4] = 1; // F2
+	pMatrix[0][5] = 0; // tlag1
+	pMatrix[0][6] = 0; // tlag2
 	
 	vector<double> time(10);
 	time[0] = 0.0;
@@ -61,18 +60,17 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses) {
 	expect_matrix_eq(amounts, x);
 }
 
-
 TEST(Torsten, PKModelOneCpt_SS) {
 
-	vector<Matrix<double, Dynamic, 1> > pMatrix(1);
+	vector<vector<double> > pMatrix(1);
 	pMatrix[0].resize(7);
-	pMatrix[0](0) = 10; // CL
-	pMatrix[0](1) = 80; // Vc
-	pMatrix[0](2) = 1.2; // ka
-	pMatrix[0](3) = 1; // F1
-	pMatrix[0](4) = 1; // F2
-	pMatrix[0](5) = 0; // tlag1
-	pMatrix[0](6) = 0; // tlag2
+	pMatrix[0][0] = 10; // CL
+	pMatrix[0][1] = 80; // Vc
+	pMatrix[0][2] = 1.2; // ka
+	pMatrix[0][3] = 1; // F1
+	pMatrix[0][4] = 1; // F2
+	pMatrix[0][5] = 0; // tlag1
+	pMatrix[0][6] = 0; // tlag2
 	
 	vector<double> time(10);
 	time[0] = 0.0;
@@ -122,15 +120,15 @@ TEST(Torsten, PKModelOneCpt_SS) {
 
 TEST(Torsten, PKModelOneCpt_SS_rate) {
 	
-	vector<Matrix<double, Dynamic, 1> > pMatrix(1);
+	vector<vector<double> > pMatrix(1);
 	pMatrix[0].resize(7);
-	pMatrix[0](0) = 10; // CL
-	pMatrix[0](1) = 80; // Vc
-	pMatrix[0](2) = 1.2; // ka
-	pMatrix[0](3) = 1; // F1
-	pMatrix[0](4) = 1; // F2
-	pMatrix[0](5) = 0; // tlag1
-	pMatrix[0](6) = 0; // tlag2
+	pMatrix[0][0] = 10; // CL
+	pMatrix[0][1] = 80; // Vc
+	pMatrix[0][2] = 1.2; // ka
+	pMatrix[0][3] = 1; // F1
+	pMatrix[0][4] = 1; // F2
+	pMatrix[0][5] = 0; // tlag1
+	pMatrix[0][6] = 0; // tlag2
 
 	vector<double> time(10);
 	time[0] = 0.0;
@@ -183,18 +181,18 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses_timePara) {
 
     int nEvent = 11;
     
-	vector<Matrix<double, Dynamic, 1> > pMatrix(nEvent);
+	vector<vector<double> > pMatrix(nEvent);
 	
 	for (int i = 0; i < nEvent; i++) {
 	  pMatrix[i].resize(7);
-	  if (i < 6) pMatrix[i](0) = 10; // CL
-	  else pMatrix[i](0) = 50; // CL is piece-wise constant
-	  pMatrix[i](1) = 80; // Vc
-	  pMatrix[i](2) = 1.2; // ka
-	  pMatrix[i](3) = 1; // F1
-	  pMatrix[i](4) = 1; // F2
-	  pMatrix[i](5) = 0; // tlag1
-	  pMatrix[i](6) = 0; // tlag2
+	  if (i < 6) pMatrix[i][0] = 10; // CL
+	  else pMatrix[i][0] = 50; // CL is piece-wise constant
+	  pMatrix[i][1] = 80; // Vc
+	  pMatrix[i][2] = 1.2; // ka
+	  pMatrix[i][3] = 1; // F1
+	  pMatrix[i][4] = 1; // F2
+	  pMatrix[i][5] = 0; // tlag1
+	  pMatrix[i][6] = 0; // tlag2
 	}
 
 	vector<double> time(nEvent);

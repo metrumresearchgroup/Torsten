@@ -45,9 +45,11 @@
  * @parem[in] model basic structural information on compartment
  * model
  * @param[in] f functor for base ordinary differential equation
- * that defines compartment model. Used for ODE integrators.
+ * that defines compartment model. Used for ODE integrators
+ * (optional).
  * @param[in] SystemODE matrix describing linear ODE system that
- * defines compartment model. Used for matrix exponential solutions.
+ * defines compartment model. Used for matrix exponential solutions
+ * (optional).
  * @return a matrix with predicted amount in each compartment
  * at each event.
  */
@@ -55,7 +57,7 @@ template <typename T_parameters, typename T_time, typename T_amt, typename T_rat
 		  typename T_ii, typename F, typename T_system>
 Eigen::Matrix<typename promote_args<T_parameters, T_time, T_amt, T_rate,
 	 typename promote_args<T_ii, T_system>::type >::type, Eigen::Dynamic, Eigen::Dynamic>
-Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatrix,
+Pred(const std::vector<vector<T_parameters> >& pMatrix,
      const std::vector<T_time>& time,
      const std::vector<T_amt>& amt,
      const std::vector<T_rate>& rate,
@@ -127,9 +129,6 @@ Pred(const std::vector< Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> >& pMatri
 	init = zeros;
 	tprev = events.get_time(0);
 	ikeep = 0;
-	
-	// line();
-	// for(int i = 0; i < events.Events.size(); i++) events.Print(i);
 
 	// Construct the output matrix pred
 	// The matrix needs to be a dynamically-sized matrix to be returned

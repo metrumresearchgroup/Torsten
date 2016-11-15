@@ -51,7 +51,7 @@ public:
 	friend
 	Matrix<typename promote_args<T_0, T_1, T_2, T_3,
 	 typename promote_args<T_4, T_5>::type >::type, Dynamic, Dynamic>
-	Pred(const vector< Matrix<T_0, Dynamic, 1> >& pMatrix,
+	Pred(const vector<vector<T_0> >& pMatrix,
      	 const vector<T_1>& time,
      	 const vector<T_2>& amt, 
      	 const vector<T_3>& rate,
@@ -221,7 +221,7 @@ public:
 	friend
 	Matrix<typename promote_args<T_0, T_1, T_2, T_3,
 	 typename promote_args<T_4, T_5>::type >::type, Dynamic, Dynamic>
-	Pred(const vector< Matrix<T_0, Dynamic, 1> >& pMatrix,
+	Pred(const vector<vector<T_0> >& pMatrix,
      	 const vector<T_1>& time,
      	 const vector<T_2>& amt, 
      	 const vector<T_3>& rate,

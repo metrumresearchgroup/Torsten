@@ -48,7 +48,7 @@ Eigen::Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Eigen::Dynamic,
   Eigen::Dynamic> 
 generalCptModel_bdf(const F& f,
                     const int nCmt,
-			        const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >& pMatrix, 
+			        const std::vector<vector<T0> >& pMatrix, 
 			        const std::vector<T1>& time,
 			        const std::vector<T2>& amt,
 			        const std::vector<T3>& rate,
@@ -66,7 +66,7 @@ generalCptModel_bdf(const F& f,
   using boost::math::tools::promote_args;
 
   int nParameters, F1Index, tlag1Index;
-  nParameters = pMatrix[0].rows();
+  nParameters = pMatrix[0].size();
   F1Index = nParameters - 2*nCmt;
   tlag1Index = nParameters - nCmt;
   PKModel model(nParameters, F1Index, tlag1Index, nCmt);
