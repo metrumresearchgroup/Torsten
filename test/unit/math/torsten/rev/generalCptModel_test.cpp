@@ -39,15 +39,15 @@ TEST(Torsten, genCpt_One_SingleDose) {
 
   double rel_err = 1e-6;
   
-  vector<Matrix<AVAR, Eigen::Dynamic, 1> > pMatrix(1);
+  vector<vector<AVAR> > pMatrix(1);
   pMatrix[0].resize(7);
-  pMatrix[0](0) = 10; // CL
-  pMatrix[0](1) = 80; // Vc
-  pMatrix[0](2) = 1.2; // ka 
-  pMatrix[0](3) = 1; // F1
-  pMatrix[0](4) = 1; // F2
-  pMatrix[0](5) = 0; // tlag1
-  pMatrix[0](6) = 0; // tlag2
+  pMatrix[0][0] = 10; // CL
+  pMatrix[0][1] = 80; // Vc
+  pMatrix[0][2] = 1.2; // ka
+  pMatrix[0][3] = 1; // F1
+  pMatrix[0][4] = 1; // F2
+  pMatrix[0][5] = 0; // tlag1
+  pMatrix[0][6] = 0; // tlag2
 
   vector<double> time(10);
   time[0] = 0.0;
@@ -146,17 +146,17 @@ TEST(Torsten, genCpt_One_abstime_SingleDose) {
 
   double rel_err = 1e-6;
   
-  vector<Matrix<AVAR, Eigen::Dynamic, 1> > pMatrix(1);
+  vector<vector<AVAR> > pMatrix(1);
   pMatrix[0].resize(9);
-  pMatrix[0](0) = 10; // CL0
-  pMatrix[0](1) = 80; // Vc
-  pMatrix[0](2) = 1.2; // ka
-  pMatrix[0](3) = 2; // CLSS
-  pMatrix[0](4) = 1; // K 
-  pMatrix[0](5) = 1; // F1
-  pMatrix[0](6) = 1; // F2
-  pMatrix[0](7) = 0; // tlag1
-  pMatrix[0](8) = 0; // tlag2
+  pMatrix[0][0] = 10; // CL0
+  pMatrix[0][1] = 80; // Vc
+  pMatrix[0][2] = 1.2; // ka
+  pMatrix[0][3] = 2; // CLSS
+  pMatrix[0][4] = 1; // K 
+  pMatrix[0][5] = 1; // F1
+  pMatrix[0][6] = 1; // F2
+  pMatrix[0][7] = 0; // tlag1
+  pMatrix[0][8] = 0; // tlag2
 
   vector<double> time(10);
   time[0] = 0.0;
@@ -218,18 +218,18 @@ TEST(Torsten, genCpOne_MultipleDoses_timePara) {
     double rel_err_bdf = 1e-4;
 
     int nEvent = 11;
-	vector<Matrix<AVAR, Dynamic, 1> > pMatrix(nEvent);
+	vector<vector<AVAR> > pMatrix(nEvent);
 	
 	for (int i = 0; i < nEvent; i++) {
 	  pMatrix[i].resize(7);
-	  if (i < 6) pMatrix[i](0) = 10; // CL
-	  else pMatrix[i](0) = 50; // CL is piece-wise constant
-	  pMatrix[i](1) = 80; // Vc
-	  pMatrix[i](2) = 1.2; // ka
-	  pMatrix[i](3) = 1; // F1
-	  pMatrix[i](4) = 1; // F2
-	  pMatrix[i](5) = 0; // tlag1
-	  pMatrix[i](6) = 0; // tlag2
+	  if (i < 6) pMatrix[i][0] = 10; // CL
+	  else pMatrix[i][0] = 50; // CL is piece-wise constant
+	  pMatrix[i][1] = 80; // Vc
+	  pMatrix[i][2] = 1.2; // ka
+	  pMatrix[i][3] = 1; // F1
+	  pMatrix[i][4] = 1; // F2
+	  pMatrix[i][5] = 0; // tlag1
+	  pMatrix[i][6] = 0; // tlag2
 	}
 
 	vector<double> time(nEvent);

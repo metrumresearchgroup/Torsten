@@ -125,7 +125,7 @@ public:
 	friend
 	Matrix<typename promote_args<T_0, T_1, T_2, T_3,
 	 typename promote_args<T_4, T_5>::type >::type, Dynamic, Dynamic>
-	Pred(const vector< Matrix<T_0, Dynamic, 1> >& pMatrix,
+	Pred(const vector<vector<T_0> >& pMatrix,
      	 const vector<T_1>& time,
      	 const vector<T_2>& amt, 
      	 const vector<T_3>& rate,
@@ -154,18 +154,16 @@ private:
 public:
 	template<typename T0, typename T1, typename T3>
 	ModelParameterHistory(vector<T0> p_time, 
-						  vector< Matrix<T1, Dynamic, 1> > p_RealParameters,
+						  vector<vector<T1> > p_RealParameters,
 						  vector< Matrix<T3, Dynamic, Dynamic> > p_K) {
 		int nParameters = std::max(p_RealParameters.size(), p_K.size()); 
-		vector<T_parameters> col;
 		MPV.resize(nParameters);
 		int j, k;
 		for(int i = 0; i < nParameters; i++) {
 		    (p_RealParameters.size() == 1) ? j = 0 : j = i;
-			col = ExtractVector(p_RealParameters[j], 0, "col");
 			(p_K.size() == 1) ? k = 0 : k = i;
 			MPV[i] = ModelParameters<T_time, T_parameters, T_system>
-		      (p_time[i], col, p_K[k]);
+		      (p_time[i], p_RealParameters[j], p_K[k]);
 		}
 	}
 
@@ -174,7 +172,7 @@ public:
 		  newPara(MPV[i].time, MPV[i].RealParameters, MPV[i].K);
 		return newPara;
 	}
-	
+
 	T_parameters GetValue(int iEvent, int iParameter) {
 		// MPV.size gives us the number of events
 		// MPV[0].RealParameters.size gives us the number of parameters for the first event. 
@@ -328,7 +326,7 @@ public:
 	friend
 	Matrix<typename promote_args<T_0, T_1, T_2, T_3,
 	 typename promote_args<T_4, T_5>::type >::type, Dynamic, Dynamic>
-	Pred(const vector< Matrix<T_0, Dynamic, 1> >& pMatrix,
+	Pred(const vector<vector<T_0> >& pMatrix,
      	 const vector<T_1>& time,
      	 const vector<T_2>& amt, 
      	 const vector<T_3>& rate,

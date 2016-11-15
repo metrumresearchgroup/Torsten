@@ -14,12 +14,12 @@ TEST(Torsten, LinCpt_OneSS) {
 	system << -ka, 0, ka, -k10;
 	vector<matrix_v> system_array(1, system); 
 
-	vector<Matrix<double, Dynamic, 1> > pMatrix(1);
+	vector<vector<double> > pMatrix(1);
 	pMatrix[0].resize(4);
-	pMatrix[0](0) = 1; // F1
-	pMatrix[0](1) = 1; // F2
-	pMatrix[0](2) = 0; // tlag1
-	pMatrix[0](3) = 0; // tlag2
+	pMatrix[0][0] = 1; // F1
+	pMatrix[0][1] = 1; // F2
+	pMatrix[0][2] = 0; // tlag1
+	pMatrix[0][3] = 0; // tlag2
 
 	vector<double> time(10);
 	time[0] = 0.0;
@@ -76,12 +76,12 @@ TEST(Torsten, linCptModel_OneSS_rate) {
 	system << -ka, 0, ka, -k10;
 	vector<matrix_v> system_array(1, system);
 
-	vector<Matrix<double, Dynamic, 1> > pMatrix(1);
+	vector<vector<double> > pMatrix(1);
 	pMatrix[0].resize(4);
-	pMatrix[0](0) = 1; // F1
-	pMatrix[0](1) = 1; // F2
-	pMatrix[0](2) = 0; // tlag1
-	pMatrix[0](3) = 0; // tlag2
+	pMatrix[0][0] = 1; // F1
+	pMatrix[0][1] = 1; // F2
+	pMatrix[0][2] = 0; // tlag1
+	pMatrix[0][3] = 0; // tlag2
 
 	vector<double> time(10);
 	time[0] = 0.0;
@@ -136,12 +136,12 @@ TEST(Torsten, linOne_MultipleDoses_timePara) {
 
     int nEvent = 11;
     
-	vector<Matrix<double, Dynamic, 1> > pMatrix(1);
+	vector<vector<double> > pMatrix(1);
 	pMatrix[0].resize(4);
-	pMatrix[0](0) = 1; // F1
-	pMatrix[0](1) = 1; // F2
-	pMatrix[0](2) = 0; // tlag1
-	pMatrix[0](3) = 0; // tlag2
+	pMatrix[0][0] = 1; // F1
+	pMatrix[0][1] = 1; // F2
+	pMatrix[0][2] = 0; // tlag1
+	pMatrix[0][3] = 0; // tlag2
     
     AVAR CL_1 = 10, CL_2 = 50, Vc = 80, ka = 1.2,
       k10_1 = CL_1 / Vc, k10_2 = CL_2 / Vc;
