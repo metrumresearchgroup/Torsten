@@ -39,7 +39,7 @@
  */
 
 template <typename T0, typename T1, typename T2, typename T3, typename T4> 
-void pmetricsCheck(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >& pMatrix, 
+void pmetricsCheck(const std::vector<vector<T0> >& pMatrix, 
                    const std::vector<T1>& time,
                    const std::vector<T2>& amt,
                    const std::vector<T3>& rate,
@@ -101,7 +101,7 @@ void pmetricsCheck(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >& pM
 
   	// TEST ARGUMENTS FOR PARAMETERS
   	if (!((pMatrix.size() == time.size())||(pMatrix.size() == 1)))
-  	  invalid_argument(function, "length of the parameter (2d) vector,",
+  	  invalid_argument(function, "length of the parameter (2d) array,",
   	  pMatrix.size(), "", length_error2);
   	if(!(pMatrix[0].size() > 0)) invalid_argument(function,
       "the number of parameters per event is", pMatrix[0].size(),
