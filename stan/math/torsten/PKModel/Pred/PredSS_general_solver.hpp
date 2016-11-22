@@ -3,11 +3,6 @@
 
 #include <iostream>
 
-using std::vector;
-using boost::math::tools::promote_args;
-using Eigen::Matrix;
-using Eigen::Dynamic; 
-
 /**
  * General compartment model using built-in ODE solver. 
  * Calculate amount in each compartment at the end of a steady-state dosing interval
@@ -32,27 +27,28 @@ using Eigen::Dynamic;
  *   @return an eigen vector that contains predicted amount in each compartment 
  *           at the current event. 
  */
-template<typename T_time, typename T_amt, typename T_rate, 
+template<typename T_time, typename T_amt, typename T_rate,
   typename T_ii, typename T_parameters, typename T_system, typename F>
-Matrix<typename promote_args<T_time, T_amt, T_rate, 
-  typename promote_args< T_ii, T_parameters>::type>::type, 1, Dynamic>  
-PredSS_general_solver(const ModelParameters<T_time, T_parameters, T_system>& parameter, 
-		   			  const T_amt& amt, 
+Eigen::Matrix<typename boost::math::tools::promote_args<T_time, T_amt, T_rate, 
+  typename boost::math::tools::promote_args< T_ii, T_parameters>::type>::type,
+  1, Eigen::Dynamic>
+PredSS_general_solver(const ModelParameters<T_time, T_parameters, T_system>& parameter,
+		   			  const T_amt& amt,
 		   			  const T_rate& rate,
-		   			  const T_ii& ii, 
+		   			  const T_ii& ii,
 		   			  const int& cmt,
 		   			  const F& f) {
-  typedef typename promote_args< T_time, T_amt, T_rate, 
-    typename promote_args< T_ii, T_parameters>::type>::type scalar;    
+  typedef typename boost::math::tools::promote_args< T_time, T_amt, T_rate, 
+    typename boost::math::tools::promote_args< T_ii, T_parameters>::type>::type scalar;    
 
   std::cout << "ERROR: General Compartment Model using ODE integrator" 
             << " (bdf or rk45) does not handle Steady State events." 
             << std::endl;
   abort(); // FIX ME: throw an exception, not abort.
     
-  Matrix<scalar, 1, Dynamic> pred = Matrix<scalar, 1, Dynamic>::Zero(3);
+  Eigen::Matrix<scalar, 1, Eigen::Dynamic> pred
+    = Eigen::Matrix<scalar, 1, Eigen::Dynamic>::Zero(3);
   return pred;
-        
 }
 
 #endif

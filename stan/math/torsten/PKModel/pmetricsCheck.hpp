@@ -51,61 +51,61 @@ void pmetricsCheck(const std::vector<vector<T0> >& pMatrix,
                    const char* function,
                    PKModel& model) {
 	
-	using std::vector;
-	using std::string;
-	using Eigen::Dynamic;
-	using stan::math::invalid_argument;  
+  using std::vector;
+  using std::string;
+  using Eigen::Dynamic;
+  using stan::math::invalid_argument;  
   
-  	if(!(time.size()>0)) invalid_argument(function,
-      "length of time vector,", time.size(), "", 
-      "needs to be positive and greater than 0!");
+  if(!(time.size()>0)) invalid_argument(function,
+    "length of time vector,", time.size(), "", 
+    "needs to be positive and greater than 0!");
+
+  std::string message = ", but must be the same as the length of the time array: " 
+    + boost::lexical_cast<string>(time.size()) + "!"; 
+    const char* length_error = message.c_str();
+
+  if (!(amt.size()==time.size())) invalid_argument(function,
+    "the length of the amount (amt) array is", amt.size(), "",
+    length_error);
+  if (!(rate.size()==time.size())) invalid_argument(function,
+    "the length of the rate array is", rate.size(), "",
+    length_error);
+  if (!(evid.size()==time.size())) invalid_argument(function,
+    "the length of the event ID (evid) array is", evid.size(), "",
+    length_error);
+  if (!(cmt.size()==time.size())) invalid_argument(function,
+    "the length of the compartment (cmt) array is", cmt.size(), "",
+    length_error);  
   
-  	std::string message = ", but must be the same as the length of the time array: " 
-      + boost::lexical_cast<string>(time.size()) + "!"; 
-      const char* length_error = message.c_str();
+  std::string message2 = ", but must be either 1 or the same as the length of the time array: " 
+    + boost::lexical_cast<string>(time.size()) + "!"; 
+    const char* length_error2 = message2.c_str();  
   
-  	if (!(amt.size()==time.size())) invalid_argument(function,
-      "the length of the amount (amt) array is", amt.size(), "",
-      length_error);
-  	if (!(rate.size()==time.size())) invalid_argument(function,
-      "the length of the rate array is", rate.size(), "",
-      length_error);
-  	if (!(evid.size()==time.size())) invalid_argument(function,
-      "the length of the event ID (evid) array is", evid.size(), "",
-      length_error);
-  	if (!(cmt.size()==time.size())) invalid_argument(function,
-      "the length of the compartment (cmt) array is", cmt.size(), "",
-      length_error);  
+  if (!(ii.size()==time.size())||(ii.size()==1)) invalid_argument(function,
+    "the length of the interdose interval (ii) array is", ii.size(), "",
+    length_error2);
+  if (!(addl.size()==time.size())||(addl.size()==1)) invalid_argument(function,
+    "the length of the additional dosing (addl) array is", ii.size(), "",
+    length_error2);
+  if (!(ss.size()==time.size())||(ss.size()==1)) invalid_argument(function,
+    "the length of the steady state approximation (ss) array is", ss.size(), "",
+    length_error2);
   
-  	std::string message2 = ", but must be either 1 or the same as the length of the time array: " 
-  	+ boost::lexical_cast<string>(time.size()) + "!"; 
-  	const char* length_error2 = message2.c_str();  
-  
-  	if (!(ii.size()==time.size())||(ii.size()==1)) invalid_argument(function,
-      "the length of the interdose interval (ii) array is", ii.size(), "",
-      length_error2);
-  	if (!(addl.size()==time.size())||(addl.size()==1)) invalid_argument(function,
-      "the length of the additional dosing (addl) array is", ii.size(), "",
-      length_error2);
-  	if (!(ss.size()==time.size())||(ss.size()==1)) invalid_argument(function,
-      "the length of the steady state approximation (ss) array is", ss.size(), "",
-      length_error2);
-  
-  	std::string message3 = ", but must be the same as the length of the additional dosing (addl) array: " 
-  	  + boost::lexical_cast<string>(addl.size()) + "!"; 
-  	const char* length_error3 = message3.c_str();     
-  	if (!(ss.size()==time.size())||(ss.size()==1)) invalid_argument(function,
+  std::string message3 = ", but must be the same as the length of the additional dosing (addl) array: " 
+    + boost::lexical_cast<string>(addl.size()) + "!"; 
+    const char* length_error3 = message3.c_str();     
+    if (!(ss.size()==time.size())||(ss.size()==1)) invalid_argument(function,
       "the length of steady state approximation (ss) array is", ss.size(), "",
       length_error3);
 
 
-  	// TEST ARGUMENTS FOR PARAMETERS
-  	if (!((pMatrix.size() == time.size())||(pMatrix.size() == 1)))
-  	  invalid_argument(function, "length of the parameter (2d) array,",
-  	  pMatrix.size(), "", length_error2);
-  	if(!(pMatrix[0].size() > 0)) invalid_argument(function,
-      "the number of parameters per event is", pMatrix[0].size(),
-      "", " but must be greater than 0!");
+  // TEST ARGUMENTS FOR PARAMETERS
+  if (!((pMatrix.size() == time.size())||(pMatrix.size() == 1)))
+    invalid_argument(function, "length of the parameter (2d) array,",
+      pMatrix.size(), "", length_error2);
+  if(!(pMatrix[0].size() > 0)) invalid_argument(function,
+    "the number of parameters per event is", pMatrix[0].size(),
+    "", " but must be greater than 0!");
 }
 
 #endif

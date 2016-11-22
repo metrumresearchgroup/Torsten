@@ -26,77 +26,74 @@
  *           at the current event. 
  */
 template<typename T_time, typename T_rate, typename T_parameters, typename T_system>
-Matrix<typename promote_args< T_time, T_rate, T_parameters>::type, 1, Dynamic> 
+Matrix<typename boost::math::tools::promote_args< T_time, T_rate, T_parameters>::type,
+  1, Dynamic> 
 Pred1_two(const T_time& dt,
-		  const ModelParameters<T_time, T_parameters, T_system>& parameter, 
-		  const Matrix<typename promote_args<T_time, T_rate, T_parameters>::type,
-		    1, Dynamic>& init, 
-		  const vector<T_rate>& rate) {
+          const ModelParameters<T_time, T_parameters, T_system>& parameter, 
+          const Matrix<typename boost::math::tools::promote_args<T_time, T_rate,
+		    T_parameters>::type, 1, Dynamic>& init, 
+          const vector<T_rate>& rate) {
+  stan::math::check_finite("Pred1", "initial values", init);
 
-    stan::math::check_finite("Pred1", "initial values", init);
-    
-    using std::vector;
-	typedef typename promote_args<T_time, T_rate, T_parameters>::type scalar;
-	
-	T_parameters CL, Q, V2, V3, ka, k10, k12, k21, ksum;
-	vector<scalar> a(3,0); 
-	vector<T_parameters> alpha(3,0); 
-	Matrix<scalar, 1, Dynamic> pred = Matrix<scalar, 1, Dynamic>::Zero(3);
-		
-	CL = parameter.RealParameters[0];
-	Q = parameter.RealParameters[1];
-	V2 = parameter.RealParameters[2];
-	V3 = parameter.RealParameters[3];
-	ka = parameter.RealParameters[4];
-		
-	k10 = CL/V2;
-	k12 = Q/V2;
-	k21 = Q/V3;
-	ksum = k10+k12+k21;
-	alpha[0] = (ksum + sqrt(ksum*ksum-4*k10*k21))/2;
-	alpha[1] = (ksum - sqrt(ksum*ksum-4*k10*k21))/2;
-	alpha[2] = ka;
-	
-	if((init[0] != 0)||(rate[0] != 0))
-	{
-		pred(0,0) = init[0]*exp(-ka*dt) + rate[0]*(1-exp(-ka*dt))/ka;
-		a[0] = ka*(k21-alpha[0])/((ka-alpha[0])*(alpha[1]-alpha[0]));
-		a[1] = ka*(k21-alpha[1])/((ka-alpha[1])*(alpha[0]-alpha[1]));
-		a[2] = -(a[0]+a[1]);
-		pred(0,1) += PolyExp(dt,init[0],0,0,0,false,a,alpha,3) +
-				PolyExp(dt,0,rate[0],dt,0,false,a,alpha,3);
-		a[0] = ka * k12/((ka-alpha[0])*(alpha[1]-alpha[0])); 
-		a[1] = ka * k12/((ka-alpha[1])*(alpha[0]-alpha[1])); 
-		a[2] = -(a[0] + a[1]);
-		pred(0,2) += PolyExp(dt,init[0],0,0,0,false,a,alpha,3) +
-				PolyExp(dt,0,rate[0],dt,0,false,a,alpha,3);	
-	}
-	
-	if((init[1] != 0)||(rate[1] != 0))
-	{
-		a[0] = (k21 - alpha[0])/(alpha[1]-alpha[0]) ; 
-		a[1] = (k21 - alpha[1])/(alpha[0]-alpha[1]) ; 
-		pred(0,1) += PolyExp(dt,init[1],0,0,0,false,a,alpha,2) +
-				PolyExp(dt,0,rate[1],dt,0,false,a,alpha,2);
-		a[0] = k12/(alpha[1]-alpha[0]) ; 
-		a[1] = -a[0]; 
-		pred(0,2) += PolyExp(dt,init[1],0,0,0,false,a,alpha,2) +
-				PolyExp(dt,0,rate[1],dt,0,false,a,alpha,2);	
-	}
-	
-	if((init[2] != 0)||(rate[2] != 0))
-	{
-		a[0] = k21/(alpha[1]-alpha[0]); 
-		a[1] = -a[0]; 
-		pred(0,1) += PolyExp(dt,init[2],0,0,0,false,a,alpha,2) +
-				PolyExp(dt,0,rate[2],dt,0,false,a,alpha,2);
-		a[0] = (k10 + k12 - alpha[0])/(alpha[1]-alpha[0]); 
-		a[1] = (k10 + k12 - alpha[1])/(alpha[0]-alpha[1]); 
-		pred(0,2) += PolyExp(dt,init[2],0,0,0,false,a,alpha,2) +
-				PolyExp(dt,0,rate[2],dt,0,false,a,alpha,2);
-	}
-	
-	return pred;
+  using std::vector;
+  typedef typename boost::math::tools::promote_args<T_time, T_rate,
+    T_parameters>::type scalar;
+
+  T_parameters CL = parameter.get_RealParameters()[0],
+    Q = parameter.get_RealParameters()[1],
+    V2 = parameter.get_RealParameters()[2],
+    V3 = parameter.get_RealParameters()[3],
+    ka = parameter.get_RealParameters()[4];
+
+  T_parameters k10 = CL / V2,
+    k12 = Q / V2,
+    k21 = Q / V3,
+    ksum = k10 + k12 + k21;
+
+  vector<T_parameters> alpha(3, 0);
+  alpha[0] = (ksum + sqrt(ksum * ksum - 4 * k10 * k21)) / 2; 
+  alpha[1] = (ksum - sqrt(ksum * ksum - 4 * k10 * k21)) / 2;
+  alpha[2] = ka;
+
+  vector<scalar> a(3, 0);
+  Matrix<scalar, 1, Dynamic> pred = Matrix<scalar, 1, Dynamic>::Zero(3);
+  if((init[0] != 0) || (rate[0] != 0))  {
+    pred(0, 0) = init[0] * exp(-ka * dt) + rate[0] * (1 - exp(-ka * dt)) / ka;
+    a[0] = ka * (k21 - alpha[0]) / ((ka - alpha[0]) * (alpha[1] - alpha[0]));
+    a[1] = ka * (k21 - alpha[1]) / ((ka - alpha[1]) * (alpha[0] - alpha[1]));
+    a[2] = -(a[0] + a[1]);
+    pred(0, 1) += PolyExp(dt, init[0], 0, 0, 0, false, a, alpha, 3)
+      + PolyExp(dt, 0, rate[0], dt, 0, false, a, alpha, 3);
+    a[0] = ka * k12 / ((ka - alpha[0]) * (alpha[1] - alpha[0])); 
+    a[1] = ka * k12 / ((ka - alpha[1]) * (alpha[0] - alpha[1])); 
+    a[2] = -(a[0] + a[1]);
+    pred(0, 2) += PolyExp(dt, init[0], 0, 0, 0, false, a, alpha, 3)
+      + PolyExp(dt, 0, rate[0], dt, 0, false, a, alpha, 3);	
+  }
+
+  if((init[1] != 0) || (rate[1] != 0)) {
+    a[0] = (k21 - alpha[0]) / (alpha[1] - alpha[0]); 
+    a[1] = (k21 - alpha[1]) / (alpha[0] - alpha[1]); 
+    pred(0, 1) += PolyExp(dt, init[1], 0, 0, 0, false, a, alpha, 2)
+      + PolyExp(dt, 0, rate[1], dt, 0, false, a, alpha, 2);
+    a[0] = k12 / (alpha[1] - alpha[0]); 
+    a[1] = -a[0]; 
+    pred(0, 2) += PolyExp(dt, init[1], 0, 0, 0, false, a, alpha, 2)
+      + PolyExp(dt, 0, rate[1], dt, 0, false, a, alpha, 2);	
+  }
+
+  if((init[2] != 0) || (rate[2] != 0)) {
+    a[0] = k21 / (alpha[1] - alpha[0]); 
+    a[1] = -a[0]; 
+    pred(0, 1) += PolyExp(dt, init[2], 0, 0, 0, false, a, alpha, 2)
+      + PolyExp(dt, 0, rate[2], dt, 0, false, a, alpha, 2);
+    a[0] = (k10 + k12 - alpha[0]) / (alpha[1] - alpha[0]); 
+    a[1] = (k10 + k12 - alpha[1]) / (alpha[0] - alpha[1]); 
+    pred(0, 2) += PolyExp(dt, init[2], 0, 0, 0, false, a, alpha, 2)
+      + PolyExp(dt, 0, rate[2], dt, 0, false, a, alpha, 2);
+  }
+
+  return pred;
 }
-		
+
 #endif

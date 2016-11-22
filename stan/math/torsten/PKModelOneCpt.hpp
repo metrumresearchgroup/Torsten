@@ -8,35 +8,35 @@
 
 /**
  * Computes the predicted amounts in each compartment at each event
- * for a one compartment model with first oder absorption. 
+ * for a one compartment model with first oder absorption.
  *
  * @tparam T0 type of scalars for the model parameters.
- * @tparam T1 type of scalar for time of events. 
+ * @tparam T1 type of scalar for time of events.
  * @tparam T2 type of scalar for amount at each event.
  * @tparam T3 type of scalar for rate at each event.
  * @tparam T4 type of scalar for inter-dose inteveral at each event.
  * @param[in] pMatrix parameters at each event
- * @param[in] time times of events  
+ * @param[in] time times of events
  * @param[in] amt amount at each event
  * @param[in] rate rate at each event
  * @param[in] ii inter-dose interval at each event
- * @param[in] evid event identity: 
- *                    (0) observation 
+ * @param[in] evid event identity:
+ *                    (0) observation
  *                    (1) dosing
- *                    (2) other 
- *                    (3) reset 
- *                    (4) reset AND dosing 
- * @param[in] cmt compartment number at each event 
- * @param[in] addl additional dosing at each event 
+ *                    (2) other
+ *                    (3) reset
+ *                    (4) reset AND dosing
+ * @param[in] cmt compartment number at each event
+ * @param[in] addl additional dosing at each event
  * @param[in] ss steady state approximation at each event (0: no, 1: yes)
- * @return a matrix with predicted amount in each compartment 
- *         at each event. 
+ * @return a matrix with predicted amount in each compartment
+ *         at each event.
  */
 
-template <typename T0, typename T1, typename T2, typename T3, typename T4> 
-Eigen::Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Eigen::Dynamic,
-  Eigen::Dynamic> 
-PKModelOneCpt(const std::vector<vector<T0> >& pMatrix, 
+template <typename T0, typename T1, typename T2, typename T3, typename T4>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3, T4>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+PKModelOneCpt(const std::vector<vector<T0> >& pMatrix,
 			  const std::vector<T1>& time,
 			  const std::vector<T2>& amt,
 			  const std::vector<T3>& rate,
@@ -45,15 +45,14 @@ PKModelOneCpt(const std::vector<vector<T0> >& pMatrix,
 			  const std::vector<int>& cmt,
 			  const std::vector<int>& addl,
 			  const std::vector<int>& ss) {
-			  
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
   using boost::math::tools::promote_args;
   using stan::math::check_positive_finite;
-  
-  PKModel model("OneCptModel"); 
-  	 
+
+  PKModel model("OneCptModel");
+
   // Check arguments
   static const char* function("PKModelOneCpt");
   pmetricsCheck(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, function, model);
@@ -62,9 +61,9 @@ PKModelOneCpt(const std::vector<vector<T0> >& pMatrix,
 	check_positive_finite(function, "PK parameter V2", pMatrix[i][1]);
     check_positive_finite(function, "PK parameter ka", pMatrix[i][2]);
   }
-  std::string message4 = ", but must equal the number of parameters in the model: " 
-    + boost::lexical_cast<string>(model.GetNParameter()) + "!"; 
-  const char* length_error4 = message4.c_str();    
+  std::string message4 = ", but must equal the number of parameters in the model: "
+    + boost::lexical_cast<string>(model.GetNParameter()) + "!";
+  const char* length_error4 = message4.c_str();
   if (!(pMatrix[0].size() == model.GetNParameter()))
     stan::math::invalid_argument(function,
     "The number of parameters per event (length of a vector in the first argument) is",
@@ -74,18 +73,18 @@ PKModelOneCpt(const std::vector<vector<T0> >& pMatrix,
   Pred1_structure new_Pred1("OneCptModel");
   PredSS_structure new_PredSS("OneCptModel");
   Pred1 = new_Pred1;
-  PredSS = new_PredSS; 
+  PredSS = new_PredSS;
 
   // Construct dummy matrix for last argument of pred
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> dummy_system;
-  std::vector<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> > 
+  std::vector<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> >
     dummy_systems(1, dummy_system);
 
   Matrix <typename promote_args<typename promote_args<T0, T1, T2, T3, T4>::type,
     double>::type, Dynamic, Dynamic> pred;
   pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model,
     dummy_ode(), dummy_systems);
-    
+
   return pred;
 }
 

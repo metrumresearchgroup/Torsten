@@ -24,56 +24,51 @@
  *	 @param[in] rate rate in each compartment
  *   @return an eigen vector that contains predicted amount in each compartment 
  *           at the current event. 
- * 
  */
 template<typename T_time, typename T_rate, typename T_parameters, typename T_system>
-Matrix<typename promote_args< T_time, T_rate, T_parameters>::type, 1, Dynamic> 
+Matrix<typename boost::math::tools::promote_args< T_time, T_rate, T_parameters>::type,
+  1, Dynamic> 
 Pred1_one(const T_time& dt,
-		  const ModelParameters<T_time, T_parameters, T_system>& parameter, 
-		  const Matrix<typename promote_args<T_time, T_rate, T_parameters>::type,
-		    1, Dynamic>& init, 
-		  const vector<T_rate>& rate) {
-    
-    stan::math::check_finite("Pred1", "initial values", init);
-    
-	using std::vector;
-	using boost::math::tools::promote_args;
-	using Eigen::Matrix;
-	using Eigen::Dynamic;
+          const ModelParameters<T_time, T_parameters, T_system>& parameter, 
+          const Matrix<typename boost::math::tools::promote_args<T_time, T_rate,
+            T_parameters>::type, 1, Dynamic>& init, 
+          const vector<T_rate>& rate) {
 
-	typedef typename promote_args<T_time, T_rate, T_parameters>::type scalar;
-	
-	T_parameters CL, V2, ka, k10;
-	vector<scalar> a(2,0); 
-	vector<T_parameters> alpha(2,0); 
-	Matrix<scalar, 1, Dynamic> pred = Matrix<scalar, 1, Dynamic>::Zero(2); 
-												//initialize pred to a row-vector of 
-												//length 2, with elements equal to 0. 
+  stan::math::check_finite("Pred1", "initial values", init);
+
+  using std::vector;
+  using boost::math::tools::promote_args;
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
+
+  typedef typename promote_args<T_time, T_rate, T_parameters>::type scalar; 
 			
-	CL = parameter.RealParameters[0];
-	V2 = parameter.RealParameters[1];
-	ka = parameter.RealParameters[2];
-	
-	k10 = CL/V2;
-	alpha[0] = k10;
-	alpha[1] = ka;
-	
-	if((init[0]!=0)||(rate[0]!=0)) {
-		pred(0,0)=init[0]*exp(-ka*dt) + rate[0]*(1-exp(-ka*dt))/ka;
-		a[0] = ka/(ka-alpha[0]);
-		a[1] = -a[0];
-		pred(0,1) += PolyExp(dt, init[0],0,0,0,false,a,alpha,2) +
-				   PolyExp(dt,0,rate[0],dt,0,false,a,alpha,2);
-	}
-			
-	if((init[1]!=0)||(rate[1]!=0)) {
-		a[0]=1;
-		pred(0,1) += PolyExp(dt,init[1],0,0,0,false,a,alpha,1)
-				   + PolyExp(dt,0,rate[1],dt,0,false,a,alpha,1);
-		
-	}	
-	
-	return pred;
+  T_parameters CL = parameter.get_RealParameters()[0],
+    V2 = parameter.get_RealParameters()[1],
+    ka = parameter.get_RealParameters()[2];
+
+  T_parameters k10 = CL / V2;
+  vector<T_parameters> alpha(2, 0);
+  alpha[0] = k10;
+  alpha[1] = ka;
+
+  vector<scalar> a(2, 0);
+  Matrix<scalar, 1, Dynamic> pred = Matrix<scalar, 1, Dynamic>::Zero(2);
+
+  if((init[0] != 0) || (rate[0] != 0)) {
+    pred(0, 0) = init[0] * exp(-ka * dt) + rate[0] * (1 - exp(-ka * dt)) / ka;
+    a[0] = ka / (ka - alpha[0]);
+    a[1] = -a[0];
+    pred(0, 1) += PolyExp(dt, init[0], 0, 0, 0, false, a, alpha, 2) +
+      PolyExp(dt, 0, rate[0], dt, 0, false, a, alpha, 2);
+  }
+
+  if((init[1] != 0) || (rate[1] != 0)) {
+    a[0] = 1;
+    pred(0, 1) += PolyExp(dt, init[1], 0, 0, 0, false, a, alpha, 1) +
+      PolyExp(dt, 0, rate[1], dt, 0, false, a, alpha, 1);
+  }	
+  return pred;
 }
 		
 #endif

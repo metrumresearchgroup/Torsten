@@ -33,22 +33,21 @@
  */
 template<typename T_time, typename T_parameters, typename T_system, typename T_amt,
   typename T_rate, typename T_ii>
-Matrix<typename promote_args<T_amt, T_rate, T_ii, T_system>::type, 1, Dynamic>
+Eigen::Matrix<typename boost::math::tools::promote_args<T_amt, T_rate,
+  T_ii, T_system>::type, 1, Eigen::Dynamic>
 PredSS_linCpt(const ModelParameters<T_time, T_parameters, T_system>& parameter,
               const T_amt& amt,
 		   	  const T_rate& rate,
 		   	  const T_ii& ii,
 		   	  const int& cmt) {
-
-  using std::vector;
-  using boost::math::tools::promote_args;
   using Eigen::Matrix;
   using Eigen::Dynamic;
   using stan::math::matrix_exp;
   using stan::math::mdivide_left;
   using stan::math::multiply;
 
-  typedef typename promote_args<T_amt, T_rate, T_ii, T_system>::type scalar;
+  typedef typename boost::math::tools::promote_args<T_amt, T_rate, T_ii,
+    T_system>::type scalar;
 
   Matrix<T_system, Dynamic, Dynamic> system = parameter.RateMatrix();
   int nCmt = system.rows();

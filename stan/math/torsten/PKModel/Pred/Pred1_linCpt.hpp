@@ -29,14 +29,14 @@
  *   at the current event.
  */
 template<typename T_time, typename T_parameters, typename T_system, typename T_rate>
-Matrix<typename promote_args< T_time, T_system, T_rate>::type, 1, Dynamic>
+Matrix<typename boost::math::tools::promote_args< T_time, T_system, T_rate>::type,
+  1, Dynamic>
 Pred1_linCpt(const T_time& dt,
 		     const ModelParameters<T_time, T_parameters, T_system>& parameter,
 		     const Eigen::Matrix<typename
-		       promote_args<T_time, T_system, T_rate>::type, 1,
+		       boost::math::tools::promote_args<T_time, T_system, T_rate>::type, 1,
 		       Eigen::Dynamic>& init,
 		     const vector<T_rate>& rate) {
-
   using boost::math::tools::promote_args;
   using Eigen::Matrix;
   using Eigen::Dynamic;
@@ -48,11 +48,11 @@ Pred1_linCpt(const T_time& dt,
 
   if (dt == 0) return init;
   else {
-    Matrix<T_system, Dynamic, Dynamic> system = parameter.K; 
+    Matrix<T_system, Dynamic, Dynamic> system = parameter.get_K(); 
 
     bool rate_zeros = true;
     for(int i = 0; i < rate.size(); i++)
-      if (rate[i] != 0) rate_zeros = false;
+    if (rate[i] != 0) rate_zeros = false;
 
     if (rate_zeros) {
       Matrix<scalar, Dynamic, Dynamic> dt_system = multiply(dt, system);

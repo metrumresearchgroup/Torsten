@@ -9,12 +9,6 @@
 #include <stan/math/torsten/PKModel/Pred/Pred1_general_solver.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_linCpt.hpp>
 
-using std::vector;
-using namespace Eigen;
-using std::string;
-
-typedef Matrix<double, Dynamic, Dynamic> DMatrix;
-
 /**
  *   The Functor of Pred1, which predicts amounts in each compartment 
  *   at one event. Defines a class of Pred1 functions (functors). The 
@@ -43,44 +37,44 @@ typedef Matrix<double, Dynamic, Dynamic> DMatrix;
 struct Pred1_structure {
 
 private:
-    string modeltype;
+  std::string modeltype;
     
 public:
-    
-    Pred1_structure() {  //default constructor
-        modeltype = "default";
-    }
-    
-    Pred1_structure(string p_modeltype) {  //constructor for standard models
-        modeltype = p_modeltype;
-    }
+  Pred1_structure() {  //default constructor
+    modeltype = "default";
+  }
 
-	template <typename T_time, typename T_parameters, typename T_rate, typename F,
-      typename T_system>
-	Matrix<typename promote_args< T_time, T_rate, T_parameters, T_system>::type, 1, Dynamic> 
+  Pred1_structure(string p_modeltype) {  //constructor for standard models
+    modeltype = p_modeltype;
+  }
+
+  template <typename T_time, typename T_parameters, typename T_rate, typename F,
+    typename T_system>
+  Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_rate,
+    T_parameters, T_system>::type, 1, Eigen::Dynamic> 
     operator()(const T_time& dt,
     		   const ModelParameters<T_time, T_parameters, T_system>& parameter,
-    		   const Matrix<typename promote_args<T_time, T_rate,
-    		     T_parameters, T_system>::type, 1, Dynamic>& init, 
-    		   const vector<T_rate>& rate,
+    		   const Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
+                 T_rate, T_parameters, T_system>::type, 1, Dynamic>& init, 
+    		   const std::vector<T_rate>& rate,
     		   const F& f) {
+    typedef typename boost::math::tools::promote_args< T_time,
+      T_rate, T_parameters>::type scalar; 
 
-    	typedef typename promote_args< T_time, T_rate, T_parameters>::type scalar; 
-
-        if(modeltype == "OneCptModel")
-          return Pred1_one(dt, parameter, init, rate); 
-        else if(modeltype == "TwoCptModel")
-          return Pred1_two(dt, parameter, init, rate);
-        else if(modeltype == "GeneralCptModel")
-          return Pred1_general_solver(dt, parameter, init, rate, f); 
-        else if(modeltype == "linCptModel")
-          return Pred1_linCpt(dt, parameter, init, rate);
-        else {
-        	Matrix<scalar, 1, Dynamic> default_pred =
-        	  Matrix<scalar, 1, Dynamic>::Zero(1);
-         	return default_pred;
-        }
+    if(modeltype == "OneCptModel")
+      return Pred1_one(dt, parameter, init, rate); 
+    else if(modeltype == "TwoCptModel")
+      return Pred1_two(dt, parameter, init, rate);
+    else if(modeltype == "GeneralCptModel")
+      return Pred1_general_solver(dt, parameter, init, rate, f); 
+    else if(modeltype == "linCptModel")
+      return Pred1_linCpt(dt, parameter, init, rate);
+    else {
+      Eigen::Matrix<scalar, 1, Eigen::Dynamic> default_pred =
+        Eigen::Matrix<scalar, 1, Eigen::Dynamic>::Zero(1);
+      return default_pred;
     }
+  }
 };
 
 #endif

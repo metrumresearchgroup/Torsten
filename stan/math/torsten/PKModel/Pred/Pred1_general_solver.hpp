@@ -32,19 +32,21 @@
  */
 template<typename T_time, typename T_rate, typename T_parameters, 
   typename T_system, typename F>
-Matrix<typename promote_args< T_time, T_rate, T_parameters>::type, 1, Dynamic> 
+Matrix<typename boost::math::tools::promote_args< T_time, T_rate, T_parameters>::type,
+  1, Dynamic> 
 Pred1_general_solver(const T_time& dt,
-		  			 const ModelParameters<T_time, T_parameters, T_system>& parameter, 
-		 			 const Matrix<typename promote_args<T_time, T_rate,
-		 			   T_parameters>::type, 1, Dynamic>& init, 
-		  			 const vector<T_rate>& rate,
-		  			 const F& f) {
+                     const ModelParameters<T_time, T_parameters, T_system>& parameter, 
+                     const Matrix<typename boost::math::tools::promote_args<T_time, 
+                       T_rate, T_parameters>::type, 1, Dynamic>& init, 
+                     const vector<T_rate>& rate,
+                     const F& f) {
   using std::vector;
 
-  typedef typename promote_args<T_time, T_rate, T_parameters>::type scalar;
+  typedef typename boost::math::tools::promote_args<T_time, T_rate, T_parameters>::type
+    scalar;
   assert(init.cols() == rate.size());
 
-  T_time EventTime = parameter.time; // time of current event
+  T_time EventTime = parameter.get_time();  // time of current event
   T_time InitTime = EventTime - dt;  // time of previous event	
   
   // Convert time parameters to fixed data for ODE integrator
@@ -54,7 +56,7 @@ Pred1_general_solver(const T_time& dt,
   vector<double> rate_d = vector<double>(rate.size(), double(0));
   for(int i = 0; i < rate.size(); i++) rate_d[i] = unpromote(rate[i]);
 		
-  vector<T_parameters> theta = parameter.RealParameters;
+  vector<T_parameters> theta = parameter.get_RealParameters();
   vector<scalar> init_vector = vector<scalar>(init.cols(), scalar(0));
   for(int i = 0; i < init_vector.size(); i++) init_vector[i] = init(0, i);
 
@@ -69,7 +71,7 @@ Pred1_general_solver(const T_time& dt,
 						
 	//Convert vector in row-major vector (eigen Matrix)
 	pred.resize(pred_V[0].size());
-	for(int i=0; i < pred_V[0].size(); i++) pred(0,i) = pred_V[0][i];
+	for(int i=0; i < pred_V[0].size(); i++) pred(0, i) = pred_V[0][i];
   }
   return pred;
 }

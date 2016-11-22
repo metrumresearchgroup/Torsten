@@ -5,6 +5,7 @@
 #include <boost/math/tools/promotion.hpp>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
 #include <stan/math/prim/mat/err/check_square.hpp>
+#include <vector>
 
 /**
  * Computes the predicted amounts in each compartment at each event
@@ -42,42 +43,39 @@
  * @return a matrix with predicted amount in each compartment 
  * at each event.
  */
-template <typename T0, typename T1, typename T2, typename T3, 
+template <typename T0, typename T1, typename T2, typename T3,
   typename T4, typename T5>
-Eigen::Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Eigen::Dynamic,
-  Eigen::Dynamic>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  T4>::type, Eigen::Dynamic, Eigen::Dynamic>
 linCptModel(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic,
               Eigen::Dynamic> >& system,
-			const std::vector<vector<T1> >& pMatrix,
-			const std::vector<T2>& time,
-			const std::vector<T3>& amt,
-			const std::vector<T4>& rate,
-			const std::vector<T5>& ii,
-			const std::vector<int>& evid,
-			const std::vector<int>& cmt,
-			const std::vector<int>& addl,
-			const std::vector<int>& ss) {
-
+            const std::vector<vector<T1> >& pMatrix,
+            const std::vector<T2>& time,
+            const std::vector<T3>& amt,
+            const std::vector<T4>& rate,
+            const std::vector<T5>& ii,
+            const std::vector<int>& evid,
+            const std::vector<int>& cmt,
+            const std::vector<int>& addl,
+            const std::vector<int>& ss) {
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
   using boost::math::tools::promote_args;
 
   static const char* function("linCptModel");
-  for (int i = 0; i < system.size(); i++) {
+  for (int i = 0; i < system.size(); i++)
     stan::math::check_square(function, "system matrix", system[i]);
-  // Need to check all matrices have the same dimension
-  }
   int nCmt = system[0].cols();
 
-  int nParameters, F1Index, tlag1Index;
-  nParameters = pMatrix[0].size();
-  F1Index = nParameters - 2*nCmt;
-  tlag1Index = nParameters - nCmt;
+  int nParameters = pMatrix[0].size(),
+    F1Index = nParameters - 2*nCmt,
+    tlag1Index = nParameters - nCmt;
   PKModel model(nParameters, F1Index, tlag1Index, nCmt);
-  
+
   // Check arguments
-  pmetricsCheck(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, function, model);
+  pmetricsCheck(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
+    function, model);
 
   // define functors used in Pred()
   Pred1_structure new_Pred1("linCptModel");
@@ -85,7 +83,8 @@ linCptModel(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic,
   Pred1 = new_Pred1;
   PredSS = new_PredSS;
 
-  Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic, Dynamic> pred;
+  Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic,
+    Dynamic> pred;
   pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model,
     dummy_ode(), system);
 
