@@ -2,6 +2,7 @@
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_HPP
 
 #include <Eigen/Dense>
+#include <vector>
 
 /**
  * Every Torsten function calls Pred.
@@ -53,12 +54,12 @@
  * @return a matrix with predicted amount in each compartment
  * at each event.
  */
-template <typename T_parameters, typename T_time, typename T_amt, typename T_rate,
-          typename T_ii, typename F, typename T_system>
-Eigen::Matrix<typename boost::math::tools::promote_args<T_parameters, T_time, T_amt,
-  T_rate, typename boost::math::tools::promote_args<T_ii, T_system>::type >::type,
-  Eigen::Dynamic, Eigen::Dynamic>
-Pred(const std::vector<vector<T_parameters> >& pMatrix,
+template <typename T_parameters, typename T_time, typename T_amt,
+  typename T_rate, typename T_ii, typename F, typename T_system>
+Eigen::Matrix<typename boost::math::tools::promote_args<T_parameters, T_time,
+  T_amt, T_rate, typename boost::math::tools::promote_args<T_ii, T_system>::
+  type >::type, Eigen::Dynamic, Eigen::Dynamic>
+Pred(const std::vector<std::vector<T_parameters> >& pMatrix,
      const std::vector<T_time>& time,
      const std::vector<T_amt>& amt,
      const std::vector<T_rate>& rate,
@@ -71,21 +72,17 @@ Pred(const std::vector<vector<T_parameters> >& pMatrix,
      const F& f,
      const std::vector<Eigen::Matrix<T_system,
        Eigen::Dynamic, Eigen::Dynamic> >& system) {
-
   using Eigen::Matrix;
   using Eigen::Dynamic;
   using boost::math::tools::promote_args;
-  using namespace stan::math;
+  // using namespace stan::math;
   using std::vector;
 
   typedef typename promote_args<T_parameters, T_time, T_amt, T_rate,
     typename promote_args<T_ii, T_system>::type >::type scalar;
 
-  // int i, j, ikeep,;
-  // vector<int> tlagIndexes, tlagCmts;
-
-  //////////////////////////////////////////////////////////////////////////////
-  //BOOK-KEEPING: UPDATE DATA SETS
+  /////////////////////////////////////////////////////////////////////////////
+  // BOOK-KEEPING: UPDATE DATA SETS
 
   int nParameter = model.GetNParameter(),
     nCmt = model.GetNCmt(),
@@ -110,10 +107,10 @@ Pred(const std::vector<vector<T_parameters> >& pMatrix,
   parameters.CompleteParameterHistory(events);
 
   vector<int> tlagIndexes;
-  tlagIndexes.assign(nCmt ,0);
+  tlagIndexes.assign(nCmt, 0);
   vector<int> tlagCmts;
   tlagCmts.assign(nCmt, 0);
-  for(int i = 0; i < nCmt; i++) {
+  for (int i = 0; i < nCmt; i++) {
     tlagIndexes[i] = tlag1Index + i;
     tlagCmts[i] = i + 1;
   }
@@ -135,8 +132,8 @@ Pred(const std::vector<vector<T_parameters> >& pMatrix,
   Matrix<scalar, Dynamic, Dynamic>
     pred = Matrix<scalar, Dynamic, Dynamic>::Zero(nKeep, nCmt);
 
-  //////////////////////////////////////////////////////////////////////////////
-  //COMPUTE PREDICTIONS
+  /////////////////////////////////////////////////////////////////////////////
+  // COMPUTE PREDICTIONS
 
   scalar dt, tprev = events.get_time(0);
   Matrix<scalar, 1, Dynamic> pred1;
@@ -145,13 +142,12 @@ Pred(const std::vector<vector<T_parameters> >& pMatrix,
   Rate<scalar, scalar> rate2;
   int iRate = 0;
   int ikeep = 0;
-  
+
   for (int i = 0; i < events.get_size(); i++) {
     event = events.GetEvent(i);
 
-    // Use index iRate instead of i to find rate at matching time, given there is
-    // one rate per time, not per event.
-    // if (rates.Rates[iRate].time != events.Events[i].time) iRate++;
+    // Use index iRate instead of i to find rate at matching time, given there
+    // is one rate per time, not per event.
     if (rates.get_time(iRate) != events.get_time(i)) iRate++;
     rate2 = rates.GetRate(iRate);
 
@@ -160,11 +156,10 @@ Pred(const std::vector<vector<T_parameters> >& pMatrix,
 
     parameter = parameters.GetModelParameters(i);
 
-    if ((event.get_evid() == 3) || (event.get_evid() == 4)) {  //reset events
+    if ((event.get_evid() == 3) || (event.get_evid() == 4)) {  // reset events
       dt = 0;
       init = zeros;
-    }
-    else {
+    } else {
       dt = event.get_time() - tprev;
       pred1 = Pred1(dt, parameter, init, rate2.get_rate(), f);
       init = pred1;
@@ -172,18 +167,20 @@ Pred(const std::vector<vector<T_parameters> >& pMatrix,
 
     if (((event.get_evid() == 1) || (event.get_evid() == 4))
       && (((event.get_ss() == 1) || (event.get_ss() == 2)) ||
-      (event.get_ss() == 3))) { //steady dose event
-      pred1 = PredSS(parameter, parameters.GetValue(i, F1Index+event.get_cmt() - 1)
-        * event.get_amt(), event.get_rate(), event.get_ii(), event.get_cmt(), f);
+      (event.get_ss() == 3))) {  // steady dose event
+      pred1 = PredSS(parameter, parameters.GetValue(i, F1Index
+        + event.get_cmt() - 1) * event.get_amt(), event.get_rate(),
+        event.get_ii(), event.get_cmt(), f);
 
       if (event.get_ss() == 2) init += pred1;  // steady state without reset
-      else init = pred1;  // steady state with reset (ss = 1)
+      else
+        init = pred1;  // steady state with reset (ss = 1)
     }
 
     if (((event.get_evid() == 1) || (event.get_evid() == 4)) &&
       (event.get_rate() == 0))  // bolus dose
-      init(0, event.get_cmt() - 1) += parameters.GetValue(i, F1Index + event.get_cmt()
-        - 1) * event.get_amt();
+      init(0, event.get_cmt() - 1) += parameters.GetValue(i, F1Index
+      + event.get_cmt() - 1) * event.get_amt();
 
     if (event.get_keep()) {
       pred.row(ikeep) = init;

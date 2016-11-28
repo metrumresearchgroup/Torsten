@@ -1,9 +1,11 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_EVENT_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_EVENT_HPP
 
-#include <iostream>
 #include <Eigen/Dense>
 #include <stan/math/torsten/PKModel/functions.hpp>
+#include <iostream>
+#include <algorithm>
+#include <vector>
 
 // forward declare
 template <typename T_time, typename T_amt,
@@ -130,7 +132,7 @@ public:
 template<typename T_time, typename T_amt, typename T_rate, typename T_ii>
 class EventHistory {
 private:
-  std::vector<Event<T_time,T_amt,T_rate,T_ii> > Events;
+  std::vector<Event<T_time, T_amt, T_rate, T_ii> > Events;
 
 public:
   template<typename T0, typename T1, typename T2, typename T3>
@@ -269,40 +271,40 @@ public:
    * @return - modified events that account for absorption lag times
    */
   template<typename T_parameters, typename T_system>
-  void AddLagTimes(ModelParameterHistory<T_time, T_parameters, T_system> Parameters,
-                   std::vector<int> tlagIndexes, std::vector<int> tlagCmts) {
+  void AddLagTimes(ModelParameterHistory<T_time, T_parameters, T_system>
+    Parameters, std::vector<int> tlagIndexes, std::vector<int> tlagCmts) {
     int i, j, evid, cmt, ipar;
     Event<T_time, T_amt, T_rate, T_ii> newEvent;
 
     int nlag = tlagIndexes.size();
     assert(nlag == tlagCmts.size());
-    if(nlag > 0) {
+    if (nlag > 0) {
       int nEvent = Events.size(), pSize = Parameters.get_size();
       assert((pSize = nEvent) || (pSize == 1));
 
       i = nEvent - 1;
-      while(i >= 0) {
+      while (i >= 0) {
         evid = Events[i].evid;
         cmt = Events[i].cmt;
 
-        if((evid == 1) || (evid == 4)) {
+        if ((evid == 1) || (evid == 4)) {
           j = 0;
-          while((cmt != tlagCmts[j]) && (j < nlag)) j++;
+          while ((cmt != tlagCmts[j]) && (j < nlag)) j++;
           ipar = std::min(i, pSize - 1);  // ipar is the index of ith
                                           // event or 0, if the parameters
                                           // are constant.
-          if((cmt == tlagCmts[j])
+          if ((cmt == tlagCmts[j])
             && (Parameters.GetValue(ipar, tlagIndexes[j]) != 0)) {
               newEvent = GetEvent(i);
-              newEvent.time += Parameters.GetValue(ipar,tlagIndexes[j]);
+              newEvent.time += Parameters.GetValue(ipar, tlagIndexes[j]);
               newEvent.keep = false;
               newEvent.isnew = true;
-              //newEvent.evid = 2; //classify new event as "other type" - CHECK
+              // newEvent.evid = 2; // - CHECK
               InsertEvent(newEvent);
 
-              Events[i].evid=2;
-              //The above statement changes events so that CleanEvents does
-              //not return an object identical to the original. - CHECK
+              Events[i].evid = 2;
+              // The above statement changes events so that CleanEvents does
+              // not return an object identical to the original. - CHECK
           }
         }
         i--;
@@ -313,7 +315,8 @@ public:
 
   // declare friends
   friend class Event<T_time, T_amt, T_rate, T_ii>;
-  template<typename T1, typename T2, typename T3> friend class ModelParameterHistory;
+  template<typename T1, typename T2, typename T3> friend
+    class ModelParameterHistory;
 };
 
 #endif

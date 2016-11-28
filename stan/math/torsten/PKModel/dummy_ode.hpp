@@ -7,7 +7,7 @@
  * A structure for the functor that is passed in the ODE 
  * integrator. Can be used to specify a dummy ODE functor,
  * which allows functions not using an ODE integrator to 
- * call pred(). 
+ * call pred().
  */
 template <typename T0, typename T1, typename T2, typename T3>
 inline
@@ -20,7 +20,7 @@ f(const T0& t,
   std::ostream* pstream__) {
     typedef typename boost::math::tools::promote_args<T0, T1, T2, T3>::type
       scalar;
-    std::vector<scalar> returned_vector = vector<scalar>(0, scalar(0));
+    std::vector<scalar> returned_vector = std::vector<scalar>(0, scalar(0));
     return returned_vector;
 }
 

@@ -1,9 +1,10 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_EXTRACTVECTOR_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_EXTRACTVECTOR_HPP
 
+#include <Eigen/Dense>
 #include <iostream>
 #include <string>
-#include <Eigen/Dense>
+#include <vector>
 
 /**
  * Extracts the nth column or row from a matrix and
@@ -17,30 +18,29 @@
  * @return: output dvector
  */
 template <typename T>
-vector<T> ExtractVector(Matrix<T, Dynamic, 1> matrix, int n, string str) {
+std::vector<T> ExtractVector(Eigen::Matrix<T, Eigen::Dynamic, 1>
+  matrix, int n, std::string str) {
   using std::vector;
   using std::string;
-  using namespace Eigen;
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
 
-  assert((str == "row")||(str == "col"));
+  assert((str == "row") || (str == "col"));
   int length;
   vector<T> ExtVec;
 
-  if(str == "col") {  //extract a column.
+  if (str == "col") {  // extract a column.
     length = matrix.rows();
     assert(n < matrix.cols());
     ExtVec.resize(length);
-    for(int i = 0; i < length; i++) ExtVec[i] = matrix(i, n);
-  }
-
-  else {  // extract a row
+    for (int i = 0; i < length; i++) ExtVec[i] = matrix(i, n);
+  } else {  // extract a row
     length = matrix.cols();
     assert(n < matrix.rows());
     ExtVec.resize(length);
-    for(int i = 0; i < length; i++) ExtVec[i] = matrix(n, i);
+    for (int i = 0; i < length; i++) ExtVec[i] = matrix(n, i);
   }
-
-	return ExtVec;
+  return ExtVec;
 }
 
 #endif

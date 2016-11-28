@@ -1,9 +1,10 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_LINCPT_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_LINCPT_HPP
 
-#include <iostream>
 #include <stan/math/prim/mat.hpp>
 #include <stan/math/prim/mat/fun/matrix_exp.hpp>
+#include <iostream>
+#include <vector>
 
 /**
  * Linear compartment model.
@@ -28,15 +29,15 @@
  * @return an eigen vector that contains predicted amount in each compartment
  *   at the current event.
  */
-template<typename T_time, typename T_parameters, typename T_system, typename T_rate>
-Matrix<typename boost::math::tools::promote_args< T_time, T_system, T_rate>::type,
-  1, Dynamic>
+template<typename T_time, typename T_parameters, typename T_system,
+  typename T_rate>
+Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_system,
+  T_rate>::type, 1, Eigen::Dynamic>
 Pred1_linCpt(const T_time& dt,
-		     const ModelParameters<T_time, T_parameters, T_system>& parameter,
-		     const Eigen::Matrix<typename
-		       boost::math::tools::promote_args<T_time, T_system, T_rate>::type, 1,
-		       Eigen::Dynamic>& init,
-		     const vector<T_rate>& rate) {
+             const ModelParameters<T_time, T_parameters, T_system>& parameter,
+             const Eigen::Matrix<typename boost::math::tools::promote_args<
+               T_time, T_system, T_rate>::type, 1, Eigen::Dynamic>& init,
+             const std::vector<T_rate>& rate) {
   using boost::math::tools::promote_args;
   using Eigen::Matrix;
   using Eigen::Dynamic;
@@ -46,12 +47,12 @@ Pred1_linCpt(const T_time& dt,
 
   typedef typename promote_args<T_time, T_system, T_rate>::type scalar;
 
-  if (dt == 0) return init;
-  else {
-    Matrix<T_system, Dynamic, Dynamic> system = parameter.get_K(); 
+  if (dt == 0) { return init;
+  } else {
+    Matrix<T_system, Dynamic, Dynamic> system = parameter.get_K();
 
     bool rate_zeros = true;
-    for(int i = 0; i < rate.size(); i++)
+    for (int i = 0; i < rate.size(); i++)
     if (rate[i] != 0) rate_zeros = false;
 
     if (rate_zeros) {
@@ -59,11 +60,10 @@ Pred1_linCpt(const T_time& dt,
       Matrix<scalar, Dynamic, 1> pred = matrix_exp(dt_system)
         * init.transpose();
       return pred.transpose();
-    }
-    else {
+    } else {
       int nCmt = system.cols();
       Matrix<scalar, Dynamic, 1> rate_vec(rate.size()), x(nCmt), x2(nCmt);
-      for(int i = 0; i < rate.size(); i++) rate_vec(i) = rate[i];
+      for (int i = 0; i < rate.size(); i++) rate_vec(i) = rate[i];
       x = mdivide_left(system, rate_vec);
       x2 = x + init.transpose();
       Matrix<scalar, Dynamic, Dynamic> dt_system = multiply(dt, system);

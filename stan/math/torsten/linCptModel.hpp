@@ -49,7 +49,7 @@ Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   T4>::type, Eigen::Dynamic, Eigen::Dynamic>
 linCptModel(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic,
               Eigen::Dynamic> >& system,
-            const std::vector<vector<T1> >& pMatrix,
+            const std::vector<std::vector<T1> >& pMatrix,
             const std::vector<T2>& time,
             const std::vector<T3>& amt,
             const std::vector<T4>& rate,

@@ -50,7 +50,7 @@ Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   T4>::type, Eigen::Dynamic, Eigen::Dynamic>
 generalCptModel_bdf(const F& f,
                     const int nCmt,
-                    const std::vector<vector<T0> >& pMatrix,
+                    const std::vector<std::vector<T0> >& pMatrix,
                     const std::vector<T1>& time,
                     const std::vector<T2>& amt,
                     const std::vector<T3>& rate,
