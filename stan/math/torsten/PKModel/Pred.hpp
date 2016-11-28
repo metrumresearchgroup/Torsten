@@ -2,6 +2,7 @@
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_HPP
 
 #include <Eigen/Dense>
+#include <vector>
 
 /**
  * Every Torsten function calls Pred.
@@ -53,11 +54,12 @@
  * @return a matrix with predicted amount in each compartment
  * at each event.
  */
-template <typename T_parameters, typename T_time, typename T_amt, typename T_rate,
-		  typename T_ii, typename F, typename T_system>
-Eigen::Matrix<typename promote_args<T_parameters, T_time, T_amt, T_rate,
-	 typename promote_args<T_ii, T_system>::type >::type, Eigen::Dynamic, Eigen::Dynamic>
-Pred(const std::vector<vector<T_parameters> >& pMatrix,
+template <typename T_parameters, typename T_time, typename T_amt,
+  typename T_rate, typename T_ii, typename F, typename T_system>
+Eigen::Matrix<typename boost::math::tools::promote_args<T_parameters, T_time,
+  T_amt, T_rate, typename boost::math::tools::promote_args<T_ii, T_system>::
+  type >::type, Eigen::Dynamic, Eigen::Dynamic>
+Pred(const std::vector<std::vector<T_parameters> >& pMatrix,
      const std::vector<T_time>& time,
      const std::vector<T_amt>& amt,
      const std::vector<T_rate>& rate,
@@ -70,123 +72,123 @@ Pred(const std::vector<vector<T_parameters> >& pMatrix,
      const F& f,
      const std::vector<Eigen::Matrix<T_system,
        Eigen::Dynamic, Eigen::Dynamic> >& system) {
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
+  using boost::math::tools::promote_args;
+  // using namespace stan::math;
+  using std::vector;
 
-    using Eigen::Matrix;
-	using Eigen::Dynamic;
-	using boost::math::tools::promote_args;
-	using namespace stan::math;
-	using std::vector;
+  typedef typename promote_args<T_parameters, T_time, T_amt, T_rate,
+    typename promote_args<T_ii, T_system>::type >::type scalar;
 
-	typedef typename promote_args<T_parameters, T_time, T_amt, T_rate,
-	 typename promote_args<T_ii, T_system>::type >::type scalar;
+  /////////////////////////////////////////////////////////////////////////////
+  // BOOK-KEEPING: UPDATE DATA SETS
 
-	int i, iRate=0, j, np, ikeep, nParameter, nCmt, F1Index, tlag1Index, nKeep;
-	scalar dt, tprev;
-	Matrix<scalar, 1, Dynamic> init, pred1, zeros; //row-major vector
-	Event<scalar, scalar, scalar, scalar> event;
-	ModelParameters<scalar, T_parameters, T_system> parameter;
-	Rate<scalar, scalar> rate2, initRate;
-	vector<int> tlagIndexes, tlagCmts;
+  int nParameter = model.GetNParameter(),
+    nCmt = model.GetNCmt(),
+    F1Index = model.GetF1Index(),
+    tlag1Index = model.GetTLagIndex();
 
-	//////////////////////////////////////////////////////////////////////////////
-	//BOOK-KEEPING: UPDATE DATA SETS
+  EventHistory<scalar, scalar, scalar, scalar>
+    events(time, amt, rate, ii, evid, cmt, addl, ss);
+  ModelParameterHistory<scalar, T_parameters, T_system>
+    parameters(time, pMatrix, system);
+  RateHistory<scalar, scalar> rates;
 
-	nParameter = model.GetNParameter();
-	nCmt = model.GetNCmt();
-	F1Index = model.GetF1Index();
-	tlag1Index = model.GetTLagIndex();
+  events.Sort();
+  parameters.Sort();
 
-	zeros = Matrix<scalar, 1, Dynamic>::Zero(nCmt);
-    tlagIndexes.assign(nCmt,0);
-    tlagCmts.assign(nCmt,0);
+  int nKeep = events.get_size();
+  int np = pMatrix[0].size() * pMatrix.size();
 
-	EventHistory<scalar, scalar, scalar, scalar>
-	  events(time, amt, rate, ii, evid, cmt, addl, ss);
-    ModelParameterHistory<scalar, T_parameters, T_system>
-      parameters(time, pMatrix, system);
-    RateHistory<scalar, scalar> rates;
+  assert((np > 0) && (np % nParameter == 0));
+  events.AddlDoseEvents();
 
-    events.Sort();
-    parameters.Sort();
+  parameters.CompleteParameterHistory(events);
 
-	nKeep = events.get_size();
-	np = pMatrix[0].size() * pMatrix.size();
+  vector<int> tlagIndexes;
+  tlagIndexes.assign(nCmt, 0);
+  vector<int> tlagCmts;
+  tlagCmts.assign(nCmt, 0);
+  for (int i = 0; i < nCmt; i++) {
+    tlagIndexes[i] = tlag1Index + i;
+    tlagCmts[i] = i + 1;
+  }
 
-	assert((np > 0) && (np % nParameter == 0));
-    events.AddlDoseEvents();
+  events.AddLagTimes(parameters, tlagIndexes, tlagCmts);
+  rates.MakeRates(events, nCmt);
+  parameters.CompleteParameterHistory(events);
 
-    parameters.CompleteParameterHistory(events);
+  Matrix<scalar, 1, Dynamic> zeros = Matrix<scalar, 1, Dynamic>::Zero(nCmt);
+  Matrix<scalar, 1, Dynamic> init = zeros;
 
-    for(i=0;i<nCmt;i++) {
-        tlagIndexes[i] = tlag1Index + i;
-        tlagCmts[i] = i + 1;
+  // Construct the output matrix pred
+  // The matrix needs to be a dynamically-sized matrix to be returned
+  // by the function. The matrix is resized, but the resize function
+  // of the eigen library is destructive. This means arbitrary values
+  // are assigned to the elements in the matrix.
+  // For the "COMPUTE PREDICTIONS" half of the function to run properly,
+  // we need to set the values of each element to 0.
+  Matrix<scalar, Dynamic, Dynamic>
+    pred = Matrix<scalar, Dynamic, Dynamic>::Zero(nKeep, nCmt);
+
+  /////////////////////////////////////////////////////////////////////////////
+  // COMPUTE PREDICTIONS
+
+  scalar dt, tprev = events.get_time(0);
+  Matrix<scalar, 1, Dynamic> pred1;
+  Event<scalar, scalar, scalar, scalar> event;
+  ModelParameters<scalar, T_parameters, T_system> parameter;
+  Rate<scalar, scalar> rate2;
+  int iRate = 0;
+  int ikeep = 0;
+
+  for (int i = 0; i < events.get_size(); i++) {
+    event = events.GetEvent(i);
+
+    // Use index iRate instead of i to find rate at matching time, given there
+    // is one rate per time, not per event.
+    if (rates.get_time(iRate) != events.get_time(i)) iRate++;
+    rate2 = rates.GetRate(iRate);
+
+    for (int j = 0; j < nCmt; j++)
+      rate2.rate[j] *= parameters.GetValue(i, F1Index + j);
+
+    parameter = parameters.GetModelParameters(i);
+
+    if ((event.get_evid() == 3) || (event.get_evid() == 4)) {  // reset events
+      dt = 0;
+      init = zeros;
+    } else {
+      dt = event.get_time() - tprev;
+      pred1 = Pred1(dt, parameter, init, rate2.get_rate(), f);
+      init = pred1;
     }
 
-    events.AddLagTimes(parameters, tlagIndexes, tlagCmts);
-	rates.MakeRates(events, nCmt);
-    parameters.CompleteParameterHistory(events);
+    if (((event.get_evid() == 1) || (event.get_evid() == 4))
+      && (((event.get_ss() == 1) || (event.get_ss() == 2)) ||
+      (event.get_ss() == 3))) {  // steady dose event
+      pred1 = PredSS(parameter, parameters.GetValue(i, F1Index
+        + event.get_cmt() - 1) * event.get_amt(), event.get_rate(),
+        event.get_ii(), event.get_cmt(), f);
 
-	init = zeros;
-	tprev = events.get_time(0);
-	ikeep = 0;
+      if (event.get_ss() == 2) init += pred1;  // steady state without reset
+      else
+        init = pred1;  // steady state with reset (ss = 1)
+    }
 
-	// Construct the output matrix pred
-	// The matrix needs to be a dynamically-sized matrix to be returned
-	// by the function. The matrix is resized, but the resize function
-	// of the eigen library is destructive. This means arbitrary values
-	// are assigned to the elements in the matrix.
-	// For the "COMPUTE PREDICTIONS" half of the function to run properly,
-	// we need to set the values of each element to 0.
-	Matrix<scalar, Dynamic, Dynamic>
-	  pred = Matrix<scalar, Dynamic, Dynamic>::Zero(nKeep, nCmt);
+    if (((event.get_evid() == 1) || (event.get_evid() == 4)) &&
+      (event.get_rate() == 0))  // bolus dose
+      init(0, event.get_cmt() - 1) += parameters.GetValue(i, F1Index
+      + event.get_cmt() - 1) * event.get_amt();
 
-	//////////////////////////////////////////////////////////////////////////////
-	//COMPUTE PREDICTIONS
-
-	for(i=0;i<events.get_size();i++) {
-		event = events.GetEvent(i);
-
-        // Use index iRate instead of i to find rate at matching time, given there is
-        // one rate per time, not per event.
-        if(rates.Rates[iRate].time != events.Events[i].time) iRate++;
-        rate2 = rates.GetRate(iRate);
-
-        for(j=0;j<nCmt;j++) {
-			rate2.rate[j] *= parameters.GetValue(i, F1Index+j);
-		}
-
-		parameter = parameters.GetModelParameters(i);
-
-		if((event.evid == 3)||(event.evid == 4)) {  //reset events
-			dt=0;
-			init = zeros;
-		}
-		else {
-			dt = event.time - tprev;
-			pred1 = Pred1(dt, parameter, init, rate2.rate, f);
-			init = pred1;
-		}
-
-		if (((event.evid == 1) || (event.evid == 4))
-		   && (((event.ss == 1) || (event.ss == 2)) || (event.ss == 3))) { //steady dose event
-			pred1 =
-			  PredSS(parameter, parameters.GetValue(i, F1Index+event.cmt-1) * event.amt,
-			    event.rate, event.ii, event.cmt, f);
-
-			if(event.ss == 2) init += pred1;//steady state without reset
-			else init = pred1; //steady state with reset (ss=1)
-		}
-
-		if (((event.evid == 1) || (event.evid == 4)) && (event.rate == 0)) //bolus dose
-			init(0,event.cmt-1) += parameters.GetValue(i, F1Index+event.cmt-1)*event.amt;
-
-		if (event.keep) {
-			pred.row(ikeep) = init;
-			ikeep++;
-		}
-		tprev = event.time;
-	}
-	return pred;
+    if (event.get_keep()) {
+      pred.row(ikeep) = init;
+      ikeep++;
+    }
+  tprev = event.get_time();
+  }
+  return pred;
 }
 
 #endif

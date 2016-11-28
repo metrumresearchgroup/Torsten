@@ -4,6 +4,7 @@
 #include <Eigen/Dense>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
 #include <boost/math/tools/promotion.hpp>
+#include <vector>
 
 /**
  * Computes the predicted amounts in each compartment at each event
@@ -43,55 +44,58 @@
  * @return a matrix with predicted amount in each compartment 
  *         at each event. 
  */
-template <typename T0, typename T1, typename T2, typename T3, typename T4, typename F> 
-Eigen::Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Eigen::Dynamic,
-  Eigen::Dynamic> 
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+  typename F>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  T4>::type, Eigen::Dynamic, Eigen::Dynamic>
 generalCptModel_rk45(const F& f,
                      const int nCmt,
-			         const std::vector<vector<T0> >& pMatrix, 
-			         const std::vector<T1>& time,
-			         const std::vector<T2>& amt,
-			         const std::vector<T3>& rate,
-			         const std::vector<T4>& ii,
-			         const std::vector<int>& evid,
-			         const std::vector<int>& cmt,
-			         const std::vector<int>& addl,
-			         const std::vector<int>& ss,
-			         double rel_tol = 1e-10,
+                     const std::vector<std::vector<T0> >& pMatrix,
+                     const std::vector<T1>& time,
+                     const std::vector<T2>& amt,
+                     const std::vector<T3>& rate,
+                     const std::vector<T4>& ii,
+                     const std::vector<int>& evid,
+                     const std::vector<int>& cmt,
+                     const std::vector<int>& addl,
+                     const std::vector<int>& ss,
+                     double rel_tol = 1e-10,
                      double abs_tol = 1e-10,
-                     long int max_num_steps = 1e8) {
+                     long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
   using boost::math::tools::promote_args;
 
-  //Define class of model
-  int nParameters, F1Index, tlag1Index;
-  nParameters = pMatrix[0].size();
-  F1Index = nParameters - 2*nCmt;
-  tlag1Index = nParameters - nCmt;
+  // Define class of model
+  int nParameters = pMatrix[0].size(),
+    F1Index = nParameters - 2*nCmt,
+    tlag1Index = nParameters - nCmt;
   PKModel model(nParameters, F1Index, tlag1Index, nCmt);
 
-  // Check arguments
+  // check arguments
   static const char* function("generalCptModel_rk45");
-  pmetricsCheck(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, function, model);
+  pmetricsCheck(pMatrix, time, amt, rate, ii, evid, cmt, addl,
+    ss, function, model);
 
-  //Construct Pred functions for the model.
+  // Construct Pred functions for the model.
   Pred1_structure new_Pred1("GeneralCptModel");
   PredSS_structure new_PredSS("error");
   Pred1 = new_Pred1;
-  PredSS = new_PredSS; // WARNING: PredSS returns an error message and aborts program
-  pmetrics_solver_structure new_pmetrics_solver(rel_tol, abs_tol, max_num_steps, "rk45");
+  PredSS = new_PredSS;  // WARNING: PredSS returns an error
+  pmetrics_solver_structure new_pmetrics_solver(rel_tol, abs_tol,
+    max_num_steps, "rk45");
   pmetrics_solver = new_pmetrics_solver;
 
-    // Construct dummy matrix for last argument of pred
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> dummy_system;
-  std::vector<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> > 
+  // Construct dummy matrix for last argument of pred
+  Matrix<double, Dynamic, Dynamic> dummy_system;
+  vector<Matrix<double, Dynamic, Dynamic> >
     dummy_systems(1, dummy_system);
 
-  Matrix <typename promote_args<typename promote_args<T0, T1, T2, T3, T4>::type,
-    double>::type, Dynamic, Dynamic> pred;
-  pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model, f, dummy_systems);
+  Matrix <typename promote_args<typename promote_args<T0, T1, T2, T3,
+    T4>::type, double>::type, Dynamic, Dynamic> pred;
+  pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model, f,
+    dummy_systems);
 
   return pred;
 }

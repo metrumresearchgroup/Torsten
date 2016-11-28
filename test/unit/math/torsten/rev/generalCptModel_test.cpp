@@ -13,7 +13,7 @@ oneCptModelODE(const T0& t,
   typedef typename boost::math::tools::promote_args<T0, T1, T2, T3>::type scalar;
 
   scalar CL = parms[0], V1 = parms[1], ka = parms[2], k10 = CL / V1;
-  vector<scalar> y(2, 0);
+  std::vector<scalar> y(2, 0);
   
   y[0] = -ka * x[0];
   y[1] = ka * x[0] - k10 * x[1];
@@ -36,6 +36,8 @@ struct oneCptModelODE_functor {
 
 TEST(Torsten, genCpt_One_SingleDose) {
   using std::vector;
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
 
   double rel_err = 1e-6;
   
@@ -120,7 +122,7 @@ oneCptModelODE_abstime(const T0& t,
   scalar CL = CL0 + (CLSS - CL0) * (1 - stan::math::exp(-K * t));  
   scalar k10 = CL / V1;
 
-  vector<scalar> y(2, 0);
+  std::vector<scalar> y(2, 0);
   
   y[0] = -ka * x[0];
   y[1] = ka * x[0] - k10 * x[1];
@@ -143,6 +145,8 @@ struct oneCptModelODE_abstime_functor {
 
 TEST(Torsten, genCpt_One_abstime_SingleDose) {
   using std::vector;
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
 
   double rel_err = 1e-6;
   
@@ -165,33 +169,33 @@ TEST(Torsten, genCpt_One_abstime_SingleDose) {
 
   vector<double> amt(10, 0);
   amt[0] = 1000;
-	
+
   vector<double> rate(10, 0);
-	
+
   vector<int> cmt(10, 2);
   cmt[0] = 1;
-	
+
   vector<int> evid(10, 0);
   evid[0] = 1;
 
   vector<double> ii(10, 0);
   ii[0] = 12;
-	
+
   vector<int> addl(10, 0);
   addl[0] = 14;
-	
+
   vector<int> ss(10, 0);
 
   stan::math::matrix_v x_rk45;
   x_rk45 = generalCptModel_rk45(oneCptModelODE_abstime_functor(), 2,
                                 pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
                                 1e-8, 1e-8, 1e8);
-  
+
   stan::math::matrix_v x_bdf;
   x_bdf = generalCptModel_bdf(oneCptModelODE_abstime_functor(), 2,
                               pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
                               1e-8, 1e-8, 1e8);
-	
+
   Matrix<double, Dynamic, Dynamic> amounts(10, 2);
   amounts << 1000.0, 0.0,
 	  	     740.8182, 255.4765,
@@ -216,6 +220,9 @@ TEST(Torsten, genCpt_One_abstime_SingleDose) {
 TEST(Torsten, genCpOne_MultipleDoses_timePara) {
     double rel_err_rk45 = 1e-6;
     double rel_err_bdf = 1e-4;
+    using std::vector;
+    using Eigen::Matrix;
+    using Eigen::Dynamic;
 
     int nEvent = 11;
 	vector<vector<AVAR> > pMatrix(nEvent);
