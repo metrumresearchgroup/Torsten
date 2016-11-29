@@ -16,7 +16,7 @@ oneCptModelODE(const T0& t,
   typedef typename boost::math::tools::promote_args<T0, T1, T2, T3>::type scalar;
 
   scalar CL = parms[0], V1 = parms[1], ka = parms[2], k10 = CL / V1;
-  vector<scalar> y(2, 0);
+  std::vector<scalar> y(2, 0);
   
   y[0] = -ka * x[0];
   y[1] = ka * x[0] - k10 * x[1];
@@ -39,6 +39,8 @@ struct oneCptModelODE_functor {
 
 TEST(Torsten, genCpt_One_SingleDose) {
   using std::vector;
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
 
   double rel_err = 1e-6;
   
@@ -118,7 +120,7 @@ oneCptModelODE_abstime(const T0& t,
   scalar CL = CL0 + (CLSS - CL0) * (1 - stan::math::exp(-K * t));  
   scalar k10 = CL / V1;
 
-  vector<scalar> y(2, 0);
+  std::vector<scalar> y(2, 0);
   
   y[0] = -ka * x[0];
   y[1] = ka * x[0] - k10 * x[1];
@@ -142,6 +144,8 @@ struct oneCptModelODE_abstime_functor {
 
 TEST(Torsten, genCpt_One_abstime_SingleDose) {
   using std::vector;
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
 
   double rel_err = 1e-6;
   
@@ -208,6 +212,10 @@ TEST(Torsten, genCpt_One_abstime_SingleDose) {
 }
 
 TEST(Torsten, genCpOne_MultipleDoses_timePara) {
+    using std::vector;
+    using Eigen::Matrix;
+    using Eigen::Dynamic;
+    
     double rel_err_rk45 = 1e-6;
     double rel_err_bdf = 1e-4;
 
