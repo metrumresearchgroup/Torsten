@@ -115,7 +115,7 @@ TEST(Torsten, PKModelOneCpt_SS) {
 	           2.220724e-3, 435.9617,
 	           9.875702, 1034.7998;
 
-	for(int i = 0; i < amounts.rows(); i++) {
+	for (int i = 0; i < amounts.rows(); i++) {
 		EXPECT_NEAR(amounts(i, 0), x(i, 0).val(),
 		  std::max(amounts(i, 0), x(i, 0).val()) * 1e-6);
 		EXPECT_NEAR(amounts(i, 1), x(i, 1).val(),
@@ -176,7 +176,7 @@ TEST(Torsten, PKModelOneCpt_SS_rate) {
 	           3.415236, 745.2971,
 	           123.979747, 789.6393;
 
-	for(int i = 0; i < amounts.rows(); i++) {
+	for (int i = 0; i < amounts.rows(); i++) {
 		EXPECT_NEAR(amounts(i, 0), x(i, 0).val(),
 		  std::max(amounts(i, 0), x(i, 0).val()) * 1e-6);
 		EXPECT_NEAR(amounts(i, 1), x(i, 1).val(),
@@ -241,7 +241,7 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses_timePara) {
 			   3.372017e-03, 3.4974152,
 			   1.678828e-04, 0.7342228;
 			   
-		for(int i = 0; i < amounts.rows(); i++) {
+    for (int i = 0; i < amounts.rows(); i++) {
 		EXPECT_NEAR(amounts(i, 0), x(i, 0).val(),
 		  std::max(amounts(i, 0), x(i, 0).val()) * 1e-6);
 		EXPECT_NEAR(amounts(i, 1), x(i, 1).val(),

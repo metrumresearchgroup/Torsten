@@ -151,8 +151,9 @@ Pred(const std::vector<std::vector<T_parameters> >& pMatrix,
     if (rates.get_time(iRate) != events.get_time(i)) iRate++;
     rate2 = rates.GetRate(iRate);
 
-    for (int j = 0; j < nCmt; j++)
+    for (int j = 0; j < nCmt; j++) {
       rate2.rate[j] *= parameters.GetValue(i, F1Index + j);
+    }
 
     parameter = parameters.GetModelParameters(i);
 
