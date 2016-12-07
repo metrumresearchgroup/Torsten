@@ -63,6 +63,61 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses) {
       EXPECT_FLOAT_EQ(amounts(i, j), x(i, j).val());
 }
 
+TEST(Torsten, PKModelOneCpt_MultipleDoses_overload) {
+
+	vector<AVAR> pMatrix(7);
+	pMatrix[0] = 10; // CL
+	pMatrix[1] = 80; // Vc
+	pMatrix[2] = 1.2; // ka
+	pMatrix[3] = 1; // F1
+	pMatrix[4] = 1; // F2
+	pMatrix[5] = 0; // tlag1
+	pMatrix[6] = 0; // tlag2
+
+	vector<double> time(10);
+	time[0] = 0.0;
+	for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
+	time[9] = 4.0;
+
+	vector<double> amt(10, 0);
+	amt[0] = 1000;
+	
+	vector<double> rate(10, 0);
+	
+	vector<int> cmt(10, 2);
+	cmt[0] = 1;
+	
+	vector<int> evid(10, 0);
+	evid[0] = 1;
+
+	vector<double> ii(10, 0);
+	ii[0] = 12;
+	
+	vector<int> addl(10, 0);
+	addl[0] = 14;
+	
+	vector<int> ss(10, 0);
+
+	stan::math::matrix_v x;
+	x = PKModelOneCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+	
+	Matrix<double, Dynamic, Dynamic> amounts(10, 2);
+	amounts << 1000.0, 0.0,
+			   740.8182, 254.97490,
+			   548.8116, 436.02020,
+			   406.5697, 562.53846,
+			   301.1942, 648.89603,
+			   223.1302, 705.72856,
+			   165.2989, 740.90816,
+			   122.4564, 760.25988,
+			   90.71795, 768.09246,
+			   8.229747, 667.87079;
+   
+  for (size_t i = 0; i < amounts.rows(); i++)
+    for (size_t j = 0; j < amounts.cols(); j++)
+      EXPECT_FLOAT_EQ(amounts(i, j), x(i, j).val());
+}
+
 TEST(Torsten, PKModelOneCpt_SS) {
 
 	vector<vector<AVAR> > pMatrix(1);

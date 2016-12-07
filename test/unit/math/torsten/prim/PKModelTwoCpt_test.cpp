@@ -64,6 +64,65 @@ TEST(Torsten, PKModelTwoCpt_MultipleDoses) {
 	expect_matrix_eq(amounts, x);
 }
 
+
+TEST(Torsten, PKModelTwoCpt_MultipleDoses_overload) {
+
+	vector<double> pMatrix(11);
+	pMatrix[0] = 5; // CL
+	pMatrix[1] = 8; // Q
+	pMatrix[2] = 20; // Vc
+	pMatrix[3] = 70; // Vp
+	pMatrix[4] = 1.2; // ka
+	pMatrix[5] = 1; // F1
+	pMatrix[6] = 1; // F2
+	pMatrix[7] = 1; // F3
+	pMatrix[8] = 0; // tlag1
+	pMatrix[9] = 0; // tlag2
+	pMatrix[10] = 0; // tlag3
+
+	vector<double> time(10);
+	time[0] = 0.0;
+	for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
+	time[9] = 4.0;
+
+	vector<double> amt(10, 0);
+	amt[0] = 1000;
+
+	vector<double> rate(10, 0);
+
+	vector<int> cmt(10, 2);
+	cmt[0] = 1;
+
+	vector<int> evid(10, 0);
+	evid[0] = 1;
+
+	vector<double> ii(10, 0);
+	ii[0] = 12;
+	
+	vector<int> addl(10, 0);
+	addl[0] = 14;
+	
+	vector<int> ss(10, 0);
+
+	Matrix<double, Dynamic, Dynamic> x;
+	x = PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+	
+	Matrix<double, Dynamic, Dynamic> amounts(10, 3);
+	amounts << 1000.0, 0.0, 0.0,
+			   740.818221, 238.3713, 12.75775,
+			   548.811636, 379.8439, 43.55827,
+			   406.569660, 455.3096, 83.95657,
+			   301.194212, 486.6965, 128.32332,
+			   223.130160, 489.4507, 173.01118,
+			   165.298888, 474.3491, 215.75441,
+			   122.456428, 448.8192, 255.23842,
+			   90.717953, 417.9001, 290.79297,
+			   8.229747, 200.8720, 441.38985;
+			   
+	expect_matrix_eq(amounts, x);
+}
+
+
 TEST(Torsten, PKModelTwoCpt_SS) {
 
 	vector<vector<double> > pMatrix(1);
