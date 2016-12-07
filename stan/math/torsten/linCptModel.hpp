@@ -117,4 +117,53 @@ linCptModel(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic,
     vec_pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
 }
 
+template <typename T0, typename T1, typename T2, typename T3,
+  typename T4, typename T5>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  T4>::type, Eigen::Dynamic, Eigen::Dynamic>
+linCptModel(const Eigen::Matrix<T0, Eigen::Dynamic,
+              Eigen::Dynamic>& system,
+            const std::vector<std::vector<T1> >& pMatrix,
+            const std::vector<T2>& time,
+            const std::vector<T3>& amt,
+            const std::vector<T4>& rate,
+            const std::vector<T5>& ii,
+            const std::vector<int>& evid,
+            const std::vector<int>& cmt,
+            const std::vector<int>& addl,
+            const std::vector<int>& ss) {
+  std::vector<Eigen::Matrix<T0, Eigen::Dynamic,
+              Eigen::Dynamic> > vec_system(1);
+  vec_system[0] = system;
+  
+  return linCptModel(vec_system,
+    pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+}
+
+template <typename T0, typename T1, typename T2, typename T3,
+  typename T4, typename T5>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  T4>::type, Eigen::Dynamic, Eigen::Dynamic>
+linCptModel(const Eigen::Matrix<T0, Eigen::Dynamic,
+              Eigen::Dynamic>& system,
+            const std::vector<T1>& pMatrix,
+            const std::vector<T2>& time,
+            const std::vector<T3>& amt,
+            const std::vector<T4>& rate,
+            const std::vector<T5>& ii,
+            const std::vector<int>& evid,
+            const std::vector<int>& cmt,
+            const std::vector<int>& addl,
+            const std::vector<int>& ss) {
+  std::vector<Eigen::Matrix<T0, Eigen::Dynamic,
+              Eigen::Dynamic> > vec_system(1);
+  vec_system[0] = system;
+  
+  std::vector<std::vector<T1> > vec_pMatrix(1);
+  vec_pMatrix[0] = pMatrix;
+  
+  return linCptModel(vec_system,
+    vec_pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+}
+
 #endif

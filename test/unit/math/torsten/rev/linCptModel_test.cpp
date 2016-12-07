@@ -69,18 +69,19 @@ TEST(Torsten, LinCpt_OneSS) {
 	}
 }
 
-TEST(Torsten, LinCpt_OneSS_overload) {
+TEST(Torsten, LinCpt_OneSS_overloads) {
 
 	AVAR CL = 10, Vc = 80, ka = 1.2, k10 = CL / Vc;
 	matrix_v system(2, 2);
 	system << -ka, 0, ka, -k10;
 	vector<matrix_v> system_array(1, system); 
 
-	vector<double> pMatrix(4);
-	pMatrix[0] = 1; // F1
-	pMatrix[1] = 1; // F2
-	pMatrix[2] = 0; // tlag1
-	pMatrix[3] = 0; // tlag2
+	vector<vector<double> > pMatrix(1);
+	pMatrix[0].resize(4);
+	pMatrix[0][0] = 1; // F1
+	pMatrix[0][1] = 1; // F2
+	pMatrix[0][2] = 0; // tlag1
+	pMatrix[0][3] = 0; // tlag2
 
 	vector<double> time(10);
 	time[0] = 0.0;
@@ -107,8 +108,13 @@ TEST(Torsten, LinCpt_OneSS_overload) {
 	vector<int> ss(10, 0);
 	ss[0] = 1;
 
-	matrix_v x;
-	x = linCptModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+	matrix_v x1, x2, x3;
+	x1 = linCptModel(system_array, pMatrix[0],
+	  time, amt, rate, ii, evid, cmt, addl, ss);
+	x2 = linCptModel(system_array[0], pMatrix,
+	  time, amt, rate, ii, evid, cmt, addl, ss);
+	x3 = linCptModel(system_array[0], pMatrix[0],
+	  time, amt, rate, ii, evid, cmt, addl, ss);
 
 	Matrix<double, Dynamic, Dynamic> amounts(10, 2);
 	amounts << 1200.0, 384.7363,
@@ -123,10 +129,20 @@ TEST(Torsten, LinCpt_OneSS_overload) {
 	           9.875702, 1034.7998;
 
 	for(int i = 0; i < amounts.rows(); i++) {
-		EXPECT_NEAR(amounts(i, 0), x(i, 0).val(),
-		  std::max(amounts(i, 0), x(i, 0).val()) * 1e-6);
-		EXPECT_NEAR(amounts(i, 1), x(i, 1).val(),
-		  std::max(amounts(i, 1), x(i, 1).val()) * 1e-6);
+		EXPECT_NEAR(amounts(i, 0), x1(i, 0).val(),
+		  std::max(amounts(i, 0), x1(i, 0).val()) * 1e-6);
+		EXPECT_NEAR(amounts(i, 1), x1(i, 1).val(),
+		  std::max(amounts(i, 1), x1(i, 1).val()) * 1e-6);
+		  
+		EXPECT_NEAR(amounts(i, 0), x2(i, 0).val(),
+		  std::max(amounts(i, 0), x2(i, 0).val()) * 1e-6);
+		EXPECT_NEAR(amounts(i, 1), x2(i, 1).val(),
+		  std::max(amounts(i, 1), x2(i, 1).val()) * 1e-6);
+
+		EXPECT_NEAR(amounts(i, 0), x3(i, 0).val(),
+		  std::max(amounts(i, 0), x3(i, 0).val()) * 1e-6);
+		EXPECT_NEAR(amounts(i, 1), x3(i, 1).val(),
+		  std::max(amounts(i, 1), x3(i, 1).val()) * 1e-6);
 	}
 }
 
