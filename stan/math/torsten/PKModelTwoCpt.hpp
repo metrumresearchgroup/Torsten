@@ -110,7 +110,7 @@ PKModelTwoCpt(const std::vector<T0>& pMatrix,
               const std::vector<int>& ss) {
   std::vector<std::vector<T0> > vec_pMatrix(1);
   vec_pMatrix[0] = pMatrix;
-  
+
   return PKModelTwoCpt(vec_pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
 }
 

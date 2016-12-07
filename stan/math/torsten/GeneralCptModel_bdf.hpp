@@ -119,9 +119,9 @@ generalCptModel_bdf(const F& f,
                     long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T0> > vec_pMatrix(1);
   vec_pMatrix[0] = pMatrix;
-  
+
   return generalCptModel_bdf(f, nCmt,
     vec_pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
-}                    
+}
 
 #endif

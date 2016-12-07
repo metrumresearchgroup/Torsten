@@ -124,7 +124,7 @@ generalCptModel_rk45(const F& f,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T0> > vec_pMatrix(1);
   vec_pMatrix[0] = pMatrix;
-  
+
   return generalCptModel_rk45(f, nCmt,
     vec_pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
 }

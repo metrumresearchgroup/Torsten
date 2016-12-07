@@ -112,7 +112,7 @@ linCptModel(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic,
             const std::vector<int>& ss) {
   std::vector<std::vector<T1> > vec_pMatrix(1);
   vec_pMatrix[0] = pMatrix;
-  
+
   return linCptModel(system,
     vec_pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
 }
@@ -135,7 +135,7 @@ linCptModel(const Eigen::Matrix<T0, Eigen::Dynamic,
   std::vector<Eigen::Matrix<T0, Eigen::Dynamic,
               Eigen::Dynamic> > vec_system(1);
   vec_system[0] = system;
-  
+
   return linCptModel(vec_system,
     pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
 }
@@ -158,10 +158,10 @@ linCptModel(const Eigen::Matrix<T0, Eigen::Dynamic,
   std::vector<Eigen::Matrix<T0, Eigen::Dynamic,
               Eigen::Dynamic> > vec_system(1);
   vec_system[0] = system;
-  
+
   std::vector<std::vector<T1> > vec_pMatrix(1);
   vec_pMatrix[0] = pMatrix;
-  
+
   return linCptModel(vec_system,
     vec_pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
 }

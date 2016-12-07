@@ -110,7 +110,7 @@ TEST(Torsten, PKModelTwoCpt_MultipleDoses_overload) {
 
 	stan::math::matrix_v x;
 	x = PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
-	
+
 	Matrix<double, Dynamic, Dynamic> amounts(10, 3);
 	amounts << 1000.0, 0.0, 0.0,
 			   740.818221, 238.3713, 12.75775,
