@@ -3,6 +3,7 @@
 
 #include <stan/math/version.hpp>
 
+#include <stan/math/prim/scal/meta/ad_promotable.hpp>
 #include <stan/math/prim/scal/meta/child_type.hpp>
 #include <stan/math/prim/scal/meta/container_view.hpp>
 #include <stan/math/prim/scal/meta/contains_fvar.hpp>
@@ -38,7 +39,6 @@
 #include <stan/math/prim/scal/err/check_bounded.hpp>
 #include <stan/math/prim/scal/err/check_consistent_size.hpp>
 #include <stan/math/prim/scal/err/check_consistent_sizes.hpp>
-#include <stan/math/prim/scal/err/check_equal.hpp>
 #include <stan/math/prim/scal/err/check_finite.hpp>
 #include <stan/math/prim/scal/err/check_greater.hpp>
 #include <stan/math/prim/scal/err/check_greater_or_equal.hpp>
@@ -57,22 +57,34 @@
 #include <stan/math/prim/scal/err/out_of_range.hpp>
 
 #include <stan/math/prim/scal/fun/abs.hpp>
+#include <stan/math/prim/scal/fun/acosh.hpp>
+#include <stan/math/prim/scal/fun/asinh.hpp>
+#include <stan/math/prim/scal/fun/atanh.hpp>
 #include <stan/math/prim/scal/fun/as_bool.hpp>
 #include <stan/math/prim/scal/fun/bessel_first_kind.hpp>
 #include <stan/math/prim/scal/fun/bessel_second_kind.hpp>
 #include <stan/math/prim/scal/fun/binary_log_loss.hpp>
 #include <stan/math/prim/scal/fun/binomial_coefficient_log.hpp>
+#include <stan/math/prim/scal/fun/boost_policy.hpp>
+#include <stan/math/prim/scal/fun/cbrt.hpp>
+#include <stan/math/prim/scal/fun/choose.hpp>
 #include <stan/math/prim/scal/fun/constants.hpp>
 #include <stan/math/prim/scal/fun/corr_constrain.hpp>
 #include <stan/math/prim/scal/fun/corr_free.hpp>
 #include <stan/math/prim/scal/fun/digamma.hpp>
 #include <stan/math/prim/scal/fun/divide.hpp>
+#include <stan/math/prim/scal/fun/erf.hpp>
+#include <stan/math/prim/scal/fun/erfc.hpp>
 #include <stan/math/prim/scal/fun/exp2.hpp>
 #include <stan/math/prim/scal/fun/exp.hpp>
+#include <stan/math/prim/scal/fun/expm1.hpp>
 #include <stan/math/prim/scal/fun/F32.hpp>
 #include <stan/math/prim/scal/fun/falling_factorial.hpp>
 #include <stan/math/prim/scal/fun/fdim.hpp>
 #include <stan/math/prim/scal/fun/fill.hpp>
+#include <stan/math/prim/scal/fun/fma.hpp>
+#include <stan/math/prim/scal/fun/fmax.hpp>
+#include <stan/math/prim/scal/fun/fmin.hpp>
 #include <stan/math/prim/scal/fun/gamma_p.hpp>
 #include <stan/math/prim/scal/fun/gamma_q.hpp>
 #include <stan/math/prim/scal/fun/grad_2F1.hpp>
@@ -80,6 +92,7 @@
 #include <stan/math/prim/scal/fun/grad_inc_beta.hpp>
 #include <stan/math/prim/scal/fun/grad_reg_inc_beta.hpp>
 #include <stan/math/prim/scal/fun/grad_reg_inc_gamma.hpp>
+#include <stan/math/prim/scal/fun/hypot.hpp>
 #include <stan/math/prim/scal/fun/ibeta.hpp>
 #include <stan/math/prim/scal/fun/identity_constrain.hpp>
 #include <stan/math/prim/scal/fun/identity_free.hpp>
@@ -98,6 +111,7 @@
 #include <stan/math/prim/scal/fun/lb_constrain.hpp>
 #include <stan/math/prim/scal/fun/lb_free.hpp>
 #include <stan/math/prim/scal/fun/lbeta.hpp>
+#include <stan/math/prim/scal/fun/ldexp.hpp>
 #include <stan/math/prim/scal/fun/lgamma.hpp>
 #include <stan/math/prim/scal/fun/lmgamma.hpp>
 #include <stan/math/prim/scal/fun/log.hpp>
@@ -140,11 +154,14 @@
 #include <stan/math/prim/scal/fun/promote_scalar.hpp>
 #include <stan/math/prim/scal/fun/promote_scalar_type.hpp>
 #include <stan/math/prim/scal/fun/rising_factorial.hpp>
+#include <stan/math/prim/scal/fun/round.hpp>
 #include <stan/math/prim/scal/fun/sign.hpp>
 #include <stan/math/prim/scal/fun/square.hpp>
 #include <stan/math/prim/scal/fun/squared_distance.hpp>
 #include <stan/math/prim/scal/fun/step.hpp>
+#include <stan/math/prim/scal/fun/tgamma.hpp>
 #include <stan/math/prim/scal/fun/trigamma.hpp>
+#include <stan/math/prim/scal/fun/trunc.hpp>
 #include <stan/math/prim/scal/fun/ub_constrain.hpp>
 #include <stan/math/prim/scal/fun/ub_free.hpp>
 #include <stan/math/prim/scal/fun/value_of.hpp>
@@ -156,6 +173,7 @@
 #include <stan/math/prim/scal/prob/bernoulli_log.hpp>
 #include <stan/math/prim/scal/prob/bernoulli_logit_log.hpp>
 #include <stan/math/prim/scal/prob/bernoulli_rng.hpp>
+#include <stan/math/prim/scal/prob/bernoulli_logit_rng.hpp>
 #include <stan/math/prim/scal/prob/beta_binomial_ccdf_log.hpp>
 #include <stan/math/prim/scal/prob/beta_binomial_cdf.hpp>
 #include <stan/math/prim/scal/prob/beta_binomial_cdf_log.hpp>
