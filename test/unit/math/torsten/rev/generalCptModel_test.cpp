@@ -106,6 +106,77 @@ TEST(Torsten, genCpt_One_SingleDose) {
   }
 }
 
+TEST(Torsten, genCpt_One_SingleDose_overload) {
+  using std::vector;
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
+
+  double rel_err = 1e-6;
+  
+  vector<AVAR> pMatrix(7);
+  pMatrix[0] = 10; // CL
+  pMatrix[1] = 80; // Vc
+  pMatrix[2] = 1.2; // ka
+  pMatrix[3] = 1; // F1
+  pMatrix[4] = 1; // F2
+  pMatrix[5] = 0; // tlag1
+  pMatrix[6] = 0; // tlag2
+
+  vector<double> time(10);
+  time[0] = 0.0;
+  for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
+  time[9] = 4.0;
+
+  vector<double> amt(10, 0);
+  amt[0] = 1000;
+	
+  vector<double> rate(10, 0);
+	
+  vector<int> cmt(10, 2);
+  cmt[0] = 1;
+	
+  vector<int> evid(10, 0);
+  evid[0] = 1;
+
+  vector<double> ii(10, 0);
+  ii[0] = 12;
+	
+  vector<int> addl(10, 0);
+  addl[0] = 14;
+	
+  vector<int> ss(10, 0);
+
+  stan::math::matrix_v x_rk45;
+  x_rk45 = generalCptModel_rk45(oneCptModelODE_functor(), 2,
+                                pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
+                                1e-8, 1e-8, 1e8);
+
+  stan::math::matrix_v x_bdf;
+  x_bdf = generalCptModel_bdf(oneCptModelODE_functor(), 2,
+                              pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
+                              1e-8, 1e-8, 1e8);
+	
+  Matrix<double, Dynamic, Dynamic> amounts(10, 2);
+  amounts << 1000.0, 0.0,
+	  	     740.8182, 254.97490,
+			 548.8116, 436.02020,
+			 406.5697, 562.53846,
+			 301.1942, 648.89603,
+			 223.1302, 705.72856,
+			 165.2989, 740.90816,
+			 122.4564, 760.25988,
+			 90.71795, 768.09246,
+			 8.229747, 667.87079;
+
+  for (size_t i = 0; i < amounts.rows(); i++)
+    for (size_t j = 0; j < amounts.cols(); j++) {
+      EXPECT_NEAR(amounts(i, j), x_rk45(i, j).val(),
+        std::max(amounts(i, j), x_rk45(i, j).val()) * rel_err);
+      EXPECT_NEAR(amounts(i, j), x_bdf(i, j).val(),
+        std::max(amounts(i, j), x_bdf(i, j).val()) * rel_err);
+  }
+}
+
 template <typename T0, typename T1, typename T2, typename T3>
 inline
 std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>

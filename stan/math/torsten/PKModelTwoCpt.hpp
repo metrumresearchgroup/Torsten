@@ -37,8 +37,7 @@
 template <typename T0, typename T1, typename T2, typename T3, typename T4>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   T4>::type, Eigen::Dynamic, Eigen::Dynamic>
-PKModelTwoCpt(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >&
-                pMatrix,
+PKModelTwoCpt(std::vector<std::vector<T0> >& pMatrix,
               const std::vector<T1>& time,
               const std::vector<T2>& amt,
               const std::vector<T3>& rate,
@@ -51,6 +50,7 @@ PKModelTwoCpt(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >&
   using Eigen::Dynamic;
   using Eigen::Matrix;
   using boost::math::tools::promote_args;
+  using stan::math::check_positive_finite;
 
   PKModel model("TwoCptModel");  // Define class of model
   static const char* function("PKModelTwoCpt");
@@ -59,16 +59,11 @@ PKModelTwoCpt(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >&
   pmetricsCheck(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, function,
     model);
   for (int i = 0; i < pMatrix.size(); i++) {
-    stan::math::check_positive_finite(function, "PK parameter CL",
-      pMatrix[i](0, 0));
-    stan::math::check_positive_finite(function, "PK parameter Q",
-      pMatrix[i](1, 0));
-    stan::math::check_positive_finite(function, "PK parameter V2",
-      pMatrix[i](2, 0));
-    stan::math::check_positive_finite(function, "PK parameter V3",
-      pMatrix[i](3, 0));
-    stan::math::check_positive_finite(function, "PK parameter ka",
-      pMatrix[i](4, 0));
+    check_positive_finite(function, "PK parameter CL", pMatrix[i][0]);
+    check_positive_finite(function, "PK parameter Q", pMatrix[i][1]);
+    check_positive_finite(function, "PK parameter V2", pMatrix[i][2]);
+    check_positive_finite(function, "PK parameter V3", pMatrix[i][3]);
+    check_positive_finite(function, "PK parameter ka", pMatrix[i][4]);
   }
   std::string message4 = ", but must equal the number of parameters in the model: " // NOLINT
     + boost::lexical_cast<std::string>(model.GetNParameter()) + "!";
@@ -95,6 +90,28 @@ PKModelTwoCpt(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic, 1> >&
     dummy_ode(), dummy_systems);
 
   return pred;
+}
+
+/*
+ * Overload function to allow user to pass an std::vector for 
+ * pMatrix.
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  T4>::type, Eigen::Dynamic, Eigen::Dynamic>
+PKModelTwoCpt(const std::vector<T0>& pMatrix,
+              const std::vector<T1>& time,
+              const std::vector<T2>& amt,
+              const std::vector<T3>& rate,
+              const std::vector<T4>& ii,
+              const std::vector<int>& evid,
+              const std::vector<int>& cmt,
+              const std::vector<int>& addl,
+              const std::vector<int>& ss) {
+  std::vector<std::vector<T0> > vec_pMatrix(1);
+  vec_pMatrix[0] = pMatrix;
+
+  return PKModelTwoCpt(vec_pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
 }
 
 #endif
