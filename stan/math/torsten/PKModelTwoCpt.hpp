@@ -58,7 +58,7 @@ PKModelTwoCpt(std::vector<std::vector<T0> >& pMatrix,
   // Check arguments
   pmetricsCheck(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, function,
     model);
-  for (int i = 0; i < pMatrix.size(); i++) {
+  for (size_t i = 0; i < pMatrix.size(); i++) {
     check_positive_finite(function, "PK parameter CL", pMatrix[i][0]);
     check_positive_finite(function, "PK parameter Q", pMatrix[i][1]);
     check_positive_finite(function, "PK parameter V2", pMatrix[i][2]);
@@ -68,7 +68,7 @@ PKModelTwoCpt(std::vector<std::vector<T0> >& pMatrix,
   std::string message4 = ", but must equal the number of parameters in the model: " // NOLINT
     + boost::lexical_cast<std::string>(model.GetNParameter()) + "!";
   const char* length_error4 = message4.c_str();
-  if (!(pMatrix[0].size() == model.GetNParameter()))
+  if (!(pMatrix[0].size() == (size_t) model.GetNParameter()))
     stan::math::invalid_argument(function,
     "The number of parameters per event (length of a vector in the first argument) is", // NOLINT
     pMatrix[0].size(), "", length_error4);

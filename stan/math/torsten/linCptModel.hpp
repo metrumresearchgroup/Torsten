@@ -64,7 +64,7 @@ linCptModel(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic,
   using boost::math::tools::promote_args;
 
   static const char* function("linCptModel");
-  for (int i = 0; i < system.size(); i++)
+  for (size_t i = 0; i < system.size(); i++)
     stan::math::check_square(function, "system matrix", system[i]);
   int nCmt = system[0].cols();
 

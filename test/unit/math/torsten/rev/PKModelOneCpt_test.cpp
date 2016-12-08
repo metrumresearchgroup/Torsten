@@ -58,8 +58,8 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses) {
 			   90.71795, 768.09246,
 			   8.229747, 667.87079;
    
-  for (size_t i = 0; i < amounts.rows(); i++)
-    for (size_t j = 0; j < amounts.cols(); j++)
+  for (int i = 0; i < amounts.rows(); i++)
+    for (int j = 0; j < amounts.cols(); j++)
       EXPECT_FLOAT_EQ(amounts(i, j), x(i, j).val());
 }
 
@@ -113,8 +113,8 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses_overload) {
 			   90.71795, 768.09246,
 			   8.229747, 667.87079;
    
-  for (size_t i = 0; i < amounts.rows(); i++)
-    for (size_t j = 0; j < amounts.cols(); j++)
+  for (int i = 0; i < amounts.rows(); i++)
+    for (int j = 0; j < amounts.cols(); j++)
       EXPECT_FLOAT_EQ(amounts(i, j), x(i, j).val());
 }
 

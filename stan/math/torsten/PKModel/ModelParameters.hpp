@@ -107,8 +107,9 @@ public:
    * for all events
    */
   T_parameters GetValue(int iEvent, int iParameter) {
-    assert((iEvent >= 0) && (iEvent < MPV.size()));
-    assert((iParameter >= 0) && (iParameter < MPV[0].RealParameters.size()));
+    assert((iEvent >= 0) && ((size_t) iEvent < MPV.size()));
+    assert((iParameter >= 0) && ((size_t) iParameter
+      < MPV[0].RealParameters.size()));
     return MPV[iEvent].RealParameters[iParameter];
   }
 

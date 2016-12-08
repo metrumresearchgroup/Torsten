@@ -75,7 +75,7 @@ PolyExp(const T_x& x,
   scalar result = 0, bolusResult, dx, nlntv;
   double inf = std::numeric_limits<double>::max();  // "infinity"
 
-  assert((alpha.size() >= n) && (a.size() >= n));
+  assert((alpha.size() >= (size_t) n) && (a.size() >= (size_t) n));
 
   // UPDATE DOSE
   if (dose > 0) {  // bolus dose

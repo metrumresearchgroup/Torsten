@@ -47,7 +47,7 @@ Pred1_general_solver(const T_time& dt,
 
   typedef typename boost::math::tools::promote_args<T_time, T_rate,
     T_parameters>::type scalar;
-  assert(init.cols() == rate.size());
+  assert((size_t) init.cols() == rate.size());
 
   T_time EventTime = parameter.get_time();  // time of current event
   T_time InitTime = EventTime - dt;  // time of previous event
@@ -57,11 +57,11 @@ Pred1_general_solver(const T_time& dt,
   EventTime_d[0] = unpromote(EventTime);
   double InitTime_d = unpromote(InitTime);
   vector<double> rate_d = vector<double>(rate.size(), static_cast<double>(0));
-  for (int i = 0; i < rate.size(); i++) rate_d[i] = unpromote(rate[i]);
+  for (size_t i = 0; i < rate.size(); i++) rate_d[i] = unpromote(rate[i]);
 
   vector<T_parameters> theta = parameter.get_RealParameters();
   vector<scalar> init_vector = vector<scalar>(init.cols(), scalar(0));
-  for (int i = 0; i < init_vector.size(); i++) init_vector[i] = init(0, i);
+  for (size_t i = 0; i < init_vector.size(); i++) init_vector[i] = init(0, i);
 
   Eigen::Matrix<scalar, 1, Eigen::Dynamic> pred;
   if (EventTime_d[0] == InitTime_d) { pred = init;
@@ -74,7 +74,7 @@ Pred1_general_solver(const T_time& dt,
 
     // Convert vector in row-major vector (eigen Matrix)
     pred.resize(pred_V[0].size());
-    for (int i = 0; i < pred_V[0].size(); i++) pred(0, i) = pred_V[0][i];
+    for (size_t i = 0; i < pred_V[0].size(); i++) pred(0, i) = pred_V[0][i];
   }
   return pred;
 }

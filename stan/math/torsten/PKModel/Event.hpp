@@ -277,7 +277,7 @@ public:
     Event<T_time, T_amt, T_rate, T_ii> newEvent;
 
     int nlag = tlagIndexes.size();
-    assert(nlag == tlagCmts.size());
+    assert((size_t) nlag == tlagCmts.size());
     if (nlag > 0) {
       int nEvent = Events.size(), pSize = Parameters.get_size();
       assert((pSize = nEvent) || (pSize == 1));
