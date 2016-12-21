@@ -92,8 +92,7 @@ PKModelOneCpt(const std::vector<std::vector<T0> >& pMatrix,
 }
 
 /*
- * Overload function to allow user to pass an std::vector for 
- * pMatrix.
+ * Overload function to allow user to pass an std::vector for pMatrix.
  */
 template <typename T0, typename T1, typename T2, typename T3, typename T4>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
