@@ -50,7 +50,6 @@ finite_diff_params(const std::vector<std::vector<double> >& pMatrix,
   return (pk_res_ub - pk_res_lb) / (2 * diff);
 }
 
-
 /*
  * Test PKModelOneCpt with only pMatrix as vars and all other continuous
  * arguments as double.
@@ -106,14 +105,18 @@ void test_PKModelOneCpt_finite_diff_v(
   int nCmt = 2;
   size_t nEvent = time.size();
 
-  // Identify points with parameters w.r.t which
-  // PKModelOneCpt is discontinuous.  
-  vector<int> discParmIndex;
+  // Identify discontinuous points, i.e events when
+  // a dosing happens.
+  vector<int> tlagIndexes(nCmt);
   for (int i = 0; i < nCmt; i++)
+    tlagIndexes[i] = parmCols - nCmt + i;
+
+  vector<vector<double> > discTimes(2);
+  for (int i = 0; i < nCmt; i++) 
     for (size_t j = 0; j < nEvent; j++)
       if ((evid[j] == 1 || evid[j] == 4) &&  // dosing event
         (rate[j] == 0))  // bolus dosing
-        discParmIndex.push_back(parmCols - (i + 1));
+        discTimes[i].push_back(time[j] + pMatrix[j][tlagIndexes[i]]);
 
   vector<double> grads_eff(nEvent * nCmt);
   for (size_t i = 0; i < nEvent; i++)
@@ -121,12 +124,21 @@ void test_PKModelOneCpt_finite_diff_v(
       grads_eff.clear();
       ode_res(i, j).grad(parameters, grads_eff);
 
+      std::cout << "AD grad: ";
+      for (size_t m = 0; m < grads_eff.size(); m++)
+        std::cout << grads_eff[m] << " ";
+      std::cout << std::endl;
+
       for (size_t k = 0; k < parmRows; k++)
         for (size_t l = 0; l < parmCols; l++) {
 
-          bool discontinuous = false;
-          for (size_t m = 0; m < discParmIndex.size(); m++)
-            if ((int) l == discParmIndex[m]) discontinuous = true;
+         bool discontinuous = false;
+         for (size_t m = 0; m < discTimes[j].size(); m++)
+            if (time[i] == discTimes[j][m])
+              discontinuous = true;
+
+          // std::cout << "Parameter value: " << parameters[k * parmCols + l]
+          //  << std::endl;
 
           if (discontinuous == false) {
             EXPECT_NEAR(grads_eff[k * parmCols + l],
@@ -140,7 +152,6 @@ void test_PKModelOneCpt_finite_diff_v(
         }
       stan::math::set_zero_all_adjoints();
     }
-
 }
 
 void test_PKModelOneCpt(const std::vector<std::vector<double> >& pMatrix,
@@ -158,12 +169,10 @@ void test_PKModelOneCpt(const std::vector<std::vector<double> >& pMatrix,
                                    cmt, addl, ss, diff, diff2);
 }
 
-
 // More tests
 // test_ode_error_conditions
 // test_ode_error_conditions_nan
 // test_ode_error_conditions_inf
 // test_ode_error_conditions_vd
-// test_ode : runs all the ODEs
 
 #endif

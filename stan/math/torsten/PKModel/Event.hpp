@@ -44,7 +44,7 @@ private:
   T_rate rate;
   T_ii ii;
   int evid, cmt, addl, ss;
-  bool keep, isnew;
+  bool keep, isnew, lagEvent;
 
 public:
   Event() {
@@ -57,6 +57,7 @@ public:
     ss = 0;
     keep = false;
     isnew = false;
+    lagEvent = false;
   }
 
   Event(T_time p_time, T_amt p_amt, T_rate p_rate, T_ii p_ii, int p_evid,
@@ -71,6 +72,7 @@ public:
     ss = p_ss;
     keep = p_keep;
     isnew = p_isnew;
+    lagEvent = false;
   }
 
   /**
@@ -91,6 +93,7 @@ public:
     newEvent.ss = p_ss;
     newEvent.keep = p_keep;
     newEvent.isnew = p_isnew;
+    newEvent.lagEvent = false;
     return newEvent;
   }
 
@@ -105,6 +108,7 @@ public:
   int get_ss() { return ss; }
   bool get_keep() { return keep; }
   bool get_isnew() { return isnew; }
+  bool get_lagEvent() { return lagEvent; }
 
   void Print() {
     std::cout << time << " "
@@ -116,7 +120,8 @@ public:
               << addl << " "
               << ss << " "
               << keep << " "
-              << isnew << std::endl;
+              << isnew << " "
+              << lagEvent << std::endl;
   }
 
   // declare friends
@@ -228,7 +233,11 @@ public:
   struct by_time {
     bool operator()(const Event<T_time, T_amt, T_rate, T_ii> &a,
       const Event<T_time, T_amt, T_rate, T_ii> &b) {
-      return a.time < b.time;
+      bool sorted;
+      if (a.time == b.time)
+        sorted = a.lagEvent > b.lagEvent;
+      else sorted = a.time < b.time;
+      return sorted;
     }
   };
 
@@ -273,38 +282,40 @@ public:
   template<typename T_parameters, typename T_system>
   void AddLagTimes(ModelParameterHistory<T_time, T_parameters, T_system>
     Parameters, std::vector<int> tlagIndexes, std::vector<int> tlagCmts) {
-    int i, j, evid, cmt, ipar;
-    Event<T_time, T_amt, T_rate, T_ii> newEvent;
-
     int nlag = tlagIndexes.size();
     assert((size_t) nlag == tlagCmts.size());
     if (nlag > 0) {
       int nEvent = Events.size(), pSize = Parameters.get_size();
       assert((pSize = nEvent) || (pSize == 1));
 
-      i = nEvent - 1;
+      int i = nEvent - 1, evid, cmt, ipar;
+      Event<T_time, T_amt, T_rate, T_ii> newEvent;
       while (i >= 0) {
         evid = Events[i].evid;
         cmt = Events[i].cmt;
 
         if ((evid == 1) || (evid == 4)) {
-          j = 0;
+          int j = 0;
           while ((cmt != tlagCmts[j]) && (j < nlag)) j++;
-          ipar = std::min(i, pSize - 1);  // ipar is the index of ith
+          ipar = std::min(i, pSize - 1);  // ipar is the index of the ith
                                           // event or 0, if the parameters
                                           // are constant.
-          if ((cmt == tlagCmts[j])
-            && (Parameters.GetValue(ipar, tlagIndexes[j]) != 0)) {
-              newEvent = GetEvent(i);
-              newEvent.time += Parameters.GetValue(ipar, tlagIndexes[j]);
-              newEvent.keep = false;
-              newEvent.isnew = true;
-              // newEvent.evid = 2; // - CHECK
-              InsertEvent(newEvent);
 
-              Events[i].evid = 2;
-              // The above statement changes events so that CleanEvents does
-              // not return an object identical to the original. - CHECK
+          // if ((cmt == tlagCmts[j])
+          //  && (Parameters.GetValue(ipar, tlagIndexes[j]) != 0)) {
+          if (cmt == tlagCmts[j]) {
+            newEvent = GetEvent(i);
+            newEvent.time += Parameters.GetValue(ipar, tlagIndexes[j]);
+            newEvent.keep = false;
+            newEvent.isnew = true;
+            // newEvent.lagEvent = false;
+            // newEvent.evid = 2; // - CHECK
+            InsertEvent(newEvent);
+
+            Events[i].evid = 2;
+            // Events[i].time += evid;
+            // The above statement changes events so that CleanEvents does
+            // not return an object identical to the original. - CHECK
           }
         }
         i--;
