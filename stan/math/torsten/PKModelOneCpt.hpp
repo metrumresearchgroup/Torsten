@@ -88,8 +88,6 @@ PKModelOneCpt(const std::vector<std::vector<T0> >& pMatrix,
   pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model,
     dummy_ode(), dummy_systems);
 
-  //std::cout << pred << std::endl;
-
   return pred;
 }
 
