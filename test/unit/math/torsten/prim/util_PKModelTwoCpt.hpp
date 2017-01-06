@@ -7,7 +7,7 @@
 #include <test/unit/util.hpp>
 
 /*
- * Calculates finite difference for PKModelOneCpt with varying parameters. 
+ * Calculates finite difference for PKModelTwoCpt with varying parameters. 
  */
 Eigen::Matrix <double, Eigen::Dynamic, Eigen::Dynamic>
 finite_diff_params(const std::vector<std::vector<double> >& pMatrix,

@@ -7,7 +7,7 @@
 #include <test/unit/util.hpp>
 
 /*
- * Calculates finite difference for PKModelOneCpt with varying parameters. 
+ * Calculates finite difference for generalOdeModel with varying parameters. 
  */
 template <typename F>
 Eigen::Matrix <double, Eigen::Dynamic, Eigen::Dynamic>
@@ -32,7 +32,7 @@ finite_diff_params(const F& f,
   using std::vector;
   using Eigen::Matrix;
   using Eigen::Dynamic;
-
+  
   vector<double> parameters(pMatrix[0].size());
   vector<vector<double> > pMatrix_ub(pMatrix.size(), parameters);
   vector<vector<double> > pMatrix_lb(pMatrix.size(), parameters);
@@ -49,24 +49,23 @@ finite_diff_params(const F& f,
 
   Matrix<double, Dynamic, Dynamic> pk_res_ub;
   Matrix<double, Dynamic, Dynamic> pk_res_lb;
-/*  if (odeInt == "rk45") {
+  if (odeInt == "rk45") {
     pk_res_ub = generalCptModel_rk45(f, nCmt, pMatrix_ub, time, amt, rate, ii,
                                      evid, cmt,addl, ss);
     pk_res_lb = generalCptModel_rk45(f, nCmt, pMatrix_lb, time, amt, rate, ii,
                                      evid, cmt, addl, ss);
   }
   if (odeInt == "bdf") {
-    pk_res_ub = generalCptModel_rk45(f, nCmt, pMatrix_ub, time, amt, rate, ii,
+    pk_res_ub = generalCptModel_bdf(f, nCmt, pMatrix_ub, time, amt, rate, ii,
                                      evid, cmt,addl, ss);
-    pk_res_lb = generalCptModel_rk45(f, nCmt, pMatrix_lb, time, amt, rate, ii,
+    pk_res_lb = generalCptModel_bdf(f, nCmt, pMatrix_lb, time, amt, rate, ii,
                                      evid, cmt, addl, ss);  
   }
-*/
   return (pk_res_ub - pk_res_lb) / (2 * diff);
 }
 
 /*
- * Test PKModelOneCpt with only pMatrix as vars and all other continuous
+ * Test generalOdeModel with only pMatrix as vars and all other continuous
  * arguments as double.
  * Note: There is known issue when computing the derivative w.r.t the
  * lag time of a dosing compartment. The issue is reported on GitHub,
@@ -108,10 +107,11 @@ void test_generalOdeModel_finite_diff_v(
       finite_diff_res[i][j] = finite_diff_params(f, nCmt, pMatrix, time, amt,
                                                  rate, ii, evid, cmt, addl,
                                                  ss, rel_tol, abs_tol, 
-                                                 max_num_steps, i, j, diff);
+                                                 max_num_steps, i, j, diff,
+                                                 odeInt);
     }
   }
-/*
+
   // Create pMatrix with vars
   vector<var> parameters(total_param);
   vector<vector<var> > pMatrix_v(parmRows);
@@ -124,7 +124,16 @@ void test_generalOdeModel_finite_diff_v(
   }
 
   Matrix<var, Dynamic, Dynamic> ode_res;
-  ode_res = PKModelOneCpt(pMatrix_v, time, amt, rate, ii, evid, cmt, addl, ss);
+  if (odeInt == "rk45")
+    ode_res = generalCptModel_rk45(f, nCmt, pMatrix_v,
+                                   time, amt, rate, ii, evid, cmt, addl, ss,
+                                   rel_tol, abs_tol, max_num_steps);
+
+  if (odeInt == "bdf")
+    ode_res = generalCptModel_bdf(f, nCmt, pMatrix_v,
+                                  time, amt, rate, ii, evid, cmt, addl, ss,
+                                  rel_tol, abs_tol, max_num_steps);
+
 
   size_t nEvent = time.size();
 
@@ -152,7 +161,7 @@ void test_generalOdeModel_finite_diff_v(
           if (discontinuous == false) {
             EXPECT_NEAR(grads_eff[k * parmCols + l],
               finite_diff_res[k][l](i, j), diff2)
-              << "Gradient of PKModelOneCpt failed with known"
+              << "Gradient of generalOdeModel failed with known"
               << " time, amt, rate, ii, evid, cmt, addl, ss "
               << " and unknown parameters at event " << i
               << ", in compartment " << j
@@ -160,7 +169,7 @@ void test_generalOdeModel_finite_diff_v(
           }
         }
       stan::math::set_zero_all_adjoints();
-    } */
+    }
 }
 
 template <typename F>
@@ -181,9 +190,10 @@ void test_generalOdeModel(const F& f,
                           const double& diff,
                           const double& diff2,
                           std::string odeInt) {
-  test_generalOdeModel(f, nCmt, pMatrix, time, amt, rate, ii, evid, cmt,
-                       addl, ss, rel_tol, abs_tol, max_num_steps, diff, diff2,
-                       odeInt);
+  test_generalOdeModel_finite_diff_v(f, nCmt, pMatrix, time, amt, rate,
+                                     ii, evid, cmt, addl, ss, rel_tol, 
+                                     abs_tol, max_num_steps, diff, diff2,
+                                     odeInt);
 }
 
 template <typename F>
