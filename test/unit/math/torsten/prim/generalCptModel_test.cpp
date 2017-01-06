@@ -4,6 +4,7 @@
 #include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
 #include <stan/math/torsten/GeneralCptModel_rk45.hpp>
 #include <stan/math/torsten/GeneralCptModel_bdf.hpp>
+// #include <test/unit/math/torsten/prim/util_generalOdeModel.hpp>
 
 template <typename T0, typename T1, typename T2, typename T3>
 inline
@@ -78,17 +79,20 @@ TEST(Torsten, genCpt_One_SingleDose) {
 	
   vector<int> ss(10, 0);
 
+  double rel_tol = 1e-8, abs_tol = 1e-8;
+  long int max_num_steps = 1e8;
+  int nCmt = 2;
   Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_rk45;
-  x_rk45 = generalCptModel_rk45(oneCptModelODE_functor(), 2,
+  x_rk45 = generalCptModel_rk45(oneCptModelODE_functor(), nCmt,
                                 pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
-                                1e-8, 1e-8, 1e8);
+                                rel_tol, abs_tol, max_num_steps);
 
   Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_bdf;
-  x_bdf = generalCptModel_bdf(oneCptModelODE_functor(), 2,
+  x_bdf = generalCptModel_bdf(oneCptModelODE_functor(), nCmt,
                               pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
-                              1e-8, 1e-8, 1e8);
-	
-  Matrix<double, Dynamic, Dynamic> amounts(10, 2);
+                              rel_tol, abs_tol, max_num_steps);
+
+  Matrix<double, Dynamic, Dynamic> amounts(10, nCmt);
   amounts << 1000.0, 0.0,
 	  	     740.8182, 254.97490,
 			 548.8116, 436.02020,
@@ -102,6 +106,13 @@ TEST(Torsten, genCpt_One_SingleDose) {
 
   expect_near_matrix_eq(amounts, x_rk45, rel_err);
   expect_near_matrix_eq(amounts, x_bdf, rel_err);
+
+  // Test AutoDiff against FiniteDiff
+/*  double diff = 1e-8, diff2 = 1e-4;
+  test_generalOdeModel(oneCptModelODE_functor(), nCmt, pMatrix,
+                       time, amt, rate, ii, evid, cmt, addl, ss,
+                       rel_tol, abs_tol, max_num_steps, diff, diff2, "rk45");
+                       */
 }
 
 TEST(Torsten, genCpt_One_SingleDose_overload) {

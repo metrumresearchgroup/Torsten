@@ -1,6 +1,7 @@
 #include <stan/math/torsten/torsten.hpp>
 #include <gtest/gtest.h>
 #include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
+#include <test/unit/math/torsten/prim/util_PKModelTwoCpt.hpp>
 
 using std::vector;
 using Eigen::Matrix;
@@ -62,6 +63,11 @@ TEST(Torsten, PKModelTwoCpt_MultipleDoses) {
 			   8.229747, 200.8720, 441.38985;
 			   
 	expect_matrix_eq(amounts, x);
+
+	// Test AutoDiff against FiniteDiff
+    test_PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
+                       1e-8, 1e-4);
+
 }
 
 
@@ -120,6 +126,10 @@ TEST(Torsten, PKModelTwoCpt_MultipleDoses_overload) {
 			   8.229747, 200.8720, 441.38985;
 			   
 	expect_matrix_eq(amounts, x);
+
+	// Test AutoDiff against FiniteDiff
+    test_PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
+                       1e-8, 1e-4);
 }
 
 
@@ -183,6 +193,10 @@ TEST(Torsten, PKModelTwoCpt_SS) {
 		EXPECT_NEAR(amounts(i, 0), x(i, 0), std::max(amounts(i, 0), x(i, 0)) * 1e-6);
 		EXPECT_NEAR(amounts(i, 1), x(i, 1), std::max(amounts(i, 1), x(i, 1)) * 1e-6);
 	}
+
+	// Test AutoDiff against FiniteDiff
+    test_PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
+                       1e-8, 2e-4);
 }
 
 TEST(Torsten, PKModelTwoCpt_SS_rate) {
@@ -246,6 +260,10 @@ TEST(Torsten, PKModelTwoCpt_SS_rate) {
 		EXPECT_NEAR(amounts(i, 0), x(i, 0), std::max(amounts(i, 0), x(i, 0)) * 1e-6);
 		EXPECT_NEAR(amounts(i, 1), x(i, 1), std::max(amounts(i, 1), x(i, 1)) * 1e-6);
 	}
+
+	// Test AutoDiff against FiniteDiff
+    test_PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
+                       1e-8, 2e-4);
 }
 
 TEST(Torsten, PKModelTwoCpt_MultipleDoses_timePara) {
@@ -310,4 +328,8 @@ TEST(Torsten, PKModelTwoCpt_MultipleDoses_timePara) {
 			   1.678828e-04,   6.690631, 164.0364;
 			   
 	expect_matrix_eq(amounts, x);
+
+	// Test AutoDiff against FiniteDiff
+    test_PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
+                       1e-8, 1e-4);
 }

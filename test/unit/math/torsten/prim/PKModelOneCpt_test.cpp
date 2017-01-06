@@ -20,7 +20,7 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses) {
 	pMatrix[0][6] = 0; // tlag2
 
 	vector<double> time(10);
-	time[0] = 0; // SHOULD BE 0
+	time[0] = 0;
 	for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
 	time[9] = 4.0;
 
