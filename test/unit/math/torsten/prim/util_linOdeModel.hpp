@@ -255,7 +255,7 @@ void test_linearOdeModel_finite_diff_vd(
 }    
 
 void test_linOdeModel(const std::vector<Eigen::Matrix<double, Eigen::Dynamic,
-		        Eigen::Dynamic> > system,
+		                Eigen::Dynamic> > system,
                       const std::vector<std::vector<double> >& pMatrix,
                       const std::vector<double>& time,
                       const std::vector<double>& amt,
@@ -271,6 +271,88 @@ void test_linOdeModel(const std::vector<Eigen::Matrix<double, Eigen::Dynamic,
                                    ii, evid, cmt, addl, ss, diff, diff2);
 
   test_linearOdeModel_finite_diff_vd(system, pMatrix, time, amt, rate,
+                                     ii, evid, cmt, addl, ss, diff, diff2);
+}
+
+/*
+ * Overload with System as a matrix.
+ */
+void test_linOdeModel(const Eigen::Matrix<double, Eigen::Dynamic,
+		                Eigen::Dynamic> system,
+                      const std::vector<std::vector<double> >& pMatrix,
+                      const std::vector<double>& time,
+                      const std::vector<double>& amt,
+                      const std::vector<double>& rate,
+                      const std::vector<double>& ii,
+                      const std::vector<int>& evid,
+                      const std::vector<int>& cmt,
+                      const std::vector<int>& addl,
+                      const std::vector<int>& ss,
+                      const double& diff,
+                      const double& diff2) {
+  std::vector<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> >
+    system_vec(1, system);
+
+  test_linearOdeModel_finite_diff_dv(system_vec, pMatrix, time, amt, rate,
+                                   ii, evid, cmt, addl, ss, diff, diff2);
+
+  test_linearOdeModel_finite_diff_vd(system_vec, pMatrix, time, amt, rate,
+                                     ii, evid, cmt, addl, ss, diff, diff2);
+}
+
+/*
+ * Overload with pMatrix as a 1d array.
+ */
+void test_linOdeModel(const std::vector<Eigen::Matrix<double, Eigen::Dynamic,
+		                Eigen::Dynamic> > system,
+                      const std::vector<double>& pMatrix,
+                      const std::vector<double>& time,
+                      const std::vector<double>& amt,
+                      const std::vector<double>& rate,
+                      const std::vector<double>& ii,
+                      const std::vector<int>& evid,
+                      const std::vector<int>& cmt,
+                      const std::vector<int>& addl,
+                      const std::vector<int>& ss,
+                      const double& diff,
+                      const double& diff2) {
+  using std::vector;
+  vector<vector<double> > pMatrix_vec(1, pMatrix);
+
+  test_linearOdeModel_finite_diff_dv(system, pMatrix_vec, time, amt, rate,
+                                   ii, evid, cmt, addl, ss, diff, diff2);
+
+  test_linearOdeModel_finite_diff_vd(system, pMatrix_vec, time, amt, rate,
+                                     ii, evid, cmt, addl, ss, diff, diff2);
+}
+
+/*
+ * Overload with System as a matrix and pMatrix 
+ * as a 1d array.
+ */
+void test_linOdeModel(const Eigen::Matrix<double, Eigen::Dynamic,
+		                Eigen::Dynamic> system,
+                      const std::vector<double>& pMatrix,
+                      const std::vector<double>& time,
+                      const std::vector<double>& amt,
+                      const std::vector<double>& rate,
+                      const std::vector<double>& ii,
+                      const std::vector<int>& evid,
+                      const std::vector<int>& cmt,
+                      const std::vector<int>& addl,
+                      const std::vector<int>& ss,
+                      const double& diff,
+                      const double& diff2) {
+  using std::vector;
+  vector<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> >
+    system_vec(1, system);
+
+  vector<vector<double> > pMatrix_vec(1, pMatrix);
+
+  test_linearOdeModel_finite_diff_dv(system_vec, pMatrix_vec, time, amt, rate,
+                                   ii, evid, cmt, addl, ss, diff, diff2);
+
+  test_linearOdeModel_finite_diff_vd(system_vec, pMatrix_vec, time, amt, rate,
                                      ii, evid, cmt, addl, ss, diff, diff2);
 }
 

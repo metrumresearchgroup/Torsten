@@ -66,7 +66,7 @@ TEST(Torsten, LinCpt_OneSS) {
 		EXPECT_NEAR(amounts(i, 1), x(i, 1), std::max(amounts(i, 1), x(i, 1)) * 1e-6);
 	}
 
-	double diff = 1e-8, diff2 = 1e-2;
+	double diff = 1e-8, diff2 = 1e-4;
 	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
 		                 ss, diff, diff2);
 }
@@ -147,9 +147,9 @@ TEST(Torsten, LinCpt_OneSS_overloads) {
 		  std::max(amounts(i, 1), x3(i, 1)) * 1e-6);
 	}
 
-//	double diff = 1e-8, diff2 = 1e-2;
-//	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
-//	                 ss, diff, diff2);
+	double diff = 1e-8, diff2 = 1e-4;
+	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
+		             ss, diff, diff2);
 }
 
 TEST(Torsten, linCptModel_OneSS_rate) {
@@ -212,9 +212,9 @@ TEST(Torsten, linCptModel_OneSS_rate) {
 		EXPECT_NEAR(amounts(i, 1), x(i, 1), std::max(amounts(i, 1), x(i, 1)) * 1e-6);
 	}
 
-//	double diff = 1e-8, diff2 = 1e-2;
-//	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
-//	                 ss, diff, diff2);
+	double diff = 1e-8, diff2 = 1e-4;
+	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
+		             ss, diff, diff2);
 
 }
 
@@ -280,8 +280,8 @@ TEST(Torsten, linOne_MultipleDoses_timePara) {
 
 	expect_matrix_eq(amounts, x);
 
-//	double diff = 1e-8, diff2 = 1e-2;
-//	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
-//	                 ss, diff, diff2);
+	double diff = 1e-8, diff2 = 1e-4;
+	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
+		             ss, diff, diff2);
 }
 
