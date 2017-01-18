@@ -1,6 +1,7 @@
 #include <stan/math/rev/mat.hpp>
 #include <gtest/gtest.h>
 #include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
+#include <test/unit/math/torsten/prim/util_linOdeModel.hpp>
 
 using std::vector;
 using Eigen::Matrix;
@@ -64,6 +65,10 @@ TEST(Torsten, LinCpt_OneSS) {
 		EXPECT_NEAR(amounts(i, 0), x(i, 0), std::max(amounts(i, 0), x(i, 0)) * 1e-6);
 		EXPECT_NEAR(amounts(i, 1), x(i, 1), std::max(amounts(i, 1), x(i, 1)) * 1e-6);
 	}
+
+	double diff = 1e-8, diff2 = 1e-4;
+	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
+		                 ss, diff, diff2);
 }
 
 TEST(Torsten, LinCpt_OneSS_overloads) {
@@ -141,6 +146,10 @@ TEST(Torsten, LinCpt_OneSS_overloads) {
 		EXPECT_NEAR(amounts(i, 1), x3(i, 1),
 		  std::max(amounts(i, 1), x3(i, 1)) * 1e-6);
 	}
+
+	double diff = 1e-8, diff2 = 1e-4;
+	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
+		             ss, diff, diff2);
 }
 
 TEST(Torsten, linCptModel_OneSS_rate) {
@@ -202,6 +211,11 @@ TEST(Torsten, linCptModel_OneSS_rate) {
 		EXPECT_NEAR(amounts(i, 0), x(i, 0), std::max(amounts(i, 0), x(i, 0)) * 1e-6);
 		EXPECT_NEAR(amounts(i, 1), x(i, 1), std::max(amounts(i, 1), x(i, 1)) * 1e-6);
 	}
+
+	double diff = 1e-8, diff2 = 1e-4;
+	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
+		             ss, diff, diff2);
+
 }
 
 TEST(Torsten, linOne_MultipleDoses_timePara) {
@@ -265,5 +279,9 @@ TEST(Torsten, linOne_MultipleDoses_timePara) {
 			   1.678828e-04, 0.7342228;
 
 	expect_matrix_eq(amounts, x);
+
+	double diff = 1e-8, diff2 = 1e-4;
+	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
+		             ss, diff, diff2);
 }
 

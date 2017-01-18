@@ -9,7 +9,6 @@
 
 template<typename T_time, typename T_parameters, typename T_system>
   class ModelParameterHistory;
-
 /**
  * The ModelParameters class defines objects that contain the parameters of a
  * compartment model at a given time.
@@ -43,6 +42,7 @@ public:
     return RealParameters.size();  // FIX ME - account for parameters in K?
   }
 
+  // FIX ME - probably do not need this function
   Eigen::Matrix<T_system, Eigen::Dynamic, Eigen::Dynamic> RateMatrix() const {
     return K;
   }

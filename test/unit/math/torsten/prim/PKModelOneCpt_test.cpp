@@ -1,6 +1,7 @@
 #include <stan/math/torsten/torsten.hpp>
 #include <gtest/gtest.h>
 #include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
+#include <test/unit/math/torsten/prim/util_PKModelOneCpt.hpp>
 
 using std::vector;
 using Eigen::Matrix;
@@ -17,29 +18,29 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses) {
 	pMatrix[0][4] = 1; // F2
 	pMatrix[0][5] = 0; // tlag1
 	pMatrix[0][6] = 0; // tlag2
-	
+
 	vector<double> time(10);
-	time[0] = 0.0;
+	time[0] = 0;
 	for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
 	time[9] = 4.0;
 
 	vector<double> amt(10, 0);
 	amt[0] = 1000;
-	
+
 	vector<double> rate(10, 0);
-	
+
 	vector<int> cmt(10, 2);
 	cmt[0] = 1;
-	
+
 	vector<int> evid(10, 0);
 	evid[0] = 1;
 
 	vector<double> ii(10, 0);
 	ii[0] = 12;
-	
+
 	vector<int> addl(10, 0);
 	addl[0] = 14;
-	
+
 	vector<int> ss(10, 0);
 
 	Matrix<double, Dynamic, Dynamic> x;
@@ -56,8 +57,12 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses) {
 			   122.4564, 760.25988,
 			   90.71795, 768.09246,
 			   8.229747, 667.87079;
-			   
+
 	expect_matrix_eq(amounts, x);
+
+	// Test AutoDiff against FiniteDiff
+    test_PKModelOneCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
+                       1e-8, 1e-4);
 }
 
 TEST(Torsten, PKModelOneCpt_MultipleDoses_overload) {
@@ -111,6 +116,10 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses_overload) {
 			   8.229747, 667.87079;
 			   
 	expect_matrix_eq(amounts, x);
+
+	// Test AutoDiff against FiniteDiff
+    test_PKModelOneCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
+                       1e-8, 1e-4);
 }
 
 TEST(Torsten, PKModelOneCpt_SS) {
@@ -124,35 +133,35 @@ TEST(Torsten, PKModelOneCpt_SS) {
 	pMatrix[0][4] = 1; // F2
 	pMatrix[0][5] = 0; // tlag1
 	pMatrix[0][6] = 0; // tlag2
-	
+
 	vector<double> time(10);
 	time[0] = 0.0;
 	time[1] = 0.0;
 	for(int i = 2; i < 10; i++) time[i] = time[i - 1] + 5;
-	
+
 	vector<double> amt(10, 0);
 	amt[0] = 1200;
-	
+
 	vector<double> rate(10, 0);
-	
+
 	vector<int> cmt(10, 2);
 	cmt[0] = 1;
-	
+
 	vector<int> evid(10, 0);
 	evid[0] = 1;
 
 	vector<double> ii(10, 0);
 	ii[0] = 12;
-	
+
 	vector<int> addl(10, 0);
 	addl[0] = 10;
-	
+
 	vector<int> ss(10, 0);
 	ss[0] = 1;
 
 	Matrix<double, Dynamic, Dynamic> x;
 	x = PKModelOneCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
-	
+
 	Matrix<double, Dynamic, Dynamic> amounts(10, 2);
 	amounts << 1200.0, 384.7363,
 	           1200.0, 384.7363,
@@ -165,14 +174,18 @@ TEST(Torsten, PKModelOneCpt_SS) {
 	           2.220724e-3, 435.9617,
 	           9.875702, 1034.7998;
 
-	for(int i = 0; i < amounts.rows(); i++) {
+    for(int i = 0; i < amounts.rows(); i++) {
 		EXPECT_NEAR(amounts(i, 0), x(i, 0), std::max(amounts(i, 0), x(i, 0)) * 1e-6);
 		EXPECT_NEAR(amounts(i, 1), x(i, 1), std::max(amounts(i, 1), x(i, 1)) * 1e-6);
 	}
+
+    // Test auto-diff
+    test_PKModelOneCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
+                       1e-8, 1e-4);
 }
 
 TEST(Torsten, PKModelOneCpt_SS_rate) {
-	
+
 	vector<vector<double> > pMatrix(1);
 	pMatrix[0].resize(7);
 	pMatrix[0][0] = 10; // CL
@@ -228,6 +241,10 @@ TEST(Torsten, PKModelOneCpt_SS_rate) {
 		EXPECT_NEAR(amounts(i, 0), x(i, 0), std::max(amounts(i, 0), x(i, 0)) * 1e-6);
 		EXPECT_NEAR(amounts(i, 1), x(i, 1), std::max(amounts(i, 1), x(i, 1)) * 1e-6);
 	}
+
+	// Test AutoDiff against FiniteDiff
+    test_PKModelOneCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
+                       1e-8, 1e-4);
 }
 
 TEST(Torsten, PKModelOneCpt_MultipleDoses_timePara) {
@@ -288,4 +305,8 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses_timePara) {
 			   1.678828e-04, 0.7342228;
 			   
 	expect_matrix_eq(amounts, x);
+
+	// Test AutoDiff against FiniteDiff
+    test_PKModelOneCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
+                       1e-8, 1e-4);
 }
