@@ -228,7 +228,7 @@ public:
   struct by_time {
     bool operator()(const Event<T_time, T_amt, T_rate, T_ii> &a,
       const Event<T_time, T_amt, T_rate, T_ii> &b) {
-      return a.time < b.time;
+        return a.time < b.time;
     }
   };
 
@@ -273,38 +273,39 @@ public:
   template<typename T_parameters, typename T_system>
   void AddLagTimes(ModelParameterHistory<T_time, T_parameters, T_system>
     Parameters, std::vector<int> tlagIndexes, std::vector<int> tlagCmts) {
-    int i, j, evid, cmt, ipar;
-    Event<T_time, T_amt, T_rate, T_ii> newEvent;
-
     int nlag = tlagIndexes.size();
     assert((size_t) nlag == tlagCmts.size());
     if (nlag > 0) {
       int nEvent = Events.size(), pSize = Parameters.get_size();
       assert((pSize = nEvent) || (pSize == 1));
 
-      i = nEvent - 1;
+      int i = nEvent - 1, evid, cmt, ipar;
+      Event<T_time, T_amt, T_rate, T_ii> newEvent;
       while (i >= 0) {
         evid = Events[i].evid;
         cmt = Events[i].cmt;
 
         if ((evid == 1) || (evid == 4)) {
-          j = 0;
+          int j = 0;
           while ((cmt != tlagCmts[j]) && (j < nlag)) j++;
-          ipar = std::min(i, pSize - 1);  // ipar is the index of ith
+          ipar = std::min(i, pSize - 1);  // ipar is the index of the ith
                                           // event or 0, if the parameters
                                           // are constant.
+
           if ((cmt == tlagCmts[j])
             && (Parameters.GetValue(ipar, tlagIndexes[j]) != 0)) {
-              newEvent = GetEvent(i);
-              newEvent.time += Parameters.GetValue(ipar, tlagIndexes[j]);
-              newEvent.keep = false;
-              newEvent.isnew = true;
-              // newEvent.evid = 2; // - CHECK
-              InsertEvent(newEvent);
+          // if (cmt == tlagCmts[j]) {
+            newEvent = GetEvent(i);
+            newEvent.time += Parameters.GetValue(ipar, tlagIndexes[j]);
+            newEvent.keep = false;
+            newEvent.isnew = true;
+            // newEvent.evid = 2; // - CHECK
+            InsertEvent(newEvent);
 
-              Events[i].evid = 2;
-              // The above statement changes events so that CleanEvents does
-              // not return an object identical to the original. - CHECK
+            Events[i].evid = 2;
+            // Events[i].time += evid; // - CHECK
+            // The above statement changes events so that CleanEvents does
+            // not return an object identical to the original. - CHECK
           }
         }
         i--;

@@ -19,7 +19,7 @@ namespace stan {
         template <typename T>
         Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>
         matrix_exp_2x2(
-          const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& A) {            
+          const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& A) {
             T a = A(0, 0), b = A(0, 1), c = A(1, 0), d = A(1, 1), delta;
             delta = sqrt(square(a - d) + 4 * b * c);
 

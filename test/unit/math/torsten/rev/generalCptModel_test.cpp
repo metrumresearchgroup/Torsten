@@ -97,8 +97,8 @@ TEST(Torsten, genCpt_One_SingleDose) {
 			 90.71795, 768.09246,
 			 8.229747, 667.87079;
 
-  for (size_t i = 0; i < amounts.rows(); i++)
-    for (size_t j = 0; j < amounts.cols(); j++) {
+  for (int i = 0; i < amounts.rows(); i++)
+    for (int j = 0; j < amounts.cols(); j++) {
       EXPECT_NEAR(amounts(i, j), x_rk45(i, j).val(),
         std::max(amounts(i, j), x_rk45(i, j).val()) * rel_err);
       EXPECT_NEAR(amounts(i, j), x_bdf(i, j).val(),
@@ -168,8 +168,8 @@ TEST(Torsten, genCpt_One_SingleDose_overload) {
 			 90.71795, 768.09246,
 			 8.229747, 667.87079;
 
-  for (size_t i = 0; i < amounts.rows(); i++)
-    for (size_t j = 0; j < amounts.cols(); j++) {
+  for (int i = 0; i < amounts.rows(); i++)
+    for (int j = 0; j < amounts.cols(); j++) {
       EXPECT_NEAR(amounts(i, j), x_rk45(i, j).val(),
         std::max(amounts(i, j), x_rk45(i, j).val()) * rel_err);
       EXPECT_NEAR(amounts(i, j), x_bdf(i, j).val(),
@@ -279,8 +279,8 @@ TEST(Torsten, genCpt_One_abstime_SingleDose) {
 			 90.71795, 840.0581,
 			 8.229747, 869.0283;
 			  
-  for (size_t i = 0; i < amounts.rows(); i++)
-    for (size_t j = 0; j < amounts.cols(); j++) {
+  for (int i = 0; i < amounts.rows(); i++)
+    for (int j = 0; j < amounts.cols(); j++) {
       EXPECT_NEAR(amounts(i, j), x_rk45(i, j).val(),
         std::max(amounts(i, j), x_rk45(i, j).val()) * rel_err);
       EXPECT_NEAR(amounts(i, j), x_bdf(i, j).val(),
@@ -356,8 +356,8 @@ TEST(Torsten, genCpOne_MultipleDoses_timePara) {
 			   3.372017e-03, 3.4974152,
 			   1.678828e-04, 0.7342228;
 			   
-  for (size_t i = 0; i < amounts.rows(); i++)
-    for (size_t j = 0; j < amounts.cols(); j++) {
+  for (int i = 0; i < amounts.rows(); i++)
+    for (int j = 0; j < amounts.cols(); j++) {
       EXPECT_NEAR(amounts(i, j), x_rk45(i, j).val(),
         std::max(amounts(i, j), x_rk45(i, j).val()) * rel_err_rk45);
       EXPECT_NEAR(amounts(i, j), x_bdf(i, j).val(),
