@@ -1,7 +1,9 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_LINCPT_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_LINCPT_HPP
 
-#include <stan/math/prim/mat.hpp>
+#include <stan/math/prim/mat/fun/mdivide_left.hpp>
+#include <stan/math/rev/mat/fun/mdivide_left.hpp>
+#include <stan/math/rev/mat/fun/multiply.hpp>
 #include <stan/math/prim/mat/fun/matrix_exp.hpp>
 #include <iostream>
 #include <vector>
@@ -20,6 +22,7 @@
  * @tparam T_time type of scalar for time
  * @tparam T_rate type of scalar for rate
  * @tparam T_parameters type of scalar for model parameters
+ * @tparam T_addParm type of scalar for additional parameters
  * @tparam T_system type of element in system matrix
  * @param[in] dt time between current and previous event
  * @param[in] parameter model parameters at current event
@@ -29,12 +32,13 @@
  * @return an eigen vector that contains predicted amount in each compartment
  *   at the current event.
  */
-template<typename T_time, typename T_parameters, typename T_system,
-  typename T_rate>
+template<typename T_time, typename T_parameters, typename T_addParm,
+         typename T_system, typename T_rate>
 Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_system,
   T_rate>::type, 1, Eigen::Dynamic>
 Pred1_linCpt(const T_time& dt,
-             const ModelParameters<T_time, T_parameters, T_system>& parameter,
+             const ModelParameters<T_time, T_parameters, T_addParm,
+                                   T_system>& parameter,
              const Eigen::Matrix<typename boost::math::tools::promote_args<
                T_time, T_system, T_rate>::type, 1, Eigen::Dynamic>& init,
              const std::vector<T_rate>& rate) {

@@ -39,17 +39,18 @@
  * @return void
  *
  */
-
-template <typename T0, typename T1, typename T2, typename T3, typename T4>
-void pmetricsCheck(const std::vector<std::vector<T0> >& pMatrix,
-                   const std::vector<T1>& time,
-                   const std::vector<T2>& amt,
-                   const std::vector<T3>& rate,
-                   const std::vector<T4>& ii,
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+  typename T5>
+void pmetricsCheck(const std::vector<T0>& time,
+                   const std::vector<T1>& amt,
+                   const std::vector<T2>& rate,
+                   const std::vector<T3>& ii,
                    const std::vector<int>& evid,
                    const std::vector<int>& cmt,
                    const std::vector<int>& addl,
                    const std::vector<int>& ss,
+                   const std::vector<std::vector<T4> >& pMatrix,
+                   const std::vector<std::vector<T5> >& addParm,
                    const char* function,
                    PKModel& model) {
   using std::vector;
@@ -109,6 +110,13 @@ void pmetricsCheck(const std::vector<std::vector<T0> >& pMatrix,
       pMatrix.size(), "", length_error2);
   if (!(pMatrix[0].size() > 0)) invalid_argument(function,
     "the number of parameters per event is", pMatrix[0].size(),
+    "", " but must be greater than 0!");
+
+  if (!((addParm.size() == time.size()) || (addParm.size() == 1)))
+    invalid_argument(function, "length of the additional parameter (2d) array,",  // NOLINT
+      pMatrix.size(), "", length_error2);
+  if (!(addParm[0].size() > 0)) invalid_argument(function,
+    "the number of additional parameters per event is", addParm[0].size(),
     "", " but must be greater than 0!");
 }
 

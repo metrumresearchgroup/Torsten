@@ -32,12 +32,12 @@
  *	DEV - figure out how to handle when rate is data or autodiff
  */
 template<typename T_time, typename T_rate, typename T_parameters,
-  typename T_system, typename F>
+         typename T_addParm, typename T_system, typename F>
 Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_rate,
-  T_parameters>::type, 1, Eigen::Dynamic>
+  T_parameters, T_addParm>::type, 1, Eigen::Dynamic>
 Pred1_general_solver(const T_time& dt,
-                     const ModelParameters<T_time, T_parameters, T_system>&
-                      parameter,
+                     const ModelParameters<T_time, T_parameters, T_addParm,
+                                           T_system>& parameter,
                      const Eigen::Matrix<typename boost::math::tools::
                        promote_args<T_time,
                        T_rate, T_parameters>::type, 1, Eigen::Dynamic>& init,
@@ -46,7 +46,7 @@ Pred1_general_solver(const T_time& dt,
   using std::vector;
 
   typedef typename boost::math::tools::promote_args<T_time, T_rate,
-    T_parameters>::type scalar;
+    T_parameters, T_addParm>::type scalar;
   assert((size_t) init.cols() == rate.size());
 
   T_time EventTime = parameter.get_time();  // time of current event
