@@ -61,15 +61,17 @@ PKModelOneCpt(const std::vector<T0>& time,
   PKModel model("OneCptModel");
 
   // Check arguments -- FIX ME: handle the new parameter arguments
-/*  static const char* function("PKModelOneCpt");
+  static const char* function("PKModelOneCpt");
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
-                pMatrix, addParm, function, model);
+                pMatrix, biovar, tlag, function, model);
   for (size_t i = 0; i < pMatrix.size(); i++) {
     check_positive_finite(function, "PK parameter CL", pMatrix[i][0]);
     check_positive_finite(function, "PK parameter V2", pMatrix[i][1]);
     check_positive_finite(function, "PK parameter ka", pMatrix[i][2]);
   }
 
+  // FIX ME - we want to check every array of pMatrix, not
+  // just the first one (at index 0)
   std::string message4 = ", but must equal the number of parameters in the model: " // NOLINT
     + boost::lexical_cast<std::string>(model.GetNParameter()) + "!";
   const char* length_error4 = message4.c_str();
@@ -78,13 +80,19 @@ PKModelOneCpt(const std::vector<T0>& time,
     "The number of parameters per event (length of a vector in the ninth argument) is", // NOLINT
     pMatrix[0].size(), "", length_error4);
 
-  std::string message5 = ", but must equal the number of additional parameters in the model: " // NOLINT
-    + boost::lexical_cast<std::string>(model.GetNAddParm()) + "!";
+  std::string message5 = ", but must equal the number of compartments in the model: " // NOLINT
+    + boost::lexical_cast<std::string>(model.GetNCmt()) + "!";
   const char* length_error5 = message5.c_str();
-  if (!(addParm[0].size() == (size_t) model.GetNAddParm()))
+  if (!(biovar[0].size() == (size_t) model.GetNCmt()))
     stan::math::invalid_argument(function,
-    "The number of additional parameters per event (length of a vector in the tenth argument) is", // NOLINT
-    addParm[0].size(), "", length_error5); */
+    "The number of biovariability parameters per event (length of a vector in the tenth argument) is", // NOLINT
+    biovar[0].size(), "", length_error5);
+  
+  if (!(tlag[0].size() == (size_t) model.GetNCmt()))
+    stan::math::invalid_argument(function,
+                                 "The number of lag times parameters per event (length of a vector in the eleventh argument) is", // NOLINT
+                                 tlag[0].size(), "", length_error5);
+  
 
   // Construct Pred functions for the model.
   Pred1_structure new_Pred1("OneCptModel");
