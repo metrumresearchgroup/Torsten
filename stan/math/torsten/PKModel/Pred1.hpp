@@ -50,22 +50,23 @@ public:
     modeltype = p_modeltype;
   }
 
-  template <typename T_time, typename T_parameters, typename T_addParm,
-            typename T_rate, typename F, typename T_system>
+  template <typename T_time, typename T_parameters, typename T_biovar,
+            typename T_tlag, typename T_rate, typename F, typename T_system>
   Eigen::Matrix<typename boost::math::tools::promote_args<T_time, T_rate,
-    T_parameters, typename boost::math::tools::promote_args<T_addParm,
-    T_system>::type>::type, 1, Eigen::Dynamic>
+    T_parameters, typename boost::math::tools::promote_args<T_biovar,
+    T_tlag, T_system>::type>::type, 1, Eigen::Dynamic>
     operator()(const T_time& dt,
-               const ModelParameters<T_time, T_parameters, T_addParm,
-                                     T_system>& parameter,
+               const ModelParameters<T_time, T_parameters, T_biovar,
+                                     T_tlag, T_system>& parameter,
                const Eigen::Matrix<typename boost::math::tools::
                  promote_args<T_time, T_rate, T_parameters,
-                   typename boost::math::tools::promote_args<T_addParm,
-                   T_system>::type>::type, 1, Eigen::Dynamic>& init,
+                   typename boost::math::tools::promote_args<T_biovar,
+                   T_tlag, T_system>::type>::type, 1, Eigen::Dynamic>& init,
                const std::vector<T_rate>& rate,
                const F& f) {
     typedef typename boost::math::tools::promote_args<T_time, T_rate,
-      T_parameters, T_addParm>::type scalar;
+      T_parameters, typename boost::math::tools::promote_args<T_biovar, T_tlag>
+      ::type>::type scalar;
 
     if (modeltype == "OneCptModel")
       return Pred1_one(dt, parameter, init, rate);

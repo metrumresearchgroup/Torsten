@@ -30,18 +30,19 @@
  *   at the current event.
  */
 template<typename T_time, typename T_amt, typename T_rate, typename T_ii,
-         typename T_parameters, typename T_addParm, typename T_system>
+         typename T_parameters, typename T_biovar, typename T_tlag,
+         typename T_system>
 Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_amt, T_rate,
-  typename boost::math::tools::promote_args< T_ii, T_parameters, T_addParm>
+  typename boost::math::tools::promote_args< T_ii, T_parameters>
   ::type>::type, 1, Eigen::Dynamic>
-PredSS_one(const ModelParameters<T_time, T_parameters,
-                                 T_addParm, T_system>& parameter,
+PredSS_one(const ModelParameters<T_time, T_parameters, T_biovar,
+                                 T_tlag, T_system>& parameter,
            const T_amt& amt,
            const T_rate& rate,
            const T_ii& ii,
            const int& cmt) {
   typedef typename boost::math::tools::promote_args< T_time, T_amt, T_rate,
-    typename boost::math::tools::promote_args< T_ii, T_parameters, T_addParm>
+    typename boost::math::tools::promote_args< T_ii, T_parameters>
       ::type>::type scalar;
 
   T_parameters CL = parameter.get_RealParameters()[0],

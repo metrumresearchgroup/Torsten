@@ -27,7 +27,8 @@
  * @tparam T_rate type of scalar for rate
  * @tparam T_ii type of scalar for interdose interval
  * @tparam T_parameters type of scalar for the model parameters
- * @tparam T_addParm type of scalar for additional model parameters
+ * @tparam T_biovar type of scalar for bio-variability parameters
+ * @tparam T_tlag type of scalar for lag times parameters
  * @tparam F type of ODE system function
  * @param[in] time times of events
  * @param[in] amt amount at each event
@@ -57,10 +58,11 @@
  * at each event.
  */
 template <typename T_time, typename T_amt, typename T_rate, typename T_ii,
-  typename T_parameters, typename T_addParm, typename F, typename T_system>
+  typename T_parameters, typename T_biovar, typename T_tlag,
+  typename F, typename T_system>
 Eigen::Matrix<typename boost::math::tools::promote_args<T_time, T_amt, T_rate,
-  T_ii, typename boost::math::tools::promote_args<T_parameters, T_addParm,
-  T_system>::type >::type, Eigen::Dynamic, Eigen::Dynamic>
+  T_ii, typename boost::math::tools::promote_args<T_parameters, T_biovar,
+  T_tlag, T_system>::type >::type, Eigen::Dynamic, Eigen::Dynamic>
 Pred(const std::vector<T_time>& time,
      const std::vector<T_amt>& amt,
      const std::vector<T_rate>& rate,
@@ -70,7 +72,8 @@ Pred(const std::vector<T_time>& time,
      const std::vector<int>& addl,
      const std::vector<int>& ss,
      const std::vector<std::vector<T_parameters> >& pMatrix,
-     const std::vector<std::vector<T_addParm> >& addParm,
+     const std::vector<std::vector<T_biovar> >& biovar,
+     const std::vector<std::vector<T_tlag> >& tlag,
      PKModel model,
      const F& f,
      const std::vector<Eigen::Matrix<T_system,
@@ -81,8 +84,8 @@ Pred(const std::vector<T_time>& time,
   using std::vector;
 
   typedef typename promote_args<T_time, T_amt, T_rate, T_ii,
-    typename promote_args<T_parameters, T_addParm, T_system>::type >::type
-    scalar;
+    typename promote_args<T_parameters, T_biovar, T_tlag,
+                          T_system>::type >::type scalar;
 
   /////////////////////////////////////////////////////////////////////////////
   // BOOK-KEEPING: UPDATE DATA SETS
@@ -91,8 +94,8 @@ Pred(const std::vector<T_time>& time,
 
   EventHistory<scalar, scalar, scalar, scalar>
     events(time, amt, rate, ii, evid, cmt, addl, ss);
-  ModelParameterHistory<scalar, T_parameters, T_addParm, T_system>
-    parameters(time, pMatrix, addParm, system);
+  ModelParameterHistory<scalar, T_parameters, T_biovar, T_tlag, T_system>
+    parameters(time, pMatrix, biovar, tlag, system);
   RateHistory<scalar, scalar> rates;
 
   events.Sort();
@@ -128,7 +131,7 @@ Pred(const std::vector<T_time>& time,
   scalar dt, tprev = events.get_time(0);
   Matrix<scalar, 1, Dynamic> pred1;
   Event<scalar, scalar, scalar, scalar> event;  // CHECK - change type (scalar)
-  ModelParameters<scalar, T_parameters, T_addParm, T_system> parameter;
+  ModelParameters<scalar, T_parameters, T_biovar, T_tlag, T_system> parameter;
   int iRate = 0, ikeep = 0;
 
   for (int i = 0; i < events.get_size(); i++) {
@@ -140,7 +143,7 @@ Pred(const std::vector<T_time>& time,
     Rate<scalar, scalar> rate2 = rates.GetRate(iRate);
 
     for (int j = 0; j < nCmt; j++)
-      rate2.rate[j] *= parameters.GetValueAdd(i, j);
+      rate2.rate[j] *= parameters.GetValueBio(i, j);
 
     parameter = parameters.GetModelParameters(i);
 
@@ -157,7 +160,7 @@ Pred(const std::vector<T_time>& time,
       && (event.get_ss() == 1 || event.get_ss() == 2)) ||
       event.get_ss() == 3) {  // steady dose event
       std::cout << event.get_cmt() - 1 << std::endl;
-      pred1 = PredSS(parameter, parameters.GetValueAdd(i, event.get_cmt() - 1)
+      pred1 = PredSS(parameter, parameters.GetValueBio(i, event.get_cmt() - 1)
                      * event.get_amt(), event.get_rate(),
                      event.get_ii(), event.get_cmt(), f);
 
@@ -169,7 +172,7 @@ Pred(const std::vector<T_time>& time,
     if (((event.get_evid() == 1) || (event.get_evid() == 4)) &&
       (event.get_rate() == 0)) {  // bolus dose
       init(0, event.get_cmt() - 1)
-        += parameters.GetValueAdd(i, event.get_cmt() - 1) * event.get_amt();
+        += parameters.GetValueBio(i, event.get_cmt() - 1) * event.get_amt();
     }
 
     if (event.get_keep()) {

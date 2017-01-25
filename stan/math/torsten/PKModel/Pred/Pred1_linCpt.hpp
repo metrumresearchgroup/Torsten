@@ -32,13 +32,13 @@
  * @return an eigen vector that contains predicted amount in each compartment
  *   at the current event.
  */
-template<typename T_time, typename T_parameters, typename T_addParm,
-         typename T_system, typename T_rate>
+template<typename T_time, typename T_parameters, typename T_biovar,
+         typename T_tlag, typename T_system, typename T_rate>
 Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_system,
   T_rate>::type, 1, Eigen::Dynamic>
 Pred1_linCpt(const T_time& dt,
-             const ModelParameters<T_time, T_parameters, T_addParm,
-                                   T_system>& parameter,
+             const ModelParameters<T_time, T_parameters, T_biovar,
+                                   T_tlag, T_system>& parameter,
              const Eigen::Matrix<typename boost::math::tools::promote_args<
                T_time, T_system, T_rate>::type, 1, Eigen::Dynamic>& init,
              const std::vector<T_rate>& rate) {

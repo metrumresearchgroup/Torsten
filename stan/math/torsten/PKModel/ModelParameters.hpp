@@ -7,20 +7,21 @@
 #include <algorithm>
 #include <vector>
 
-template<typename T_time, typename T_parameters, typename T_addParm,
-         typename T_system>
+template<typename T_time, typename T_parameters, typename T_biovar,
+         typename T_tlag, typename T_system>
   class ModelParameterHistory;
 /**
  * The ModelParameters class defines objects that contain the parameters of
  * a model at a given time.
  */
-template<typename T_time, typename T_parameters, typename T_addParm,
-         typename T_system>
+template<typename T_time, typename T_parameters, typename T_biovar,
+         typename T_tlag, typename T_system>
 class ModelParameters {
 private:
   T_time time;
   std::vector<T_parameters> RealParameters;
-  std::vector<T_addParm> AddParameters;
+  std::vector<T_biovar> biovar;
+  std::vector<T_tlag> tlag;
   Eigen::Matrix<T_system, Eigen::Dynamic, Eigen::Dynamic> K;
 
 public:
@@ -30,8 +31,11 @@ public:
     std::vector<T_parameters> p_RealParameters(1, 0);
     RealParameters = p_RealParameters;
 
-    std::vector<T_addParm> p_AddParameters(1, 0);
-    AddParameters = p_AddParameters;
+    std::vector<T_biovar> p_biovar(1, 0);
+    biovar = p_biovar;
+
+    std::vector<T_tlag> p_tlag(1, 0);
+    tlag = p_tlag;
 
     Eigen::Matrix<T_system, Eigen::Dynamic, Eigen::Dynamic> K_(0, 0);
     K = K_;
@@ -39,26 +43,30 @@ public:
 
   ModelParameters(const T_time& p_time,
                   const std::vector<T_parameters>& p_RealParameters,
-                  const std::vector<T_addParm>& p_AddParameters,
+                  const std::vector<T_biovar>& p_biovar,
+                  const std::vector<T_tlag>& p_tlag,
                   const Eigen::Matrix<T_system, Eigen::Dynamic,
                     Eigen::Dynamic>& p_K) {
     time = p_time;
     RealParameters = p_RealParameters;
-    AddParameters = p_AddParameters;
+    biovar = p_biovar;
+    tlag = p_tlag;
     K = p_K;
   }
 
   int CountParameters() const {
-    return RealParameters.size();  // FIX ME - account for parameters in K and
-                                   // AddParameters?
+    return RealParameters.size();  // FIX ME - account for parameters in K,
+                                   // biovar, and tlag?
   }
 
   void Print() {
     std::cout << time << " ";
     for (int i = 0; i < RealParameters.size(); i++)
       std::cout << RealParameters[i] << " ";
-    for (int i = 0; i < AddParameters.size(); i++)
-      std::cout << AddParameters[i] << " ";
+    for (int i = 0; i < biovar.size(); i++)
+      std::cout << biovar[i] << " ";
+    for (int i = 0; i < tlag.size(); i++)
+      std::cout << tlag[i] << " ";
     if (K.rows() != 0) std::cout << K;
     std::cout << std::endl;
   }
@@ -68,14 +76,18 @@ public:
   std::vector<T_parameters> get_RealParameters() const {
     return RealParameters;
   }
-  std::vector<T_addParm> get_AddParameters() const {
-    return AddParameters;
+  std::vector<T_biovar> get_biovar() const {
+    return biovar;
+  }
+  std::vector<T_tlag> get_tlag() const {
+    return tlag;
   }
   Eigen::Matrix<T_system, Eigen::Dynamic, Eigen::Dynamic> get_K() const {
     return K;
   }
 
-  friend class ModelParameterHistory<T_time, T_parameters, T_addParm, T_system>;
+  friend class ModelParameterHistory<T_time, T_parameters, T_biovar,
+                                     T_tlag, T_system>;
 };
 
 /**
@@ -83,38 +95,43 @@ public:
  * of ModelParameters, along with a series of functions that operate on
  * them.
  */
-template<typename T_time, typename T_parameters, typename T_addParm,
-         typename T_system>
+template<typename T_time, typename T_parameters, typename T_biovar,
+         typename T_tlag, typename T_system>
 class ModelParameterHistory{
 private:
-  std::vector< ModelParameters<T_time, T_parameters, T_addParm, T_system> > MPV;
+  std::vector< ModelParameters<T_time, T_parameters,
+                               T_biovar, T_tlag, T_system> > MPV;
 
 public:
-  template<typename T0, typename T1, typename T2, typename T3>
+  template<typename T0, typename T1, typename T2, typename T3, typename T4>
   ModelParameterHistory(std::vector<T0> p_time,
                         std::vector<std::vector<T1> > p_RealParameters,
-                        std::vector<std::vector<T2> > p_AddParameters,
-                        std::vector< Eigen::Matrix<T3, Eigen::Dynamic,
+                        std::vector<std::vector<T2> > p_biovar,
+                        std::vector<std::vector<T3> > p_tlag,
+                        std::vector< Eigen::Matrix<T4, Eigen::Dynamic,
                           Eigen::Dynamic> > p_K) {
     using std::max;
     int nParameters = max(p_RealParameters.size(),
-                          max(p_K.size(), p_AddParameters.size()));
+                          max(p_K.size(), p_biovar.size()));
     MPV.resize(nParameters);
-    int j, k, l;
+    int j, k, l, m;
+    // FIX ME - is this an efficient way to store data?
     for (int i = 0; i < nParameters; i++) {
       (p_RealParameters.size() == 1) ? j = 0 : j = i;
-      (p_AddParameters.size() == 1) ? k = 0 : k = i;
-      (p_K.size() == 1) ? l = 0 : l = i;
-       MPV[i] = ModelParameters<T_time, T_parameters, T_addParm, T_system>
-        (p_time[i], p_RealParameters[j], p_AddParameters[k], p_K[l]);
+      (p_biovar.size() == 1) ? k = 0 : k = i;
+      (p_tlag.size() == 1) ? l = 0 : l = i;
+      (p_K.size() == 1) ? m = 0 : m = i;
+       MPV[i] = ModelParameters<T_time, T_parameters, T_biovar, 
+                                T_tlag, T_system>
+         (p_time[i], p_RealParameters[j], p_biovar[k], p_tlag[l], p_K[m]);
     }
   }
 
-  ModelParameters<T_time, T_parameters, T_addParm, T_system>
+  ModelParameters<T_time, T_parameters, T_biovar, T_tlag, T_system>
     GetModelParameters(int i) {
-    ModelParameters<T_time, T_parameters, T_addParm, T_system>
-      newPara(MPV[i].time, MPV[i].RealParameters, MPV[i].AddParameters,
-              MPV[i].K);
+    ModelParameters<T_time, T_parameters, T_biovar, T_tlag, T_system>
+      newPara(MPV[i].time, MPV[i].RealParameters, MPV[i].biovar,
+              MPV[i].tlag, MPV[i].K);
     return newPara;
   }
 
@@ -130,15 +147,22 @@ public:
     return MPV[iEvent].RealParameters[iParameter];
   }
 
-  T_addParm GetValueAdd(int iEvent, int iParameter) {
+  T_biovar GetValueBio(int iEvent, int iParameter) {
     assert(iEvent >= 0 && (size_t) iEvent < MPV.size());
     assert(iParameter >= 0 && (size_t) iParameter
-             < MPV[iEvent].AddParameters.size());
-    return MPV[iEvent].AddParameters[iParameter];
+             < MPV[iEvent].biovar.size());
+    return MPV[iEvent].biovar[iParameter];
+  }
+  
+  T_tlag GetValueTlag(int iEvent, int iParameter) {
+    assert(iEvent >= 0 && (size_t) iEvent < MPV.size());
+    assert(iParameter >= 0 && (size_t) iParameter
+             < MPV[iEvent].tlag.size());
+    return MPV[iEvent].tlag[iParameter];    
   }
 
   void InsertModelParameters(ModelParameters<T_time, T_parameters,
-    T_addParm, T_system> p_M) {
+    T_biovar, T_tlag, T_system> p_M) {
     MPV.push_back(p_M);
   }
 
@@ -147,10 +171,10 @@ public:
   }
 
   struct by_time {
-    bool operator()(ModelParameters<T_time, T_parameters, T_addParm,
-                                    T_system> const &a,
-                    ModelParameters<T_time, T_parameters, T_addParm,
-                                    T_system> const &b) {
+    bool operator()(ModelParameters<T_time, T_parameters, T_biovar,
+                                    T_tlag, T_system> const &a,
+                    ModelParameters<T_time, T_parameters, T_biovar,
+                                    T_tlag, T_system> const &b) {
       return a.time < b.time;
     }
   };
@@ -175,8 +199,10 @@ public:
     std::cout << MPV[j].time << " ";
       for (size_t i = 0; i < MPV[j].RealParameters.size(); i++)
         std::cout << MPV[j].RealParameters[i] << " ";
-      for (size_t i = 0; i < MPV[j].AddParameters.size(); i++)
-        std::cout << MPV[j].RealParameters[i] << " ";
+      for (size_t i = 0; i < MPV[j].biovar.size(); i++)
+        std::cout << MPV[j].biovar[i] << " ";
+      for (size_t i = 0; i < MPV[j].tlag.size(); i++)
+        std::cout << MPV[j].tlag[i] << " ";
       std::cout << std::endl;
   }
 
@@ -206,9 +232,10 @@ public:
     assert(nEvent > 0);
     int nParameters = MPV[0].RealParameters.size();  // parameters per event
     assert(nParameters > 0);
-    int nAddParameters = MPV[0].AddParameters.size();  // additional parameters
-                                                       // per event
-    assert(nAddParameters > 0);
+    int nBiovar = MPV[0].biovar.size();  // biovar parameters per event
+    assert(nBiovar > 0);
+    int nTlag = MPV[0].tlag.size(); // tlag parameters per event
+    assert(nTlag > 0);
     int len_Parameters = MPV.size();  // numbers of events for which parameters
                                       // are determined
     assert(len_Parameters > 0);
@@ -228,8 +255,10 @@ public:
 
     if (len_Parameters == 1)  {
       for (int i = 0; i < nEvent; i++) {
+        // FIX ME - inefficient data storage
         MPV[i].RealParameters = MPV[0].RealParameters;
-        MPV[i].AddParameters = MPV[0].AddParameters;
+        MPV[i].biovar = MPV[0].biovar;
+        MPV[i].tlag = MPV[0].tlag;
         MPV[i].K = MPV[0].K;
         MPV[i].time = events.get_time(i);
         events.Events[i].isnew = false;
@@ -240,7 +269,8 @@ public:
       iEvent = 0;
 
       int k, j = 0;
-      ModelParameters<T_time, T_parameters, T_addParm, T_system> newParameter;
+      ModelParameters<T_time, T_parameters, T_biovar,
+                      T_tlag, T_system> newParameter;
 
       for (int i = 0; i < nEvent; i++) {
         while (events.get_isnew(iEvent)) {
@@ -281,7 +311,8 @@ public:
   }
 
   // declare friends
-  friend class ModelParameters<T_time, T_parameters, T_addParm, T_system>;
+  friend class ModelParameters<T_time, T_parameters, T_biovar, 
+                               T_tlag, T_system>;
   template<typename T1, typename T2, typename T3, typename T4>
     friend class Events;
 };

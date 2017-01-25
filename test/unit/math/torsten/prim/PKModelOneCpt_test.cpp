@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <stan/math/rev/mat.hpp>  // FIX ME - include should be more specific
 #include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
-#include <test/unit/math/torsten/prim/util_PKModelOneCpt.hpp>
+// #include <test/unit/math/torsten/prim/util_PKModelOneCpt.hpp>
 #include <vector>
 
 using std::vector;
@@ -12,17 +12,20 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses) {
 
 	vector<vector<double> > pMatrix(1);
 	pMatrix[0].resize(3);
-	pMatrix[0][0] = 10; // CL
-	pMatrix[0][1] = 80; // Vc
-	pMatrix[0][2] = 1.2; // ka
-	
+	pMatrix[0][0] = 10;  // CL
+	pMatrix[0][1] = 80;  // Vc
+	pMatrix[0][2] = 1.2;  // ka
+
 	int nCmt = 2;
-  vector<vector<double> > addParm(1);
-  addParm[0].resize(2 * nCmt);
-	addParm[0][0] = 1; // 1 // F1
-	addParm[0][1] = 1; // F2
-	addParm[0][2] = 0; // tlag1
-	addParm[0][3] = 0; // tlag2
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(nCmt);
+	biovar[0][0] = 1;  // F1
+	biovar[0][1] = 1;  // F2
+
+	vector<vector<double> > tlag(1);
+	tlag[0].resize(nCmt);
+	tlag[0][0] = 0;  // tlag1
+	tlag[0][1] = 0;  // tlag2
 
 	vector<double> time(10);
 	time[0] = 0;
@@ -49,8 +52,8 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses) {
 	vector<int> ss(10, 0);
 
 	Matrix<double, Dynamic, Dynamic> x;
-	x = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, addParm);
-	
+	x = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag);
+
 	Matrix<double, Dynamic, Dynamic> amounts(10, 2);
 	amounts << 1000.0, 0.0,
 			   740.8182, 254.97490,
@@ -66,8 +69,8 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses) {
 	expect_matrix_eq(amounts, x);
 
   // Test AutoDiff against FiniteDiff
-  test_PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
-                     pMatrix, addParm, 1e-8, 1e-4);
+//   test_PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+//                      pMatrix, biovar, tlag, 1e-8, 1e-4);
 }
 /*
 TEST(Torsten, PKModelOneCpt_MultipleDoses_overload) {
@@ -132,7 +135,7 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses_overload) {
     test_PKModelOneCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
                        1e-8, 1e-4);
 }
-/*
+
 TEST(Torsten, PKModelOneCpt_SS) {
 
 	vector<vector<double> > pMatrix(1);

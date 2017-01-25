@@ -17,7 +17,8 @@
  * @tparam T2 type of scalar for rate at each event.
  * @tparam T3 type of scalar for inter-dose inteveral at each event.
  * @tparam T4 type of scalars for the model parameters.
- * @tparam T5 type of scalar for additional model parameters.
+ * @tparam T5 type of scalar for bio-variability F.
+ * @tparam T6 type of scalar for lag times.
  * @param[in] pMatrix parameters at each event
  * @param[in] time times of events
  * @param[in] amt amount at each event
@@ -36,9 +37,9 @@
  *         at each event.
  */
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
-          typename T5>
+          typename T5, typename T6>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-  typename boost::math::tools::promote_args<T4, T5>::type>::type,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
 PKModelOneCpt(const std::vector<T0>& time,
               const std::vector<T1>& amt,
@@ -49,7 +50,8 @@ PKModelOneCpt(const std::vector<T0>& time,
               const std::vector<int>& addl,
               const std::vector<int>& ss,
               const std::vector<std::vector<T4> >& pMatrix,
-              const std::vector<std::vector<T5> >& addParm) {
+              const std::vector<std::vector<T5> >& biovar,
+              const std::vector<std::vector<T6> >& tlag) {
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
@@ -58,8 +60,8 @@ PKModelOneCpt(const std::vector<T0>& time,
 
   PKModel model("OneCptModel");
 
-  // Check arguments
-  static const char* function("PKModelOneCpt");
+  // Check arguments -- FIX ME: handle the new parameter arguments
+/*  static const char* function("PKModelOneCpt");
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
                 pMatrix, addParm, function, model);
   for (size_t i = 0; i < pMatrix.size(); i++) {
@@ -82,7 +84,7 @@ PKModelOneCpt(const std::vector<T0>& time,
   if (!(addParm[0].size() == (size_t) model.GetNAddParm()))
     stan::math::invalid_argument(function,
     "The number of additional parameters per event (length of a vector in the tenth argument) is", // NOLINT
-    addParm[0].size(), "", length_error5);
+    addParm[0].size(), "", length_error5); */
 
   // Construct Pred functions for the model.
   Pred1_structure new_Pred1("OneCptModel");
@@ -96,17 +98,17 @@ PKModelOneCpt(const std::vector<T0>& time,
     dummy_systems(1, dummy_system);
 
   Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-    typename boost::math::tools::promote_args<T4, T5>::type>::type,
+    typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
     Dynamic, Dynamic> pred;
-  pred = Pred(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, addParm,
-              model, dummy_ode(), dummy_systems);
+  pred = Pred(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar,
+              tlag, model, dummy_ode(), dummy_systems);
 
   return pred;
 }
 
 /*
  * Overload function to allow user to pass an std::vector for pMatrix.
- */
+ */ /*
 template <typename T0, typename T1, typename T2, typename T3, typename T4>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   T4>::type, Eigen::Dynamic, Eigen::Dynamic>
@@ -123,6 +125,6 @@ PKModelOneCpt(const std::vector<T0>& pMatrix,
   vec_pMatrix[0] = pMatrix;
 
   return PKModelOneCpt(vec_pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
-}
+} */
 
 #endif

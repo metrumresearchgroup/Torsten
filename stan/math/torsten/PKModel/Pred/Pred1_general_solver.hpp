@@ -32,12 +32,12 @@
  *	DEV - figure out how to handle when rate is data or autodiff
  */
 template<typename T_time, typename T_rate, typename T_parameters,
-         typename T_addParm, typename T_system, typename F>
+         typename T_biovar, typename T_tlag, typename T_system, typename F>
 Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_rate,
-  T_parameters, T_addParm>::type, 1, Eigen::Dynamic>
+  T_parameters>::type, 1, Eigen::Dynamic>
 Pred1_general_solver(const T_time& dt,
-                     const ModelParameters<T_time, T_parameters, T_addParm,
-                                           T_system>& parameter,
+                     const ModelParameters<T_time, T_parameters, T_biovar,
+                                           T_tlag, T_system>& parameter,
                      const Eigen::Matrix<typename boost::math::tools::
                        promote_args<T_time,
                        T_rate, T_parameters>::type, 1, Eigen::Dynamic>& init,
@@ -46,7 +46,7 @@ Pred1_general_solver(const T_time& dt,
   using std::vector;
 
   typedef typename boost::math::tools::promote_args<T_time, T_rate,
-    T_parameters, T_addParm>::type scalar;
+    T_parameters>::type scalar;
   assert((size_t) init.cols() == rate.size());
 
   T_time EventTime = parameter.get_time();  // time of current event
@@ -58,6 +58,7 @@ Pred1_general_solver(const T_time& dt,
   double InitTime_d = unpromote(InitTime);
   vector<double> rate_d = vector<double>(rate.size(), static_cast<double>(0));
   for (size_t i = 0; i < rate.size(); i++) rate_d[i] = unpromote(rate[i]);
+  // FIX ME - rates should not be unpromoted...
 
   vector<T_parameters> theta = parameter.get_RealParameters();
   vector<scalar> init_vector = vector<scalar>(init.cols(), scalar(0));
@@ -73,6 +74,7 @@ Pred1_general_solver(const T_time& dt,
                              idummy);
 
     // Convert vector in row-major vector (eigen Matrix)
+    // CHECK - inefficient step ?
     pred.resize(pred_V[0].size());
     for (size_t i = 0; i < pred_V[0].size(); i++) pred(0, i) = pred_V[0][i];
   }

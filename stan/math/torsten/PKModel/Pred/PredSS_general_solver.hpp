@@ -29,21 +29,21 @@
  *           at the current event.
  */
 template<typename T_time, typename T_amt, typename T_rate,
-  typename T_ii, typename T_parameters, typename T_addParm,
-  typename T_system, typename F>
+  typename T_ii, typename T_parameters, typename T_biovar,
+  typename T_tlag, typename T_system, typename F>
 Eigen::Matrix<typename boost::math::tools::promote_args<T_time, T_amt, T_rate,
-  typename boost::math::tools::promote_args< T_ii, T_parameters, T_addParm>
-  ::type>::type, 1, Eigen::Dynamic>
+  typename boost::math::tools::promote_args< T_ii, T_parameters, T_biovar,
+  T_tlag>::type>::type, 1, Eigen::Dynamic>
 PredSS_general_solver(const ModelParameters<T_time, T_parameters,
-                                            T_addParm, T_system>& parameter,
+                        T_biovar, T_tlag, T_system>& parameter,
                       const T_amt& amt,
                       const T_rate& rate,
                       const T_ii& ii,
                       const int& cmt,
                       const F& f) {
   typedef typename boost::math::tools::promote_args< T_time, T_amt, T_rate,
-    typename boost::math::tools::promote_args< T_ii, T_parameters,
-                                               T_addParm>::type>:: type scalar;
+    typename boost::math::tools::promote_args< T_ii, T_parameters
+                                               >::type>::type scalar;
 
   std::cout << "ERROR: General Compartment Model using ODE integrator"
             << " (bdf or rk45) does not handle Steady State events."

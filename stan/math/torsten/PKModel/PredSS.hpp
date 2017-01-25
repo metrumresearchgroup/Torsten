@@ -51,20 +51,22 @@ public:
 
   // constructor for operator
   template<typename T_time, typename T_amt, typename T_rate, typename T_ii,
-    typename T_parameters, typename T_addParm, typename F, typename T_system>
+    typename T_parameters, typename T_biovar, typename T_tlag, typename F, 
+    typename T_system>
     Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_amt,
       T_rate, typename boost::math::tools::promote_args< T_ii, T_parameters,
-      T_addParm, T_system>::type>::type, Eigen::Dynamic, 1>
-  operator()(const ModelParameters<T_time, T_parameters,
-                                   T_addParm, T_system>& parameter,
+      T_biovar, typename boost::math::tools::promote_args<T_tlag, T_system>::type
+      >::type>::type, Eigen::Dynamic, 1>
+  operator()(const ModelParameters<T_time, T_parameters, T_biovar,
+                                   T_tlag, T_system>& parameter,
              const T_amt& amt,
              const T_rate& rate,
              const T_ii& ii,
              const int& cmt,
              const F& f) {
     typedef typename boost::math::tools::promote_args<T_time, T_rate,
-      T_parameters, typename boost::math::tools::promote_args<T_addParm,
-      T_system>::type>::type scalar;
+      T_parameters, typename boost::math::tools::promote_args<T_biovar,
+      T_tlag, T_system>::type>::type scalar;
 
     if (modeltype == "OneCptModel")
       return PredSS_one(parameter, amt, rate, ii, cmt);
