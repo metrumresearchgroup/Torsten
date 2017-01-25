@@ -159,7 +159,6 @@ Pred(const std::vector<T_time>& time,
     if (((event.get_evid() == 1 || event.get_evid() == 4)
       && (event.get_ss() == 1 || event.get_ss() == 2)) ||
       event.get_ss() == 3) {  // steady dose event
-      std::cout << event.get_cmt() - 1 << std::endl;
       pred1 = PredSS(parameter, parameters.GetValueBio(i, event.get_cmt() - 1)
                      * event.get_amt(), event.get_rate(),
                      event.get_ii(), event.get_cmt(), f);

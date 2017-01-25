@@ -288,7 +288,6 @@ public:
                                              // event or 0, if the parameters
                                              // are constant.
         if (Parameters.GetValueTlag(ipar, cmt) != 0) {
-          std::cout << "if loop runs" << std::endl;
           newEvent = GetEvent(iEvent);
           newEvent.time += Parameters.GetValueTlag(ipar, cmt);
           newEvent.keep = false;

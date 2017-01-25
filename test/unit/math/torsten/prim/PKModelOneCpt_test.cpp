@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <stan/math/rev/mat.hpp>  // FIX ME - include should be more specific
 #include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
-// #include <test/unit/math/torsten/prim/util_PKModelOneCpt.hpp>
+#include <test/unit/math/torsten/prim/util_PKModelOneCpt.hpp>
 #include <vector>
 
 using std::vector;
@@ -69,8 +69,8 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses) {
 	expect_matrix_eq(amounts, x);
 
   // Test AutoDiff against FiniteDiff
-//   test_PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
-//                      pMatrix, biovar, tlag, 1e-8, 1e-4);
+   test_PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                      pMatrix, biovar, tlag, 1e-8, 1e-4);
 }
 /*
 TEST(Torsten, PKModelOneCpt_MultipleDoses_overload) {
