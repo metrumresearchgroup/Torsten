@@ -114,25 +114,188 @@ PKModelOneCpt(const std::vector<T0>& time,
   return pred;
 }
 
-/*
+/**
  * Overload function to allow user to pass an std::vector for pMatrix.
- */ /*
-template <typename T0, typename T1, typename T2, typename T3, typename T4>
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-  T4>::type, Eigen::Dynamic, Eigen::Dynamic>
-PKModelOneCpt(const std::vector<T0>& pMatrix,
-              const std::vector<T1>& time,
-              const std::vector<T2>& amt,
-              const std::vector<T3>& rate,
-              const std::vector<T4>& ii,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+PKModelOneCpt(const std::vector<T0>& time,
+              const std::vector<T1>& amt,
+              const std::vector<T2>& rate,
+              const std::vector<T3>& ii,
               const std::vector<int>& evid,
               const std::vector<int>& cmt,
               const std::vector<int>& addl,
-              const std::vector<int>& ss) {
-  std::vector<std::vector<T0> > vec_pMatrix(1);
-  vec_pMatrix[0] = pMatrix;
+              const std::vector<int>& ss,
+              const std::vector<T4>& pMatrix,
+              const std::vector<std::vector<T5> >& biovar,
+              const std::vector<std::vector<T6> >& tlag) {
+  std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
 
-  return PKModelOneCpt(vec_pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
-} */
+  return PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                       vec_pMatrix, biovar, tlag);
+}
+
+/**
+ * Overload function to allow user to pass an std::vector for pMatrix,
+ * and biovar.
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+PKModelOneCpt(const std::vector<T0>& time,
+              const std::vector<T1>& amt,
+              const std::vector<T2>& rate,
+              const std::vector<T3>& ii,
+              const std::vector<int>& evid,
+              const std::vector<int>& cmt,
+              const std::vector<int>& addl,
+              const std::vector<int>& ss,
+              const std::vector<T4>& pMatrix,
+              const std::vector<T5>& biovar,
+              const std::vector<std::vector<T6> >& tlag) {
+  std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix),
+                                vec_biovar(1, biovar);
+  
+  return PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                       vec_pMatrix, vec_biovar, tlag);
+}
+
+/**
+ * Overload function to allow user to pass an std::vector for pMatrix,
+ * and tlag.
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+PKModelOneCpt(const std::vector<T0>& time,
+              const std::vector<T1>& amt,
+              const std::vector<T2>& rate,
+              const std::vector<T3>& ii,
+              const std::vector<int>& evid,
+              const std::vector<int>& cmt,
+              const std::vector<int>& addl,
+              const std::vector<int>& ss,
+              const std::vector<T4>& pMatrix,
+              const std::vector<std::vector<T5> >& biovar,
+              const std::vector<T6>& tlag) {
+  std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix),
+                                vec_tlag(1, tlag);
+  
+  return PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                       vec_pMatrix, biovar, vec_tlag);
+}
+
+/**
+ * Overload function to allow user to pass an std::vector for pMatrix,
+ * biovar, and tlag.
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+PKModelOneCpt(const std::vector<T0>& time,
+              const std::vector<T1>& amt,
+              const std::vector<T2>& rate,
+              const std::vector<T3>& ii,
+              const std::vector<int>& evid,
+              const std::vector<int>& cmt,
+              const std::vector<int>& addl,
+              const std::vector<int>& ss,
+              const std::vector<T4>& pMatrix,
+              const std::vector<T5>& biovar,
+              const std::vector<T6>& tlag) {
+  std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix),
+                                vec_biovar(1, biovar),
+                                vec_tlag(1, tlag);
+
+  return PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                       vec_pMatrix, vec_biovar, vec_tlag);
+}
+
+/**
+ * Overload function to allow user to pass an std::vector for biovar.
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+PKModelOneCpt(const std::vector<T0>& time,
+              const std::vector<T1>& amt,
+              const std::vector<T2>& rate,
+              const std::vector<T3>& ii,
+              const std::vector<int>& evid,
+              const std::vector<int>& cmt,
+              const std::vector<int>& addl,
+              const std::vector<int>& ss,
+              const std::vector<std::vector<T4> >& pMatrix,
+              const std::vector<T5>& biovar,
+              const std::vector<std::vector<T6> >& tlag) {
+  std::vector<std::vector<T5> > vec_biovar(1, biovar);
+
+  return PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                       pMatrix, vec_biovar, tlag);
+}
+
+/**
+ * Overload function to allow user to pass an std::vector for biovar,
+ * and tlag.
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+PKModelOneCpt(const std::vector<T0>& time,
+              const std::vector<T1>& amt,
+              const std::vector<T2>& rate,
+              const std::vector<T3>& ii,
+              const std::vector<int>& evid,
+              const std::vector<int>& cmt,
+              const std::vector<int>& addl,
+              const std::vector<int>& ss,
+              const std::vector<std::vector<T4> >& pMatrix,
+              const std::vector<T5>& biovar,
+              const std::vector<T6>& tlag) {
+  std::vector<std::vector<T5> > vec_biovar(1, biovar),
+                                vec_tlag(1, tlag);
+
+  return PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                       pMatrix, vec_biovar, vec_tlag);
+}
+
+/**
+ * Overload function to allow user to pass an std::vector for tlag.
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+PKModelOneCpt(const std::vector<T0>& time,
+              const std::vector<T1>& amt,
+              const std::vector<T2>& rate,
+              const std::vector<T3>& ii,
+              const std::vector<int>& evid,
+              const std::vector<int>& cmt,
+              const std::vector<int>& addl,
+              const std::vector<int>& ss,
+              const std::vector<std::vector<T4> >& pMatrix,
+              const std::vector<std::vector<T5> >& biovar,
+              const std::vector<T6>& tlag) {
+  std::vector<std::vector<T6> > vec_tlag(1, tlag);
+  
+  return PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                       pMatrix, biovar, vec_tlag);
+}
 
 #endif
