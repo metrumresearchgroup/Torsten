@@ -1,7 +1,8 @@
-#include <stan/math/torsten/torsten.hpp>
 #include <gtest/gtest.h>
+#include <stan/math/rev/mat.hpp>  // FIX ME - include should be more specific
 #include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
 #include <test/unit/math/torsten/prim/util_PKModelTwoCpt.hpp>
+#include <vector>
 
 using std::vector;
 using Eigen::Matrix;
@@ -10,18 +11,24 @@ using Eigen::Dynamic;
 TEST(Torsten, PKModelTwoCpt_MultipleDoses) {
 
 	vector<vector<double> > pMatrix(1);
-	pMatrix[0].resize(11);
-	pMatrix[0][0] = 5; // CL
-	pMatrix[0][1] = 8; // Q
-	pMatrix[0][2] = 20; // Vc
-	pMatrix[0][3] = 70; // Vp
-	pMatrix[0][4] = 1.2; // ka
-	pMatrix[0][5] = 1; // F1
-	pMatrix[0][6] = 1; // F2
-	pMatrix[0][7] = 1; // F3
-	pMatrix[0][8] = 0; // tlag1
-	pMatrix[0][9] = 0; // tlag2
-	pMatrix[0][10] = 0; // tlag3
+	pMatrix[0].resize(5);
+	pMatrix[0][0] = 5;  // CL
+	pMatrix[0][1] = 8;  // Q
+	pMatrix[0][2] = 20;  // Vc
+	pMatrix[0][3] = 70;  // Vp
+	pMatrix[0][4] = 1.2;  // ka
+
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(3);
+  biovar[0][0] = 1;  // F1
+  biovar[0][1] = 1;  // F2
+  biovar[0][2] = 1;  // F3
+
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(3);
+  tlag[0][0] = 0;  // tlag1
+  tlag[0][1] = 0;  // tlag2
+  tlag[0][2] = 0;  // tlag3
 
 	vector<double> time(10);
 	time[0] = 0.0;
@@ -48,8 +55,9 @@ TEST(Torsten, PKModelTwoCpt_MultipleDoses) {
 	vector<int> ss(10, 0);
 
 	Matrix<double, Dynamic, Dynamic> x;
-	x = PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
-	
+	x = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                   pMatrix, biovar, tlag);
+
 	Matrix<double, Dynamic, Dynamic> amounts(10, 3);
 	amounts << 1000.0, 0.0, 0.0,
 			   740.818221, 238.3713, 12.75775,
@@ -61,122 +69,153 @@ TEST(Torsten, PKModelTwoCpt_MultipleDoses) {
 			   122.456428, 448.8192, 255.23842,
 			   90.717953, 417.9001, 290.79297,
 			   8.229747, 200.8720, 441.38985;
-			   
+
 	expect_matrix_eq(amounts, x);
 
 	// Test AutoDiff against FiniteDiff
-    test_PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
-                       1e-8, 1e-4);
+  test_PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                    pMatrix, biovar, tlag, 1e-8, 1e-4);
 
 }
 
-
 TEST(Torsten, PKModelTwoCpt_MultipleDoses_overload) {
+  
+  vector<vector<double> > pMatrix(1);
+  pMatrix[0].resize(5);
+  pMatrix[0][0] = 5;  // CL
+  pMatrix[0][1] = 8;  // Q
+  pMatrix[0][2] = 20;  // Vc
+  pMatrix[0][3] = 70;  // Vp
+  pMatrix[0][4] = 1.2;  // ka
+  
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(3);
+  biovar[0][0] = 1;  // F1
+  biovar[0][1] = 1;  // F2
+  biovar[0][2] = 1;  // F3
+  
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(3);
+  tlag[0][0] = 0;  // tlag1
+  tlag[0][1] = 0;  // tlag2
+  tlag[0][2] = 0;  // tlag3
+  
+  vector<double> time(10);
+  time[0] = 0.0;
+  for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
+  time[9] = 4.0;
+  
+  vector<double> amt(10, 0);
+  amt[0] = 1000;
+  
+  vector<double> rate(10, 0);
+  
+  vector<int> cmt(10, 2);
+  cmt[0] = 1;
+  
+  vector<int> evid(10, 0);
+  evid[0] = 1;
+  
+  vector<double> ii(10, 0);
+  ii[0] = 12;
+  
+  vector<int> addl(10, 0);
+  addl[0] = 14;
+  
+  vector<int> ss(10, 0);
 
-	vector<double> pMatrix(11);
-	pMatrix[0] = 5; // CL
-	pMatrix[1] = 8; // Q
-	pMatrix[2] = 20; // Vc
-	pMatrix[3] = 70; // Vp
-	pMatrix[4] = 1.2; // ka
-	pMatrix[5] = 1; // F1
-	pMatrix[6] = 1; // F2
-	pMatrix[7] = 1; // F3
-	pMatrix[8] = 0; // tlag1
-	pMatrix[9] = 0; // tlag2
-	pMatrix[10] = 0; // tlag3
+  Matrix<double, Dynamic, Dynamic> x_122, x_112, x_111, x_121, x_212,
+  x_211, x_221;
+  x_122 = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                        pMatrix[0], biovar, tlag);
+  x_112 = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                        pMatrix[0], biovar[0], tlag);
+  x_111 = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                        pMatrix[0], biovar[0], tlag[0]);
+  x_121 = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                        pMatrix[0], biovar, tlag[0]);
+  x_212 = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                        pMatrix, biovar[0], tlag);
+  x_211 = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                        pMatrix, biovar[0], tlag[0]);
+  x_221 = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                        pMatrix, biovar, tlag[0]);
 
-	vector<double> time(10);
-	time[0] = 0.0;
-	for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
-	time[9] = 4.0;
+  Matrix<double, Dynamic, Dynamic> amounts(10, 3);
+  amounts << 1000.0, 0.0, 0.0,
+             740.818221, 238.3713, 12.75775,
+             548.811636, 379.8439, 43.55827,
+             406.569660, 455.3096, 83.95657,
+             301.194212, 486.6965, 128.32332,
+             223.130160, 489.4507, 173.01118,
+             165.298888, 474.3491, 215.75441,
+             122.456428, 448.8192, 255.23842,
+             90.717953, 417.9001, 290.79297,
+             8.229747, 200.8720, 441.38985;
 
-	vector<double> amt(10, 0);
-	amt[0] = 1000;
+  expect_matrix_eq(amounts, x_122);
+  expect_matrix_eq(amounts, x_112);
+  expect_matrix_eq(amounts, x_111);
+  expect_matrix_eq(amounts, x_121);
+  expect_matrix_eq(amounts, x_212);
+  expect_matrix_eq(amounts, x_211);
+  expect_matrix_eq(amounts, x_221);
 
-	vector<double> rate(10, 0);
-
-	vector<int> cmt(10, 2);
-	cmt[0] = 1;
-
-	vector<int> evid(10, 0);
-	evid[0] = 1;
-
-	vector<double> ii(10, 0);
-	ii[0] = 12;
-	
-	vector<int> addl(10, 0);
-	addl[0] = 14;
-	
-	vector<int> ss(10, 0);
-
-	Matrix<double, Dynamic, Dynamic> x;
-	x = PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
-	
-	Matrix<double, Dynamic, Dynamic> amounts(10, 3);
-	amounts << 1000.0, 0.0, 0.0,
-			   740.818221, 238.3713, 12.75775,
-			   548.811636, 379.8439, 43.55827,
-			   406.569660, 455.3096, 83.95657,
-			   301.194212, 486.6965, 128.32332,
-			   223.130160, 489.4507, 173.01118,
-			   165.298888, 474.3491, 215.75441,
-			   122.456428, 448.8192, 255.23842,
-			   90.717953, 417.9001, 290.79297,
-			   8.229747, 200.8720, 441.38985;
-			   
-	expect_matrix_eq(amounts, x);
-
-	// Test AutoDiff against FiniteDiff
-    test_PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
-                       1e-8, 1e-4);
+  // CHECK - do I need an AD test for every function signature ?
 }
 
 
 TEST(Torsten, PKModelTwoCpt_SS) {
 
-	vector<vector<double> > pMatrix(1);
-	pMatrix[0].resize(11);
-	pMatrix[0][0] = 5; // CL
-	pMatrix[0][1] = 8; // Q
-	pMatrix[0][2] = 20; // Vc
-	pMatrix[0][3] = 70; // Vp
-	pMatrix[0][4] = 1.2; // ka
-	pMatrix[0][5] = 1; // F1
-	pMatrix[0][6] = 1; // F2
-	pMatrix[0][7] = 1; // F3
-	pMatrix[0][8] = 0; // tlag1
-	pMatrix[0][9] = 0; // tlag2
-	pMatrix[0][10] = 0; // tlag3
-	
+  vector<vector<double> > pMatrix(1);
+  pMatrix[0].resize(5);
+  pMatrix[0][0] = 5;  // CL
+  pMatrix[0][1] = 8;  // Q
+  pMatrix[0][2] = 20;  // Vc
+  pMatrix[0][3] = 70;  // Vp
+  pMatrix[0][4] = 1.2;  // ka
+
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(3);
+  biovar[0][0] = 1;  // F1
+  biovar[0][1] = 1;  // F2
+  biovar[0][2] = 1;  // F3
+
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(3);
+  tlag[0][0] = 0;  // tlag1
+  tlag[0][1] = 0;  // tlag2
+  tlag[0][2] = 0;  // tlag3
+
 	vector<double> time(10);
 	time[0] = 0.0;
 	time[1] = 0.0;
 	for(int i = 2; i < 10; i++) time[i] = time[i - 1] + 5;
-	
+
 	vector<double> amt(10, 0);
 	amt[0] = 1200;
-	
+
 	vector<double> rate(10, 0);
-	
+
 	vector<int> cmt(10, 2);
 	cmt[0] = 1;
-	
+
 	vector<int> evid(10, 0);
 	evid[0] = 1;
 
 	vector<double> ii(10, 0);
 	ii[0] = 12;
-	
+
 	vector<int> addl(10, 0);
 	addl[0] = 10;
-	
+
 	vector<int> ss(10, 0);
 	ss[0] = 1;
 
 	Matrix<double, Dynamic, Dynamic> x;
-	x = PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
-	
+	x = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                   pMatrix, biovar, tlag);
+
 	Matrix<double, Dynamic, Dynamic> amounts(10, 3);
 	amounts << 1.200001e+03, 224.5332, 1196.900,
 	           1.200001e+03, 224.5332, 1196.900, 
@@ -195,25 +234,32 @@ TEST(Torsten, PKModelTwoCpt_SS) {
 	}
 
 	// Test AutoDiff against FiniteDiff
-    test_PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
-                       1e-8, 2e-4);
+  test_PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                    pMatrix, biovar, tlag, 1e-8, 2e-4);
 }
+
 
 TEST(Torsten, PKModelTwoCpt_SS_rate) {
 	
 	vector<vector<double> > pMatrix(1);
-	pMatrix[0].resize(11);
-	pMatrix[0][0] = 5; // CL
-	pMatrix[0][1] = 8; // Q
-	pMatrix[0][2] = 20; // Vc
-	pMatrix[0][3] = 70; // Vp
-	pMatrix[0][4] = 1.2; // ka
-	pMatrix[0][5] = 1; // F1
-	pMatrix[0][6] = 1; // F2
-	pMatrix[0][7] = 1; // F3
-	pMatrix[0][8] = 0; // tlag1
-	pMatrix[0][9] = 0; // tlag2
-	pMatrix[0][10] = 0; // tlag3
+  pMatrix[0].resize(5);
+  pMatrix[0][0] = 5;  // CL
+  pMatrix[0][1] = 8;  // Q
+  pMatrix[0][2] = 20;  // Vc
+  pMatrix[0][3] = 70;  // Vp
+  pMatrix[0][4] = 1.2;  // ka
+  
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(3);
+  biovar[0][0] = 1;  // F1
+  biovar[0][1] = 1;  // F2
+  biovar[0][2] = 1;  // F3
+  
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(3);
+  tlag[0][0] = 0;  // tlag1
+  tlag[0][1] = 0;  // tlag2
+  tlag[0][2] = 0;  // tlag3
 
 	vector<double> time(10);
 	time[0] = 0.0;
@@ -242,7 +288,8 @@ TEST(Torsten, PKModelTwoCpt_SS_rate) {
 	ss[0] = 1;
 
 	Matrix<double, Dynamic, Dynamic> x;
-	x = PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+	x = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                   pMatrix, biovar, tlag);
 
 	Matrix<double, Dynamic, Dynamic> amounts(10, 3);
 	amounts << 1.028649, 286.5656, 1391.610,
@@ -262,31 +309,35 @@ TEST(Torsten, PKModelTwoCpt_SS_rate) {
 	}
 
 	// Test AutoDiff against FiniteDiff
-    test_PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
-                       1e-8, 2e-4);
+    test_PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                      pMatrix, biovar, tlag, 1e-8, 2e-4);
 }
 
 TEST(Torsten, PKModelTwoCpt_MultipleDoses_timePara) {
 
-    int nEvent = 11;
-    
+  int nEvent = 11;
 	vector<vector<double> > pMatrix(nEvent);
-	
 	for (int i = 0; i < nEvent; i++) {
-	  pMatrix[i].resize(11);
+	  pMatrix[i].resize(5);
 	  if (i < 6) pMatrix[i][0] = 5; // CL
-	  else pMatrix[i][0] = 50; // CL is piece-wise constant
-	  pMatrix[i][1] = 8; // Q
-	  pMatrix[i][2] = 20; // Vc
-	  pMatrix[i][3] = 70; // Vp
-	  pMatrix[i][4] = 1.2; // ka
-	  pMatrix[i][5] = 1; // F1
-	  pMatrix[i][6] = 1; // F2
-	  pMatrix[i][7] = 1; // F3
-	  pMatrix[i][8] = 0; // tlag1
-	  pMatrix[i][9] = 0; // tlag2
-	  pMatrix[i][10] = 0; // tlag3
+	  else pMatrix[i][0] = 50;  // CL is piece-wise constant
+	  pMatrix[i][1] = 8;  // Q
+	  pMatrix[i][2] = 20;  // Vc
+	  pMatrix[i][3] = 70;  // Vp
+	  pMatrix[i][4] = 1.2;  // ka
 	}
+	
+	vector<vector<double> > biovar(1);
+	biovar[0].resize(3);
+	biovar[0][0] = 1;  // F1
+	biovar[0][1] = 1;  // F2
+	biovar[0][2] = 1;  // F3
+	
+	vector<vector<double> > tlag(1);
+	tlag[0].resize(3);
+	tlag[0][0] = 0;  // tlag1
+	tlag[0][1] = 0;  // tlag2
+	tlag[0][2] = 0;  // tlag3
 
 	vector<double> time(nEvent);
 	time[0] = 0.0;
@@ -294,25 +345,26 @@ TEST(Torsten, PKModelTwoCpt_MultipleDoses_timePara) {
 
 	vector<double> amt(nEvent, 0);
 	amt[0] = 1000;
-	
+
 	vector<double> rate(nEvent, 0);
-	
+
 	vector<int> cmt(nEvent, 2);
 	cmt[0] = 1;
-	
+
 	vector<int> evid(nEvent, 0);
 	evid[0] = 1;
 
 	vector<double> ii(nEvent, 0);
 	ii[0] = 12;
-	
+
 	vector<int> addl(nEvent, 0);
 	addl[0] = 1;
-	
+
 	vector<int> ss(nEvent, 0);
 
 	Matrix<double, Dynamic, Dynamic> x;
-	x = PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+	x = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                   pMatrix, biovar, tlag);
 
 	Matrix<double, Dynamic, Dynamic> amounts(nEvent, 3);
 	amounts << 1.000000e+03,   0.000000,   0.0000,
@@ -326,10 +378,10 @@ TEST(Torsten, PKModelTwoCpt_MultipleDoses_timePara) {
 			   6.772877e-02,  10.966107, 267.7033,
 			   3.372017e-03,   8.549649, 209.5604,
 			   1.678828e-04,   6.690631, 164.0364;
-			   
+
 	expect_matrix_eq(amounts, x);
 
 	// Test AutoDiff against FiniteDiff
-    test_PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
-                       1e-8, 1e-4);
+  test_PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                    pMatrix, biovar, tlag, 1e-8, 1e-4);
 }

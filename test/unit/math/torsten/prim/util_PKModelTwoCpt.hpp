@@ -7,58 +7,86 @@
 #include <test/unit/util.hpp>
 
 /*
- * Calculates finite difference for PKModelTwoCpt with varying parameters. 
+ * Calculates finite difference for PKModelTwoCpt with varying parameters.
+ * Parameters are stored in pMatrix, biovar, and tlag.
  */
 Eigen::Matrix <double, Eigen::Dynamic, Eigen::Dynamic>
-finite_diff_params(const std::vector<std::vector<double> >& pMatrix,
-                   const std::vector<double>& time,
-                   const std::vector<double>& amt,
-                   const std::vector<double>& rate,
-                   const std::vector<double>& ii,
-                   const std::vector<int>& evid,
-                   const std::vector<int>& cmt,
-                   const std::vector<int>& addl,
-                   const std::vector<int>& ss,
-                   const size_t& param_row,
-                   const size_t& param_col,
-                   const double& diff) {
-  using std::vector;
-  using Eigen::Matrix;
-  using Eigen::Dynamic;
+  finite_diff_params(const std::vector<double>& time,
+                     const std::vector<double>& amt,
+                     const std::vector<double>& rate,
+                     const std::vector<double>& ii,
+                     const std::vector<int>& evid,
+                     const std::vector<int>& cmt,
+                     const std::vector<int>& addl,
+                     const std::vector<int>& ss,
+                     const std::vector<std::vector<double> >& pMatrix,
+                     const std::vector<std::vector<double> >& biovar,
+                     const std::vector<std::vector<double> >& tlag,
+                     const size_t& param_row,
+                     const size_t& param_col,
+                     const double& diff,
+                     const std::string parmType) {
+    using std::vector;
+    using Eigen::Matrix;
+    using Eigen::Dynamic;
 
-  vector<double> parameters(pMatrix[0].size());
-  vector<vector<double> > pMatrix_ub(pMatrix.size(), parameters);
-  vector<vector<double> > pMatrix_lb(pMatrix.size(), parameters);
-  for (size_t i = 0; i < pMatrix.size(); i++)
-    for (size_t j = 0; j < pMatrix[0].size(); j++) {
-      if (i == param_row && j == param_col) {        
-        pMatrix_ub[i][j] = pMatrix[i][j] + diff;
-        pMatrix_lb[i][j] = pMatrix[i][j] - diff;
-      } else {
-        pMatrix_ub[i][j] = pMatrix[i][j];
-        pMatrix_lb[i][j] = pMatrix[i][j];
+    vector<double> parameters(pMatrix[0].size());
+    vector<vector<double> > pMatrix_ub(pMatrix.size(), parameters);
+    vector<vector<double> > pMatrix_lb(pMatrix.size(), parameters);
+    for (size_t i = 0; i < pMatrix.size(); i++)
+      for (size_t j = 0; j < pMatrix[0].size(); j++) {
+        if ((i == param_row && j == param_col) && parmType == "pMatrix") {        
+          pMatrix_ub[i][j] = pMatrix[i][j] + diff;
+          pMatrix_lb[i][j] = pMatrix[i][j] - diff;
+        } else {
+          pMatrix_ub[i][j] = pMatrix[i][j];
+          pMatrix_lb[i][j] = pMatrix[i][j];
+        }
       }
-    }
 
-  Matrix<double, Dynamic, Dynamic> pk_res_ub;
-  Matrix<double, Dynamic, Dynamic> pk_res_lb;
-  pk_res_ub = PKModelTwoCpt(pMatrix_ub, time, amt, rate, ii, evid, cmt,
-                            addl, ss);
-  pk_res_lb = PKModelTwoCpt(pMatrix_lb, time, amt, rate, ii, evid, cmt,
-                            addl, ss);
+    vector<double> biovarParameters(biovar[0].size());
+    vector<vector<double> > biovar_ub(biovar.size(), biovarParameters);
+    vector<vector<double> > biovar_lb(biovar.size(), biovarParameters);
+    for (size_t i = 0; i < biovar.size(); i++)
+      for (size_t j = 0; j < biovar[0].size(); j++) {
+        if ((i == param_row && j == param_col) && parmType == "biovar") {
+          biovar_ub[i][j] = biovar[i][j] + diff;
+          biovar_lb[i][j] = biovar[i][j] - diff; 
+        } else {
+          biovar_ub[i][j] = biovar[i][j];
+          biovar_lb[i][j] = biovar[i][j];
+        }
+      }
 
-  return (pk_res_ub - pk_res_lb) / (2 * diff);
+    vector<double> tlagParameters(tlag[0].size());
+    vector<vector<double> > tlag_ub(tlag.size(), tlagParameters);
+    vector<vector<double> > tlag_lb(biovar.size(), tlagParameters);
+    for (size_t i = 0; i < tlag.size(); i++)
+      for (size_t j = 0; j < tlag[0].size(); j++) {
+        if ((i == param_row && j == param_col) && parmType == "tlag") {
+          tlag_ub[i][j] = tlag[i][j] + diff;
+          tlag_lb[i][j] = tlag[i][j] - diff; 
+        } else {
+          tlag_ub[i][j] = tlag[i][j];
+          tlag_lb[i][j] = tlag[i][j];
+        }
+      }
+
+    Matrix<double, Dynamic, Dynamic> pk_res_ub;
+    Matrix<double, Dynamic, Dynamic> pk_res_lb;
+    pk_res_ub = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                              pMatrix_ub, biovar_ub, tlag_ub);
+    pk_res_lb = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                              pMatrix_lb, biovar_lb, tlag_lb);
+    
+    return (pk_res_ub - pk_res_lb) / (2 * diff);
 }
 
 /*
  * Test PKModelTwoCpt with only pMatrix as vars and all other continuous
  * arguments as double.
- * Note: There is known issue when computing the derivative w.r.t the
- * lag time of a dosing compartment. The issue is reported on GitHub,
- * and the unit test overlooks it.
  */
-void test_PKModelTwoCpt_finite_diff_v(
-    const std::vector<std::vector<double> >& pMatrix,
+void test_PKModelTwoCpt_finite_diff_vdd(
     const std::vector<double>& time,
     const std::vector<double>& amt,
     const std::vector<double>& rate,
@@ -67,6 +95,9 @@ void test_PKModelTwoCpt_finite_diff_v(
     const std::vector<int>& cmt,
     const std::vector<int>& addl,
     const std::vector<int>& ss,
+    const std::vector<std::vector<double> >& pMatrix,
+    const std::vector<std::vector<double> >& biovar,
+    const std::vector<std::vector<double> >& tlag,
     const double& diff,
     const double& diff2) {
   using std::vector;
@@ -83,8 +114,9 @@ void test_PKModelTwoCpt_finite_diff_v(
 
   for(size_t i = 0; i < parmRows; i++) {
     for(size_t j = 0; j < parmCols; j++) {
-      finite_diff_res[i][j] = finite_diff_params(pMatrix, time, amt, rate,
-                                      ii, evid, cmt, addl, ss, i, j, diff);
+      finite_diff_res[i][j]
+      = finite_diff_params(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix, biovar, tlag, i, j, diff, "pMatrix");
     }
   }
 
@@ -100,18 +132,11 @@ void test_PKModelTwoCpt_finite_diff_v(
   }
 
   Matrix<var, Dynamic, Dynamic> ode_res;
-  ode_res = PKModelTwoCpt(pMatrix_v, time, amt, rate, ii, evid, cmt, addl, ss);
+  ode_res = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                          pMatrix_v, biovar, tlag);
 
-  int nCmt = 3;
+  int nCmt = 2;
   size_t nEvent = time.size();
-
-  // Identify dosing compartment
-  vector<size_t> tlagIndexes(nCmt);
-  for (int i = 0; i < nCmt; i++)
-    tlagIndexes[i] = parmCols - nCmt + i;
-  vector<bool> isDosingCmt(nCmt);
-  for (size_t i = 0; i < nEvent; i++)
-    if (evid[i] == 1 || evid[i] == 4) isDosingCmt[cmt[i] - 1] = true;
 
   vector<double> grads_eff(nEvent * nCmt);
   for (size_t i = 0; i < nEvent; i++)
@@ -122,41 +147,184 @@ void test_PKModelTwoCpt_finite_diff_v(
       for (size_t k = 0; k < parmRows; k++)
         for (size_t l = 0; l < parmCols; l++) {
 
-         bool discontinuous = false;
-         for (int m = 0; m < nCmt; m++)
-           if (l == tlagIndexes[m] && isDosingCmt[m]) discontinuous = true;
-
-          if (discontinuous == false) {
-            EXPECT_NEAR(grads_eff[k * parmCols + l],
-              finite_diff_res[k][l](i, j), diff2)
-              << "Gradient of PKModelTwoCpt failed with known"
-              << " time, amt, rate, ii, evid, cmt, addl, ss "
-              << " and unknown parameters at event " << i
-              << ", in compartment " << j
-              << ", and parameter index (" << k << ", " << l << ")";
-          }
+          EXPECT_NEAR(grads_eff[k * parmCols + l],
+                      finite_diff_res[k][l](i, j), diff2)
+          << "Gradient of PKModelTwoCpt failed with known"
+          << " time, amt, rate, ii, evid, cmt, addl, ss "
+          << " and unknown parameters at event " << i
+          << ", in compartment " << j
+          << ", and parameter index (" << k << ", " << l << ")";
         }
-      stan::math::set_zero_all_adjoints();
+        stan::math::set_zero_all_adjoints();
     }
 }
 
-void test_PKModelTwoCpt(const std::vector<std::vector<double> >& pMatrix,
-                        const std::vector<double>& time,
-                        const std::vector<double>& amt,
-                        const std::vector<double>& rate,
-                        const std::vector<double>& ii,
-                        const std::vector<int>& evid,
-                        const std::vector<int>& cmt,
-                        const std::vector<int>& addl,
-                        const std::vector<int>& ss,
-                        const double& diff,
-                        const double& diff2) {
-  test_PKModelTwoCpt_finite_diff_v(pMatrix, time, amt, rate, ii, evid,
-                                   cmt, addl, ss, diff, diff2);
+/*
+ * Test PKModelTwoCpt with only biovar as vars and all other continuous
+ * arguments as double.
+ */
+void test_PKModelTwoCpt_finite_diff_dvd(
+    const std::vector<double>& time,
+    const std::vector<double>& amt,
+    const std::vector<double>& rate,
+    const std::vector<double>& ii,
+    const std::vector<int>& evid,
+    const std::vector<int>& cmt,
+    const std::vector<int>& addl,
+    const std::vector<int>& ss,
+    const std::vector<std::vector<double> >& pMatrix,
+    const std::vector<std::vector<double> >& biovar,
+    const std::vector<std::vector<double> >& tlag,
+    const double& diff,
+    const double& diff2) {
+  using std::vector;
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
+  using stan::math::var;
+  
+  size_t parmRows = biovar.size();
+  size_t parmCols = biovar[0].size();
+  size_t total_param = parmRows * parmCols;
+  vector<vector<Matrix<double, Dynamic, Dynamic> > > finite_diff_res(parmRows);
+  for(size_t i = 0; i < parmRows; i++) finite_diff_res[i].resize(parmCols);
+  
+  for(size_t i = 0; i < parmRows; i++) {
+    for(size_t j = 0; j < parmCols; j++) {
+      finite_diff_res[i][j]
+      = finite_diff_params(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix, biovar, tlag, i, j, diff, "biovar");
+    }
+  }
+  
+  // Create biovar with vars
+  vector<var> parameters(total_param);
+  vector<vector<var> > biovar_v(parmRows);
+  for (size_t i = 0; i < parmRows; i++) biovar_v[i].resize(parmCols);
+  for (size_t i = 0; i < parmRows; i++) {
+    for (size_t j = 0; j < parmCols; j++) {
+      parameters[i * parmCols + j] = biovar[i][j];
+      biovar_v[i][j] = parameters[i * parmCols + j];
+    }
+  }
+  
+  Matrix<var, Dynamic, Dynamic> ode_res;
+  ode_res = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                          pMatrix, biovar_v, tlag);
+  
+  int nCmt = 2;
+  size_t nEvent = time.size();
+  
+  vector<double> grads_eff(nEvent * nCmt);
+  for (size_t i = 1; i < nEvent; i++)
+    for (int j = 0; j < nCmt; j++) {
+      grads_eff.clear();
+      ode_res(i, j).grad(parameters, grads_eff);
+      
+      for (size_t k = 0; k < parmRows; k++)
+        for (size_t l = 0; l < parmCols; l++) {
+          
+          EXPECT_NEAR(grads_eff[k * parmCols + l],
+                      finite_diff_res[k][l](i, j), diff2)
+          << "Gradient of generalOdeModel failed with known"
+          << " time, amt, rate, ii, evid, cmt, addl, ss "
+          << " and unknown parameters at event " << i
+          << ", in compartment " << j
+          << ", and biovar index (" << k << ", " << l << ")";
+        }
+        stan::math::set_zero_all_adjoints();
+    }
 }
 
-void test_PKModelTwoCpt(const std::vector<double>& pMatrix_v,
-                        const std::vector<double>& time,
+/*
+ * Test PKModelTwoCpt with only tlag as vars and all other continuous
+ * arguments as double.
+ * Note: There is known issue when computing the derivative w.r.t the
+ * lag time of a dosing compartment. The issue is reported on GitHub,
+ * and the unit test overlooks it.
+ */
+void test_PKModelTwoCpt_finite_diff_ddv(
+    const std::vector<double>& time,
+    const std::vector<double>& amt,
+    const std::vector<double>& rate,
+    const std::vector<double>& ii,
+    const std::vector<int>& evid,
+    const std::vector<int>& cmt,
+    const std::vector<int>& addl,
+    const std::vector<int>& ss,
+    const std::vector<std::vector<double> >& pMatrix,
+    const std::vector<std::vector<double> >& biovar,
+    const std::vector<std::vector<double> >& tlag,
+    const double& diff,
+    const double& diff2) {
+  using std::vector;
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
+  using stan::math::var;
+  
+  size_t parmRows = tlag.size();
+  size_t parmCols = tlag[0].size();
+  size_t total_param = parmRows * parmCols;
+  vector<vector<Matrix<double, Dynamic, Dynamic> > > finite_diff_res(parmRows);
+  for(size_t i = 0; i < parmRows; i++) finite_diff_res[i].resize(parmCols);
+  
+  for(size_t i = 0; i < parmRows; i++) {
+    for(size_t j = 0; j < parmCols; j++) {
+      finite_diff_res[i][j]
+      = finite_diff_params(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix, biovar, tlag, i, j, diff, "tlag");
+    }
+  }
+  
+  // Create biovar with vars
+  vector<var> parameters(total_param);
+  vector<vector<var> > tlag_v(parmRows);
+  for (size_t i = 0; i < parmRows; i++) tlag_v[i].resize(parmCols);
+  for (size_t i = 0; i < parmRows; i++) {
+    for (size_t j = 0; j < parmCols; j++) {
+      parameters[i * parmCols + j] = tlag[i][j];
+      tlag_v[i][j] = parameters[i * parmCols + j];
+    }
+  }
+  
+  Matrix<var, Dynamic, Dynamic> ode_res;
+  ode_res = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                          pMatrix, biovar, tlag_v);
+  
+  size_t nEvent = time.size();
+  
+  // Identify dosing compartment
+  int nCmt = 3;
+  vector<bool> isDosingCmt(nCmt);
+  for (size_t i = 0; i < nEvent; i++)
+    if (evid[i] == 0 || evid[i] == 4) isDosingCmt[cmt[i] - 1] = true;
+    
+    vector<double> grads_eff(nEvent * nCmt);
+    for (size_t i = 1; i < nEvent; i++)
+      for (int j = 0; j < nCmt; j++) {
+        grads_eff.clear();
+        ode_res(i, j).grad(parameters, grads_eff);
+        
+        for (size_t k = 0; k < parmRows; k++)
+          for (size_t l = 0; l < parmCols; l++) {
+            bool discontinuous = false;
+            for (int m = 0; m < nCmt; m++)
+              if (l == (size_t) m && isDosingCmt[m]) discontinuous = true;
+              
+              if (discontinuous == false) {
+                EXPECT_NEAR(grads_eff[k * parmCols + l],
+                            finite_diff_res[k][l](i, j), diff2)
+                << "Gradient of generalOdeModel failed with known"
+                << " time, amt, rate, ii, evid, cmt, addl, ss "
+                << " and unknown parameters at event " << i
+                << ", in compartment " << j
+                << ", and tlag index (" << k << ", " << l << ")";
+              }
+          }
+          stan::math::set_zero_all_adjoints();
+      }
+}
+
+void test_PKModelTwoCpt(const std::vector<double>& time,
                         const std::vector<double>& amt,
                         const std::vector<double>& rate,
                         const std::vector<double>& ii,
@@ -164,11 +332,20 @@ void test_PKModelTwoCpt(const std::vector<double>& pMatrix_v,
                         const std::vector<int>& cmt,
                         const std::vector<int>& addl,
                         const std::vector<int>& ss,
+                        const std::vector<std::vector<double> >& pMatrix,
+                        const std::vector<std::vector<double> >& biovar,
+                        const std::vector<std::vector<double> >&tlag,
                         const double& diff,
                         const double& diff2) {
-  std::vector<std::vector<double> > pMatrix(1, pMatrix_v);
-  test_PKModelTwoCpt(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
-                     diff, diff2);
+  test_PKModelTwoCpt_finite_diff_vdd(time, amt, rate, ii, evid,
+                                    cmt, addl, ss, pMatrix, biovar, tlag,
+                                    diff, diff2);
+  test_PKModelTwoCpt_finite_diff_dvd(time, amt, rate, ii, evid,
+                                    cmt, addl, ss, pMatrix, biovar, tlag,
+                                    diff, diff2);
+  test_PKModelTwoCpt_finite_diff_ddv(time, amt, rate, ii, evid,
+                                    cmt, addl, ss, pMatrix, biovar, tlag,
+                                    diff, diff2);
 }
 
 
