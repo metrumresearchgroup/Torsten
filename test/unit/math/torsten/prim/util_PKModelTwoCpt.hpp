@@ -6,7 +6,7 @@
 #include <test/unit/math/rev/arr/util.hpp>
 #include <test/unit/util.hpp>
 
-/*
+/**
  * Calculates finite difference for PKModelTwoCpt with varying parameters.
  * Parameters are stored in pMatrix, biovar, and tlag.
  */
@@ -82,7 +82,7 @@ Eigen::Matrix <double, Eigen::Dynamic, Eigen::Dynamic>
     return (pk_res_ub - pk_res_lb) / (2 * diff);
 }
 
-/*
+/**
  * Test PKModelTwoCpt with only pMatrix as vars and all other continuous
  * arguments as double.
  */
@@ -159,7 +159,7 @@ void test_PKModelTwoCpt_finite_diff_vdd(
     }
 }
 
-/*
+/**
  * Test PKModelTwoCpt with only biovar as vars and all other continuous
  * arguments as double.
  */
@@ -235,7 +235,7 @@ void test_PKModelTwoCpt_finite_diff_dvd(
     }
 }
 
-/*
+/**
  * Test PKModelTwoCpt with only tlag as vars and all other continuous
  * arguments as double.
  * Note: There is known issue when computing the derivative w.r.t the

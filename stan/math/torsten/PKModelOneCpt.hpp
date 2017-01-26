@@ -92,7 +92,7 @@ PKModelOneCpt(const std::vector<T0>& time,
     stan::math::invalid_argument(function,
                                  "The number of lag times parameters per event (length of a vector in the eleventh argument) is", // NOLINT
                                  tlag[0].size(), "", length_error5);
-  
+
 
   // Construct Pred functions for the model.
   Pred1_structure new_Pred1("OneCptModel");

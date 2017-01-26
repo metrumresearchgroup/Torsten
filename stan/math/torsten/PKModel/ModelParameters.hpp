@@ -158,7 +158,7 @@ public:
     assert(iEvent >= 0 && (size_t) iEvent < MPV.size());
     assert(iParameter >= 0 && (size_t) iParameter
              < MPV[iEvent].tlag.size());
-    return MPV[iEvent].tlag[iParameter];    
+    return MPV[iEvent].tlag[iParameter];
   }
 
   void InsertModelParameters(ModelParameters<T_time, T_parameters,
@@ -230,12 +230,6 @@ public:
                                 T_ii>& events) {
     int nEvent = events.get_size();
     assert(nEvent > 0);
-    int nParameters = MPV[0].RealParameters.size();  // parameters per event
-    assert(nParameters > 0);
-    int nBiovar = MPV[0].biovar.size();  // biovar parameters per event
-    assert(nBiovar > 0);
-    int nTlag = MPV[0].tlag.size(); // tlag parameters per event
-    assert(nTlag > 0);
     int len_Parameters = MPV.size();  // numbers of events for which parameters
                                       // are determined
     assert(len_Parameters > 0);

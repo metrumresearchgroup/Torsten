@@ -89,8 +89,7 @@ Pred(const std::vector<T_time>& time,
 
   /////////////////////////////////////////////////////////////////////////////
   // BOOK-KEEPING: UPDATE DATA SETS
-  int nParameter = model.GetNParameter(),
-    nCmt = model.GetNCmt();
+  int nCmt = model.GetNCmt();
 
   EventHistory<scalar, scalar, scalar, scalar>
     events(time, amt, rate, ii, evid, cmt, addl, ss);
@@ -100,10 +99,7 @@ Pred(const std::vector<T_time>& time,
 
   events.Sort();
   parameters.Sort();
-
   int nKeep = events.get_size();
-  int np = pMatrix[0].size() * pMatrix.size();
-  assert((np > 0) && (np % nParameter == 0));
 
   events.AddlDoseEvents();
   parameters.CompleteParameterHistory(events);
@@ -130,7 +126,7 @@ Pred(const std::vector<T_time>& time,
 
   scalar dt, tprev = events.get_time(0);
   Matrix<scalar, 1, Dynamic> pred1;
-  Event<scalar, scalar, scalar, scalar> event;  // CHECK - change type (scalar)
+  Event<scalar, scalar, scalar, scalar> event;  // CHECK - change type (scalars) ?
   ModelParameters<scalar, T_parameters, T_biovar, T_tlag, T_system> parameter;
   int iRate = 0, ikeep = 0;
 

@@ -110,12 +110,15 @@ void pmetricsCheck(const std::vector<T0>& time,
       length_error3);
 
   // TEST ARGUMENTS FOR PARAMETERS
-  if (!((pMatrix.size() == time.size()) || (pMatrix.size() == 1)))
-    invalid_argument(function, "length of the parameter (2d) array,",
-      pMatrix.size(), "", length_error2);
-  if (!(pMatrix[0].size() > 0)) invalid_argument(function,
-    "the number of parameters per event is", pMatrix[0].size(),
-    "", " but must be greater than 0!");
+  static const char* noCheck("linCptModel");
+  if (strcmp(function, noCheck) != 0) {
+    if (!((pMatrix.size() == time.size()) || (pMatrix.size() == 1)))
+      invalid_argument(function, "length of the parameter (2d) array,",
+        pMatrix.size(), "", length_error2);
+    if (!(pMatrix[0].size() > 0)) invalid_argument(function,
+      "the number of parameters per event is", pMatrix[0].size(),
+      "", " but must be greater than 0!");
+  }
 
   if (!((biovar.size() == time.size()) || (biovar.size() == 1)))
     invalid_argument(function, "length of the biovariability parameter (2d) array,",  // NOLINT

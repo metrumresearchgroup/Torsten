@@ -1,7 +1,8 @@
-#include <stan/math/rev/mat.hpp>
 #include <gtest/gtest.h>
+#include <stan/math/rev/mat.hpp>  // FIX ME - include should be more specific
 #include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
 #include <test/unit/math/torsten/prim/util_linOdeModel.hpp>
+#include <vector>
 
 using std::vector;
 using Eigen::Matrix;
@@ -9,17 +10,20 @@ using Eigen::Dynamic;
 
 TEST(Torsten, LinCpt_OneSS) {
 
-	double CL = 10, Vc = 80, ka = 1.2, k10 = CL / Vc;
+  double CL = 10, Vc = 80, ka = 1.2, k10 = CL / Vc;
 	Matrix<double, Dynamic, Dynamic> system(2, 2);
 	system << -ka, 0, ka, -k10;
 	vector<Matrix<double, Dynamic, Dynamic> > system_array(1, system); 
 
-	vector<vector<double> > pMatrix(1);
-	pMatrix[0].resize(4);
-	pMatrix[0][0] = 1; // F1
-	pMatrix[0][1] = 1; // F2
-	pMatrix[0][2] = 0; // tlag1
-	pMatrix[0][3] = 0; // tlag2
+	vector<vector<double> > biovar(1);
+	biovar[0].resize(2);
+	biovar[0][0] = 1;  // F1
+	biovar[0][1] = 1;  // F2
+	
+	vector<vector<double> > tlag(1);
+	tlag[0].resize(2);
+	tlag[0][0] = 0;  // tlag1
+	tlag[0][1] = 0;  // tlag2
 
 	vector<double> time(10);
 	time[0] = 0.0;
@@ -45,9 +49,9 @@ TEST(Torsten, LinCpt_OneSS) {
 
 	vector<int> ss(10, 0);
 	ss[0] = 1;
-
 	Matrix<double, Dynamic, Dynamic> x;
-	x = linCptModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+	x = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                 system_array, biovar, tlag);
 
 	Matrix<double, Dynamic, Dynamic> amounts(10, 2);
 	amounts << 1200.0, 384.7363,
@@ -66,11 +70,13 @@ TEST(Torsten, LinCpt_OneSS) {
 		EXPECT_NEAR(amounts(i, 1), x(i, 1), std::max(amounts(i, 1), x(i, 1)) * 1e-6);
 	}
 
+	// Test auto-diff
 	double diff = 1e-8, diff2 = 1e-4;
-	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
-		                 ss, diff, diff2);
+	test_linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                   system_array, biovar, tlag, diff, diff2);
 }
 
+/*
 TEST(Torsten, LinCpt_OneSS_overloads) {
 
 	double CL = 10, Vc = 80, ka = 1.2, k10 = CL / Vc;
@@ -284,4 +290,4 @@ TEST(Torsten, linOne_MultipleDoses_timePara) {
 	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
 		             ss, diff, diff2);
 }
-
+*/

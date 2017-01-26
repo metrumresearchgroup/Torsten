@@ -15,14 +15,13 @@
  *
  * <b>Warning:</b> This prototype does not handle steady state events. 
  *
- * @tparam T0 type of scalar for matrix describing linear ODE system.
- * @tparam T1 type of scalars for the model parameters (F1 and time lag).
- * @tparam T2 type of scalar for time of events. 
- * @tparam T3 type of scalar for amount at each event.
- * @tparam T4 type of scalar for rate at each event.
- * @tparam T5 type of scalar for inter-dose inteveral at each event.
- * @param[in] system square matrix describing the linear system of ODEs
- * @param[in] pMatrix parameters (F1 and time lag) at each event
+ * @tparam T0 type of scalar for time of events. 
+ * @tparam T1 type of scalar for amount at each event.
+ * @tparam T2 type of scalar for rate at each event.
+ * @tparam T3 type of scalar for inter-dose inteveral at each event.
+ * @tparam T4 type of scalar for matrix describing linear ODE system.
+ * @tparam T5 type of scalars for bio-variability parameters.
+ * @tparam T6 type of scalars for tlag parameters 
  * @param[in] time times of events  
  * @param[in] amt amount at each event
  * @param[in] rate rate at each event
@@ -36,28 +35,30 @@
  * @param[in] cmt compartment number at each event 
  * @param[in] addl additional dosing at each event 
  * @param[in] ss steady state approximation at each event (0: no, 1: yes)
- * @param[in] rel_tol relative tolerance passed to CVODE 
- * @param[in] abs_tol absolute tolerance passed to CVODE
- * @param[in] max_num_steps maximal number of admissable steps 
  * between time-points
+ * @param[in] system square matrix describing the linear system of ODEs
+ * @param[in] bio-variability at each event
+ * @param[in] lag times at each event
  * @return a matrix with predicted amount in each compartment 
  * at each event.
  */
 template <typename T0, typename T1, typename T2, typename T3,
-  typename T4, typename T5>
+  typename T4, typename T5, typename T6>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-  T4>::type, Eigen::Dynamic, Eigen::Dynamic>
-linCptModel(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic,
-              Eigen::Dynamic> >& system,
-            const std::vector<std::vector<T1> >& pMatrix,
-            const std::vector<T2>& time,
-            const std::vector<T3>& amt,
-            const std::vector<T4>& rate,
-            const std::vector<T5>& ii,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+linCptModel(const std::vector<T0>& time,
+            const std::vector<T1>& amt,
+            const std::vector<T2>& rate,
+            const std::vector<T3>& ii,
             const std::vector<int>& evid,
             const std::vector<int>& cmt,
             const std::vector<int>& addl,
-            const std::vector<int>& ss) {
+            const std::vector<int>& ss,
+            const std::vector< Eigen::Matrix<T4, Eigen::Dynamic,
+              Eigen::Dynamic> >& system,
+            const std::vector<std::vector<T5> >& biovar,
+            const std::vector<std::vector<T6> >& tlag) {
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
@@ -68,14 +69,14 @@ linCptModel(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic,
     stan::math::check_square(function, "system matrix", system[i]);
   int nCmt = system[0].cols();
 
-  int nParameters = pMatrix[0].size(),
-    F1Index = nParameters - 2*nCmt,
-    tlag1Index = nParameters - nCmt;
-  PKModel model(nParameters, F1Index, tlag1Index, nCmt);
+  // int nParameters = pMatrix[0].size();
+  PKModel model(0, nCmt);  // CHECK - what should I use for nParameters?
 
   // Check arguments
-  pmetricsCheck(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss,
-    function, model);
+  std::vector<double> parameters_dummy(0);
+  std::vector<std::vector<double> > pMatrix_dummy(1, parameters_dummy);
+  pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
+                pMatrix_dummy, biovar, tlag, function, model);
 
   // define functors used in Pred()
   Pred1_structure new_Pred1("linCptModel");
@@ -83,10 +84,11 @@ linCptModel(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic,
   Pred1 = new_Pred1;
   PredSS = new_PredSS;
 
-  Matrix <typename promote_args<T0, T1, T2, T3, T4>::type, Dynamic,
-    Dynamic> pred;
-  pred = Pred(pMatrix, time, amt, rate, ii, evid, cmt, addl, ss, model,
-    dummy_ode(), system);
+  Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+    typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+    Dynamic, Dynamic> pred;
+   pred = Pred(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_dummy,
+               biovar, tlag, model, dummy_ode(), system);
 
   return pred;
 }
@@ -94,7 +96,7 @@ linCptModel(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic,
 /*
  * Overload function to allow user to pass an std::vector for 
  * pMatrix.
- */
+ */ /*
 template <typename T0, typename T1, typename T2, typename T3,
   typename T4, typename T5>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
@@ -164,6 +166,7 @@ linCptModel(const Eigen::Matrix<T0, Eigen::Dynamic,
 
   return linCptModel(vec_system,
     vec_pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
-}
+  } 
+*/
 
 #endif
