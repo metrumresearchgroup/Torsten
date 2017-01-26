@@ -93,80 +93,200 @@ linCptModel(const std::vector<T0>& time,
   return pred;
 }
 
-/*
- * Overload function to allow user to pass an std::vector for 
- * pMatrix.
- */ /*
+/**
+ * Overload function to allow user to pass a matrix for 
+ * system.
+ */
 template <typename T0, typename T1, typename T2, typename T3,
-  typename T4, typename T5>
+          typename T4, typename T5, typename T6>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-  T4>::type, Eigen::Dynamic, Eigen::Dynamic>
-linCptModel(const std::vector< Eigen::Matrix<T0, Eigen::Dynamic,
-              Eigen::Dynamic> >& system,
-            const std::vector<T1>& pMatrix,
-            const std::vector<T2>& time,
-            const std::vector<T3>& amt,
-            const std::vector<T4>& rate,
-            const std::vector<T5>& ii,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+linCptModel(const std::vector<T0>& time,
+            const std::vector<T1>& amt,
+            const std::vector<T2>& rate,
+            const std::vector<T3>& ii,
             const std::vector<int>& evid,
             const std::vector<int>& cmt,
             const std::vector<int>& addl,
-            const std::vector<int>& ss) {
-  std::vector<std::vector<T1> > vec_pMatrix(1);
-  vec_pMatrix[0] = pMatrix;
+            const std::vector<int>& ss,
+            const Eigen::Matrix<T4, Eigen::Dynamic,
+              Eigen::Dynamic>& system,
+            const std::vector<std::vector<T5> >& biovar,
+            const std::vector<std::vector<T6> >& tlag) {
+  std::vector<Eigen::Matrix<T4, Eigen::Dynamic,
+                            Eigen::Dynamic> > vec_system(1, system);
 
-  return linCptModel(system,
-    vec_pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+  return linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                     vec_system, biovar, tlag);
 }
 
+/**
+ * Overload function to allow user to pass a matrix for 
+ * system and a vector for biovar.
+ */
 template <typename T0, typename T1, typename T2, typename T3,
-  typename T4, typename T5>
+          typename T4, typename T5, typename T6>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-  T4>::type, Eigen::Dynamic, Eigen::Dynamic>
-linCptModel(const Eigen::Matrix<T0, Eigen::Dynamic,
-              Eigen::Dynamic>& system,
-            const std::vector<std::vector<T1> >& pMatrix,
-            const std::vector<T2>& time,
-            const std::vector<T3>& amt,
-            const std::vector<T4>& rate,
-            const std::vector<T5>& ii,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+linCptModel(const std::vector<T0>& time,
+            const std::vector<T1>& amt,
+            const std::vector<T2>& rate,
+            const std::vector<T3>& ii,
             const std::vector<int>& evid,
             const std::vector<int>& cmt,
             const std::vector<int>& addl,
-            const std::vector<int>& ss) {
-  std::vector<Eigen::Matrix<T0, Eigen::Dynamic,
-              Eigen::Dynamic> > vec_system(1);
-  vec_system[0] = system;
-
-  return linCptModel(vec_system,
-    pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+            const std::vector<int>& ss,
+            const Eigen::Matrix<T4, Eigen::Dynamic,
+              Eigen::Dynamic>& system,
+            const std::vector<T5>& biovar,
+            const std::vector<std::vector<T6> >& tlag) {
+  std::vector<Eigen::Matrix<T4, Eigen::Dynamic,
+                            Eigen::Dynamic> > vec_system(1, system);
+  std::vector<std::vector<T5> > vec_biovar(1, biovar);
+  
+  return linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                     vec_system, vec_biovar, tlag);
 }
 
+/**
+ * Overload function to allow user to pass a matrix for 
+ * system and a vector for biovar and tlag.
+ */
 template <typename T0, typename T1, typename T2, typename T3,
-  typename T4, typename T5>
+          typename T4, typename T5, typename T6>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-  T4>::type, Eigen::Dynamic, Eigen::Dynamic>
-linCptModel(const Eigen::Matrix<T0, Eigen::Dynamic,
-              Eigen::Dynamic>& system,
-            const std::vector<T1>& pMatrix,
-            const std::vector<T2>& time,
-            const std::vector<T3>& amt,
-            const std::vector<T4>& rate,
-            const std::vector<T5>& ii,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+linCptModel(const std::vector<T0>& time,
+            const std::vector<T1>& amt,
+            const std::vector<T2>& rate,
+            const std::vector<T3>& ii,
             const std::vector<int>& evid,
             const std::vector<int>& cmt,
             const std::vector<int>& addl,
-            const std::vector<int>& ss) {
-  std::vector<Eigen::Matrix<T0, Eigen::Dynamic,
-              Eigen::Dynamic> > vec_system(1);
-  vec_system[0] = system;
+            const std::vector<int>& ss,
+            const Eigen::Matrix<T4, Eigen::Dynamic,
+                                Eigen::Dynamic>& system,
+            const std::vector<T5>& biovar,
+            const std::vector<T6>& tlag) {
+  std::vector<Eigen::Matrix<T4, Eigen::Dynamic,
+                            Eigen::Dynamic> > vec_system(1, system);
+  std::vector<std::vector<T5> > vec_biovar(1, biovar);
+  std::vector<std::vector<T6> > vec_tlag(1, tlag);
+  
+  return linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                     vec_system, vec_biovar, vec_tlag);
+}
 
-  std::vector<std::vector<T1> > vec_pMatrix(1);
-  vec_pMatrix[0] = pMatrix;
+/**
+ * Overload function to allow user to pass a matrix for 
+ * system and a vector for tlag.
+ */
+template <typename T0, typename T1, typename T2, typename T3,
+          typename T4, typename T5, typename T6>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+linCptModel(const std::vector<T0>& time,
+            const std::vector<T1>& amt,
+            const std::vector<T2>& rate,
+            const std::vector<T3>& ii,
+            const std::vector<int>& evid,
+            const std::vector<int>& cmt,
+            const std::vector<int>& addl,
+            const std::vector<int>& ss,
+            const Eigen::Matrix<T4, Eigen::Dynamic,
+                                Eigen::Dynamic>& system,
+            const std::vector<std::vector<T5> >& biovar,
+            const std::vector<T6>& tlag) {
+  std::vector<Eigen::Matrix<T4, Eigen::Dynamic,
+                            Eigen::Dynamic> > vec_system(1, system);
+  std::vector<std::vector<T5> > vec_tlag(1, tlag);
 
-  return linCptModel(vec_system,
-    vec_pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
-  } 
-*/
+  return linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                     vec_system, biovar, vec_tlag);
+}
+
+/**
+ * Overload function to allow user to pass a vector for biovar.
+ */
+template <typename T0, typename T1, typename T2, typename T3,
+          typename T4, typename T5, typename T6>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+linCptModel(const std::vector<T0>& time,
+            const std::vector<T1>& amt,
+            const std::vector<T2>& rate,
+            const std::vector<T3>& ii,
+            const std::vector<int>& evid,
+            const std::vector<int>& cmt,
+            const std::vector<int>& addl,
+            const std::vector<int>& ss,
+            const std::vector<Eigen::Matrix<T4, Eigen::Dynamic,
+                                Eigen::Dynamic> >& system,
+            const std::vector<T5>& biovar,
+            const std::vector<std::vector<T6> >& tlag) {
+  std::vector<std::vector<T5> > vec_biovar(1, biovar);
+  
+  return linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                     system, vec_biovar, tlag);
+}
+
+/**
+ * Overload function to allow user to pass a vector for biovar
+ * and tlag.
+ */
+template <typename T0, typename T1, typename T2, typename T3,
+          typename T4, typename T5, typename T6>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+                                                         typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+                                                         Eigen::Dynamic, Eigen::Dynamic>
+linCptModel(const std::vector<T0>& time,
+            const std::vector<T1>& amt,
+            const std::vector<T2>& rate,
+            const std::vector<T3>& ii,
+            const std::vector<int>& evid,
+            const std::vector<int>& cmt,
+            const std::vector<int>& addl,
+            const std::vector<int>& ss,
+            const std::vector<Eigen::Matrix<T4, Eigen::Dynamic,
+                                            Eigen::Dynamic> >& system,
+            const std::vector<T5>& biovar,
+            const std::vector<T6>& tlag) {
+  std::vector<std::vector<T5> > vec_biovar(1, biovar);
+  std::vector<std::vector<T6> > vec_tlag(1, tlag);
+
+  return linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                     system, vec_biovar, vec_tlag);
+}
+
+/**
+ * Overload function to allow user to pass a vector for tlag.
+ */
+template <typename T0, typename T1, typename T2, typename T3,
+          typename T4, typename T5, typename T6>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+linCptModel(const std::vector<T0>& time,
+            const std::vector<T1>& amt,
+            const std::vector<T2>& rate,
+            const std::vector<T3>& ii,
+            const std::vector<int>& evid,
+            const std::vector<int>& cmt,
+            const std::vector<int>& addl,
+            const std::vector<int>& ss,
+            const std::vector<Eigen::Matrix<T4, Eigen::Dynamic,
+                                            Eigen::Dynamic> >& system,
+            const std::vector<std::vector<T5> >& biovar,
+            const std::vector<T6>& tlag) {
+  std::vector<std::vector<T6> > vec_tlag(1, tlag);
+
+  return linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                     system, biovar, vec_tlag);
+}
 
 #endif

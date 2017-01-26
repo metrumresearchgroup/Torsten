@@ -125,7 +125,7 @@ TEST(Torsten, PKModelTwoCpt_MultipleDoses_overload) {
   vector<int> ss(10, 0);
 
   Matrix<double, Dynamic, Dynamic> x_122, x_112, x_111, x_121, x_212,
-  x_211, x_221;
+    x_211, x_221;
   x_122 = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                         pMatrix[0], biovar, tlag);
   x_112 = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
