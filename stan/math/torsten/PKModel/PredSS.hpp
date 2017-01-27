@@ -72,7 +72,7 @@ public:
       return PredSS_one(parameter, amt, rate, ii, cmt);
     else if (modeltype == "TwoCptModel")
       return PredSS_two(parameter, amt, rate, ii, cmt);
-    else if (modeltype == "GeneralCptModel_solver")
+    else if (modeltype == "generalOdeModel")
       return PredSS_general_solver(parameter, amt, rate, ii, cmt, f);
     else
       if (modeltype == "linOdeModel") {

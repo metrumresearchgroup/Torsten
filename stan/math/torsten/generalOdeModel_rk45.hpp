@@ -1,5 +1,5 @@
-#ifndef STAN_MATH_TORSTEN_GENERALCPTMODEL_RK45_HPP
-#define STAN_MATH_TORSTEN_GENERALCPTMODEL_RK45_HPP
+#ifndef STAN_MATH_TORSTEN_GENERALODEMODEL_RK45_HPP
+#define STAN_MATH_TORSTEN_GENERALODEMODEL_RK45_HPP
 
 #include <Eigen/Dense>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
@@ -51,7 +51,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-generalCptModel_rk45(const F& f,
+generalOdeModel_rk45(const F& f,
                      const int nCmt,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
@@ -76,12 +76,12 @@ generalCptModel_rk45(const F& f,
   PKModel model(pMatrix[0].size(), nCmt);
 
   // check arguments
-  static const char* function("generalCptModel_rk45");
+  static const char* function("generalOdeModel_rk45");
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
     pMatrix, biovar, tlag, function, model);
 
   // Construct Pred functions for the model.
-  Pred1_structure new_Pred1("GeneralCptModel");
+  Pred1_structure new_Pred1("generalOdeModel");
   PredSS_structure new_PredSS("error");
   Pred1 = new_Pred1;
   PredSS = new_PredSS;  // WARNING: PredSS returns an error
@@ -111,7 +111,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-generalCptModel_rk45(const F& f,
+generalOdeModel_rk45(const F& f,
                      const int nCmt,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
@@ -129,7 +129,7 @@ generalCptModel_rk45(const F& f,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
 
-  return generalCptModel_rk45(f, nCmt,
+  return generalOdeModel_rk45(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               vec_pMatrix, biovar, tlag);
 }
@@ -143,7 +143,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-generalCptModel_rk45(const F& f,
+generalOdeModel_rk45(const F& f,
                      const int nCmt,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
@@ -162,7 +162,7 @@ generalCptModel_rk45(const F& f,
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
 
-  return generalCptModel_rk45(f, nCmt,
+  return generalOdeModel_rk45(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               vec_pMatrix, vec_biovar, tlag);
 }
@@ -176,7 +176,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-generalCptModel_rk45(const F& f,
+generalOdeModel_rk45(const F& f,
                      const int nCmt,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
@@ -196,7 +196,7 @@ generalCptModel_rk45(const F& f,
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
   std::vector<std::vector<T5> > vec_tlag(1, tlag);
 
-  return generalCptModel_rk45(f, nCmt,
+  return generalOdeModel_rk45(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               vec_pMatrix, vec_biovar, vec_tlag);
 }
@@ -210,7 +210,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-generalCptModel_rk45(const F& f,
+generalOdeModel_rk45(const F& f,
                      const int nCmt,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
@@ -229,7 +229,7 @@ generalCptModel_rk45(const F& f,
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
-  return generalCptModel_rk45(f, nCmt,
+  return generalOdeModel_rk45(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               vec_pMatrix, biovar, vec_tlag);
 }
@@ -243,7 +243,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-generalCptModel_rk45(const F& f,
+generalOdeModel_rk45(const F& f,
                      const int nCmt,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
@@ -261,7 +261,7 @@ generalCptModel_rk45(const F& f,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
 
-  return generalCptModel_rk45(f, nCmt,
+  return generalOdeModel_rk45(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, vec_biovar, tlag);
 }
@@ -275,7 +275,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-generalCptModel_rk45(const F& f,
+generalOdeModel_rk45(const F& f,
                      const int nCmt,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
@@ -294,7 +294,7 @@ generalCptModel_rk45(const F& f,
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
   std::vector<std::vector<T5> > vec_tlag(1, tlag);
 
-  return generalCptModel_rk45(f, nCmt,
+  return generalOdeModel_rk45(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, vec_biovar, vec_tlag);
 }
@@ -308,7 +308,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-generalCptModel_rk45(const F& f,
+generalOdeModel_rk45(const F& f,
                      const int nCmt,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
@@ -326,7 +326,7 @@ generalCptModel_rk45(const F& f,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T5> > vec_tlag(1, tlag);
 
-  return generalCptModel_rk45(f, nCmt,
+  return generalOdeModel_rk45(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, biovar, vec_tlag);
 }

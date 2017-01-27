@@ -45,7 +45,7 @@ PredSS_general_solver(const ModelParameters<T_time, T_parameters,
     typename boost::math::tools::promote_args< T_ii, T_parameters
                                                >::type>::type scalar;
 
-  std::cout << "ERROR: General Compartment Model using ODE integrator"
+  std::cout << "ERROR: General Ode Model using ODE integrator"
             << " (bdf or rk45) does not handle Steady State events."
             << std::endl;
   abort();  // FIX ME: throw an exception, not abort.

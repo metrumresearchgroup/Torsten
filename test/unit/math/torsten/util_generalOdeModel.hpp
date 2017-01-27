@@ -82,18 +82,18 @@ finite_diff_params(const F& f,
   Matrix<double, Dynamic, Dynamic> pk_res_ub;
   Matrix<double, Dynamic, Dynamic> pk_res_lb;
   if (odeInt == "rk45") {
-    pk_res_ub = generalCptModel_rk45(f, nCmt, time, amt, rate, ii,
+    pk_res_ub = generalOdeModel_rk45(f, nCmt, time, amt, rate, ii,
                                      evid, cmt, addl, ss,
                                      pMatrix_ub, biovar_ub, tlag_ub);
-    pk_res_lb = generalCptModel_rk45(f, nCmt, time, amt, rate, ii,
+    pk_res_lb = generalOdeModel_rk45(f, nCmt, time, amt, rate, ii,
                                      evid, cmt, addl, ss,
                                      pMatrix_lb, biovar_lb, tlag_lb);
   }
   if (odeInt == "bdf") {
-    pk_res_ub = generalCptModel_bdf(f, nCmt, time, amt, rate, ii,
+    pk_res_ub = generalOdeModel_bdf(f, nCmt, time, amt, rate, ii,
                                     evid, cmt, addl, ss,
                                     pMatrix_ub, biovar_ub, tlag_ub);
-    pk_res_lb = generalCptModel_bdf(f, nCmt, time, amt, rate, ii,
+    pk_res_lb = generalOdeModel_bdf(f, nCmt, time, amt, rate, ii,
                                     evid, cmt, addl, ss,
                                     pMatrix_lb, biovar_lb, tlag_lb); 
   }
@@ -161,13 +161,13 @@ void test_generalOdeModel_finite_diff_vdd(
 
   Matrix<var, Dynamic, Dynamic> ode_res;
   if (odeInt == "rk45")
-    ode_res = generalCptModel_rk45(f, nCmt,
+    ode_res = generalOdeModel_rk45(f, nCmt,
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    pMatrix_v, biovar, tlag,
                                    rel_tol, abs_tol, max_num_steps);
 
   if (odeInt == "bdf")
-    ode_res = generalCptModel_bdf(f, nCmt,
+    ode_res = generalOdeModel_bdf(f, nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar, tlag,
                                   rel_tol, abs_tol, max_num_steps);
@@ -257,13 +257,13 @@ void test_generalOdeModel_finite_diff_dvd(
   
   Matrix<var, Dynamic, Dynamic> ode_res;
   if (odeInt == "rk45")
-    ode_res = generalCptModel_rk45(f, nCmt,
+    ode_res = generalOdeModel_rk45(f, nCmt,
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    pMatrix, biovar_v, tlag,
                                    rel_tol, abs_tol, max_num_steps);
   
   if (odeInt == "bdf")
-    ode_res = generalCptModel_bdf(f, nCmt,
+    ode_res = generalOdeModel_bdf(f, nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar_v, tlag,
                                   rel_tol, abs_tol, max_num_steps);
@@ -356,13 +356,13 @@ void test_generalOdeModel_finite_diff_ddv(
 
   Matrix<var, Dynamic, Dynamic> ode_res;
   if (odeInt == "rk45")
-    ode_res = generalCptModel_rk45(f, nCmt,
+    ode_res = generalOdeModel_rk45(f, nCmt,
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    pMatrix, biovar, tlag_v,
                                    rel_tol, abs_tol, max_num_steps);
 
   if (odeInt == "bdf")
-    ode_res = generalCptModel_bdf(f, nCmt,
+    ode_res = generalOdeModel_bdf(f, nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar, tlag_v,
                                   rel_tol, abs_tol, max_num_steps);

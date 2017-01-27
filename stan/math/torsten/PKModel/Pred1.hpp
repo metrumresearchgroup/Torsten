@@ -72,7 +72,7 @@ public:
       return Pred1_one(dt, parameter, init, rate);
     else if (modeltype == "TwoCptModel")
       return Pred1_two(dt, parameter, init, rate);
-    else if (modeltype == "GeneralCptModel")
+    else if (modeltype == "generalOdeModel")
       return Pred1_general_solver(dt, parameter, init, rate, f);
     else
       if (modeltype == "linOdeModel") {
