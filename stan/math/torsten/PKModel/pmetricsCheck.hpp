@@ -126,7 +126,7 @@ void pmetricsCheck(const std::vector<T0>& time,
   if (!(biovar[0].size() > 0)) invalid_argument(function,
     "the number of biovariability parameters per event is", biovar[0].size(),
     "", " but must be greater than 0!");
-  
+
   if (!((tlag.size() == time.size()) || (tlag.size() == 1)))
     invalid_argument(function, "length of the lag times (2d) array,",  // NOLINT
                      tlag.size(), "", length_error2);

@@ -121,7 +121,7 @@ public:
       (p_biovar.size() == 1) ? k = 0 : k = i;
       (p_tlag.size() == 1) ? l = 0 : l = i;
       (p_K.size() == 1) ? m = 0 : m = i;
-       MPV[i] = ModelParameters<T_time, T_parameters, T_biovar, 
+       MPV[i] = ModelParameters<T_time, T_parameters, T_biovar,
                                 T_tlag, T_system>
          (p_time[i], p_RealParameters[j], p_biovar[k], p_tlag[l], p_K[m]);
     }
@@ -153,7 +153,7 @@ public:
              < MPV[iEvent].biovar.size());
     return MPV[iEvent].biovar[iParameter];
   }
-  
+
   T_tlag GetValueTlag(int iEvent, int iParameter) {
     assert(iEvent >= 0 && (size_t) iEvent < MPV.size());
     assert(iParameter >= 0 && (size_t) iParameter
@@ -305,7 +305,7 @@ public:
   }
 
   // declare friends
-  friend class ModelParameters<T_time, T_parameters, T_biovar, 
+  friend class ModelParameters<T_time, T_parameters, T_biovar,
                                T_tlag, T_system>;
   template<typename T1, typename T2, typename T3, typename T4>
     friend class Events;

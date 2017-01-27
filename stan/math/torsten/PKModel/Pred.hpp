@@ -126,7 +126,7 @@ Pred(const std::vector<T_time>& time,
 
   scalar dt, tprev = events.get_time(0);
   Matrix<scalar, 1, Dynamic> pred1;
-  Event<scalar, scalar, scalar, scalar> event;  // CHECK - change type (scalars) ?
+  Event<scalar, scalar, scalar, scalar> event;  // CHECK change type (scalars)?
   ModelParameters<scalar, T_parameters, T_biovar, T_tlag, T_system> parameter;
   int iRate = 0, ikeep = 0;
 

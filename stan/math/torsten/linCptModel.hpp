@@ -145,7 +145,7 @@ linCptModel(const std::vector<T0>& time,
   std::vector<Eigen::Matrix<T4, Eigen::Dynamic,
                             Eigen::Dynamic> > vec_system(1, system);
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
-  
+
   return linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      vec_system, vec_biovar, tlag);
 }
@@ -175,7 +175,7 @@ linCptModel(const std::vector<T0>& time,
                             Eigen::Dynamic> > vec_system(1, system);
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
-  
+
   return linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      vec_system, vec_biovar, vec_tlag);
 }
@@ -230,7 +230,7 @@ linCptModel(const std::vector<T0>& time,
             const std::vector<T5>& biovar,
             const std::vector<std::vector<T6> >& tlag) {
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
-  
+
   return linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      system, vec_biovar, tlag);
 }
@@ -242,8 +242,8 @@ linCptModel(const std::vector<T0>& time,
 template <typename T0, typename T1, typename T2, typename T3,
           typename T4, typename T5, typename T6>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-                                                         typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-                                                         Eigen::Dynamic, Eigen::Dynamic>
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
 linCptModel(const std::vector<T0>& time,
             const std::vector<T1>& amt,
             const std::vector<T2>& rate,

@@ -127,8 +127,8 @@ PKModelTwoCpt(const std::vector<T0>& time,
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-                                                         typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-                                                         Eigen::Dynamic, Eigen::Dynamic>
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
 PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<T1>& amt,
               const std::vector<T2>& rate,
@@ -141,7 +141,7 @@ PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<std::vector<T5> >& biovar,
               const std::vector<std::vector<T6> >& tlag) {
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
-  
+
   return PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        vec_pMatrix, biovar, tlag);
 }
@@ -153,8 +153,8 @@ PKModelTwoCpt(const std::vector<T0>& time,
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-                                                         typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-                                                         Eigen::Dynamic, Eigen::Dynamic>
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
 PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<T1>& amt,
               const std::vector<T2>& rate,
@@ -168,7 +168,7 @@ PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<std::vector<T6> >& tlag) {
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix),
   vec_biovar(1, biovar);
-  
+
   return PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        vec_pMatrix, vec_biovar, tlag);
 }
@@ -180,8 +180,8 @@ PKModelTwoCpt(const std::vector<T0>& time,
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-                                                         typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-                                                         Eigen::Dynamic, Eigen::Dynamic>
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
 PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<T1>& amt,
               const std::vector<T2>& rate,
@@ -195,7 +195,7 @@ PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<T6>& tlag) {
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix),
   vec_tlag(1, tlag);
-  
+
   return PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        vec_pMatrix, biovar, vec_tlag);
 }
@@ -207,8 +207,8 @@ PKModelTwoCpt(const std::vector<T0>& time,
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-                                                         typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-                                                         Eigen::Dynamic, Eigen::Dynamic>
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
 PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<T1>& amt,
               const std::vector<T2>& rate,
@@ -223,7 +223,7 @@ PKModelTwoCpt(const std::vector<T0>& time,
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix),
   vec_biovar(1, biovar),
   vec_tlag(1, tlag);
-  
+
   return PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        vec_pMatrix, vec_biovar, vec_tlag);
 }
@@ -234,8 +234,8 @@ PKModelTwoCpt(const std::vector<T0>& time,
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-                                                         typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-                                                         Eigen::Dynamic, Eigen::Dynamic>
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
 PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<T1>& amt,
               const std::vector<T2>& rate,
@@ -248,7 +248,7 @@ PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<T5>& biovar,
               const std::vector<std::vector<T6> >& tlag) {
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
-  
+
   return PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, vec_biovar, tlag);
 }
@@ -260,8 +260,8 @@ PKModelTwoCpt(const std::vector<T0>& time,
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-                                                         typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-                                                         Eigen::Dynamic, Eigen::Dynamic>
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
 PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<T1>& amt,
               const std::vector<T2>& rate,
@@ -275,7 +275,7 @@ PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<T6>& tlag) {
   std::vector<std::vector<T5> > vec_biovar(1, biovar),
   vec_tlag(1, tlag);
-  
+
   return PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, vec_biovar, vec_tlag);
 }
@@ -286,8 +286,8 @@ PKModelTwoCpt(const std::vector<T0>& time,
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-                                                         typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-                                                         Eigen::Dynamic, Eigen::Dynamic>
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
 PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<T1>& amt,
               const std::vector<T2>& rate,
@@ -300,7 +300,7 @@ PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<std::vector<T5> >& biovar,
               const std::vector<T6>& tlag) {
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
-  
+
   return PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, biovar, vec_tlag);
 }

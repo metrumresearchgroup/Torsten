@@ -260,7 +260,7 @@ generalCptModel_rk45(const F& f,
                      double abs_tol = 1e-10,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
-  
+
   return generalCptModel_rk45(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, vec_biovar, tlag);
@@ -293,7 +293,7 @@ generalCptModel_rk45(const F& f,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
   std::vector<std::vector<T5> > vec_tlag(1, tlag);
-  
+
   return generalCptModel_rk45(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, vec_biovar, vec_tlag);
@@ -325,7 +325,7 @@ generalCptModel_rk45(const F& f,
                      double abs_tol = 1e-10,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T5> > vec_tlag(1, tlag);
-  
+
   return generalCptModel_rk45(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, biovar, vec_tlag);

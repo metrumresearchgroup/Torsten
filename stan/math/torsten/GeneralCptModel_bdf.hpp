@@ -77,7 +77,7 @@ generalCptModel_bdf(const F& f,
   // check arguments
   static const char* function("generalCptModel_bdf");
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
-                pMatrix, biovar,tlag, function, model);
+                pMatrix, biovar, tlag, function, model);
 
   // define functors used in Pred()
   Pred1_structure new_Pred1("GeneralCptModel");
@@ -96,7 +96,7 @@ generalCptModel_bdf(const F& f,
   Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
     typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
     Dynamic, Dynamic> pred;
-  pred = Pred(time, amt, rate, ii, evid, cmt, addl, ss, 
+  pred = Pred(time, amt, rate, ii, evid, cmt, addl, ss,
               pMatrix, biovar, tlag, model, f, dummy_systems);
 
   return pred;
@@ -128,7 +128,7 @@ generalCptModel_bdf(const F& f,
                      double abs_tol = 1e-10,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
-  
+
   return generalCptModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               vec_pMatrix, biovar, tlag);
@@ -161,7 +161,7 @@ generalCptModel_bdf(const F& f,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
-  
+
   return generalCptModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               vec_pMatrix, vec_biovar, tlag);
@@ -195,7 +195,7 @@ generalCptModel_bdf(const F& f,
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
   std::vector<std::vector<T5> > vec_tlag(1, tlag);
-  
+
   return generalCptModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               vec_pMatrix, vec_biovar, vec_tlag);
@@ -228,7 +228,7 @@ generalCptModel_bdf(const F& f,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
-  
+
   return generalCptModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               vec_pMatrix, biovar, vec_tlag);
@@ -260,7 +260,7 @@ generalCptModel_bdf(const F& f,
                      double abs_tol = 1e-10,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
-  
+
   return generalCptModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, vec_biovar, tlag);
@@ -293,7 +293,7 @@ generalCptModel_bdf(const F& f,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
   std::vector<std::vector<T5> > vec_tlag(1, tlag);
-  
+
   return generalCptModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, vec_biovar, vec_tlag);
@@ -325,7 +325,7 @@ generalCptModel_bdf(const F& f,
                      double abs_tol = 1e-10,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T5> > vec_tlag(1, tlag);
-  
+
   return generalCptModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, biovar, vec_tlag);

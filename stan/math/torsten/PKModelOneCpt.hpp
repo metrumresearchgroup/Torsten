@@ -87,7 +87,7 @@ PKModelOneCpt(const std::vector<T0>& time,
     stan::math::invalid_argument(function,
     "The number of biovariability parameters per event (length of a vector in the tenth argument) is", // NOLINT
     biovar[0].size(), "", length_error5);
-  
+
   if (!(tlag[0].size() == (size_t) model.GetNCmt()))
     stan::math::invalid_argument(function,
                                  "The number of lag times parameters per event (length of a vector in the eleventh argument) is", // NOLINT
@@ -161,7 +161,7 @@ PKModelOneCpt(const std::vector<T0>& time,
               const std::vector<std::vector<T6> >& tlag) {
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix),
                                 vec_biovar(1, biovar);
-  
+
   return PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        vec_pMatrix, vec_biovar, tlag);
 }
@@ -188,7 +188,7 @@ PKModelOneCpt(const std::vector<T0>& time,
               const std::vector<T6>& tlag) {
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix),
                                 vec_tlag(1, tlag);
-  
+
   return PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        vec_pMatrix, biovar, vec_tlag);
 }
@@ -293,7 +293,7 @@ PKModelOneCpt(const std::vector<T0>& time,
               const std::vector<std::vector<T5> >& biovar,
               const std::vector<T6>& tlag) {
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
-  
+
   return PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, biovar, vec_tlag);
 }
