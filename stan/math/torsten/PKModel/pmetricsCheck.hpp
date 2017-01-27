@@ -13,12 +13,13 @@
  * Checks that the arguments the user inputs in the Torsten
  * functions are valid.
  *
- * @tparam T0 type of scalars for the model parameters.
- * @tparam T1 type of scalar for time of events.
- * @tparam T2 type of scalar for amount at each event.
- * @tparam T3 type of scalar for rate at each event.
- * @tparam T4 type of scalar for inter-dose inteveral at each event.
- * @param[in] pMatrix parameters at each event
+ * @tparam T0 type of scalar for time of events.
+ * @tparam T1 type of scalar for amount at each event.
+ * @tparam T2 type of scalar for rate at each event.
+ * @tparam T3 type of scalar for inter-dose inteveral at each event.
+ * @tparam T4 type of scalar for model parameters
+ * @tparam T5 type of scalar for bio-variability
+ * @tparam T6 type of scalar for lag times
  * @param[in] time times of events
  * @param[in] amt amount at each event
  * @param[in] rate rate at each event
@@ -32,6 +33,9 @@
  * @param[in] cmt compartment number at each event
  * @param[in] addl additional dosing at each event
  * @param[in] ss steady state approximation at each event (0: no, 1: yes)
+ * @param[in] pMatrix parameters at each event
+ * @param[in] bio-variability at each event
+ * @param[in] lag times at each event
  * @param[in] function The name of the function for which the check is being
  *                     performed.
  * @param[in] model object that contains basic structural information about
@@ -39,17 +43,19 @@
  * @return void
  *
  */
-
-template <typename T0, typename T1, typename T2, typename T3, typename T4>
-void pmetricsCheck(const std::vector<std::vector<T0> >& pMatrix,
-                   const std::vector<T1>& time,
-                   const std::vector<T2>& amt,
-                   const std::vector<T3>& rate,
-                   const std::vector<T4>& ii,
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+  typename T5, typename T6>
+void pmetricsCheck(const std::vector<T0>& time,
+                   const std::vector<T1>& amt,
+                   const std::vector<T2>& rate,
+                   const std::vector<T3>& ii,
                    const std::vector<int>& evid,
                    const std::vector<int>& cmt,
                    const std::vector<int>& addl,
                    const std::vector<int>& ss,
+                   const std::vector<std::vector<T4> >& pMatrix,
+                   const std::vector<std::vector<T5> >& biovar,
+                   const std::vector<std::vector<T6> >& tlag,
                    const char* function,
                    PKModel& model) {
   using std::vector;
@@ -104,12 +110,29 @@ void pmetricsCheck(const std::vector<std::vector<T0> >& pMatrix,
       length_error3);
 
   // TEST ARGUMENTS FOR PARAMETERS
-  if (!((pMatrix.size() == time.size()) || (pMatrix.size() == 1)))
-    invalid_argument(function, "length of the parameter (2d) array,",
-      pMatrix.size(), "", length_error2);
-  if (!(pMatrix[0].size() > 0)) invalid_argument(function,
-    "the number of parameters per event is", pMatrix[0].size(),
+  static const char* noCheck("linCptModel");
+  if (strcmp(function, noCheck) != 0) {
+    if (!((pMatrix.size() == time.size()) || (pMatrix.size() == 1)))
+      invalid_argument(function, "length of the parameter (2d) array,",
+        pMatrix.size(), "", length_error2);
+    if (!(pMatrix[0].size() > 0)) invalid_argument(function,
+      "the number of parameters per event is", pMatrix[0].size(),
+      "", " but must be greater than 0!");
+  }
+
+  if (!((biovar.size() == time.size()) || (biovar.size() == 1)))
+    invalid_argument(function, "length of the biovariability parameter (2d) array,",  // NOLINT
+      biovar.size(), "", length_error2);
+  if (!(biovar[0].size() > 0)) invalid_argument(function,
+    "the number of biovariability parameters per event is", biovar[0].size(),
     "", " but must be greater than 0!");
+
+  if (!((tlag.size() == time.size()) || (tlag.size() == 1)))
+    invalid_argument(function, "length of the lag times (2d) array,",  // NOLINT
+                     tlag.size(), "", length_error2);
+  if (!(tlag[0].size() > 0)) invalid_argument(function,
+      "the number of lagtimes parameters per event is", tlag[0].size(),
+      "", " but must be greater than 0!");
 }
 
 #endif

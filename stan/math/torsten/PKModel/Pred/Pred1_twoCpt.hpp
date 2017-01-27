@@ -27,11 +27,12 @@
  *           at the current event.
  */
 template<typename T_time, typename T_rate, typename T_parameters,
-  typename T_system>
+         typename T_biovar, typename T_tlag, typename T_system>
 Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_rate,
   T_parameters>::type, 1, Eigen::Dynamic>
 Pred1_two(const T_time& dt,
-          const ModelParameters<T_time, T_parameters, T_system>& parameter,
+          const ModelParameters<T_time, T_parameters, T_biovar,
+                                T_tlag, T_system>& parameter,
           const Eigen::Matrix<typename boost::math::tools::promote_args<
             T_time, T_rate, T_parameters>::type, 1, Eigen::Dynamic>& init,
           const std::vector<T_rate>& rate) {

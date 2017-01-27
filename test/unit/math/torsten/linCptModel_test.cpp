@@ -1,7 +1,8 @@
-#include <stan/math/rev/mat.hpp>
 #include <gtest/gtest.h>
+#include <stan/math/rev/mat.hpp>  // FIX ME - include should be more specific
 #include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
-#include <test/unit/math/torsten/prim/util_linOdeModel.hpp>
+#include <test/unit/math/torsten/util_linOdeModel.hpp>
+#include <vector>
 
 using std::vector;
 using Eigen::Matrix;
@@ -9,17 +10,20 @@ using Eigen::Dynamic;
 
 TEST(Torsten, LinCpt_OneSS) {
 
-	double CL = 10, Vc = 80, ka = 1.2, k10 = CL / Vc;
+  double CL = 10, Vc = 80, ka = 1.2, k10 = CL / Vc;
 	Matrix<double, Dynamic, Dynamic> system(2, 2);
 	system << -ka, 0, ka, -k10;
 	vector<Matrix<double, Dynamic, Dynamic> > system_array(1, system); 
 
-	vector<vector<double> > pMatrix(1);
-	pMatrix[0].resize(4);
-	pMatrix[0][0] = 1; // F1
-	pMatrix[0][1] = 1; // F2
-	pMatrix[0][2] = 0; // tlag1
-	pMatrix[0][3] = 0; // tlag2
+	vector<vector<double> > biovar(1);
+	biovar[0].resize(2);
+	biovar[0][0] = 1;  // F1
+	biovar[0][1] = 1;  // F2
+	
+	vector<vector<double> > tlag(1);
+	tlag[0].resize(2);
+	tlag[0][0] = 0;  // tlag1
+	tlag[0][1] = 0;  // tlag2
 
 	vector<double> time(10);
 	time[0] = 0.0;
@@ -45,9 +49,9 @@ TEST(Torsten, LinCpt_OneSS) {
 
 	vector<int> ss(10, 0);
 	ss[0] = 1;
-
 	Matrix<double, Dynamic, Dynamic> x;
-	x = linCptModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+	x = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                 system_array, biovar, tlag);
 
 	Matrix<double, Dynamic, Dynamic> amounts(10, 2);
 	amounts << 1200.0, 384.7363,
@@ -66,29 +70,33 @@ TEST(Torsten, LinCpt_OneSS) {
 		EXPECT_NEAR(amounts(i, 1), x(i, 1), std::max(amounts(i, 1), x(i, 1)) * 1e-6);
 	}
 
+	// Test auto-diff
 	double diff = 1e-8, diff2 = 1e-4;
-	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
-		                 ss, diff, diff2);
+	test_linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                   system_array, biovar, tlag, diff, diff2);
 }
 
 TEST(Torsten, LinCpt_OneSS_overloads) {
 
-	double CL = 10, Vc = 80, ka = 1.2, k10 = CL / Vc;
-	Matrix<double, Dynamic, Dynamic> system(2, 2);
-	system << -ka, 0, ka, -k10;
-	vector<Matrix<double, Dynamic, Dynamic> > system_array(1, system); 
-
-	vector<vector<double> > pMatrix(1);
-	pMatrix[0].resize(4);
-	pMatrix[0][0] = 1; // F1
-	pMatrix[0][1] = 1; // F2
-	pMatrix[0][2] = 0; // tlag1
-	pMatrix[0][3] = 0; // tlag2
-
-	vector<double> time(10);
-	time[0] = 0.0;
-	time[1] = 0.0;
-	for(int i = 2; i < 10; i++) time[i] = time[i - 1] + 5;
+  double CL = 10, Vc = 80, ka = 1.2, k10 = CL / Vc;
+  Matrix<double, Dynamic, Dynamic> system(2, 2);
+  system << -ka, 0, ka, -k10;
+  vector<Matrix<double, Dynamic, Dynamic> > system_array(1, system); 
+  
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(2);
+  biovar[0][0] = 1;  // F1
+  biovar[0][1] = 1;  // F2
+  
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(2);
+  tlag[0][0] = 0;  // tlag1
+  tlag[0][1] = 0;  // tlag2
+  
+  vector<double> time(10);
+  time[0] = 0.0;
+  time[1] = 0.0;
+  for(int i = 2; i < 10; i++) time[i] = time[i - 1] + 5;
 
 	vector<double> amt(10, 0);
 	amt[0] = 1200;
@@ -110,13 +118,23 @@ TEST(Torsten, LinCpt_OneSS_overloads) {
 	vector<int> ss(10, 0);
 	ss[0] = 1;
 
-	Matrix<double, Dynamic, Dynamic> x1, x2, x3;
-	x1 = linCptModel(system_array, pMatrix[0],
-	  time, amt, rate, ii, evid, cmt, addl, ss);
-	x2 = linCptModel(system_array[0], pMatrix,
-	  time, amt, rate, ii, evid, cmt, addl, ss);
-	x3 = linCptModel(system_array[0], pMatrix[0],
-	  time, amt, rate, ii, evid, cmt, addl, ss);
+	Matrix<double, Dynamic, Dynamic> x_122, x_112, x_111, x_121, x_212,
+	  x_211, x_221;
+
+	x_122 = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                      system_array[0], biovar, tlag);
+	x_112 = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                     system_array[0], biovar[0], tlag);
+	x_111 = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                     system_array[0], biovar[0], tlag[0]);
+	x_121 = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                     system_array[0], biovar, tlag[0]);
+	x_212 = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                     system_array, biovar[0], tlag);
+	x_211 = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                     system_array, biovar[0], tlag[0]);
+	x_221 = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                     system_array, biovar, tlag[0]);
 
 	Matrix<double, Dynamic, Dynamic> amounts(10, 2);
 	amounts << 1200.0, 384.7363,
@@ -131,25 +149,41 @@ TEST(Torsten, LinCpt_OneSS_overloads) {
 	           9.875702, 1034.7998;
 
 	for(int i = 0; i < amounts.rows(); i++) {	
-		EXPECT_NEAR(amounts(i, 0), x1(i, 0),
-		  std::max(amounts(i, 0), x1(i, 0)) * 1e-6);
-		EXPECT_NEAR(amounts(i, 1), x1(i, 1),
-		  std::max(amounts(i, 1), x1(i, 1)) * 1e-6);
-		  
-		EXPECT_NEAR(amounts(i, 0), x2(i, 0),
-		  std::max(amounts(i, 0), x2(i, 0)) * 1e-6);
-		EXPECT_NEAR(amounts(i, 1), x2(i, 1),
-		  std::max(amounts(i, 1), x2(i, 1)) * 1e-6);
-
-		EXPECT_NEAR(amounts(i, 0), x3(i, 0),
-		  std::max(amounts(i, 0), x3(i, 0)) * 1e-6);
-		EXPECT_NEAR(amounts(i, 1), x3(i, 1),
-		  std::max(amounts(i, 1), x3(i, 1)) * 1e-6);
+		EXPECT_NEAR(amounts(i, 0), x_122(i, 0),
+		  std::max(amounts(i, 0), x_122(i, 0)) * 1e-6);
+		EXPECT_NEAR(amounts(i, 1), x_122(i, 1),
+		  std::max(amounts(i, 1), x_122(i, 1)) * 1e-6);
+		
+		EXPECT_NEAR(amounts(i, 0), x_112(i, 0),
+              std::max(amounts(i, 0), x_112(i, 0)) * 1e-6);
+		EXPECT_NEAR(amounts(i, 1), x_112(i, 1),
+              std::max(amounts(i, 1), x_112(i, 1)) * 1e-6);
+		
+		EXPECT_NEAR(amounts(i, 0), x_111(i, 0),
+              std::max(amounts(i, 0), x_111(i, 0)) * 1e-6);
+		EXPECT_NEAR(amounts(i, 1), x_111(i, 1),
+              std::max(amounts(i, 1), x_111(i, 1)) * 1e-6);
+		
+		EXPECT_NEAR(amounts(i, 0), x_121(i, 0),
+              std::max(amounts(i, 0), x_121(i, 0)) * 1e-6);
+		EXPECT_NEAR(amounts(i, 1), x_121(i, 1),
+              std::max(amounts(i, 1), x_121(i, 1)) * 1e-6);
+		
+		EXPECT_NEAR(amounts(i, 0), x_212(i, 0),
+              std::max(amounts(i, 0), x_212(i, 0)) * 1e-6);
+		EXPECT_NEAR(amounts(i, 1), x_212(i, 1),
+              std::max(amounts(i, 1), x_212(i, 1)) * 1e-6);
+		
+		EXPECT_NEAR(amounts(i, 0), x_211(i, 0),
+              std::max(amounts(i, 0), x_211(i, 0)) * 1e-6);
+		EXPECT_NEAR(amounts(i, 1), x_211(i, 1),
+              std::max(amounts(i, 1), x_211(i, 1)) * 1e-6);
+		
+		EXPECT_NEAR(amounts(i, 0), x_221(i, 0),
+              std::max(amounts(i, 0), x_221(i, 0)) * 1e-6);
+		EXPECT_NEAR(amounts(i, 1), x_221(i, 1),
+              std::max(amounts(i, 1), x_221(i, 1)) * 1e-6);
 	}
-
-	double diff = 1e-8, diff2 = 1e-4;
-	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
-		             ss, diff, diff2);
 }
 
 TEST(Torsten, linCptModel_OneSS_rate) {
@@ -159,13 +193,16 @@ TEST(Torsten, linCptModel_OneSS_rate) {
 	system << -ka, 0, ka, -k10;
 	vector<Matrix<double, Dynamic, Dynamic> > system_array(1, system);
 
-	vector<vector<double> > pMatrix(1);
-	pMatrix[0].resize(4);
-	pMatrix[0][0] = 1; // F1
-	pMatrix[0][1] = 1; // F2
-	pMatrix[0][2] = 0; // tlag1
-	pMatrix[0][3] = 0; // tlag2
-
+	vector<vector<double> > biovar(1);
+	biovar[0].resize(2);
+	biovar[0][0] = 1;  // F1
+	biovar[0][1] = 1;  // F2
+	
+	vector<vector<double> > tlag(1);
+	tlag[0].resize(2);
+	tlag[0][0] = 0;  // tlag1
+	tlag[0][1] = 0;  // tlag2
+	
 	vector<double> time(10);
 	time[0] = 0.0;
 	time[1] = 0.0;
@@ -193,7 +230,8 @@ TEST(Torsten, linCptModel_OneSS_rate) {
 	ss[0] = 1;
 
 	Matrix<double, Dynamic, Dynamic> x;
-	x = linCptModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+	x = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                 system_array, biovar, tlag);
 
 	Matrix<double, Dynamic, Dynamic> amounts(10, 2);
 	amounts << 1.028649, 659.9385,
@@ -213,8 +251,8 @@ TEST(Torsten, linCptModel_OneSS_rate) {
 	}
 
 	double diff = 1e-8, diff2 = 1e-4;
-	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
-		             ss, diff, diff2);
+	test_linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                  system_array, biovar, tlag, diff, diff2);
 
 }
 
@@ -222,14 +260,17 @@ TEST(Torsten, linOne_MultipleDoses_timePara) {
 
     int nEvent = 11;
     
-	vector<vector<double> > pMatrix(1);
-	pMatrix[0].resize(4);
-	pMatrix[0][0] = 1; // F1
-	pMatrix[0][1] = 1; // F2
-	pMatrix[0][2] = 0; // tlag1
-	pMatrix[0][3] = 0; // tlag2
+    vector<vector<double> > biovar(1);
+    biovar[0].resize(2);
+    biovar[0][0] = 1;  // F1
+    biovar[0][1] = 1;  // F2
     
-    double CL_1 = 10, CL_2 = 50, Vc = 80, ka = 1.2,
+    vector<vector<double> > tlag(1);
+    tlag[0].resize(2);
+    tlag[0][0] = 0;  // tlag1
+    tlag[0][1] = 0;  // tlag2
+    
+  double CL_1 = 10, CL_2 = 50, Vc = 80, ka = 1.2,
       k10_1 = CL_1 / Vc, k10_2 = CL_2 / Vc;
 	Matrix<double, Dynamic, Dynamic> system_1(2, 2), system_2(2, 2);
 	system_1 << -ka, 0, ka, -k10_1;
@@ -263,7 +304,8 @@ TEST(Torsten, linOne_MultipleDoses_timePara) {
 	vector<int> ss(nEvent, 0);
 
 	Matrix<double, Dynamic, Dynamic> x;
-	x = linCptModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl, ss);
+	x = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+                 system_array, biovar, tlag);
 
 	Matrix<double, Dynamic, Dynamic> amounts(nEvent, 2);
 	amounts << 1000.0, 0.0,
@@ -281,7 +323,7 @@ TEST(Torsten, linOne_MultipleDoses_timePara) {
 	expect_matrix_eq(amounts, x);
 
 	double diff = 1e-8, diff2 = 1e-4;
-	test_linOdeModel(system_array, pMatrix, time, amt, rate, ii, evid, cmt, addl,
-		             ss, diff, diff2);
+	test_linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+		              system_array, biovar, tlag, diff, diff2);
 }
 
