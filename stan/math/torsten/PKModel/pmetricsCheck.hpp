@@ -110,7 +110,7 @@ void pmetricsCheck(const std::vector<T0>& time,
       length_error3);
 
   // TEST ARGUMENTS FOR PARAMETERS
-  static const char* noCheck("linCptModel");
+  static const char* noCheck("linOdeModel");
   if (strcmp(function, noCheck) != 0) {
     if (!((pMatrix.size() == time.size()) || (pMatrix.size() == 1)))
       invalid_argument(function, "length of the parameter (2d) array,",

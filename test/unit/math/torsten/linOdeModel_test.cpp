@@ -50,7 +50,7 @@ TEST(Torsten, LinCpt_OneSS) {
 	vector<int> ss(10, 0);
 	ss[0] = 1;
 	Matrix<double, Dynamic, Dynamic> x;
-	x = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                  system_array, biovar, tlag);
 
 	Matrix<double, Dynamic, Dynamic> amounts(10, 2);
@@ -121,19 +121,19 @@ TEST(Torsten, LinCpt_OneSS_overloads) {
 	Matrix<double, Dynamic, Dynamic> x_122, x_112, x_111, x_121, x_212,
 	  x_211, x_221;
 
-	x_122 = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x_122 = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                       system_array[0], biovar, tlag);
-	x_112 = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x_112 = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      system_array[0], biovar[0], tlag);
-	x_111 = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x_111 = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      system_array[0], biovar[0], tlag[0]);
-	x_121 = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x_121 = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      system_array[0], biovar, tlag[0]);
-	x_212 = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x_212 = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      system_array, biovar[0], tlag);
-	x_211 = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x_211 = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      system_array, biovar[0], tlag[0]);
-	x_221 = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x_221 = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      system_array, biovar, tlag[0]);
 
 	Matrix<double, Dynamic, Dynamic> amounts(10, 2);
@@ -186,7 +186,7 @@ TEST(Torsten, LinCpt_OneSS_overloads) {
 	}
 }
 
-TEST(Torsten, linCptModel_OneSS_rate) {
+TEST(Torsten, linOdeModel_OneSS_rate) {
 
 	double CL = 10, Vc = 80, ka = 1.2, k10 = CL / Vc;
 	Matrix<double, Dynamic, Dynamic> system(2,2);
@@ -230,7 +230,7 @@ TEST(Torsten, linCptModel_OneSS_rate) {
 	ss[0] = 1;
 
 	Matrix<double, Dynamic, Dynamic> x;
-	x = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                  system_array, biovar, tlag);
 
 	Matrix<double, Dynamic, Dynamic> amounts(10, 2);
@@ -304,7 +304,7 @@ TEST(Torsten, linOne_MultipleDoses_timePara) {
 	vector<int> ss(nEvent, 0);
 
 	Matrix<double, Dynamic, Dynamic> x;
-	x = linCptModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                  system_array, biovar, tlag);
 
 	Matrix<double, Dynamic, Dynamic> amounts(nEvent, 2);

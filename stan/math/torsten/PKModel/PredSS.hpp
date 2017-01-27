@@ -5,7 +5,7 @@
 #include <stan/math/torsten/PKModel/Pred/PredSS_oneCpt.hpp>
 #include <stan/math/torsten/PKModel/Pred/PredSS_twoCpt.hpp>
 #include <stan/math/torsten/PKModel/Pred/PredSS_general_solver.hpp>
-#include <stan/math/torsten/PKModel/Pred/PredSS_linCpt.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_linOde.hpp>
 #include <iostream>
 #include <string>
 
@@ -75,8 +75,8 @@ public:
     else if (modeltype == "GeneralCptModel_solver")
       return PredSS_general_solver(parameter, amt, rate, ii, cmt, f);
     else
-      if (modeltype == "linCptModel") {
-        return PredSS_linCpt(parameter, amt, rate, ii, cmt);
+      if (modeltype == "linOdeModel") {
+        return PredSS_linOde(parameter, amt, rate, ii, cmt);
     } else {
       Eigen::Matrix<scalar, 1, Eigen::Dynamic> default_pred
         = Eigen::Matrix<scalar, 1, Eigen::Dynamic>::Zero(1);

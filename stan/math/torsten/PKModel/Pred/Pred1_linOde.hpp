@@ -1,5 +1,5 @@
-#ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_LINCPT_HPP
-#define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_LINCPT_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_LINODE_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_LINODE_HPP
 
 #include <stan/math/prim/mat/fun/mdivide_left.hpp>
 #include <stan/math/rev/mat/fun/mdivide_left.hpp>
@@ -36,7 +36,7 @@ template<typename T_time, typename T_parameters, typename T_biovar,
          typename T_tlag, typename T_system, typename T_rate>
 Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_system,
   T_rate>::type, 1, Eigen::Dynamic>
-Pred1_linCpt(const T_time& dt,
+Pred1_linOde(const T_time& dt,
              const ModelParameters<T_time, T_parameters, T_biovar,
                                    T_tlag, T_system>& parameter,
              const Eigen::Matrix<typename boost::math::tools::promote_args<
