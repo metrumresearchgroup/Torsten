@@ -2,7 +2,7 @@
 #include <gtest/gtest.h>
 #include <test/unit/math/prim/mat/fun/expect_near_matrix_eq.hpp>
 #include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
-#include <test/unit/math/torsten/prim/util_generalOdeModel.hpp>
+#include <test/unit/math/torsten/util_generalOdeModel.hpp>
 
 // Developer's note: for the autodiff test, the rk45 agrees 
 // more closely with finite diff than bdf by an order of
