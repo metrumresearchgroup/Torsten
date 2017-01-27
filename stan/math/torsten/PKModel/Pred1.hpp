@@ -6,7 +6,7 @@
 #include <stan/math/torsten/PKModel/Pred/Pred1_oneCpt.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_twoCpt.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_general_solver.hpp>
-#include <stan/math/torsten/PKModel/Pred/Pred1_linCpt.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_linOde.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -72,11 +72,11 @@ public:
       return Pred1_one(dt, parameter, init, rate);
     else if (modeltype == "TwoCptModel")
       return Pred1_two(dt, parameter, init, rate);
-    else if (modeltype == "GeneralCptModel")
+    else if (modeltype == "generalOdeModel")
       return Pred1_general_solver(dt, parameter, init, rate, f);
     else
-      if (modeltype == "linCptModel") {
-        return Pred1_linCpt(dt, parameter, init, rate);
+      if (modeltype == "linOdeModel") {
+        return Pred1_linOde(dt, parameter, init, rate);
     } else {
       Eigen::Matrix<scalar, 1, Eigen::Dynamic> default_pred =
         Eigen::Matrix<scalar, 1, Eigen::Dynamic>::Zero(1);
