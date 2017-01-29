@@ -47,23 +47,25 @@ public:
     RateHistory<T_time, T_rate>&);
 
   template <typename T_0, typename T_1, typename T_2, typename T_3,
-    typename T_4, typename F, typename T_5>
+    typename T_4, typename T_5, typename T_6, typename F, typename T_7>
   friend
   Eigen::Matrix<typename boost::math::tools::promote_args<T_0, T_1, T_2, T_3,
-    typename boost::math::tools::promote_args<T_4, T_5>::type >::type,
-    Eigen::Dynamic, Eigen::Dynamic>
-  Pred(const std::vector<std::vector<T_0> >& pMatrix,
-       const std::vector<T_1>& time,
-       const std::vector<T_2>& amt,
-       const std::vector<T_3>& rate,
-       const std::vector<T_4>& ii,
+    typename boost::math::tools::promote_args<T_4, T_5, T_6, T_7>::type
+    >::type, Eigen::Dynamic, Eigen::Dynamic>
+  Pred(const std::vector<T_0>& time,
+       const std::vector<T_1>& amt,
+       const std::vector<T_2>& rate,
+       const std::vector<T_3>& ii,
        const std::vector<int>& evid,
        const std::vector<int>& cmt,
        const std::vector<int>& addl,
        const std::vector<int>& ss,
+       const std::vector<std::vector<T_4> >& pMatrix,
+       const std::vector<std::vector<T_5> >& biovar,
+       const std::vector<std::vector<T_6> >& tlag,
        PKModel model,
        const F& f,
-       const std::vector<Eigen::Matrix<T_5, Eigen::Dynamic, Eigen::Dynamic> >&
+       const std::vector<Eigen::Matrix<T_7, Eigen::Dynamic, Eigen::Dynamic> >&
          system);
 };
 

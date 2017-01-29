@@ -2,17 +2,11 @@
 #define STAN_MATH_PMETRICS_PKMODEL_PMETRICS_SOLVER_HPP
 
 #include <Eigen/Dense>
-#include <stan/math/rev/mat/functor/integrate_ode_bdf.hpp>
 #include <stan/math/prim/arr/functor/integrate_ode_rk45.hpp>
+#include <stan/math/rev/mat/functor/integrate_ode_bdf.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
-
-// FIX ME: using statements should appear within
-// the scope of functions.
-/* using std::vector;
-using namespace Eigen;
-using std::string; */
 
 /**
  *  Construct functors that run the ODE integrator. Specify integrator

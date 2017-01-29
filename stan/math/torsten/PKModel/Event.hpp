@@ -11,7 +11,8 @@
 template <typename T_time, typename T_amt,
   typename T_rate, typename T_ii> class EventHistory;
 template <typename T_time, typename T_amt> class RateHistory;
-template<typename T_time, typename T_parameters, typename T_system>
+template<typename T_time, typename T_parameters, typename T_biovar,
+         typename T_tlag, typename T_system>
   class ModelParameterHistory;
 
 /**
@@ -34,7 +35,6 @@ template<typename T_time, typename T_parameters, typename T_system>
  *          in the final output of the pred function.
  *    isnew: if TRUE, event was created when pred augmented
  *           the input data set
- *
  */
 template <typename T_time, typename T_amt, typename T_rate, typename T_ii>
 class Event{
@@ -121,7 +121,8 @@ public:
 
   // declare friends
   friend class EventHistory<T_time, T_amt, T_rate, T_ii>;
-  template<typename T1, typename T2, typename T3> friend
+  template<typename T1, typename T2, typename T3, typename T4,
+           typename T5> friend
     class ModelParameterHistory;
 };
 
@@ -266,57 +267,48 @@ public:
    *
    * @tparam T_parameters type of scalar model parameters
    * @param[in] ModelParameterHistory object that stores parameters for each event
-   * @param[in] tlagIndexes index of the time lag
-   * @param[in] tlagCmts compartment in which the time lag occurs
+   * @param[in] nCmt
    * @return - modified events that account for absorption lag times
    */
-  template<typename T_parameters, typename T_system>
-  void AddLagTimes(ModelParameterHistory<T_time, T_parameters, T_system>
-    Parameters, std::vector<int> tlagIndexes, std::vector<int> tlagCmts) {
-    int nlag = tlagIndexes.size();
-    assert((size_t) nlag == tlagCmts.size());
-    if (nlag > 0) {
-      int nEvent = Events.size(), pSize = Parameters.get_size();
-      assert((pSize = nEvent) || (pSize == 1));
+  template<typename T_parameters, typename T_biovar, typename T_tlag,
+           typename T_system>
+  void AddLagTimes(ModelParameterHistory<T_time, T_parameters, T_biovar,
+                   T_tlag, T_system> Parameters, int nCmt) {
+    int nEvent = Events.size(), pSize = Parameters.get_size();
+    assert((pSize = nEvent) || (pSize == 1));
 
-      int i = nEvent - 1, evid, cmt, ipar;
-      Event<T_time, T_amt, T_rate, T_ii> newEvent;
-      while (i >= 0) {
-        evid = Events[i].evid;
-        cmt = Events[i].cmt;
+    int iEvent = nEvent - 1, evid, cmt, ipar;
+    Event<T_time, T_amt, T_rate, T_ii> newEvent;
+    while (iEvent >= 0) {
+      evid = Events[iEvent].evid;
+      cmt = Events[iEvent].cmt;
 
-        if ((evid == 1) || (evid == 4)) {
-          int j = 0;
-          while ((cmt != tlagCmts[j]) && (j < nlag)) j++;
-          ipar = std::min(i, pSize - 1);  // ipar is the index of the ith
-                                          // event or 0, if the parameters
-                                          // are constant.
+      if ((evid == 1) || (evid == 4)) {
+        ipar = std::min(iEvent, pSize - 1);  // ipar is the index of the ith
+                                             // event or 0, if the parameters
+                                             // are constant.
+        if (Parameters.GetValueTlag(ipar, cmt) != 0) {
+          newEvent = GetEvent(iEvent);
+          newEvent.time += Parameters.GetValueTlag(ipar, cmt);
+          newEvent.keep = false;
+          newEvent.isnew = true;
+          // newEvent.evid = 2  // CHECK
+          InsertEvent(newEvent);
 
-          if ((cmt == tlagCmts[j])
-            && (Parameters.GetValue(ipar, tlagIndexes[j]) != 0)) {
-          // if (cmt == tlagCmts[j]) {
-            newEvent = GetEvent(i);
-            newEvent.time += Parameters.GetValue(ipar, tlagIndexes[j]);
-            newEvent.keep = false;
-            newEvent.isnew = true;
-            // newEvent.evid = 2; // - CHECK
-            InsertEvent(newEvent);
-
-            Events[i].evid = 2;
-            // Events[i].time += evid; // - CHECK
-            // The above statement changes events so that CleanEvents does
-            // not return an object identical to the original. - CHECK
-          }
+          Events[iEvent].evid = 2;  // Check
+          // The above statement changes events so that CleanEvents does
+          // not return an object identical to the original. - CHECK
         }
-        i--;
       }
-      Sort();
+      iEvent--;
     }
+    Sort();
   }
 
   // declare friends
   friend class Event<T_time, T_amt, T_rate, T_ii>;
-  template<typename T1, typename T2, typename T3> friend
+  template<typename T1, typename T2, typename T3, typename T4,
+           typename T5> friend
     class ModelParameterHistory;
 };
 

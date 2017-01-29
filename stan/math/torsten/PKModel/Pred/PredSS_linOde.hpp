@@ -1,7 +1,8 @@
-#ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_LINCPT_HPP
-#define STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_LINCPT_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_LINODE_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_LINODE_HPP
 
-#include <stan/math/prim/mat.hpp>
+#include <stan/math/rev/mat/fun/mdivide_left.hpp>
+#include <stan/math/rev/mat/fun/multiply.hpp>
 #include <stan/math/prim/mat/fun/matrix_exp.hpp>
 #include <iostream>
 
@@ -20,6 +21,8 @@
  * @tparam T_amt type of scalar for amount
  * @tparam T_rate type of scalar for rate
  * @tparam T_ii type of scalar for interdose interval
+ * @tparam T_parameters type of scalar for model parameters
+ * @tparam T_addParm type of scalar for additional parameters
  * @tparam T_system type of elements of Matrix that describes
  * ODE
  * @param[in] parameter model parameters at current event
@@ -31,11 +34,13 @@
  * @return an eigen vector that contains predicted amount in each compartment
  *   at the current event.
  */
-template<typename T_time, typename T_parameters, typename T_system,
-  typename T_amt, typename T_rate, typename T_ii>
+template<typename T_time, typename T_parameters, typename T_biovar,
+         typename T_tlag, typename T_system,  typename T_amt, typename T_rate,
+         typename T_ii>
 Eigen::Matrix<typename boost::math::tools::promote_args<T_amt, T_rate,
   T_ii, T_system>::type, 1, Eigen::Dynamic>
-PredSS_linCpt(const ModelParameters<T_time, T_parameters, T_system>& parameter,
+PredSS_linOde(const ModelParameters<T_time, T_parameters, T_biovar,
+                                    T_tlag, T_system>& parameter,
               const T_amt& amt,
               const T_rate& rate,
               const T_ii& ii,
@@ -49,7 +54,7 @@ PredSS_linCpt(const ModelParameters<T_time, T_parameters, T_system>& parameter,
   typedef typename boost::math::tools::promote_args<T_amt, T_rate, T_ii,
     T_system>::type scalar;
 
-  Matrix<T_system, Dynamic, Dynamic> system = parameter.RateMatrix();
+  Matrix<T_system, Dynamic, Dynamic> system = parameter.get_K();
   int nCmt = system.rows();
   Matrix<scalar, Dynamic, Dynamic> workMatrix, ii_system
     = multiply(ii, system);  // Check

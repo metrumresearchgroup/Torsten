@@ -19,6 +19,7 @@
  *	 @tparam T_time type of scalar for time
  *	 @tparam T_rate type of scalar for rate
  *	 @tparam T_parameters type of scalar for model parameters
+ *	 @tparam T_addParm type of scalar for model parameters
  *	 @param[in] dt time between current and previous event
  *	 @param[in] parameter model parameters at current event
  *	 @param[in] init amount in each compartment at previous event
@@ -27,13 +28,16 @@
  *           at the current event.
  */
 template<typename T_time, typename T_rate, typename T_parameters,
-  typename T_system>
+         typename T_biovar, typename T_tlag, typename T_system>
 Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_rate,
   T_parameters>::type, 1, Eigen::Dynamic>
 Pred1_one(const T_time& dt,
-          const ModelParameters<T_time, T_parameters, T_system>& parameter,
+          const ModelParameters<T_time, T_parameters, T_biovar,
+                                T_tlag, T_system>& parameter,
           const Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
-            T_rate, T_parameters>::type, 1, Eigen::Dynamic>& init,
+            T_rate, T_parameters, typename boost::math::tools::
+            promote_args<T_biovar, T_tlag>::type>::type, 1, Eigen::Dynamic>&
+            init,
           const std::vector<T_rate>& rate) {
   stan::math::check_finite("Pred1", "initial values", init);
 

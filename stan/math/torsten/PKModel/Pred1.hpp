@@ -6,7 +6,7 @@
 #include <stan/math/torsten/PKModel/Pred/Pred1_oneCpt.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_twoCpt.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_general_solver.hpp>
-#include <stan/math/torsten/PKModel/Pred/Pred1_linCpt.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_linOde.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -20,12 +20,13 @@
  *   Built-in Model types:
  *       1 - One Compartment Model with first-order absorption
  *       2 - Two Compartment Model with first-order absorption
- *		 3 - General Compartment Model using numerical ODE solver
- *		 4 - EXPERIMENTAL: PKPD model using semi-analytical solver
+ *		   3 - General Compartment Model using numerical ODE solver
+ *		   4 - EXPERIMENTAL: PKPD model using semi-analytical solver
  *
  *	 @tparam T_time type of scalar for time
  *	 @tparam T_rate type of scalar for rate
  *	 @tparam T_parameters type of scalar for model parameters
+ *	 @tparam T_addParm type of scalar for additional parameters
  *	 @tparam F type of ODE system function
  *	 @param[in] dt time between current and previous event
  *	 @param[in] parameter model parameters at current event
@@ -49,30 +50,33 @@ public:
     modeltype = p_modeltype;
   }
 
-  template <typename T_time, typename T_parameters, typename T_rate,
-    typename F, typename T_system>
-  Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_rate,
-    T_parameters, T_system>::type, 1, Eigen::Dynamic>
+  template <typename T_time, typename T_parameters, typename T_biovar,
+            typename T_tlag, typename T_rate, typename F, typename T_system>
+  Eigen::Matrix<typename boost::math::tools::promote_args<T_time, T_rate,
+    T_parameters, typename boost::math::tools::promote_args<T_biovar,
+    T_tlag, T_system>::type>::type, 1, Eigen::Dynamic>
     operator()(const T_time& dt,
-               const ModelParameters<T_time, T_parameters, T_system>&
-                 parameter,
+               const ModelParameters<T_time, T_parameters, T_biovar,
+                                     T_tlag, T_system>& parameter,
                const Eigen::Matrix<typename boost::math::tools::
-                 promote_args<T_time, T_rate, T_parameters, T_system>::type, 1,
-                 Eigen::Dynamic>& init,
+                 promote_args<T_time, T_rate, T_parameters,
+                   typename boost::math::tools::promote_args<T_biovar,
+                   T_tlag, T_system>::type>::type, 1, Eigen::Dynamic>& init,
                const std::vector<T_rate>& rate,
                const F& f) {
-    typedef typename boost::math::tools::promote_args< T_time,
-      T_rate, T_parameters>::type scalar;
+    typedef typename boost::math::tools::promote_args<T_time, T_rate,
+      T_parameters, typename boost::math::tools::promote_args<T_biovar, T_tlag>
+      ::type>::type scalar;
 
     if (modeltype == "OneCptModel")
       return Pred1_one(dt, parameter, init, rate);
     else if (modeltype == "TwoCptModel")
       return Pred1_two(dt, parameter, init, rate);
-    else if (modeltype == "GeneralCptModel")
+    else if (modeltype == "generalOdeModel")
       return Pred1_general_solver(dt, parameter, init, rate, f);
     else
-      if (modeltype == "linCptModel") {
-        return Pred1_linCpt(dt, parameter, init, rate);
+      if (modeltype == "linOdeModel") {
+        return Pred1_linOde(dt, parameter, init, rate);
     } else {
       Eigen::Matrix<scalar, 1, Eigen::Dynamic> default_pred =
         Eigen::Matrix<scalar, 1, Eigen::Dynamic>::Zero(1);
