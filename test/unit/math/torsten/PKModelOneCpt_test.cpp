@@ -161,45 +161,37 @@ TEST(Torsten, PKModelOneCpt_signature_test) {
   using stan::math::var;
   
   vector<vector<double> > pMatrix(1);
-  pMatrix[0].resize(5);
-  pMatrix[0][0] = 5;  // CL
-  pMatrix[0][1] = 8;  // Q
-  pMatrix[0][2] = 20;  // Vc
-  pMatrix[0][3] = 70;  // Vp
-  pMatrix[0][4] = 1.2;  // ka
+  pMatrix[0].resize(3);
+  pMatrix[0][0] = 10; // CL
+  pMatrix[0][1] = 80; // Vc
+  pMatrix[0][2] = 1.2; // ka
   
   vector<vector<double> > biovar(1);
-  biovar[0].resize(3);
+  biovar[0].resize(2);
   biovar[0][0] = 1;  // F1
   biovar[0][1] = 1;  // F2
-  biovar[0][2] = 1;  // F3
-  
+
   vector<vector<double> > tlag(1);
-  tlag[0].resize(3);
+  tlag[0].resize(2);
   tlag[0][0] = 0;  // tlag1
   tlag[0][1] = 0;  // tlag2
-  tlag[0][2] = 0;  // tlag3
-  
+
   vector<vector<var> > pMatrix_v(1);
-  pMatrix_v[0].resize(5);
-  pMatrix_v[0][0] = 5;  // CL
-  pMatrix_v[0][1] = 8;  // Q
-  pMatrix_v[0][2] = 20;  // Vc
-  pMatrix_v[0][3] = 70;  // Vp
-  pMatrix_v[0][4] = 1.2;  // ka
-  
+  pMatrix_v[0].resize(3);
+  pMatrix_v[0][0] = 10;  // CL
+  pMatrix_v[0][1] = 80;  // Vc
+  pMatrix_v[0][2] = 1.2; // ka
+
   vector<vector<var> > biovar_v(1);
-  biovar_v[0].resize(3);
+  biovar_v[0].resize(2);
   biovar_v[0][0] = 1;  // F1
   biovar_v[0][1] = 1;  // F2
-  biovar_v[0][2] = 1;  // F3
-  
+
   vector<vector<var> > tlag_v(1);
-  tlag_v[0].resize(3);
+  tlag_v[0].resize(2);
   tlag_v[0][0] = 0;  // tlag 1
   tlag_v[0][1] = 0;  // tlag 2
-  tlag_v[0][2] = 0;  // tlag 3
-  
+
   vector<double> time(10);
   time[0] = 0.0;
   for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
@@ -224,17 +216,17 @@ TEST(Torsten, PKModelOneCpt_signature_test) {
   
   vector<int> ss(10, 0);
   
-  Matrix<double, Dynamic, Dynamic> amounts(10, 3);
-  amounts << 1000.0, 0.0, 0.0,
-             740.818221, 238.3713, 12.75775,
-             548.811636, 379.8439, 43.55827,
-             406.569660, 455.3096, 83.95657,
-             301.194212, 486.6965, 128.32332,
-             223.130160, 489.4507, 173.01118,
-             165.298888, 474.3491, 215.75441,
-             122.456428, 448.8192, 255.23842,
-             90.717953, 417.9001, 290.79297,
-             8.229747, 200.8720, 441.38985;
+  Matrix<double, Dynamic, Dynamic> amounts(10, 2);
+  amounts << 1000.0, 0.0,
+             740.8182, 254.97490,
+             548.8116, 436.02020,
+             406.5697, 562.53846,
+             301.1942, 648.89603,
+             223.1302, 705.72856,
+             165.2989, 740.90816,
+             122.4564, 760.25988,
+             90.71795, 768.09246,
+             8.229747, 667.87079;
   
   vector<Matrix<var, Dynamic, Dynamic> > x_122(7);
   x_122[0] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
@@ -387,7 +379,7 @@ TEST(Torsten, PKModelOneCpt_signature_test) {
   for (size_t i = 0; i < x_221.size(); i++)
     for (int j = 0; j < x_221[i].rows(); j++)
       for (int k = 0; k < x_221[i].cols(); k++)
-        EXPECT_FLOAT_EQ(amounts(j, k), x_221[i](j, k).val());  
+        EXPECT_FLOAT_EQ(amounts(j, k), x_221[i](j, k).val()); 
   
   // CHECK - do I need an AD test for every function signature ?
 }
