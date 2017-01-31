@@ -396,10 +396,8 @@ TEST(Torsten, PKModelTwoCpt_signature_test) {
       for (int k = 0; k < x_221[i].cols(); k++)
         EXPECT_FLOAT_EQ(amounts(j, k), x_221[i](j, k).val());  
 
-
   // CHECK - do I need an AD test for every function signature ?
 }
-
 
 TEST(Torsten, PKModelTwoCpt_SS) {
 
