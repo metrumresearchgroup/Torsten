@@ -164,6 +164,242 @@ TEST(Torsten, PKModelTwoCpt_MultipleDoses_overload) {
   // CHECK - do I need an AD test for every function signature ?
 }
 
+TEST(Torsten, PKModelTwoCpt_signature_test) {
+  using stan::math::var;
+
+  vector<vector<double> > pMatrix(1);
+  pMatrix[0].resize(5);
+  pMatrix[0][0] = 5;  // CL
+  pMatrix[0][1] = 8;  // Q
+  pMatrix[0][2] = 20;  // Vc
+  pMatrix[0][3] = 70;  // Vp
+  pMatrix[0][4] = 1.2;  // ka
+  
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(3);
+  biovar[0][0] = 1;  // F1
+  biovar[0][1] = 1;  // F2
+  biovar[0][2] = 1;  // F3
+  
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(3);
+  tlag[0][0] = 0;  // tlag1
+  tlag[0][1] = 0;  // tlag2
+  tlag[0][2] = 0;  // tlag3
+  
+  vector<vector<var> > pMatrix_v(1);
+  pMatrix_v[0].resize(5);
+  pMatrix_v[0][0] = 5;  // CL
+  pMatrix_v[0][1] = 8;  // Q
+  pMatrix_v[0][2] = 20;  // Vc
+  pMatrix_v[0][3] = 70;  // Vp
+  pMatrix_v[0][4] = 1.2;  // ka
+  
+  vector<vector<var> > biovar_v(1);
+  biovar_v[0].resize(3);
+  biovar_v[0][0] = 1;  // F1
+  biovar_v[0][1] = 1;  // F2
+  biovar_v[0][2] = 1;  // F3
+  
+  vector<vector<var> > tlag_v(1);
+  tlag_v[0].resize(3);
+  tlag_v[0][0] = 0;  // tlag 1
+  tlag_v[0][1] = 0;  // tlag 2
+  tlag_v[0][2] = 0;  // tlag 3
+  
+  vector<double> time(10);
+  time[0] = 0.0;
+  for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
+  time[9] = 4.0;
+  
+  vector<double> amt(10, 0);
+  amt[0] = 1000;
+  
+  vector<double> rate(10, 0);
+  
+  vector<int> cmt(10, 2);
+  cmt[0] = 1;
+  
+  vector<int> evid(10, 0);
+  evid[0] = 1;
+  
+  vector<double> ii(10, 0);
+  ii[0] = 12;
+  
+  vector<int> addl(10, 0);
+  addl[0] = 14;
+  
+  vector<int> ss(10, 0);
+  
+  Matrix<double, Dynamic, Dynamic> amounts(10, 3);
+  amounts << 1000.0, 0.0, 0.0,
+             740.818221, 238.3713, 12.75775,
+             548.811636, 379.8439, 43.55827,
+             406.569660, 455.3096, 83.95657,
+             301.194212, 486.6965, 128.32332,
+             223.130160, 489.4507, 173.01118,
+             165.298888, 474.3491, 215.75441,
+             122.456428, 448.8192, 255.23842,
+             90.717953, 417.9001, 290.79297,
+             8.229747, 200.8720, 441.38985;
+
+  vector<Matrix<var, Dynamic, Dynamic> > x_122(7);
+  x_122[0] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar, tlag);
+  x_122[1] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar_v, tlag);
+  x_122[2] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar, tlag_v);
+  x_122[3] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar_v, tlag_v);
+  x_122[4] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix[0], biovar_v, tlag);
+  x_122[5] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix[0], biovar_v, tlag_v);
+  x_122[6] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix[0], biovar, tlag_v);
+
+  for (size_t i = 0; i < x_122.size(); i++)
+    for (int j = 0; j < x_122[i].rows(); j++)
+      for (int k = 0; k < x_122[i].cols(); k++)
+        EXPECT_FLOAT_EQ(amounts(j, k), x_122[i](j, k).val());
+
+
+  vector<Matrix<var, Dynamic, Dynamic> > x_112(7);
+  x_112[0] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar[0], tlag);
+  x_112[1] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar_v[0], tlag);
+  x_112[2] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar[0], tlag_v);
+  x_112[3] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar_v[0], tlag_v);
+  x_112[4] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix[0], biovar_v[0], tlag);
+  x_112[5] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix[0], biovar_v[0], tlag_v);
+  x_112[6] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix[0], biovar[0], tlag_v);
+  
+  for (size_t i = 0; i < x_112.size(); i++)
+    for (int j = 0; j < x_112[i].rows(); j++)
+      for (int k = 0; k < x_112[i].cols(); k++)
+        EXPECT_FLOAT_EQ(amounts(j, k), x_112[i](j, k).val());
+
+
+  vector<Matrix<var, Dynamic, Dynamic> > x_121(7);
+  x_121[0] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar, tlag[0]);
+  x_121[1] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar_v, tlag[0]);
+  x_121[2] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar, tlag_v[0]);
+  x_121[3] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar_v, tlag_v[0]);
+  x_121[4] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix[0], biovar_v, tlag[0]);
+  x_121[5] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix[0], biovar_v, tlag_v[0]);
+  x_121[6] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix[0], biovar, tlag_v[0]);
+  
+  for (size_t i = 0; i < x_121.size(); i++)
+    for (int j = 0; j < x_121[i].rows(); j++)
+      for (int k = 0; k < x_121[i].cols(); k++)
+        EXPECT_FLOAT_EQ(amounts(j, k), x_121[i](j, k).val());
+
+  
+  vector<Matrix<var, Dynamic, Dynamic> > x_111(7);
+  x_111[0] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar[0], tlag[0]);
+  x_111[1] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar_v[0], tlag[0]);
+  x_111[2] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar[0], tlag_v[0]);
+  x_111[3] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v[0], biovar_v[0], tlag_v[0]);
+  x_111[4] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix[0], biovar_v[0], tlag[0]);
+  x_111[5] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix[0], biovar_v[0], tlag_v[0]);
+  x_111[6] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix[0], biovar[0], tlag_v[0]);
+  
+  for (size_t i = 0; i < x_111.size(); i++)
+    for (int j = 0; j < x_111[i].rows(); j++)
+      for (int k = 0; k < x_111[i].cols(); k++)
+        EXPECT_FLOAT_EQ(amounts(j, k), x_111[i](j, k).val());
+
+
+  vector<Matrix<var, Dynamic, Dynamic> > x_212(7);
+  x_212[0] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v, biovar[0], tlag);
+  x_212[1] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v, biovar_v[0], tlag);
+  x_212[2] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v, biovar[0], tlag_v);
+  x_212[3] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v, biovar_v[0], tlag_v);
+  x_212[4] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix, biovar_v[0], tlag);
+  x_212[5] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix, biovar_v[0], tlag_v);
+  x_212[6] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix, biovar[0], tlag_v);
+  
+  for (size_t i = 0; i < x_212.size(); i++)
+    for (int j = 0; j < x_212[i].rows(); j++)
+      for (int k = 0; k < x_212[i].cols(); k++)
+        EXPECT_FLOAT_EQ(amounts(j, k), x_212[i](j, k).val());
+
+
+  vector<Matrix<var, Dynamic, Dynamic> > x_211(7);
+  x_211[0] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v, biovar[0], tlag[0]);
+  x_211[1] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v, biovar_v[0], tlag[0]);
+  x_211[2] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v, biovar[0], tlag_v[0]);
+  x_211[3] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v, biovar_v[0], tlag_v[0]);
+  x_211[4] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix, biovar_v[0], tlag[0]);
+  x_211[5] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix, biovar_v[0], tlag_v[0]);
+  x_211[6] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix, biovar[0], tlag_v[0]);
+  
+  for (size_t i = 0; i < x_211.size(); i++)
+    for (int j = 0; j < x_211[i].rows(); j++)
+      for (int k = 0; k < x_211[i].cols(); k++)
+        EXPECT_FLOAT_EQ(amounts(j, k), x_211[i](j, k).val());
+
+
+  vector<Matrix<var, Dynamic, Dynamic> > x_221(7);
+  x_221[0] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v, biovar, tlag[0]);
+  x_221[1] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v, biovar_v, tlag[0]);
+  x_221[2] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v, biovar, tlag_v[0]);
+  x_221[3] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix_v, biovar_v, tlag_v[0]);
+  x_221[4] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix, biovar_v, tlag[0]);
+  x_221[5] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix, biovar_v, tlag_v[0]);
+  x_221[6] = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix, biovar, tlag_v[0]);
+  
+  for (size_t i = 0; i < x_221.size(); i++)
+    for (int j = 0; j < x_221[i].rows(); j++)
+      for (int k = 0; k < x_221[i].cols(); k++)
+        EXPECT_FLOAT_EQ(amounts(j, k), x_221[i](j, k).val());  
+
+
+  // CHECK - do I need an AD test for every function signature ?
+}
+
 
 TEST(Torsten, PKModelTwoCpt_SS) {
 
