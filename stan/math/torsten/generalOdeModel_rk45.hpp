@@ -194,7 +194,7 @@ generalOdeModel_rk45(const F& f,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
-  std::vector<std::vector<T5> > vec_tlag(1, tlag);
+  std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
   return generalOdeModel_rk45(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
@@ -292,7 +292,7 @@ generalOdeModel_rk45(const F& f,
                      double abs_tol = 1e-10,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
-  std::vector<std::vector<T5> > vec_tlag(1, tlag);
+  std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
   return generalOdeModel_rk45(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
@@ -324,7 +324,7 @@ generalOdeModel_rk45(const F& f,
                      double rel_tol = 1e-10,
                      double abs_tol = 1e-10,
                      long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
-  std::vector<std::vector<T5> > vec_tlag(1, tlag);
+  std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
   return generalOdeModel_rk45(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,

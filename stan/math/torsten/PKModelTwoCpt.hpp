@@ -166,8 +166,8 @@ PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<T4>& pMatrix,
               const std::vector<T5>& biovar,
               const std::vector<std::vector<T6> >& tlag) {
-  std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix),
-  vec_biovar(1, biovar);
+  std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
+  std::vector<std::vector<T5> > vec_biovar(1, biovar);
 
   return PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        vec_pMatrix, vec_biovar, tlag);
@@ -193,8 +193,8 @@ PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<T4>& pMatrix,
               const std::vector<std::vector<T5> >& biovar,
               const std::vector<T6>& tlag) {
-  std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix),
-  vec_tlag(1, tlag);
+  std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
+  std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
   return PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        vec_pMatrix, biovar, vec_tlag);
@@ -220,9 +220,9 @@ PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<T4>& pMatrix,
               const std::vector<T5>& biovar,
               const std::vector<T6>& tlag) {
-  std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix),
-  vec_biovar(1, biovar),
-  vec_tlag(1, tlag);
+  std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
+  std::vector<std::vector<T5> > vec_biovar(1, biovar);
+  std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
   return PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        vec_pMatrix, vec_biovar, vec_tlag);
@@ -273,8 +273,8 @@ PKModelTwoCpt(const std::vector<T0>& time,
               const std::vector<std::vector<T4> >& pMatrix,
               const std::vector<T5>& biovar,
               const std::vector<T6>& tlag) {
-  std::vector<std::vector<T5> > vec_biovar(1, biovar),
-  vec_tlag(1, tlag);
+  std::vector<std::vector<T5> > vec_biovar(1, biovar);
+  std::vector<std::vector<T6> >vec_tlag(1, tlag);
 
   return PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, vec_biovar, vec_tlag);
