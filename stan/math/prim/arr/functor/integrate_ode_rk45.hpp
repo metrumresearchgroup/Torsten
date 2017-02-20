@@ -74,6 +74,11 @@ namespace stan {
                        double relative_tolerance = 1e-6,
                        double absolute_tolerance = 1e-6,
                        int max_num_steps = 1E6) {
+      // print statements for debugging
+      std::cout << "rel_tol: " << relative_tolerance << std::endl;
+      std::cout << "abs_tol: " << absolute_tolerance << std::endl;
+      std::cout << "maxStep: " << max_num_steps << std::endl;
+
       using boost::numeric::odeint::integrate_times;
       using boost::numeric::odeint::make_dense_output;
       using boost::numeric::odeint::runge_kutta_dopri5;

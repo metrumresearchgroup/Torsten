@@ -45,7 +45,7 @@ TEST(Torsten, genCpt_One_SingleDose) {
   using Eigen::Matrix;
   using Eigen::Dynamic;
 
-  double rel_err = 1e-6;
+  // double rel_err = 1e-6;
 
   vector<vector<double> > pMatrix(1);
   pMatrix[0].resize(3);
@@ -88,14 +88,15 @@ TEST(Torsten, genCpt_One_SingleDose) {
 	
   vector<int> ss(10, 0);
 
-  double rel_tol = 1e-8, abs_tol = 1e-8;
-  long int max_num_steps = 1e8;
+  // double rel_tol = 1e-8, abs_tol = 1e-8;
+  double rel_tol = 1e-4, abs_tol = 1e-4;
+  long int max_num_steps = 1e4;
   Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_rk45;
   x_rk45 = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                 time, amt, rate, ii, evid, cmt, addl, ss,
                                 pMatrix, biovar, tlag,
                                 rel_tol, abs_tol, max_num_steps);
-
+/*
   Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_bdf;
   x_bdf = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
@@ -126,10 +127,10 @@ TEST(Torsten, genCpt_One_SingleDose) {
   test_generalOdeModel(oneCptModelODE_functor(), nCmt,
                        time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, biovar, tlag,
-                       rel_tol, abs_tol, max_num_steps, diff, diff2, "bdf");
+                       rel_tol, abs_tol, max_num_steps, diff, diff2, "bdf"); */
   
 }
-
+/*
 TEST(Torsten, genCpt_One_SingleDose_overload) {
   using std::vector;
   using Eigen::Matrix;
@@ -1035,4 +1036,4 @@ TEST(Torsten, genCptOne_MultipleDoses_timePara) {
                        time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, biovar, tlag,
                        rel_tol, abs_tol, max_num_steps, diff, diff2, "bdf");
-}
+} */
