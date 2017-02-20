@@ -88,9 +88,8 @@ TEST(Torsten, genCpt_One_SingleDose) {
 	
   vector<int> ss(10, 0);
 
-  // double rel_tol = 1e-8, abs_tol = 1e-8;
-  double rel_tol = 1e-4, abs_tol = 1e-4;
-  long int max_num_steps = 1e4;
+  double rel_tol = 1e-8, abs_tol = 1e-8;
+  long int max_num_steps = 1e8;
   Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_rk45;
   x_rk45 = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                 time, amt, rate, ii, evid, cmt, addl, ss,
