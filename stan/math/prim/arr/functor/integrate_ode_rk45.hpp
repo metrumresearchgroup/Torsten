@@ -14,8 +14,6 @@
 #include <ostream>
 #include <vector>
 
-#include <gtest/gtest.h>
-
 namespace stan {
   namespace math {
 
@@ -76,11 +74,6 @@ namespace stan {
                        double relative_tolerance = 1e-6,
                        double absolute_tolerance = 1e-6,
                        int max_num_steps = 1E6) {
-      // unit test for debugging
-      EXPECT_EQ(1e-8, relative_tolerance);
-      EXPECT_EQ(1e-8, absolute_tolerance);
-      EXPECT_EQ(1e+8, max_num_steps);
-
       using boost::numeric::odeint::integrate_times;
       using boost::numeric::odeint::make_dense_output;
       using boost::numeric::odeint::runge_kutta_dopri5;
