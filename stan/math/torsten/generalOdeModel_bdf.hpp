@@ -137,7 +137,8 @@ generalOdeModel_bdf(const F& f,
 
   return generalOdeModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              vec_pMatrix, biovar, tlag);
+                              vec_pMatrix, biovar, tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
@@ -171,7 +172,8 @@ generalOdeModel_bdf(const F& f,
 
   return generalOdeModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              vec_pMatrix, vec_biovar, tlag);
+                              vec_pMatrix, vec_biovar, tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
@@ -206,7 +208,8 @@ generalOdeModel_bdf(const F& f,
 
   return generalOdeModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              vec_pMatrix, vec_biovar, vec_tlag);
+                              vec_pMatrix, vec_biovar, vec_tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
@@ -240,7 +243,8 @@ generalOdeModel_bdf(const F& f,
 
   return generalOdeModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              vec_pMatrix, biovar, vec_tlag);
+                              vec_pMatrix, biovar, vec_tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
@@ -273,7 +277,8 @@ generalOdeModel_bdf(const F& f,
 
   return generalOdeModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              pMatrix, vec_biovar, tlag);
+                              pMatrix, vec_biovar, tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
@@ -307,7 +312,8 @@ generalOdeModel_bdf(const F& f,
 
   return generalOdeModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              pMatrix, vec_biovar, vec_tlag);
+                              pMatrix, vec_biovar, vec_tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
@@ -340,7 +346,8 @@ generalOdeModel_bdf(const F& f,
 
   return generalOdeModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              pMatrix, biovar, vec_tlag);
+                              pMatrix, biovar, vec_tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 #endif
