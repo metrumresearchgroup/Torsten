@@ -94,12 +94,14 @@ TEST(Torsten, genCpt_One_SingleDose) {
   x_rk45 = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                 time, amt, rate, ii, evid, cmt, addl, ss,
                                 pMatrix, biovar, tlag,
+                                0,
                                 rel_tol, abs_tol, max_num_steps);
 
   Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_bdf;
   x_bdf = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, biovar, tlag,
+                              0,
                               rel_tol, abs_tol, max_num_steps);
 
   Matrix<double, Dynamic, Dynamic> amounts(10, nCmt);
@@ -118,7 +120,7 @@ TEST(Torsten, genCpt_One_SingleDose) {
   expect_near_matrix_eq(amounts, x_bdf, rel_err);
 
   // Test AutoDiff against FiniteDiff
-  double diff = 1e-8, diff2 = 3e-3;
+  double diff = 1e-8, diff2 = 5e-3;
   test_generalOdeModel(oneCptModelODE_functor(), nCmt,
                        time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, biovar, tlag,
@@ -135,8 +137,8 @@ TEST(Torsten, genCpt_One_SingleDose_overload) {
   using Eigen::Matrix;
   using Eigen::Dynamic;
 
-  double rel_err = 1e-6;
-  
+  double rel_err = 1e-4;
+
   vector<vector<double> > pMatrix(1);
   pMatrix[0].resize(3);
   pMatrix[0][0] = 10;  // CL
@@ -163,59 +165,66 @@ TEST(Torsten, genCpt_One_SingleDose_overload) {
   amt[0] = 1000;
 
   vector<double> rate(10, 0);
-	
+
   vector<int> cmt(10, 2);
   cmt[0] = 1;
-	
+
   vector<int> evid(10, 0);
   evid[0] = 1;
 
   vector<double> ii(10, 0);
   ii[0] = 12;
-	
+
   vector<int> addl(10, 0);
   addl[0] = 14;
-	
+
   vector<int> ss(10, 0);
 
   double rel_tol = 1e-8, abs_tol = 1e-8;
   long int max_num_steps = 1e8;
-  
+
   Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_rk45_122, x_rk45_112, 
     x_rk45_111, x_rk45_121, x_rk45_212, x_rk45_211, x_rk45_221;
   x_rk45_122 = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                 time, amt, rate, ii, evid, cmt, addl, ss,
                                 pMatrix[0], biovar, tlag,
+                                0,
                                 rel_tol, abs_tol, max_num_steps);
 
   x_rk45_112 = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                     time, amt, rate, ii, evid, cmt, addl, ss,
                                     pMatrix[0], biovar[0], tlag,
+                                    0,
                                     rel_tol, abs_tol, max_num_steps);
   
   x_rk45_111 = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                     time, amt, rate, ii, evid, cmt, addl, ss,
                                     pMatrix[0], biovar[0], tlag[0],
+                                    0,
                                     rel_tol, abs_tol, max_num_steps);
   
   x_rk45_121 = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                     time, amt, rate, ii, evid, cmt, addl, ss,
                                     pMatrix[0], biovar, tlag[0],
+                                    0,
                                     rel_tol, abs_tol, max_num_steps);
   
   x_rk45_212 = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                     time, amt, rate, ii, evid, cmt, addl, ss,
                                     pMatrix, biovar[0], tlag,
+                                    0,
                                     rel_tol, abs_tol, max_num_steps);
   
   x_rk45_211 = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                     time, amt, rate, ii, evid, cmt, addl, ss,
                                     pMatrix, biovar[0], tlag[0],
+                                    0,
                                     rel_tol, abs_tol, max_num_steps);
   
   x_rk45_221 = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                     time, amt, rate, ii, evid, cmt, addl, ss,
                                     pMatrix, biovar, tlag[0],
+                                    0,
                                     rel_tol, abs_tol, max_num_steps);
 
 
@@ -224,36 +233,43 @@ TEST(Torsten, genCpt_One_SingleDose_overload) {
   x_bdf_122 = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                     time, amt, rate, ii, evid, cmt, addl, ss,
                                     pMatrix[0], biovar, tlag,
+                                    0,
                                     rel_tol, abs_tol, max_num_steps);
   
   x_bdf_112 = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                     time, amt, rate, ii, evid, cmt, addl, ss,
                                     pMatrix[0], biovar[0], tlag,
+                                    0,
                                     rel_tol, abs_tol, max_num_steps);
   
   x_bdf_111 = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                     time, amt, rate, ii, evid, cmt, addl, ss,
                                     pMatrix[0], biovar[0], tlag[0],
+                                    0,
                                     rel_tol, abs_tol, max_num_steps);
   
   x_bdf_121 = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                     time, amt, rate, ii, evid, cmt, addl, ss,
                                     pMatrix[0], biovar, tlag[0],
+                                    0,
                                     rel_tol, abs_tol, max_num_steps);
   
   x_bdf_212 = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                     time, amt, rate, ii, evid, cmt, addl, ss,
                                     pMatrix, biovar[0], tlag,
+                                    0,
                                     rel_tol, abs_tol, max_num_steps);
   
   x_bdf_211 = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                     time, amt, rate, ii, evid, cmt, addl, ss,
                                     pMatrix, biovar[0], tlag[0],
+                                    0,
                                     rel_tol, abs_tol, max_num_steps);
   
   x_bdf_221 = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                     time, amt, rate, ii, evid, cmt, addl, ss,
                                     pMatrix, biovar, tlag[0],
+                                    0,
                                     rel_tol, abs_tol, max_num_steps);  
 	
   Matrix<double, Dynamic, Dynamic> amounts(10, 2);
@@ -291,7 +307,7 @@ TEST(Torsten, linOdeModel_signature_test) {
   using Eigen::Matrix;
   using Eigen::Dynamic;
   
-  double rel_err = 1e-6;
+  double rel_err = 1e-4;
   
   vector<vector<double> > pMatrix(1);
   pMatrix[0].resize(3);
@@ -370,30 +386,37 @@ TEST(Torsten, linOdeModel_signature_test) {
   x_rk45_122[0] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar, tlag,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_122[1] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v, tlag,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_122[2] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar, tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_122[3] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v, tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_122[4] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v, tlag,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_122[5] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v, tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_122[5] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar, tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   
   for (size_t i = 0; i < x_rk45_122.size(); i++)
@@ -407,30 +430,37 @@ TEST(Torsten, linOdeModel_signature_test) {
   x_rk45_112[0] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar[0], tlag,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_112[1] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v[0], tlag,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_112[2] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar[0], tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_112[3] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v[0], tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_112[4] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v[0], tlag,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_112[5] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v[0], tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_112[5] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar[0], tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   
   for (size_t i = 0; i < x_rk45_112.size(); i++)
@@ -444,30 +474,37 @@ TEST(Torsten, linOdeModel_signature_test) {
   x_rk45_121[0] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar, tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_121[1] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v, tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_121[2] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_121[3] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_121[4] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v, tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_121[5] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_121[5] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   
   for (size_t i = 0; i < x_rk45_121.size(); i++)
@@ -481,30 +518,37 @@ TEST(Torsten, linOdeModel_signature_test) {
   x_rk45_111[0] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar[0], tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_111[1] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v[0], tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_111[2] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_111[3] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_111[4] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v[0], tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_111[5] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_111[5] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   
   for (size_t i = 0; i < x_rk45_111.size(); i++)
@@ -518,30 +562,37 @@ TEST(Torsten, linOdeModel_signature_test) {
   x_rk45_211[0] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar[0], tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_211[1] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar_v[0], tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_211[2] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_211[3] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar_v[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_211[4] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar_v[0], tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_211[5] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar_v[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_211[5] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   
   for (size_t i = 0; i < x_rk45_211.size(); i++)
@@ -555,30 +606,37 @@ TEST(Torsten, linOdeModel_signature_test) {
   x_rk45_221[0] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar, tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_221[1] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar_v, tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_221[2] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_221[3] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar_v, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_221[4] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar_v, tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_221[5] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar_v, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_rk45_221[5] = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   
   for (size_t i = 0; i < x_rk45_221.size(); i++)
@@ -593,30 +651,37 @@ TEST(Torsten, linOdeModel_signature_test) {
   x_bdf_122[0] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar, tlag,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_122[1] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v, tlag,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_122[2] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar, tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_122[3] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v, tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_122[4] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v, tlag,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_122[5] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v, tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_122[5] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar, tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   
   for (size_t i = 0; i < x_bdf_122.size(); i++)
@@ -630,30 +695,37 @@ TEST(Torsten, linOdeModel_signature_test) {
   x_bdf_112[0] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar[0], tlag,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_112[1] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v[0], tlag,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_112[2] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar[0], tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_112[3] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v[0], tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_112[4] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v[0], tlag,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_112[5] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v[0], tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_112[5] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar[0], tlag_v,
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   
   for (size_t i = 0; i < x_bdf_112.size(); i++)
@@ -667,30 +739,37 @@ TEST(Torsten, linOdeModel_signature_test) {
   x_bdf_121[0] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar, tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_121[1] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v, tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_121[2] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_121[3] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_121[4] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v, tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_121[5] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_121[5] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   
   for (size_t i = 0; i < x_bdf_121.size(); i++)
@@ -704,30 +783,37 @@ TEST(Torsten, linOdeModel_signature_test) {
   x_bdf_111[0] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar[0], tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_111[1] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v[0], tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_111[2] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_111[3] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v[0], biovar_v[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_111[4] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v[0], tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_111[5] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar_v[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_111[5] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix[0], biovar[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   
   for (size_t i = 0; i < x_bdf_111.size(); i++)
@@ -741,30 +827,37 @@ TEST(Torsten, linOdeModel_signature_test) {
   x_bdf_211[0] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar[0], tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_211[1] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar_v[0], tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_211[2] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_211[3] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar_v[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_211[4] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar_v[0], tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_211[5] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar_v[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_211[5] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar[0], tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   
   for (size_t i = 0; i < x_bdf_211.size(); i++)
@@ -778,30 +871,37 @@ TEST(Torsten, linOdeModel_signature_test) {
   x_bdf_221[0] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar, tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_221[1] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar_v, tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_221[2] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_221[3] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar_v, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_221[4] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar_v, tlag[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_221[5] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar_v, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   x_bdf_221[5] = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar, tlag_v[0],
+                                  0,
                                   rel_tol, abs_tol, max_num_steps);
   
   for (size_t i = 0; i < x_bdf_221.size(); i++)
@@ -908,12 +1008,14 @@ TEST(Torsten, genCpt_One_abstime_SingleDose) {
   x_rk45 = generalOdeModel_rk45(oneCptModelODE_abstime_functor(), 2,
                                 time, amt, rate, ii, evid, cmt, addl, ss,
                                 pMatrix, biovar, tlag,
+                                0,
                                 rel_tol, abs_tol, max_num_steps);
   
   Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_bdf;
   x_bdf = generalOdeModel_bdf(oneCptModelODE_abstime_functor(), 2,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, biovar, tlag,
+                              0,
                               rel_tol, abs_tol, max_num_steps);
 	
   Matrix<double, Dynamic, Dynamic> amounts(10, 2);
@@ -1001,12 +1103,14 @@ TEST(Torsten, genCptOne_MultipleDoses_timePara) {
    x_rk45 = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                  time, amt, rate, ii, evid, cmt, addl, ss,
                                  pMatrix, biovar, tlag,
+                                 0,
                                  rel_tol, abs_tol, max_num_steps);
   
   Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_bdf;
   x_bdf = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, biovar, tlag,
+                              0,
                               rel_tol, abs_tol, max_num_steps);
 
 	Matrix<double, Dynamic, Dynamic> amounts(nEvent, 2);
@@ -1026,7 +1130,7 @@ TEST(Torsten, genCptOne_MultipleDoses_timePara) {
     expect_near_matrix_eq(amounts, x_bdf, rel_err_bdf);
 
   // Test AutoDiff against FiniteDiff
-  double diff = 1e-8, diff2 = 1e-2;
+  double diff = 1e-8, diff2 = 2e-2;
   test_generalOdeModel(oneCptModelODE_functor(), nCmt,
                        time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, biovar, tlag,

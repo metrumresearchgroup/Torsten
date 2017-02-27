@@ -44,7 +44,11 @@
  * @param[in] max_num_steps maximal number of steps to take within 
  *            the Boost ode solver 
  * @return a matrix with predicted amount in each compartment 
- *         at each event. 
+ *         at each event.
+ *
+ * FIX ME: currently have a dummy msgs argument. Makes it easier
+ * to expose to stan grammar files, because I can follow more closely
+ * what was done for the ODE integrator. Not ideal.
  */
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6, typename F>
@@ -64,9 +68,10 @@ generalOdeModel_bdf(const F& f,
                     const std::vector<std::vector<T4> >& pMatrix,
                     const std::vector<std::vector<T5> >& biovar,
                     const std::vector<std::vector<T6> >& tlag,
-                    double rel_tol = 1e-10,
-                    double abs_tol = 1e-10,
-                    long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
+                    std::ostream* msgs = 0,
+                    double rel_tol = 1e-6,
+                    double abs_tol = 1e-6,
+                    long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
@@ -124,14 +129,16 @@ generalOdeModel_bdf(const F& f,
                      const std::vector<T4>& pMatrix,
                      const std::vector<std::vector<T5> >& biovar,
                      const std::vector<std::vector<T6> >& tlag,
-                     double rel_tol = 1e-10,
-                     double abs_tol = 1e-10,
-                     long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
 
   return generalOdeModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              vec_pMatrix, biovar, tlag);
+                              vec_pMatrix, biovar, tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
@@ -156,15 +163,17 @@ generalOdeModel_bdf(const F& f,
                      const std::vector<T4>& pMatrix,
                      const std::vector<T5>& biovar,
                      const std::vector<std::vector<T6> >& tlag,
-                     double rel_tol = 1e-10,
-                     double abs_tol = 1e-10,
-                     long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
 
   return generalOdeModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              vec_pMatrix, vec_biovar, tlag);
+                              vec_pMatrix, vec_biovar, tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
@@ -189,16 +198,18 @@ generalOdeModel_bdf(const F& f,
                      const std::vector<T4>& pMatrix,
                      const std::vector<T5>& biovar,
                      const std::vector<T6>& tlag,
-                     double rel_tol = 1e-10,
-                     double abs_tol = 1e-10,
-                     long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
   return generalOdeModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              vec_pMatrix, vec_biovar, vec_tlag);
+                              vec_pMatrix, vec_biovar, vec_tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
@@ -223,15 +234,17 @@ generalOdeModel_bdf(const F& f,
                      const std::vector<T4>& pMatrix,
                      const std::vector<std::vector<T5> >& biovar,
                      const std::vector<T6>& tlag,
-                     double rel_tol = 1e-10,
-                     double abs_tol = 1e-10,
-                     long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
   return generalOdeModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              vec_pMatrix, biovar, vec_tlag);
+                              vec_pMatrix, biovar, vec_tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
@@ -256,14 +269,16 @@ generalOdeModel_bdf(const F& f,
                      const std::vector<std::vector<T4> >& pMatrix,
                      const std::vector<T5>& biovar,
                      const std::vector<std::vector<T6> >& tlag,
-                     double rel_tol = 1e-10,
-                     double abs_tol = 1e-10,
-                     long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
 
   return generalOdeModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              pMatrix, vec_biovar, tlag);
+                              pMatrix, vec_biovar, tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
@@ -288,15 +303,17 @@ generalOdeModel_bdf(const F& f,
                      const std::vector<std::vector<T4> >& pMatrix,
                      const std::vector<T5>& biovar,
                      const std::vector<T6>& tlag,
-                     double rel_tol = 1e-10,
-                     double abs_tol = 1e-10,
-                     long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
   return generalOdeModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              pMatrix, vec_biovar, vec_tlag);
+                              pMatrix, vec_biovar, vec_tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
@@ -321,14 +338,16 @@ generalOdeModel_bdf(const F& f,
                      const std::vector<std::vector<T4> >& pMatrix,
                      const std::vector<std::vector<T5> >& biovar,
                      const std::vector<T6>& tlag,
-                     double rel_tol = 1e-10,
-                     double abs_tol = 1e-10,
-                     long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
   return generalOdeModel_bdf(f, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              pMatrix, biovar, vec_tlag);
+                              pMatrix, biovar, vec_tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 #endif
