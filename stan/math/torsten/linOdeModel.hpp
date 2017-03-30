@@ -202,7 +202,7 @@ linOdeModel(const std::vector<T0>& time,
             const std::vector<T6>& tlag) {
   std::vector<Eigen::Matrix<T4, Eigen::Dynamic,
                             Eigen::Dynamic> > vec_system(1, system);
-  std::vector<std::vector<T5> > vec_tlag(1, tlag);
+  std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
   return linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      vec_system, biovar, vec_tlag);
