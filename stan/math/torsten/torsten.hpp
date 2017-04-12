@@ -7,4 +7,6 @@
 #include <stan/math/torsten/PKModelTwoCpt.hpp>
 #include <stan/math/torsten/linOdeModel.hpp>
 
+#include <stan/math/torsten/fOneCpt.hpp>
+
 #endif
