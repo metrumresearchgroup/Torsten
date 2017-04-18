@@ -29,7 +29,7 @@
  */
 template <typename T_time, typename T_parameters, typename T_init, typename T_rate>
 Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_parameters,
-  T_init, T_rate>::type, 1, Eigen::Dynamic>
+                                                         T_init, T_rate>::type, Eigen::Dynamic, 1>
 fOneCpt(const T_time& dt,
         const Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> parameter,
         const Eigen::Matrix<T_init, Eigen::Dynamic, 1> init,
