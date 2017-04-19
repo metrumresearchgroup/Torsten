@@ -6,6 +6,7 @@
 #include <vector>
 
 /**
+ * EXPERIMENTAL
  * One compartment model with first order absorption
  * Calculates the amount in each compartment at dt time units after the time
  * of the initial condition.
@@ -31,8 +32,8 @@ template <typename T_time, typename T_parameters, typename T_init, typename T_ra
 Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_parameters,
                                                          T_init, T_rate>::type, Eigen::Dynamic, 1>
 fOneCpt(const T_time& dt,
-        const Eigen::Matrix<T_parameters, Eigen::Dynamic, 1> parameter,
-        const Eigen::Matrix<T_init, Eigen::Dynamic, 1> init,
+        const Eigen::Matrix<T_parameters, Eigen::Dynamic, 1>& parameter,
+        const Eigen::Matrix<T_init, Eigen::Dynamic, 1>& init,
         const std::vector<T_rate>& rate) {
   stan::math::check_finite("Pred1", "initial values", init);
 
