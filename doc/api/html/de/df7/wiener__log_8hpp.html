@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../stanlogo-main.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Stan Math Library
-   &#160;<span id="projectnumber">2.14.0</span>
+   &#160;<span id="projectnumber">2.15.0</span>
    </div>
    <div id="projectbrief">reverse mode automatic differentiation</div>
   </td>
@@ -72,20 +72,8 @@ $(function() {
 <div class="title">wiener_log.hpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;<a class="el" href="../../d3/dad/constants_8hpp_source.html">stan/math/prim/scal/fun/constants.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../db/d80/prim_2scal_2fun_2square_8hpp_source.html">stan/math/prim/scal/fun/square.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d4/df9/prim_2scal_2fun_2value__of_8hpp_source.html">stan/math/prim/scal/fun/value_of.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../db/df5/check__consistent__sizes_8hpp_source.html">stan/math/prim/scal/err/check_consistent_sizes.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d3/d7a/check__bounded_8hpp_source.html">stan/math/prim/scal/err/check_bounded.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../dc/d58/check__finite_8hpp_source.html">stan/math/prim/scal/err/check_finite.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../df/d75/check__not__nan_8hpp_source.html">stan/math/prim/scal/err/check_not_nan.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d1/d46/check__positive_8hpp_source.html">stan/math/prim/scal/err/check_positive.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d9/d94/return__type_8hpp_source.html">stan/math/prim/scal/meta/return_type.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d6/dfc/include__summand_8hpp_source.html">stan/math/prim/scal/meta/include_summand.hpp</a>&gt;</code><br />
-<code>#include &lt;boost/math/distributions.hpp&gt;</code><br />
-<code>#include &lt;algorithm&gt;</code><br />
-<code>#include &lt;cmath&gt;</code><br />
-<code>#include &lt;string&gt;</code><br />
+<div class="textblock"><code>#include &lt;<a class="el" href="../../d5/d2f/wiener__lpdf_8hpp_source.html">stan/math/prim/scal/prob/wiener_lpdf.hpp</a>&gt;</code><br />
+<code>#include &lt;boost/math/tools/promotion.hpp&gt;</code><br />
 </div>
 <p><a href="../../de/df7/wiener__log_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -101,7 +89,7 @@ Namespaces</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:ae7a28135e8fe64782357d52062380796"><td class="memTemplParams" colspan="2">template&lt;bool propto, typename T_y , typename T_alpha , typename T_tau , typename T_beta , typename T_delta &gt; </td></tr>
 <tr class="memitem:ae7a28135e8fe64782357d52062380796"><td class="memTemplItemLeft" align="right" valign="top">return_type&lt; T_y, T_alpha, T_tau, T_beta, T_delta &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d4/d84/namespacestan_1_1math.html#ae7a28135e8fe64782357d52062380796">stan::math::wiener_log</a> (const T_y &amp;y, const T_alpha &amp;alpha, const T_tau &amp;tau, const T_beta &amp;beta, const T_delta &amp;delta)</td></tr>
-<tr class="memdesc:ae7a28135e8fe64782357d52062380796"><td class="mdescLeft">&#160;</td><td class="mdescRight">The log of the first passage time density function for a (Wiener) drift diffusion model for the given <img class="formulaInl" alt="$y$" src="../../form_206.png"/>, boundary separation <img class="formulaInl" alt="$\alpha$" src="../../form_207.png"/>, nondecision time <img class="formulaInl" alt="$\tau$" src="../../form_208.png"/>, relative bias <img class="formulaInl" alt="$\beta$" src="../../form_209.png"/>, and drift rate <img class="formulaInl" alt="$\delta$" src="../../form_210.png"/>.  <a href="../../d4/d84/namespacestan_1_1math.html#ae7a28135e8fe64782357d52062380796">More...</a><br /></td></tr>
+<tr class="memdesc:ae7a28135e8fe64782357d52062380796"><td class="mdescLeft">&#160;</td><td class="mdescRight">The log of the first passage time density function for a (Wiener) drift diffusion model for the given <img class="formulaInl" alt="$y$" src="../../form_205.png"/>, boundary separation <img class="formulaInl" alt="$\alpha$" src="../../form_206.png"/>, nondecision time <img class="formulaInl" alt="$\tau$" src="../../form_207.png"/>, relative bias <img class="formulaInl" alt="$\beta$" src="../../form_208.png"/>, and drift rate <img class="formulaInl" alt="$\delta$" src="../../form_209.png"/>.  <a href="../../d4/d84/namespacestan_1_1math.html#ae7a28135e8fe64782357d52062380796">More...</a><br /></td></tr>
 <tr class="separator:ae7a28135e8fe64782357d52062380796"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a51ee0070ef7fdeac83b11eae40b1646a"><td class="memTemplParams" colspan="2">template&lt;typename T_y , typename T_alpha , typename T_tau , typename T_beta , typename T_delta &gt; </td></tr>
 <tr class="memitem:a51ee0070ef7fdeac83b11eae40b1646a"><td class="memTemplItemLeft" align="right" valign="top">return_type&lt; T_y, T_alpha, T_tau, T_beta, T_delta &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d4/d84/namespacestan_1_1math.html#a51ee0070ef7fdeac83b11eae40b1646a">stan::math::wiener_log</a> (const T_y &amp;y, const T_alpha &amp;alpha, const T_tau &amp;tau, const T_beta &amp;beta, const T_delta &amp;delta)</td></tr>

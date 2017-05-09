@@ -29,6 +29,7 @@
 #include <stan/math/prim/scal/meta/partials_return_type.hpp>
 #include <stan/math/prim/scal/meta/partials_type.hpp>
 #include <stan/math/prim/scal/meta/return_type.hpp>
+#include <stan/math/prim/scal/meta/scalar_seq_view.hpp>
 #include <stan/math/prim/scal/meta/scalar_type.hpp>
 #include <stan/math/prim/scal/meta/scalar_type_pre.hpp>
 #include <stan/math/prim/scal/meta/size_of.hpp>
@@ -36,6 +37,8 @@
 #include <stan/math/prim/scal/meta/VectorBuilder.hpp>
 #include <stan/math/prim/scal/meta/VectorView.hpp>
 
+#include <stan/math/prim/scal/err/check_2F1_converges.hpp>
+#include <stan/math/prim/scal/err/check_3F2_converges.hpp>
 #include <stan/math/prim/scal/err/check_bounded.hpp>
 #include <stan/math/prim/scal/err/check_consistent_size.hpp>
 #include <stan/math/prim/scal/err/check_consistent_sizes.hpp>
@@ -68,6 +71,7 @@
 #include <stan/math/prim/scal/fun/boost_policy.hpp>
 #include <stan/math/prim/scal/fun/cbrt.hpp>
 #include <stan/math/prim/scal/fun/choose.hpp>
+#include <stan/math/prim/scal/fun/common_type.hpp>
 #include <stan/math/prim/scal/fun/constants.hpp>
 #include <stan/math/prim/scal/fun/corr_constrain.hpp>
 #include <stan/math/prim/scal/fun/corr_free.hpp>
@@ -151,6 +155,7 @@
 #include <stan/math/prim/scal/fun/primitive_value.hpp>
 #include <stan/math/prim/scal/fun/prob_constrain.hpp>
 #include <stan/math/prim/scal/fun/prob_free.hpp>
+#include <stan/math/prim/scal/fun/promote_elements.hpp>
 #include <stan/math/prim/scal/fun/promote_scalar.hpp>
 #include <stan/math/prim/scal/fun/promote_scalar_type.hpp>
 #include <stan/math/prim/scal/fun/rising_factorial.hpp>
@@ -330,6 +335,8 @@
 #include <stan/math/prim/scal/prob/normal_log.hpp>
 #include <stan/math/prim/scal/prob/normal_lpdf.hpp>
 #include <stan/math/prim/scal/prob/normal_rng.hpp>
+#include <stan/math/prim/scal/prob/normal_sufficient_log.hpp>
+#include <stan/math/prim/scal/prob/normal_sufficient_lpdf.hpp>
 #include <stan/math/prim/scal/prob/pareto_ccdf_log.hpp>
 #include <stan/math/prim/scal/prob/pareto_cdf.hpp>
 #include <stan/math/prim/scal/prob/pareto_cdf_log.hpp>

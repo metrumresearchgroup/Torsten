@@ -5,6 +5,8 @@ var searchData=
   ['scal_5fsquared_5fdistance_5fvv_5fvari',['scal_squared_distance_vv_vari',['../d2/d05/classstan_1_1math_1_1scal__squared__distance__vv__vari.html',1,'stan::math']]],
   ['scalar_5fproduct_5ftraits_3c_20double_2c_20stan_3a_3amath_3a_3avar_20_3e',['scalar_product_traits&lt; double, stan::math::var &gt;',['../da/d75/struct_eigen_1_1internal_1_1scalar__product__traits_3_01double_00_01stan_1_1math_1_1var_01_4.html',1,'Eigen::internal']]],
   ['scalar_5fproduct_5ftraits_3c_20stan_3a_3amath_3a_3avar_2c_20double_20_3e',['scalar_product_traits&lt; stan::math::var, double &gt;',['../d2/d3e/struct_eigen_1_1internal_1_1scalar__product__traits_3_01stan_1_1math_1_1var_00_01double_01_4.html',1,'Eigen::internal']]],
+  ['scalar_5fseq_5fview',['scalar_seq_view',['../d0/d32/classstan_1_1scalar__seq__view.html',1,'stan']]],
+  ['scalar_5fseq_5fview_3c_20t_2c_20t_20_3e',['scalar_seq_view&lt; T, T &gt;',['../dd/d68/classstan_1_1scalar__seq__view_3_01_t_00_01_t_01_4.html',1,'stan']]],
   ['scalar_5ftype',['scalar_type',['../d6/dd9/structstan_1_1scalar__type.html',1,'stan']]],
   ['scalar_5ftype_3c_20eigen_3a_3amatrix_3c_20t_2c_20eigen_3a_3adynamic_2c_20eigen_3a_3adynamic_20_3e_20_3e',['scalar_type&lt; Eigen::Matrix&lt; T, Eigen::Dynamic, Eigen::Dynamic &gt; &gt;',['../d6/dda/structstan_1_1scalar__type_3_01_eigen_1_1_matrix_3_01_t_00_01_eigen_1_1_dynamic_00_01_eigen_1_1_dynamic_01_4_01_4.html',1,'stan']]],
   ['scalar_5ftype_3c_20t_20_2a_20_3e',['scalar_type&lt; T * &gt;',['../db/d3c/structstan_1_1scalar__type_3_01_t_01_5_01_4.html',1,'stan']]],

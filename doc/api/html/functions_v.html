@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="stanlogo-main.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Stan Math Library
-   &#160;<span id="projectnumber">2.14.0</span>
+   &#160;<span id="projectnumber">2.15.0</span>
    </div>
    <div id="projectbrief">reverse mode automatic differentiation</div>
   </td>
@@ -130,7 +130,7 @@ $(function() {
 </li>
 <li>value_type
 : <a class="el" href="d0/dfb/structstan_1_1math_1_1fvar.html#ad8078e30a3897fdf9988f8a96bba3704">stan::math::fvar&lt; T &gt;</a>
-, <a class="el" href="d2/de6/classstan_1_1math_1_1_l_d_l_t__factor_3_01_t_00_01_r_00_01_c_01_4.html#a2ef573d4866782c4bdcd33865bea11f1">stan::math::LDLT_factor&lt; T, R, C &gt;</a>
+, <a class="el" href="d0/d34/classstan_1_1math_1_1_l_d_l_t__factor.html#a2ef573d4866782c4bdcd33865bea11f1">stan::math::LDLT_factor&lt; T, R, C &gt;</a>
 , <a class="el" href="d7/d6e/classstan_1_1math_1_1_l_d_l_t__factor_3_01var_00_01_r_00_01_c_01_4.html#a712055939fbdf9a77781bdad881affea">stan::math::LDLT_factor&lt; var, R, C &gt;</a>
 </li>
 <li>var()
@@ -147,13 +147,14 @@ $(function() {
 : <a class="el" href="d0/ddd/structstan_1_1math_1_1_autodiff_stack_storage.html#a3ee9208d01fab7f0d6b3d3fd6f186435">stan::math::AutodiffStackStorage&lt; ChainableT, ChainableAllocT &gt;</a>
 </li>
 <li>vari()
-: <a class="el" href="de/dfd/classstan_1_1math_1_1vari.html#ab6411a85790762fdf4225d4e412801f1">stan::math::vari</a>
+: <a class="el" href="de/dfd/classstan_1_1math_1_1vari.html#af6ac50ac2088e92257053f6ff4981f92">stan::math::vari</a>
 </li>
 <li>variA_
 : <a class="el" href="d3/d3f/classstan_1_1math_1_1_l_d_l_t__alloc.html#ac3703279cf03d448d3b7fdd870920bc2">stan::math::LDLT_alloc&lt; R, C &gt;</a>
 </li>
 <li>variRefA_
-: <a class="el" href="d0/df9/classstan_1_1math_1_1cholesky__decompose__v__vari.html#acd3834b8b6dd6cfa3b799cac9e7739fc">stan::math::cholesky_decompose_v_vari</a>
+: <a class="el" href="de/d48/classstan_1_1math_1_1cholesky__block.html#afe5f5b5cbe17d68e93484cb649a7f4ae">stan::math::cholesky_block</a>
+, <a class="el" href="df/d0a/classstan_1_1math_1_1cholesky__scalar.html#a02790db580ff13007db08ffa4914db81">stan::math::cholesky_scalar</a>
 , <a class="el" href="da/dd4/classstan_1_1math_1_1multiply__mat__vari.html#a9d3459e6270fbe7a7c9857b05d1bf93d">stan::math::multiply_mat_vari&lt; TA, RA, CA, TB, CB &gt;</a>
 , <a class="el" href="d4/d89/classstan_1_1math_1_1multiply__mat__vari_3_01_t_a_00_011_00_01_c_a_00_01double_00_011_01_4.html#a8caeb652a04c3c80f0e4823d37fa72fb">stan::math::multiply_mat_vari&lt; TA, 1, CA, double, 1 &gt;</a>
 , <a class="el" href="d4/ddf/classstan_1_1math_1_1multiply__mat__vari_3_01_t_a_00_011_00_01_c_a_00_01_t_b_00_011_01_4.html#a3f73f786d06cc9e38e0c04ceaaf326ae">stan::math::multiply_mat_vari&lt; TA, 1, CA, TB, 1 &gt;</a>
@@ -174,10 +175,20 @@ $(function() {
 , <a class="el" href="d4/ddf/classstan_1_1math_1_1multiply__mat__vari_3_01_t_a_00_011_00_01_c_a_00_01_t_b_00_011_01_4.html#a5304168eeaf6f70bae0cc456a6a35e19">stan::math::multiply_mat_vari&lt; TA, 1, CA, TB, 1 &gt;</a>
 </li>
 <li>variRefL_
-: <a class="el" href="d0/df9/classstan_1_1math_1_1cholesky__decompose__v__vari.html#a733ded3d060d5d780c73a05b6f1402df">stan::math::cholesky_decompose_v_vari</a>
+: <a class="el" href="de/d48/classstan_1_1math_1_1cholesky__block.html#a0fd9892e73dac4e694d3ca735f245805">stan::math::cholesky_block</a>
+, <a class="el" href="df/d0a/classstan_1_1math_1_1cholesky__scalar.html#a1b0f8fa097ab6dc0fffa62e1838b7913">stan::math::cholesky_scalar</a>
 </li>
 <li>varis_
 : <a class="el" href="dd/d20/classstan_1_1math_1_1precomputed__gradients__vari.html#aedb6cbfaa40f6882efda15856d4c7d0a">stan::math::precomputed_gradients_vari</a>
+</li>
+<li>vector_seq_view()
+: <a class="el" href="d8/dfa/classstan_1_1vector__seq__view_3_01_eigen_1_1_matrix_3_01_s_00_011_00_01_eigen_1_1_dynamic_01_4_01_4.html#adc7e99baa2b9b09c13d5b4ca6494d6e7">stan::vector_seq_view&lt; Eigen::Matrix&lt; S, 1, Eigen::Dynamic &gt; &gt;</a>
+, <a class="el" href="d5/d90/classstan_1_1vector__seq__view_3_01_eigen_1_1_matrix_3_01_s_00_01_eigen_1_1_dynamic_00_011_01_4_01_4.html#af8208eb272e2e3ed86f0f3e10e103e51">stan::vector_seq_view&lt; Eigen::Matrix&lt; S, Eigen::Dynamic, 1 &gt; &gt;</a>
+, <a class="el" href="d6/d76/classstan_1_1vector__seq__view_3_01std_1_1vector_3_01_eigen_1_1_matrix_3_01_s_00_011_00_01_eigen_1_1_dynamic_01_4_01_4_01_4.html#af25b5d8235307e64c4dc31694bbe41b0">stan::vector_seq_view&lt; std::vector&lt; Eigen::Matrix&lt; S, 1, Eigen::Dynamic &gt; &gt; &gt;</a>
+, <a class="el" href="d9/d01/classstan_1_1vector__seq__view_3_01std_1_1vector_3_01_eigen_1_1_matrix_3_01_s_00_01_eigen_1_1_dynamic_00_011_01_4_01_4_01_4.html#aadd638382f3f687bc7acd5d06ed539be">stan::vector_seq_view&lt; std::vector&lt; Eigen::Matrix&lt; S, Eigen::Dynamic, 1 &gt; &gt; &gt;</a>
+</li>
+<li>vector_t
+: <a class="el" href="d0/d34/classstan_1_1math_1_1_l_d_l_t__factor.html#a8e71ffbd78e8761097eda17c94d568d0">stan::math::LDLT_factor&lt; T, R, C &gt;</a>
 </li>
 <li>VectorBuilder()
 : <a class="el" href="da/d7e/classstan_1_1_vector_builder.html#a259630f1a916b23c98b664e173892e79">stan::VectorBuilder&lt; used, T1, T2, T3, T4, T5, T6, T7 &gt;</a>
@@ -188,7 +199,7 @@ $(function() {
 , <a class="el" href="d2/dfa/classstan_1_1_vector_builder_helper_3_01_t1_00_01true_00_01true_01_4.html#a41c70cddac8238f49b6afde03fe22102">stan::VectorBuilderHelper&lt; T1, true, true &gt;</a>
 </li>
 <li>vectorD()
-: <a class="el" href="d2/de6/classstan_1_1math_1_1_l_d_l_t__factor_3_01_t_00_01_r_00_01_c_01_4.html#a4c267b2f00d393308581af297a09be98">stan::math::LDLT_factor&lt; T, R, C &gt;</a>
+: <a class="el" href="d0/d34/classstan_1_1math_1_1_l_d_l_t__factor.html#a397cbf3f998005a6081a320f370024fa">stan::math::LDLT_factor&lt; T, R, C &gt;</a>
 , <a class="el" href="d7/d6e/classstan_1_1math_1_1_l_d_l_t__factor_3_01var_00_01_r_00_01_c_01_4.html#a410970e39fad75ee0c47186a8fb897eb">stan::math::LDLT_factor&lt; var, R, C &gt;</a>
 </li>
 <li>VectorView()
@@ -197,13 +208,9 @@ $(function() {
 , <a class="el" href="d4/d83/classstan_1_1_vector_view_3_01const_01std_1_1vector_3_01_t_01_4_00_01true_00_01false_01_4.html#ad2e1b08ed0622b2446a4629cd7f281a1">stan::VectorView&lt; const std::vector&lt; T &gt;, true, false &gt;</a>
 , <a class="el" href="d2/d54/classstan_1_1_vector_view_3_01_eigen_1_1_matrix_3_01_t_00_01_r_00_01_c_01_4_00_01true_00_01false_01_4.html#a0e24242d02f220710376c929012daf81">stan::VectorView&lt; Eigen::Matrix&lt; T, R, C &gt;, true, false &gt;</a>
 , <a class="el" href="d0/d8c/classstan_1_1_vector_view_3_01std_1_1vector_3_01_t_01_4_00_01true_00_01false_01_4.html#a675c42a2e8eb2944f62c0fe92eb4e661">stan::VectorView&lt; std::vector&lt; T &gt;, true, false &gt;</a>
-, <a class="el" href="d6/dd0/classstan_1_1_vector_view_3_01_t_00_01false_00_01false_01_4.html#ae4acb8c469ddcba4f09118b5e6d99551">stan::VectorView&lt; T, false, false &gt;</a>
-, <a class="el" href="d8/db3/classstan_1_1_vector_view_3_01_t_00_01is__array_00_01true_01_4.html#a2050a50d04b8dcab84217156d8154686">stan::VectorView&lt; T, is_array, true &gt;</a>
+, <a class="el" href="d6/dd0/classstan_1_1_vector_view_3_01_t_00_01false_00_01false_01_4.html#aacb6a219bf99bb26332cc3a389884e74">stan::VectorView&lt; T, false, false &gt;</a>
+, <a class="el" href="d8/db3/classstan_1_1_vector_view_3_01_t_00_01is__array_00_01true_01_4.html#af468e7f38464787995f35acd722d8851">stan::VectorView&lt; T, is_array, true &gt;</a>
 , <a class="el" href="d9/d11/classstan_1_1_vector_view_3_01_t_00_01true_00_01false_01_4.html#a585c55843efa35443ec73138368d88d9">stan::VectorView&lt; T, true, false &gt;</a>
-</li>
-<li>VectorViewMvt()
-: <a class="el" href="de/dc3/classstan_1_1_vector_view_mvt.html#a7e8d6dd9b7067dbf02b7b973806335c0">stan::VectorViewMvt&lt; T, is_array, throw_if_accessed &gt;</a>
-, <a class="el" href="d4/de3/classstan_1_1_vector_view_mvt_3_01const_01_t_00_01is__array_00_01throw__if__accessed_01_4.html#a5faf023847a5654c294db465351b13d8">stan::VectorViewMvt&lt; const T, is_array, throw_if_accessed &gt;</a>
 </li>
 <li>vi_
 : <a class="el" href="d1/d39/classstan_1_1math_1_1var.html#a179b1c61bcd82f0e6c1d109c07ae8e40">stan::math::var</a>
