@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../stanlogo-main.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Stan Math Library
-   &#160;<span id="projectnumber">2.14.0</span>
+   &#160;<span id="projectnumber">2.15.0</span>
    </div>
    <div id="projectbrief">reverse mode automatic differentiation</div>
   </td>
@@ -73,7 +73,10 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;<a class="el" href="../../da/dd1/common__type_8hpp_source.html">common_type.hpp</a>&gt;</code></p>
+<p>Struct which calculates type promotion over two types.  
+ <a href="../../d2/d06/structstan_1_1math_1_1common__type_3_01_eigen_1_1_matrix_3_01_t1_00_01_r_00_01_c_01_4_00_01_eiged8accfa00e73f240c58ad02ac582ba93.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="../../dc/d86/mat_2fun_2common__type_8hpp_source.html">common_type.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
@@ -84,8 +87,19 @@ Public Types</h2></td></tr>
 <div class="textblock"><h3>template&lt;typename T1, typename T2, int R, int C&gt;<br />
 struct stan::math::common_type&lt; Eigen::Matrix&lt; T1, R, C &gt;, Eigen::Matrix&lt; T2, R, C &gt; &gt;</h3>
 
+<p>Struct which calculates type promotion over two types. </p>
+<p>This specialization is for matrix types.</p>
+<dl class="tparams"><dt>Template Parameters</dt><dd>
+  <table class="tparams">
+    <tr><td class="paramname">T1</td><td>type of elements contained in Eigen::Matrix&lt;T1&gt; </td></tr>
+    <tr><td class="paramname">T2</td><td>type of elements contained in Eigen::Matrix&lt;T2&gt; </td></tr>
+    <tr><td class="paramname">R</td><td>number of rows </td></tr>
+    <tr><td class="paramname">C</td><td>number of columns </td></tr>
+  </table>
+  </dd>
+</dl>
 
-<p>Definition at line <a class="el" href="../../da/dd1/common__type_8hpp_source.html#l00022">22</a> of file <a class="el" href="../../da/dd1/common__type_8hpp_source.html">common_type.hpp</a>.</p>
+<p>Definition at line <a class="el" href="../../dc/d86/mat_2fun_2common__type_8hpp_source.html#l00021">21</a> of file <a class="el" href="../../dc/d86/mat_2fun_2common__type_8hpp_source.html">common_type.hpp</a>.</p>
 </div><h2 class="groupheader">Member Typedef Documentation</h2>
 <a id="a1dfda8432ea5cb2fd29673a00f23d9ab"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1dfda8432ea5cb2fd29673a00f23d9ab">&sect;&nbsp;</a></span>type</h2>
@@ -101,12 +115,12 @@ template&lt;typename T1 , typename T2 , int R, int C&gt; </div>
       </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="../../da/dd1/common__type_8hpp_source.html#l00023">23</a> of file <a class="el" href="../../da/dd1/common__type_8hpp_source.html">common_type.hpp</a>.</p>
+<p>Definition at line <a class="el" href="../../dc/d86/mat_2fun_2common__type_8hpp_source.html#l00022">22</a> of file <a class="el" href="../../dc/d86/mat_2fun_2common__type_8hpp_source.html">common_type.hpp</a>.</p>
 
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>stan/math/prim/mat/fun/<a class="el" href="../../da/dd1/common__type_8hpp_source.html">common_type.hpp</a></li>
+<li>stan/math/prim/mat/fun/<a class="el" href="../../dc/d86/mat_2fun_2common__type_8hpp_source.html">common_type.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <hr/>

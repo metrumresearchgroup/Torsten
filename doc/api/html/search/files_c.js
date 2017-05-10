@@ -28,5 +28,7 @@ var searchData=
   ['normal_5flog_2ehpp',['normal_log.hpp',['../df/d59/normal__log_8hpp.html',1,'']]],
   ['normal_5flpdf_2ehpp',['normal_lpdf.hpp',['../d1/d23/normal__lpdf_8hpp.html',1,'']]],
   ['normal_5frng_2ehpp',['normal_rng.hpp',['../dc/dbf/normal__rng_8hpp.html',1,'']]],
+  ['normal_5fsufficient_5flog_2ehpp',['normal_sufficient_log.hpp',['../d1/df8/normal__sufficient__log_8hpp.html',1,'']]],
+  ['normal_5fsufficient_5flpdf_2ehpp',['normal_sufficient_lpdf.hpp',['../d4/dd7/normal__sufficient__lpdf_8hpp.html',1,'']]],
   ['num_5felements_2ehpp',['num_elements.hpp',['../d2/df8/num__elements_8hpp.html',1,'']]]
 ];

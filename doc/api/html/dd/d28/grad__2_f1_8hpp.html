@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../stanlogo-main.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Stan Math Library
-   &#160;<span id="projectnumber">2.14.0</span>
+   &#160;<span id="projectnumber">2.15.0</span>
    </div>
    <div id="projectbrief">reverse mode automatic differentiation</div>
   </td>
@@ -72,7 +72,11 @@ $(function() {
 <div class="title">grad_2F1.hpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;cmath&gt;</code><br />
+<div class="textblock"><code>#include &lt;<a class="el" href="../../d7/df8/sign_8hpp_source.html">stan/math/prim/scal/fun/sign.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../de/da9/domain__error_8hpp_source.html">stan/math/prim/scal/err/domain_error.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../d5/d68/check__2_f1__converges_8hpp_source.html">stan/math/prim/scal/err/check_2F1_converges.hpp</a>&gt;</code><br />
+<code>#include &lt;cmath&gt;</code><br />
+<code>#include &lt;limits&gt;</code><br />
 </div>
 <p><a href="../../dd/d28/grad__2_f1_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -86,9 +90,10 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a43226a00b6c2d3f3a2ab5906490f3136"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a43226a00b6c2d3f3a2ab5906490f3136"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d4/d84/namespacestan_1_1math.html#a43226a00b6c2d3f3a2ab5906490f3136">stan::math::grad_2F1</a> (T &amp;gradA, T &amp;gradC, T a, T b, T c, T z, T precision=1e-6)</td></tr>
-<tr class="separator:a43226a00b6c2d3f3a2ab5906490f3136"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a858d73e6330cd3d16397a86b49c59d99"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a858d73e6330cd3d16397a86b49c59d99"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d4/d84/namespacestan_1_1math.html#a858d73e6330cd3d16397a86b49c59d99">stan::math::grad_2F1</a> (T &amp;g_a1, T &amp;g_b1, const T &amp;a1, const T &amp;a2, const T &amp;b1, const T &amp;z, const T &amp;precision=1e-10, int max_steps=1e5)</td></tr>
+<tr class="memdesc:a858d73e6330cd3d16397a86b49c59d99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gradients of the hypergeometric function, 2F1.  <a href="../../d4/d84/namespacestan_1_1math.html#a858d73e6330cd3d16397a86b49c59d99">More...</a><br /></td></tr>
+<tr class="separator:a858d73e6330cd3d16397a86b49c59d99"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <hr/>

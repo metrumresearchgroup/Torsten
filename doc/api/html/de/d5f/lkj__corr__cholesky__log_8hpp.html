@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../stanlogo-main.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Stan Math Library
-   &#160;<span id="projectnumber">2.14.0</span>
+   &#160;<span id="projectnumber">2.15.0</span>
    </div>
    <div id="projectbrief">reverse mode automatic differentiation</div>
   </td>
@@ -72,49 +72,9 @@ $(function() {
 <div class="title">lkj_corr_cholesky_log.hpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;<a class="el" href="../../dc/d58/check__finite_8hpp_source.html">stan/math/prim/scal/err/check_finite.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d1/d46/check__positive_8hpp_source.html">stan/math/prim/scal/err/check_positive.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d3/dad/constants_8hpp_source.html">stan/math/prim/scal/fun/constants.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d6/dfc/include__summand_8hpp_source.html">stan/math/prim/scal/meta/include_summand.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../dd/d8e/factor__cov__matrix_8hpp_source.html">stan/math/prim/mat/fun/factor_cov_matrix.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../db/d12/factor___u_8hpp_source.html">stan/math/prim/mat/fun/factor_U.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d8/d55/read__corr___l_8hpp_source.html">stan/math/prim/mat/fun/read_corr_L.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../dc/dd8/read__corr__matrix_8hpp_source.html">stan/math/prim/mat/fun/read_corr_matrix.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../db/d0c/read__cov___l_8hpp_source.html">stan/math/prim/mat/fun/read_cov_L.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../dd/d28/read__cov__matrix_8hpp_source.html">stan/math/prim/mat/fun/read_cov_matrix.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../db/df6/make__nu_8hpp_source.html">stan/math/prim/mat/fun/make_nu.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../da/d74/identity__constrain_8hpp_source.html">stan/math/prim/scal/fun/identity_constrain.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d0/d6b/identity__free_8hpp_source.html">stan/math/prim/scal/fun/identity_free.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d0/d29/positive__constrain_8hpp_source.html">stan/math/prim/scal/fun/positive_constrain.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../da/de0/positive__free_8hpp_source.html">stan/math/prim/scal/fun/positive_free.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../dc/d5a/lb__constrain_8hpp_source.html">stan/math/prim/scal/fun/lb_constrain.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d9/dee/lb__free_8hpp_source.html">stan/math/prim/scal/fun/lb_free.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d0/d1e/ub__constrain_8hpp_source.html">stan/math/prim/scal/fun/ub_constrain.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d8/d0d/ub__free_8hpp_source.html">stan/math/prim/scal/fun/ub_free.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../db/d69/lub__constrain_8hpp_source.html">stan/math/prim/scal/fun/lub_constrain.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d1/ded/lub__free_8hpp_source.html">stan/math/prim/scal/fun/lub_free.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d3/d69/prob__constrain_8hpp_source.html">stan/math/prim/scal/fun/prob_constrain.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d4/d5a/prob__free_8hpp_source.html">stan/math/prim/scal/fun/prob_free.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d0/d74/corr__constrain_8hpp_source.html">stan/math/prim/scal/fun/corr_constrain.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d1/df8/corr__free_8hpp_source.html">stan/math/prim/scal/fun/corr_free.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d1/d77/simplex__constrain_8hpp_source.html">stan/math/prim/mat/fun/simplex_constrain.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d8/d3f/simplex__free_8hpp_source.html">stan/math/prim/mat/fun/simplex_free.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d6/ddc/ordered__constrain_8hpp_source.html">stan/math/prim/mat/fun/ordered_constrain.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../de/d28/ordered__free_8hpp_source.html">stan/math/prim/mat/fun/ordered_free.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../df/df1/positive__ordered__constrain_8hpp_source.html">stan/math/prim/mat/fun/positive_ordered_constrain.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../de/d73/positive__ordered__free_8hpp_source.html">stan/math/prim/mat/fun/positive_ordered_free.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../db/d1f/cholesky__factor__constrain_8hpp_source.html">stan/math/prim/mat/fun/cholesky_factor_constrain.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../dc/d60/cholesky__factor__free_8hpp_source.html">stan/math/prim/mat/fun/cholesky_factor_free.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d1/d12/cholesky__corr__constrain_8hpp_source.html">stan/math/prim/mat/fun/cholesky_corr_constrain.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d1/d86/cholesky__corr__free_8hpp_source.html">stan/math/prim/mat/fun/cholesky_corr_free.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../db/d63/corr__matrix__constrain_8hpp_source.html">stan/math/prim/mat/fun/corr_matrix_constrain.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d5/dd9/corr__matrix__free_8hpp_source.html">stan/math/prim/mat/fun/corr_matrix_free.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d2/d2a/cov__matrix__constrain_8hpp_source.html">stan/math/prim/mat/fun/cov_matrix_constrain.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../da/d18/cov__matrix__free_8hpp_source.html">stan/math/prim/mat/fun/cov_matrix_free.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../de/d7e/cov__matrix__constrain__lkj_8hpp_source.html">stan/math/prim/mat/fun/cov_matrix_constrain_lkj.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d9/dc3/cov__matrix__free__lkj_8hpp_source.html">stan/math/prim/mat/fun/cov_matrix_free_lkj.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d6/df9/lkj__corr__log_8hpp_source.html">stan/math/prim/mat/prob/lkj_corr_log.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../db/d54/prim_2mat_2fun_2multiply_8hpp_source.html">stan/math/prim/mat/fun/multiply.hpp</a>&gt;</code><br />
+<div class="textblock"><code>#include &lt;<a class="el" href="../../d0/d8e/_eigen_8hpp_source.html">stan/math/prim/mat/fun/Eigen.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../d7/d74/lkj__corr__cholesky__lpdf_8hpp_source.html">stan/math/prim/mat/prob/lkj_corr_cholesky_lpdf.hpp</a>&gt;</code><br />
+<code>#include &lt;boost/math/tools/promotion.hpp&gt;</code><br />
 </div>
 <p><a href="../../de/d5f/lkj__corr__cholesky__log_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
