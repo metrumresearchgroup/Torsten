@@ -2,7 +2,6 @@ var searchData=
 [
   ['ldlt_5falloc',['LDLT_alloc',['../d3/d3f/classstan_1_1math_1_1_l_d_l_t__alloc.html',1,'stan::math']]],
   ['ldlt_5ffactor',['LDLT_factor',['../d0/d34/classstan_1_1math_1_1_l_d_l_t__factor.html',1,'stan::math']]],
-  ['ldlt_5ffactor_3c_20t_2c_20r_2c_20c_20_3e',['LDLT_factor&lt; T, R, C &gt;',['../d2/de6/classstan_1_1math_1_1_l_d_l_t__factor_3_01_t_00_01_r_00_01_c_01_4.html',1,'stan::math']]],
   ['ldlt_5ffactor_3c_20var_2c_20r_2c_20c_20_3e',['LDLT_factor&lt; var, R, C &gt;',['../d7/d6e/classstan_1_1math_1_1_l_d_l_t__factor_3_01var_00_01_r_00_01_c_01_4.html',1,'stan::math']]],
   ['lgamma_5ffun',['lgamma_fun',['../de/d98/structstan_1_1math_1_1lgamma__fun.html',1,'stan::math']]],
   ['log10_5ffun',['log10_fun',['../dc/d1d/structstan_1_1math_1_1log10__fun.html',1,'stan::math']]],

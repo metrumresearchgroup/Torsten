@@ -4,6 +4,7 @@
 #include <stan/math/prim/scal/meta/is_constant_struct.hpp>
 #include <stan/math/prim/scal/meta/partials_return_type.hpp>
 #include <stan/math/prim/scal/meta/OperandsAndPartials.hpp>
+#include <stan/math/prim/scal/meta/scalar_seq_view.hpp>
 #include <stan/math/prim/scal/err/check_consistent_sizes.hpp>
 #include <stan/math/prim/scal/err/check_finite.hpp>
 #include <stan/math/prim/scal/err/check_not_nan.hpp>
@@ -28,6 +29,9 @@ namespace stan {
      *
      * <p>The result log probability is defined to be the sum of the
      * log probabilities for each observation/mean/deviation triple.
+     * @tparam T_y Underlying type of scalar in sequence.
+     * @tparam T_loc Type of location parameter.
+     * @tparam T_scale Type of scale parameter.
      * @param y (Sequence of) scalar(s).
      * @param mu (Sequence of) location parameter(s)
      * for the normal distribution.
@@ -35,8 +39,6 @@ namespace stan {
      * distribution.
      * @return The log of the product of the densities.
      * @throw std::domain_error if the scale is not positive.
-     * @tparam T_y Underlying type of scalar in sequence.
-     * @tparam T_loc Type of location parameter.
      */
     template <bool propto,
               typename T_y, typename T_loc, typename T_scale>
@@ -70,9 +72,9 @@ namespace stan {
       OperandsAndPartials<T_y, T_loc, T_scale>
         operands_and_partials(y, mu, sigma);
 
-      VectorView<const T_y> y_vec(y);
-      VectorView<const T_loc> mu_vec(mu);
-      VectorView<const T_scale> sigma_vec(sigma);
+      scalar_seq_view<const T_y> y_vec(y);
+      scalar_seq_view<const T_loc> mu_vec(mu);
+      scalar_seq_view<const T_scale> sigma_vec(sigma);
       size_t N = max_size(y, mu, sigma);
 
       VectorBuilder<true, T_partials_return, T_scale> inv_sigma(length(sigma));

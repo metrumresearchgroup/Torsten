@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../stanlogo-main.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Stan Math Library
-   &#160;<span id="projectnumber">2.14.0</span>
+   &#160;<span id="projectnumber">2.15.0</span>
    </div>
    <div id="projectbrief">reverse mode automatic differentiation</div>
   </td>
@@ -81,11 +81,11 @@ $(function() {
 <code>#include &lt;<a class="el" href="../../dc/d6d/mat_2meta_2is__vector__like_8hpp_source.html">stan/math/prim/mat/meta/is_vector_like.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d9/d53/mat_2meta_2length_8hpp_source.html">stan/math/prim/mat/meta/length.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d7/d92/mat_2meta_2length__mvt_8hpp_source.html">stan/math/prim/mat/meta/length_mvt.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d9/ddc/seq__view_8hpp_source.html">stan/math/prim/mat/meta/seq_view.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../d5/df7/mat_2meta_2seq__view_8hpp_source.html">stan/math/prim/mat/meta/seq_view.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d8/dec/mat_2meta_2scalar__type_8hpp_source.html">stan/math/prim/mat/meta/scalar_type.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../dc/d8c/mat_2meta_2value__type_8hpp_source.html">stan/math/prim/mat/meta/value_type.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../d2/deb/vector__seq__view_8hpp_source.html">stan/math/prim/mat/meta/vector_seq_view.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d5/dd4/mat_2meta_2_vector_view_8hpp_source.html">stan/math/prim/mat/meta/VectorView.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d8/d29/_vector_view_mvt_8hpp_source.html">stan/math/prim/mat/meta/VectorViewMvt.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../de/d0d/check__cholesky__factor_8hpp_source.html">stan/math/prim/mat/err/check_cholesky_factor.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d3/d0f/check__cholesky__factor__corr_8hpp_source.html">stan/math/prim/mat/err/check_cholesky_factor_corr.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../dd/db7/check__column__index_8hpp_source.html">stan/math/prim/mat/err/check_column_index.hpp</a>&gt;</code><br />
@@ -116,7 +116,6 @@ $(function() {
 <code>#include &lt;<a class="el" href="../../d8/db4/add_8hpp_source.html">stan/math/prim/mat/fun/add.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d0/d40/append__col_8hpp_source.html">stan/math/prim/mat/fun/append_col.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../de/d63/append__row_8hpp_source.html">stan/math/prim/mat/fun/append_row.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../d6/d17/array__builder_8hpp_source.html">stan/math/prim/mat/fun/array_builder.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../da/d92/prim_2mat_2fun_2asin_8hpp_source.html">stan/math/prim/mat/fun/asin.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../de/de2/prim_2mat_2fun_2asinh_8hpp_source.html">stan/math/prim/mat/fun/asinh.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d2/dd7/assign_8hpp_source.html">stan/math/prim/mat/fun/assign.hpp</a>&gt;</code><br />
@@ -136,7 +135,7 @@ $(function() {
 <code>#include &lt;<a class="el" href="../../dc/d2d/cols_8hpp_source.html">stan/math/prim/mat/fun/cols.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d3/d7c/prim_2mat_2fun_2columns__dot__product_8hpp_source.html">stan/math/prim/mat/fun/columns_dot_product.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d8/d40/prim_2mat_2fun_2columns__dot__self_8hpp_source.html">stan/math/prim/mat/fun/columns_dot_self.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../da/dd1/common__type_8hpp_source.html">stan/math/prim/mat/fun/common_type.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../dc/d86/mat_2fun_2common__type_8hpp_source.html">stan/math/prim/mat/fun/common_type.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../db/d63/corr__matrix__constrain_8hpp_source.html">stan/math/prim/mat/fun/corr_matrix_constrain.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d5/dd9/corr__matrix__free_8hpp_source.html">stan/math/prim/mat/fun/corr_matrix_free.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d0/d8d/prim_2mat_2fun_2cos_8hpp_source.html">stan/math/prim/mat/fun/cos.hpp</a>&gt;</code><br />
@@ -236,8 +235,8 @@ $(function() {
 <code>#include &lt;<a class="el" href="../../df/df1/positive__ordered__constrain_8hpp_source.html">stan/math/prim/mat/fun/positive_ordered_constrain.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../de/d73/positive__ordered__free_8hpp_source.html">stan/math/prim/mat/fun/positive_ordered_free.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../df/d2f/prod_8hpp_source.html">stan/math/prim/mat/fun/prod.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="../../df/dde/promoter_8hpp_source.html">stan/math/prim/mat/fun/promoter.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../de/d4b/promote__common_8hpp_source.html">stan/math/prim/mat/fun/promote_common.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../de/d74/mat_2fun_2promote__elements_8hpp_source.html">stan/math/prim/mat/fun/promote_elements.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../dd/d16/mat_2fun_2promote__scalar_8hpp_source.html">stan/math/prim/mat/fun/promote_scalar.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d1/dd4/mat_2fun_2promote__scalar__type_8hpp_source.html">stan/math/prim/mat/fun/promote_scalar_type.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d6/d48/prim_2mat_2fun_2qr___q_8hpp_source.html">stan/math/prim/mat/fun/qr_Q.hpp</a>&gt;</code><br />
