@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../stanlogo-main.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Stan Math Library
-   &#160;<span id="projectnumber">2.14.0</span>
+   &#160;<span id="projectnumber">2.15.0</span>
    </div>
    <div id="projectbrief">reverse mode automatic differentiation</div>
   </td>
@@ -76,8 +76,10 @@ $(function() {
 <code>#include &lt;<a class="el" href="../../db/de5/prim_2scal_2fun_2gamma__p_8hpp_source.html">stan/math/prim/scal/fun/gamma_p.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d6/dc2/prim_2scal_2fun_2gamma__q_8hpp_source.html">stan/math/prim/scal/fun/gamma_q.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d6/d88/prim_2scal_2fun_2is__inf_8hpp_source.html">stan/math/prim/scal/fun/is_inf.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../de/d48/prim_2scal_2fun_2is__nan_8hpp_source.html">stan/math/prim/scal/fun/is_nan.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../db/d80/prim_2scal_2fun_2square_8hpp_source.html">stan/math/prim/scal/fun/square.hpp</a>&gt;</code><br />
 <code>#include &lt;cmath&gt;</code><br />
+<code>#include &lt;limits&gt;</code><br />
 </div>
 <p><a href="../../db/d7d/grad__reg__inc__gamma_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -91,10 +93,10 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a141b1ea7dfebf55c9162d1d8fc050c0a"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a141b1ea7dfebf55c9162d1d8fc050c0a"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d4/d84/namespacestan_1_1math.html#a141b1ea7dfebf55c9162d1d8fc050c0a">stan::math::grad_reg_inc_gamma</a> (T a, T z, T g, T dig, double precision=1e-6)</td></tr>
-<tr class="memdesc:a141b1ea7dfebf55c9162d1d8fc050c0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gradient of the regularized incomplete gamma functions igamma(a, z)  <a href="../../d4/d84/namespacestan_1_1math.html#a141b1ea7dfebf55c9162d1d8fc050c0a">More...</a><br /></td></tr>
-<tr class="separator:a141b1ea7dfebf55c9162d1d8fc050c0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9bcc67456f0faf793b39a72ec84e83a6"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a9bcc67456f0faf793b39a72ec84e83a6"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../d4/d84/namespacestan_1_1math.html#a9bcc67456f0faf793b39a72ec84e83a6">stan::math::grad_reg_inc_gamma</a> (T a, T z, T g, T dig, double precision=1e-6, int max_steps=1e5)</td></tr>
+<tr class="memdesc:a9bcc67456f0faf793b39a72ec84e83a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Gradient of the regularized incomplete gamma functions igamma(a, z)  <a href="../../d4/d84/namespacestan_1_1math.html#a9bcc67456f0faf793b39a72ec84e83a6">More...</a><br /></td></tr>
+<tr class="separator:a9bcc67456f0faf793b39a72ec84e83a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <hr/>

@@ -26,7 +26,7 @@ var searchData=
   ['apply_5fscalar_5funary_3c_20f_2c_20int_20_3e',['apply_scalar_unary&lt; F, int &gt;',['../d6/dac/structstan_1_1math_1_1apply__scalar__unary_3_01_f_00_01int_01_4.html',1,'stan::math']]],
   ['apply_5fscalar_5funary_3c_20f_2c_20std_3a_3avector_3c_20t_20_3e_20_3e',['apply_scalar_unary&lt; F, std::vector&lt; T &gt; &gt;',['../db/d75/structstan_1_1math_1_1apply__scalar__unary_3_01_f_00_01std_1_1vector_3_01_t_01_4_01_4.html',1,'stan::math']]],
   ['apply_5fscalar_5funary_3c_20f_2c_20var_20_3e',['apply_scalar_unary&lt; F, var &gt;',['../d8/de0/structstan_1_1math_1_1apply__scalar__unary_3_01_f_00_01var_01_4.html',1,'stan::math']]],
-  ['array_5fbuilder',['array_builder',['../d5/d84/structstan_1_1math_1_1array__builder.html',1,'stan::math']]],
+  ['array_5fbuilder',['array_builder',['../de/d2d/classstan_1_1math_1_1array__builder.html',1,'stan::math']]],
   ['asin_5ffun',['asin_fun',['../d1/d94/structstan_1_1math_1_1asin__fun.html',1,'stan::math']]],
   ['asinh_5ffun',['asinh_fun',['../d4/d15/structstan_1_1math_1_1asinh__fun.html',1,'stan::math']]],
   ['atan_5ffun',['atan_fun',['../d4/dc9/structstan_1_1math_1_1atan__fun.html',1,'stan::math']]],

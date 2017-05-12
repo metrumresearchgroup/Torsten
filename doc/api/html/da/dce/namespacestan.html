@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../stanlogo-main.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Stan Math Library
-   &#160;<span id="projectnumber">2.14.0</span>
+   &#160;<span id="projectnumber">2.15.0</span>
    </div>
    <div id="projectbrief">reverse mode automatic differentiation</div>
   </td>
@@ -144,6 +144,12 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d68/structstan_1_1return__type.html">return_type</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Metaprogram to calculate the base scalar return type resulting from promoting all the scalar types of the template parameters.  <a href="../../d8/d68/structstan_1_1return__type.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d32/classstan_1_1scalar__seq__view.html">scalar_seq_view</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="../../d0/d32/classstan_1_1scalar__seq__view.html" title="scalar_seq_view provides a uniform sequence-like wrapper around either a scalar or a sequence of scal...">scalar_seq_view</a> provides a uniform sequence-like wrapper around either a scalar or a sequence of scalars.  <a href="../../d0/d32/classstan_1_1scalar__seq__view.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d68/classstan_1_1scalar__seq__view_3_01_t_00_01_t_01_4.html">scalar_seq_view&lt; T, T &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This specialization handles wrapping a scalar as if it were a sequence.  <a href="../../dd/d68/classstan_1_1scalar__seq__view_3_01_t_00_01_t_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dd9/structstan_1_1scalar__type.html">scalar_type</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Metaprogram structure to determine the base scalar type of a template argument.  <a href="../../d6/dd9/structstan_1_1scalar__type.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -157,6 +163,21 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d47/structstan_1_1size__of__helper.html">size_of_helper</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/df9/structstan_1_1size__of__helper_3_01_t_00_01true_01_4.html">size_of_helper&lt; T, true &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d03/classstan_1_1vector__seq__view.html">vector_seq_view</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class provides a low-cost wrapper for situations where you either need an <a class="el" href="../../d0/da5/namespace_eigen.html" title="(Expert) Numerical traits for algorithmic differentiation variables. ">Eigen</a> Vector or RowVector or a std::vector of them and you want to be agnostic between those two options.  <a href="../../db/d03/classstan_1_1vector__seq__view.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/dfa/classstan_1_1vector__seq__view_3_01_eigen_1_1_matrix_3_01_s_00_011_00_01_eigen_1_1_dynamic_01_4_01_4.html">vector_seq_view&lt; Eigen::Matrix&lt; S, 1, Eigen::Dynamic &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class provides a low-cost wrapper for situations where you either need an <a class="el" href="../../d0/da5/namespace_eigen.html" title="(Expert) Numerical traits for algorithmic differentiation variables. ">Eigen</a> Vector or RowVector or a std::vector of them and you want to be agnostic between those two options.  <a href="../../d8/dfa/classstan_1_1vector__seq__view_3_01_eigen_1_1_matrix_3_01_s_00_011_00_01_eigen_1_1_dynamic_01_4_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/d90/classstan_1_1vector__seq__view_3_01_eigen_1_1_matrix_3_01_s_00_01_eigen_1_1_dynamic_00_011_01_4_01_4.html">vector_seq_view&lt; Eigen::Matrix&lt; S, Eigen::Dynamic, 1 &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class provides a low-cost wrapper for situations where you either need an <a class="el" href="../../d0/da5/namespace_eigen.html" title="(Expert) Numerical traits for algorithmic differentiation variables. ">Eigen</a> Vector or RowVector or a std::vector of them and you want to be agnostic between those two options.  <a href="../../d5/d90/classstan_1_1vector__seq__view_3_01_eigen_1_1_matrix_3_01_s_00_01_eigen_1_1_dynamic_00_011_01_4_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d76/classstan_1_1vector__seq__view_3_01std_1_1vector_3_01_eigen_1_1_matrix_3_01_s_00_011_00_01_eigen_1_1_dynamic_01_4_01_4_01_4.html">vector_seq_view&lt; std::vector&lt; Eigen::Matrix&lt; S, 1, Eigen::Dynamic &gt; &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class provides a low-cost wrapper for situations where you either need an <a class="el" href="../../d0/da5/namespace_eigen.html" title="(Expert) Numerical traits for algorithmic differentiation variables. ">Eigen</a> Vector or RowVector or a std::vector of them and you want to be agnostic between those two options.  <a href="../../d6/d76/classstan_1_1vector__seq__view_3_01std_1_1vector_3_01_eigen_1_1_matrix_3_01_s_00_011_00_01_eigen_1_1_dynamic_01_4_01_4_01_4.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d01/classstan_1_1vector__seq__view_3_01std_1_1vector_3_01_eigen_1_1_matrix_3_01_s_00_01_eigen_1_1_dynamic_00_011_01_4_01_4_01_4.html">vector_seq_view&lt; std::vector&lt; Eigen::Matrix&lt; S, Eigen::Dynamic, 1 &gt; &gt; &gt;</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">This class provides a low-cost wrapper for situations where you either need an <a class="el" href="../../d0/da5/namespace_eigen.html" title="(Expert) Numerical traits for algorithmic differentiation variables. ">Eigen</a> Vector or RowVector or a std::vector of them and you want to be agnostic between those two options.  <a href="../../d9/d01/classstan_1_1vector__seq__view_3_01std_1_1vector_3_01_eigen_1_1_matrix_3_01_s_00_01_eigen_1_1_dynamic_00_011_01_4_01_4_01_4.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d7e/classstan_1_1_vector_builder.html">VectorBuilder</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="../../da/d7e/classstan_1_1_vector_builder.html" title="VectorBuilder allocates type T1 values to be used as intermediate values. ">VectorBuilder</a> allocates type T1 values to be used as intermediate values.  <a href="../../da/d7e/classstan_1_1_vector_builder.html#details">More...</a><br /></td></tr>
@@ -185,12 +206,6 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/db3/classstan_1_1_vector_view_3_01_t_00_01is__array_00_01true_01_4.html">VectorView&lt; T, is_array, true &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d11/classstan_1_1_vector_view_3_01_t_00_01true_00_01false_01_4.html">VectorView&lt; T, true, false &gt;</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/dc3/classstan_1_1_vector_view_mvt.html">VectorViewMvt</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="../../de/dc3/classstan_1_1_vector_view_mvt.html" title="VectorViewMvt is a template expression that wraps either an Eigen::Matrix or a std::vector&lt;Eigen::Mat...">VectorViewMvt</a> is a template expression that wraps either an Eigen::Matrix or a std::vector&lt;Eigen::Matrix&gt; and allows the template expression to be used as an array using <code>operator[]</code>.  <a href="../../de/dc3/classstan_1_1_vector_view_mvt.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/de3/classstan_1_1_vector_view_mvt_3_01const_01_t_00_01is__array_00_01throw__if__accessed_01_4.html">VectorViewMvt&lt; const T, is_array, throw_if_accessed &gt;</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight"><a class="el" href="../../de/dc3/classstan_1_1_vector_view_mvt.html" title="VectorViewMvt is a template expression that wraps either an Eigen::Matrix or a std::vector&lt;Eigen::Mat...">VectorViewMvt</a> with const correctness.  <a href="../../d4/de3/classstan_1_1_vector_view_mvt_3_01const_01_t_00_01is__array_00_01throw__if__accessed_01_4.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
@@ -232,6 +247,9 @@ Functions</h2></td></tr>
 <tr class="memitem:afff0e381090b0d490dc3b23f3eaf8846"><td class="memTemplParams" colspan="2">template&lt;typename T1 , typename T2 , typename T3 , typename T4 &gt; </td></tr>
 <tr class="memitem:afff0e381090b0d490dc3b23f3eaf8846"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../da/dce/namespacestan.html#afff0e381090b0d490dc3b23f3eaf8846">max_size</a> (const T1 &amp;x1, const T2 &amp;x2, const T3 &amp;x3, const T4 &amp;x4)</td></tr>
 <tr class="separator:afff0e381090b0d490dc3b23f3eaf8846"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95ccddb2a9d58ef4f1b052169bbf920d"><td class="memTemplParams" colspan="2">template&lt;typename T1 , typename T2 , typename T3 , typename T4 , typename T5 &gt; </td></tr>
+<tr class="memitem:a95ccddb2a9d58ef4f1b052169bbf920d"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../da/dce/namespacestan.html#a95ccddb2a9d58ef4f1b052169bbf920d">max_size</a> (const T1 &amp;x1, const T2 &amp;x2, const T3 &amp;x3, const T4 &amp;x4, const T5 &amp;x5)</td></tr>
+<tr class="separator:a95ccddb2a9d58ef4f1b052169bbf920d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7abf6526ceb23475508fd42299a7a369"><td class="memTemplParams" colspan="2">template&lt;typename T1 , typename T2 &gt; </td></tr>
 <tr class="memitem:a7abf6526ceb23475508fd42299a7a369"><td class="memTemplItemLeft" align="right" valign="top">size_t&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="../../da/dce/namespacestan.html#a7abf6526ceb23475508fd42299a7a369">max_size_mvt</a> (const T1 &amp;x1, const T2 &amp;x2)</td></tr>
 <tr class="separator:a7abf6526ceb23475508fd42299a7a369"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -514,7 +532,7 @@ template&lt;typename T &gt; </div>
 </div>
 </div>
 <a id="a8b2c79a3a686dcf90566be8492e1065d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8b2c79a3a686dcf90566be8492e1065d">&sect;&nbsp;</a></span>max_size() <span class="overload">[1/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a8b2c79a3a686dcf90566be8492e1065d">&sect;&nbsp;</a></span>max_size() <span class="overload">[1/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -546,7 +564,7 @@ template&lt;typename T1 , typename T2 &gt; </div>
 </div>
 </div>
 <a id="ac5ca4bf16c3b5c453162473c67f844bb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac5ca4bf16c3b5c453162473c67f844bb">&sect;&nbsp;</a></span>max_size() <span class="overload">[2/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ac5ca4bf16c3b5c453162473c67f844bb">&sect;&nbsp;</a></span>max_size() <span class="overload">[2/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -584,7 +602,7 @@ template&lt;typename T1 , typename T2 , typename T3 &gt; </div>
 </div>
 </div>
 <a id="afff0e381090b0d490dc3b23f3eaf8846"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afff0e381090b0d490dc3b23f3eaf8846">&sect;&nbsp;</a></span>max_size() <span class="overload">[3/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afff0e381090b0d490dc3b23f3eaf8846">&sect;&nbsp;</a></span>max_size() <span class="overload">[3/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -624,6 +642,56 @@ template&lt;typename T1 , typename T2 , typename T3 , typename T4 &gt; </div>
 </div><div class="memdoc">
 
 <p>Definition at line <a class="el" href="../../d5/d83/max__size_8hpp_source.html#l00024">24</a> of file <a class="el" href="../../d5/d83/max__size_8hpp_source.html">max_size.hpp</a>.</p>
+
+</div>
+</div>
+<a id="a95ccddb2a9d58ef4f1b052169bbf920d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95ccddb2a9d58ef4f1b052169bbf920d">&sect;&nbsp;</a></span>max_size() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T1 , typename T2 , typename T3 , typename T4 , typename T5 &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t stan::max_size </td>
+          <td>(</td>
+          <td class="paramtype">const T1 &amp;&#160;</td>
+          <td class="paramname"><em>x1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T2 &amp;&#160;</td>
+          <td class="paramname"><em>x2</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T3 &amp;&#160;</td>
+          <td class="paramname"><em>x3</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T4 &amp;&#160;</td>
+          <td class="paramname"><em>x4</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const T5 &amp;&#160;</td>
+          <td class="paramname"><em>x5</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="../../d5/d83/max__size_8hpp_source.html#l00035">35</a> of file <a class="el" href="../../d5/d83/max__size_8hpp_source.html">max_size.hpp</a>.</p>
 
 </div>
 </div>

@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../stanlogo-main.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Stan Math Library
-   &#160;<span id="projectnumber">2.14.0</span>
+   &#160;<span id="projectnumber">2.15.0</span>
    </div>
    <div id="projectbrief">reverse mode automatic differentiation</div>
   </td>
@@ -84,18 +84,18 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a6cf8f157f386435f2ce7b81558d5bdc3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/da9/structstan_1_1math_1_1coupled__ode__system_3_01_f_00_01double_00_01var_01_4.html#a6cf8f157f386435f2ce7b81558d5bdc3">coupled_ode_system</a> (const F &amp;f, const std::vector&lt; double &gt; &amp;y0, const std::vector&lt; <a class="el" href="../../d1/d39/classstan_1_1math_1_1var.html">var</a> &gt; &amp;theta, const std::vector&lt; double &gt; &amp;x, const std::vector&lt; int &gt; &amp;x_int, std::ostream *msgs)</td></tr>
 <tr class="memdesc:a6cf8f157f386435f2ce7b81558d5bdc3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a coupled ODE system with the specified base ODE system, base initial state, parameters, data, and a message stream.  <a href="#a6cf8f157f386435f2ce7b81558d5bdc3">More...</a><br /></td></tr>
 <tr class="separator:a6cf8f157f386435f2ce7b81558d5bdc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5c7203e26d4d9f8d92f4a96fb84f7126"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/da9/structstan_1_1math_1_1coupled__ode__system_3_01_f_00_01double_00_01var_01_4.html#a5c7203e26d4d9f8d92f4a96fb84f7126">operator()</a> (const std::vector&lt; double &gt; &amp;z, std::vector&lt; double &gt; &amp;dz_dt, double t)</td></tr>
-<tr class="memdesc:a5c7203e26d4d9f8d92f4a96fb84f7126"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign the derivative vector with the system derivatives at the specified state and time.  <a href="#a5c7203e26d4d9f8d92f4a96fb84f7126">More...</a><br /></td></tr>
-<tr class="separator:a5c7203e26d4d9f8d92f4a96fb84f7126"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a006efb703321de45b7ddc846dc9bc020"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/da9/structstan_1_1math_1_1coupled__ode__system_3_01_f_00_01double_00_01var_01_4.html#a006efb703321de45b7ddc846dc9bc020">operator()</a> (const std::vector&lt; double &gt; &amp;z, std::vector&lt; double &gt; &amp;dz_dt, double t) const</td></tr>
+<tr class="memdesc:a006efb703321de45b7ddc846dc9bc020"><td class="mdescLeft">&#160;</td><td class="mdescRight">Assign the derivative vector with the system derivatives at the specified state and time.  <a href="#a006efb703321de45b7ddc846dc9bc020">More...</a><br /></td></tr>
+<tr class="separator:a006efb703321de45b7ddc846dc9bc020"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa206eef9fed017a15755eb46aa471f50"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/da9/structstan_1_1math_1_1coupled__ode__system_3_01_f_00_01double_00_01var_01_4.html#aa206eef9fed017a15755eb46aa471f50">size</a> () const</td></tr>
 <tr class="memdesc:aa206eef9fed017a15755eb46aa471f50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the size of the coupled system.  <a href="#aa206eef9fed017a15755eb46aa471f50">More...</a><br /></td></tr>
 <tr class="separator:aa206eef9fed017a15755eb46aa471f50"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac40bddf5fae5503b3415f5863a5decd"><td class="memItemLeft" align="right" valign="top">std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/da9/structstan_1_1math_1_1coupled__ode__system_3_01_f_00_01double_00_01var_01_4.html#aac40bddf5fae5503b3415f5863a5decd">initial_state</a> ()</td></tr>
-<tr class="memdesc:aac40bddf5fae5503b3415f5863a5decd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the initial state of the coupled system.  <a href="#aac40bddf5fae5503b3415f5863a5decd">More...</a><br /></td></tr>
-<tr class="separator:aac40bddf5fae5503b3415f5863a5decd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a78af2a30c72a2707a0ccf8b029b2a98d"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::vector&lt; <a class="el" href="../../d1/d39/classstan_1_1math_1_1var.html">var</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/da9/structstan_1_1math_1_1coupled__ode__system_3_01_f_00_01double_00_01var_01_4.html#a78af2a30c72a2707a0ccf8b029b2a98d">decouple_states</a> (const std::vector&lt; std::vector&lt; double &gt; &gt; &amp;y)</td></tr>
-<tr class="memdesc:a78af2a30c72a2707a0ccf8b029b2a98d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the base ODE system state corresponding to the specified coupled system state.  <a href="#a78af2a30c72a2707a0ccf8b029b2a98d">More...</a><br /></td></tr>
-<tr class="separator:a78af2a30c72a2707a0ccf8b029b2a98d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a800396d4ac3a899134bba976ead84c55"><td class="memItemLeft" align="right" valign="top">std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/da9/structstan_1_1math_1_1coupled__ode__system_3_01_f_00_01double_00_01var_01_4.html#a800396d4ac3a899134bba976ead84c55">initial_state</a> () const</td></tr>
+<tr class="memdesc:a800396d4ac3a899134bba976ead84c55"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the initial state of the coupled system.  <a href="#a800396d4ac3a899134bba976ead84c55">More...</a><br /></td></tr>
+<tr class="separator:a800396d4ac3a899134bba976ead84c55"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a010c47d235ce8a62b8bc3130be7978f3"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::vector&lt; <a class="el" href="../../d1/d39/classstan_1_1math_1_1var.html">var</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/da9/structstan_1_1math_1_1coupled__ode__system_3_01_f_00_01double_00_01var_01_4.html#a010c47d235ce8a62b8bc3130be7978f3">decouple_states</a> (const std::vector&lt; std::vector&lt; double &gt; &gt; &amp;y) const</td></tr>
+<tr class="memdesc:a010c47d235ce8a62b8bc3130be7978f3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns the base ODE system state corresponding to the specified coupled system state.  <a href="#a010c47d235ce8a62b8bc3130be7978f3">More...</a><br /></td></tr>
+<tr class="separator:a010c47d235ce8a62b8bc3130be7978f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -105,8 +105,8 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a44a59f4d30b29f97cf96f3b206583698"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6ca69eb6d9a6864d45cedea2de584614"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; <a class="el" href="../../d1/d39/classstan_1_1math_1_1var.html">var</a> &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/da9/structstan_1_1math_1_1coupled__ode__system_3_01_f_00_01double_00_01var_01_4.html#a6ca69eb6d9a6864d45cedea2de584614">theta_</a></td></tr>
 <tr class="separator:a6ca69eb6d9a6864d45cedea2de584614"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afb88b4f2955312b20554d4d181e378ec"><td class="memItemLeft" align="right" valign="top">std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/da9/structstan_1_1math_1_1coupled__ode__system_3_01_f_00_01double_00_01var_01_4.html#afb88b4f2955312b20554d4d181e378ec">theta_dbl_</a></td></tr>
-<tr class="separator:afb88b4f2955312b20554d4d181e378ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6bfa0d214d546626df57470cbf918ded"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/da9/structstan_1_1math_1_1coupled__ode__system_3_01_f_00_01double_00_01var_01_4.html#a6bfa0d214d546626df57470cbf918ded">theta_dbl_</a></td></tr>
+<tr class="separator:a6bfa0d214d546626df57470cbf918ded"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a837dfb1e0d79347bc64fbbd661ad4798"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; double &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/da9/structstan_1_1math_1_1coupled__ode__system_3_01_f_00_01double_00_01var_01_4.html#a837dfb1e0d79347bc64fbbd661ad4798">x_</a></td></tr>
 <tr class="separator:a837dfb1e0d79347bc64fbbd661ad4798"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a29fc1778e2782331ce1b622ddcc4ada5"><td class="memItemLeft" align="right" valign="top">const std::vector&lt; int &gt; &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/da9/structstan_1_1math_1_1coupled__ode__system_3_01_f_00_01double_00_01var_01_4.html#a29fc1778e2782331ce1b622ddcc4ada5">x_int_</a></td></tr>
@@ -126,9 +126,9 @@ struct stan::math::coupled_ode_system&lt; F, double, var &gt;</h3>
 
 <p>The coupled ODE system for known initial values and unknown parameters. </p>
 <p>If the base ODE state is size N and there are M parameters, the coupled system has N + N * M states. </p>
-<p>The first N states correspond to the base system's N states: <img class="formulaInl" alt="$ \frac{d x_n}{dt} $" src="../../form_211.png"/></p>
+<p>The first N states correspond to the base system's N states: <img class="formulaInl" alt="$ \frac{d x_n}{dt} $" src="../../form_210.png"/></p>
 <p>The next M states correspond to the sensitivities of the parameters with respect to the first base system equation: </p><p class="formulaDsp">
-<img class="formulaDsp" alt="\[ \frac{d x_{N+m}}{dt} = \frac{d}{dt} \frac{\partial x_1}{\partial \theta_m} \]" src="../../form_212.png"/>
+<img class="formulaDsp" alt="\[ \frac{d x_{N+m}}{dt} = \frac{d}{dt} \frac{\partial x_1}{\partial \theta_m} \]" src="../../form_211.png"/>
 </p>
 <p>The final M states correspond to the sensitivities with respect to the second base system equation, etc.</p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
@@ -218,8 +218,8 @@ template&lt;typename F &gt; </div>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a id="a78af2a30c72a2707a0ccf8b029b2a98d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a78af2a30c72a2707a0ccf8b029b2a98d">&sect;&nbsp;</a></span>decouple_states()</h2>
+<a id="a010c47d235ce8a62b8bc3130be7978f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a010c47d235ce8a62b8bc3130be7978f3">&sect;&nbsp;</a></span>decouple_states()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -234,7 +234,7 @@ template&lt;typename F &gt; </div>
           <td>(</td>
           <td class="paramtype">const std::vector&lt; std::vector&lt; double &gt; &gt; &amp;&#160;</td>
           <td class="paramname"><em>y</em></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
   </td>
@@ -252,12 +252,12 @@ template&lt;typename F &gt; </div>
   </dd>
 </dl>
 
-<p>Definition at line <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html#l00210">210</a> of file <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html">coupled_ode_system.hpp</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html#l00203">203</a> of file <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html">coupled_ode_system.hpp</a>.</p>
 
 </div>
 </div>
-<a id="aac40bddf5fae5503b3415f5863a5decd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aac40bddf5fae5503b3415f5863a5decd">&sect;&nbsp;</a></span>initial_state()</h2>
+<a id="a800396d4ac3a899134bba976ead84c55"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a800396d4ac3a899134bba976ead84c55">&sect;&nbsp;</a></span>initial_state()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -271,7 +271,7 @@ template&lt;typename F &gt; </div>
           <td class="memname">std::vector&lt;double&gt; <a class="el" href="../../d7/d62/structstan_1_1math_1_1coupled__ode__system.html">stan::math::coupled_ode_system</a>&lt; F, double, <a class="el" href="../../d1/d39/classstan_1_1math_1_1var.html">var</a> &gt;::initial_state </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
   </td>
@@ -286,12 +286,12 @@ template&lt;typename F &gt; </div>
 <p>This initial state returned is of size <code><a class="el" href="../../d5/da9/structstan_1_1math_1_1coupled__ode__system_3_01_f_00_01double_00_01var_01_4.html#aa206eef9fed017a15755eb46aa471f50" title="Returns the size of the coupled system. ">size()</a></code> where the first N (base ODE system size) parameters are the initial conditions of the base ode system and the rest of the initial condition elements are 0.</p>
 <dl class="section return"><dt>Returns</dt><dd>the initial condition of the coupled system. </dd></dl>
 
-<p>Definition at line <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html#l00196">196</a> of file <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html">coupled_ode_system.hpp</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html#l00189">189</a> of file <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html">coupled_ode_system.hpp</a>.</p>
 
 </div>
 </div>
-<a id="a5c7203e26d4d9f8d92f4a96fb84f7126"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5c7203e26d4d9f8d92f4a96fb84f7126">&sect;&nbsp;</a></span>operator()()</h2>
+<a id="a006efb703321de45b7ddc846dc9bc020"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a006efb703321de45b7ddc846dc9bc020">&sect;&nbsp;</a></span>operator()()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -322,7 +322,7 @@ template&lt;typename F &gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td>
+          <td></td><td> const</td>
         </tr>
       </table>
   </td>
@@ -350,7 +350,7 @@ template&lt;typename F &gt; </div>
 </dl>
 <p>y is the base ODE system state </p>
 
-<p>Definition at line <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html#l00123">123</a> of file <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html">coupled_ode_system.hpp</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html#l00120">120</a> of file <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html">coupled_ode_system.hpp</a>.</p>
 
 </div>
 </div>
@@ -382,7 +382,7 @@ template&lt;typename F &gt; </div>
 <p>Returns the size of the coupled system. </p>
 <dl class="section return"><dt>Returns</dt><dd>size of the coupled system. </dd></dl>
 
-<p>Definition at line <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html#l00179">179</a> of file <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html">coupled_ode_system.hpp</a>.</p>
+<p>Definition at line <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html#l00172">172</a> of file <a class="el" href="../../d3/d86/rev_2arr_2functor_2coupled__ode__system_8hpp_source.html">coupled_ode_system.hpp</a>.</p>
 
 </div>
 </div>
@@ -495,8 +495,8 @@ template&lt;typename F &gt; </div>
 
 </div>
 </div>
-<a id="afb88b4f2955312b20554d4d181e378ec"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb88b4f2955312b20554d4d181e378ec">&sect;&nbsp;</a></span>theta_dbl_</h2>
+<a id="a6bfa0d214d546626df57470cbf918ded"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6bfa0d214d546626df57470cbf918ded">&sect;&nbsp;</a></span>theta_dbl_</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -504,7 +504,7 @@ template&lt;typename F &gt; </div>
 template&lt;typename F &gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::vector&lt;double&gt; <a class="el" href="../../d7/d62/structstan_1_1math_1_1coupled__ode__system.html">stan::math::coupled_ode_system</a>&lt; F, double, <a class="el" href="../../d1/d39/classstan_1_1math_1_1var.html">var</a> &gt;::theta_dbl_</td>
+          <td class="memname">const std::vector&lt;double&gt; <a class="el" href="../../d7/d62/structstan_1_1math_1_1coupled__ode__system.html">stan::math::coupled_ode_system</a>&lt; F, double, <a class="el" href="../../d1/d39/classstan_1_1math_1_1var.html">var</a> &gt;::theta_dbl_</td>
         </tr>
       </table>
 </div><div class="memdoc">

@@ -95,6 +95,8 @@ var searchData=
   ['binomial_5frng_2ehpp',['binomial_rng.hpp',['../d0/d47/binomial__rng_8hpp.html',1,'']]],
   ['block',['block',['../d4/d84/namespacestan_1_1math.html#a69be3cf865daa6eca4a859f97ffaa8f7',1,'stan::math']]],
   ['block_2ehpp',['block.hpp',['../d9/db2/block_8hpp.html',1,'']]],
+  ['block_5f',['Block_',['../de/d48/classstan_1_1math_1_1cholesky__block.html#afb6f6cf460a34e7ea1447bf4ea9d8091',1,'stan::math::cholesky_block']]],
+  ['block_5fsize_5f',['block_size_',['../de/d48/classstan_1_1math_1_1cholesky__block.html#a53e46ef7e45723054cd05516e0ec1a4f',1,'stan::math::cholesky_block']]],
   ['boost',['boost',['../d4/da9/namespaceboost.html',1,'']]],
   ['boost_2edox',['boost.dox',['../d9/d53/boost_8dox.html',1,'']]],
   ['boost_5ffpclassify_2ehpp',['boost_fpclassify.hpp',['../d3/d63/boost__fpclassify_8hpp.html',1,'']]],

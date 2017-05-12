@@ -23,7 +23,7 @@
   <td id="projectlogo"><img alt="Logo" src="../../stanlogo-main.png"/></td>
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">Stan Math Library
-   &#160;<span id="projectnumber">2.14.0</span>
+   &#160;<span id="projectnumber">2.15.0</span>
    </div>
    <div id="projectbrief">reverse mode automatic differentiation</div>
   </td>
@@ -96,12 +96,15 @@ $(function() {
 <code>#include &lt;<a class="el" href="../../df/d23/partials__return__type_8hpp_source.html">stan/math/prim/scal/meta/partials_return_type.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d9/d33/prim_2scal_2meta_2partials__type_8hpp_source.html">stan/math/prim/scal/meta/partials_type.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d9/d94/return__type_8hpp_source.html">stan/math/prim/scal/meta/return_type.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../d5/dce/scalar__seq__view_8hpp_source.html">stan/math/prim/scal/meta/scalar_seq_view.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d2/dfa/scal_2meta_2scalar__type_8hpp_source.html">stan/math/prim/scal/meta/scalar_type.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d2/db6/scalar__type__pre_8hpp_source.html">stan/math/prim/scal/meta/scalar_type_pre.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d7/d1c/size__of_8hpp_source.html">stan/math/prim/scal/meta/size_of.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../dc/d87/scal_2meta_2value__type_8hpp_source.html">stan/math/prim/scal/meta/value_type.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../de/dba/_vector_builder_8hpp_source.html">stan/math/prim/scal/meta/VectorBuilder.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../de/dcb/scal_2meta_2_vector_view_8hpp_source.html">stan/math/prim/scal/meta/VectorView.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../d5/d68/check__2_f1__converges_8hpp_source.html">stan/math/prim/scal/err/check_2F1_converges.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../dd/dbc/check__3_f2__converges_8hpp_source.html">stan/math/prim/scal/err/check_3F2_converges.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d3/d7a/check__bounded_8hpp_source.html">stan/math/prim/scal/err/check_bounded.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d8/d76/check__consistent__size_8hpp_source.html">stan/math/prim/scal/err/check_consistent_size.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../db/df5/check__consistent__sizes_8hpp_source.html">stan/math/prim/scal/err/check_consistent_sizes.hpp</a>&gt;</code><br />
@@ -133,6 +136,7 @@ $(function() {
 <code>#include &lt;<a class="el" href="../../db/dd3/boost__policy_8hpp_source.html">stan/math/prim/scal/fun/boost_policy.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d6/dd3/prim_2scal_2fun_2cbrt_8hpp_source.html">stan/math/prim/scal/fun/cbrt.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d3/dce/choose_8hpp_source.html">stan/math/prim/scal/fun/choose.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../d7/d2a/scal_2fun_2common__type_8hpp_source.html">stan/math/prim/scal/fun/common_type.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d3/dad/constants_8hpp_source.html">stan/math/prim/scal/fun/constants.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d0/d74/corr__constrain_8hpp_source.html">stan/math/prim/scal/fun/corr_constrain.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d1/df8/corr__free_8hpp_source.html">stan/math/prim/scal/fun/corr_free.hpp</a>&gt;</code><br />
@@ -216,6 +220,7 @@ $(function() {
 <code>#include &lt;<a class="el" href="../../df/de1/prim_2scal_2fun_2primitive__value_8hpp_source.html">stan/math/prim/scal/fun/primitive_value.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d3/d69/prob__constrain_8hpp_source.html">stan/math/prim/scal/fun/prob_constrain.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d4/d5a/prob__free_8hpp_source.html">stan/math/prim/scal/fun/prob_free.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../dc/d43/scal_2fun_2promote__elements_8hpp_source.html">stan/math/prim/scal/fun/promote_elements.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../dd/de5/scal_2fun_2promote__scalar_8hpp_source.html">stan/math/prim/scal/fun/promote_scalar.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d9/dd1/scal_2fun_2promote__scalar__type_8hpp_source.html">stan/math/prim/scal/fun/promote_scalar_type.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d3/d43/prim_2scal_2fun_2rising__factorial_8hpp_source.html">stan/math/prim/scal/fun/rising_factorial.hpp</a>&gt;</code><br />
@@ -394,6 +399,8 @@ $(function() {
 <code>#include &lt;<a class="el" href="../../df/d59/normal__log_8hpp_source.html">stan/math/prim/scal/prob/normal_log.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d1/d23/normal__lpdf_8hpp_source.html">stan/math/prim/scal/prob/normal_lpdf.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../dc/dbf/normal__rng_8hpp_source.html">stan/math/prim/scal/prob/normal_rng.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../d1/df8/normal__sufficient__log_8hpp_source.html">stan/math/prim/scal/prob/normal_sufficient_log.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="../../d4/dd7/normal__sufficient__lpdf_8hpp_source.html">stan/math/prim/scal/prob/normal_sufficient_lpdf.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d5/d59/pareto__ccdf__log_8hpp_source.html">stan/math/prim/scal/prob/pareto_ccdf_log.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../dc/d9f/pareto__cdf_8hpp_source.html">stan/math/prim/scal/prob/pareto_cdf.hpp</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="../../d4/dff/pareto__cdf__log_8hpp_source.html">stan/math/prim/scal/prob/pareto_cdf_log.hpp</a>&gt;</code><br />
