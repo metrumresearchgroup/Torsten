@@ -20,8 +20,8 @@
  *   Built-in Model types:
  *       1 - One Compartment Model with first-order absorption
  *       2 - Two Compartment Model with first-order absorption
- *		   3 - General Compartment Model using numerical ODE solver
- *		   4 - EXPERIMENTAL: PKPD model using semi-analytical solver
+ *		 3 - General Compartment Model using numerical ODE solver
+ *		 4 - EXPERIMENTAL: PKPD model using semi-analytical solver
  *
  *	 @tparam T_time type of scalar for time
  *	 @tparam T_rate type of scalar for rate
