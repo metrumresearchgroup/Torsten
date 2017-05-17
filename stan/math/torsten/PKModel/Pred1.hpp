@@ -7,6 +7,7 @@
 #include <stan/math/torsten/PKModel/Pred/Pred1_twoCpt.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_general_solver.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_linOde.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_mix1.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -40,15 +41,43 @@
 struct Pred1_structure {
 private:
   std::string modeltype;
+  double rel_tol;
+  double abs_tol;
+  long int max_num_steps;
+  std::string integratorType;
 
 public:
-  Pred1_structure() {  // default constructor
+/*  Pred1_structure() {
     modeltype = "default";
+    rel_tol = 0;
+    abs_tol = 0;
+    max_num_steps = 0;
+    integratorType = "none";
   }
 
-  explicit Pred1_structure(std::string p_modeltype) {
+  Pred1_structure(std::string p_modeltype) {
     modeltype = p_modeltype;
-  }
+    rel_tol = 0;
+    abs_tol = 0;
+    max_num_steps = 0;
+    integratorType = "none";
+  } */
+
+  Pred1_structure(const std::string& p_modelType,
+                  const double& rel_tol_p,
+                  const double& abs_tol_p,
+                  const long int& max_num_steps_p,  // NOLINT
+                  const std::string& integratorType_p)
+  : modeltype(p_modelType), rel_tol(rel_tol_p), abs_tol(abs_tol_p),
+  max_num_steps(max_num_steps_p), integratorType(integratorType_p)
+  { }
+/*
+    modeltype = p_modelType;
+    rel_tol = rel_tol_p;
+    abs_tol = abs_tol_p;
+    max_num_steps = max_num_steps_p;
+    integratorType = integratorType_p;
+*/
 
   template <typename T_time, typename T_parameters, typename T_biovar,
             typename T_tlag, typename T_rate, typename F, typename T_system>
@@ -73,11 +102,18 @@ public:
     else if (modeltype == "TwoCptModel")
       return Pred1_two(dt, parameter, init, rate);
     else if (modeltype == "generalOdeModel")
-      return Pred1_general_solver(dt, parameter, init, rate, f);
-    else
-      if (modeltype == "linOdeModel") {
-        return Pred1_linOde(dt, parameter, init, rate);
-    } else {
+      return Pred1_general_solver(dt, parameter, init, rate, f, 
+                                  integrator_structure(rel_tol, abs_tol,
+                                                       max_num_steps,
+                                                       integratorType));
+    else if (modeltype == "linOdeModel")
+      return Pred1_linOde(dt, parameter, init, rate);
+    else if (modeltype == "mixOde1CptModel")
+      return Pred1_mix1(dt, parameter, init, rate,
+                        f, integrator_structure(rel_tol, abs_tol,
+                                                max_num_steps,
+                                                integratorType));
+    else {
       Eigen::Matrix<scalar, 1, Eigen::Dynamic> default_pred =
         Eigen::Matrix<scalar, 1, Eigen::Dynamic>::Zero(1);
       return default_pred;

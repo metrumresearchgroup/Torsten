@@ -3,64 +3,9 @@
 
 #include <stan/math/torsten/PKModel/Pred/unpromote.hpp>
 #include <stan/math/torsten/PKModel/Pred/fOneCpt.hpp>
+#include <stan/math/torsten/PKModel/integrator.hpp>
 #include <iostream>
 #include <vector>
-
-/**
- *  Functor for mix solver with base
- *  one compartment model.
- */
-template <typename F0>
-struct mix1_functor {
-  F0 f0_;
-
-  mix1_functor(const F0 f0) : f0_(f0) { }
-
-  /**
-   *  Returns the derivative of the base ODE system. The base 1 PK
-   *  component is calculated analytically. We use the last two
-   *  elements of theta to store the inital PK states (init_PK) and
-   *  the last element of x_r to store the initial time.
-   */
-  template <typename T0, typename T1, typename T2, typename T3>
-  inline
-  std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
-  operator()(const T0& t,
-             const std::vector<T1>& y,
-             const std::vector<T2>& theta,
-             const std::vector<T3>& x_r,
-             const std::vector<int>& x_i,
-             std::ostream* pstream_) const {
-    using stan::math::to_array_1d;
-    using stan::math::to_vector;
-    typedef typename boost::math::tools::promote_args<T0, T1, T2, T3>::type
-      scalar;
-    typedef typename boost::math::tools::promote_args<T0, T2, T3>::type
-      T_pk;  // return object of fOneCpt  doesn't depend on T1
-
-    // Get PK parameters
-    int nParmsPK = 3;
-    std::vector<T2> thetaPK(nParmsPK);
-    thetaPK[0] = theta[0];  // CL
-    thetaPK[1] = theta[1];  // VC
-    thetaPK[2] = theta[2];  // ka
-
-    // Get initial PK states
-    int nPK = 2;
-    std::vector<T2> init_pk(nPK);
-    size_t nTheta = theta.size();
-    // The last two components of theta
-    // should contain the initial PK states
-    init_pk[0] = theta[nTheta - 2];
-    init_pk[1] = theta[nTheta - 1];
-    // Last element of x_r contains the initial time
-    T0 dt = t - x_r[x_r.size() - 1];
-
-    std::vector<T_pk> y_pk = fOneCpt(dt, thetaPK, init_pk, x_r);
-
-    return f0_(dt, y, y_pk, theta, x_r, x_i, pstream_);
-  }
-};
 
 /**
  *	ODE model with base 1 compartment PK. Use mix solver.
@@ -98,10 +43,11 @@ Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_rate,
 Pred1_mix1(const T_time& dt,
            const ModelParameters<T_time, T_parameters, T_biovar,
                                  T_tlag, T_system>& parameter,
-           const Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
-                       T_rate, T_parameters>::type, 1, Eigen::Dynamic>& init,
+           const Eigen::Matrix<typename boost::math::tools::promote_args<
+             T_time, T_rate, T_parameters>::type, 1, Eigen::Dynamic>& init,
            const std::vector<T_rate>& rate,
-           const F& f) {
+           const F& f,
+           const integrator_structure& integrator) {
   using std::vector;
   using stan::math::to_array_1d;
 
@@ -153,9 +99,10 @@ Pred1_mix1(const T_time& dt,
     for (size_t i = 0; i < nPD; i++) y0_PD[i] = y0[nPK + i];
     vector<int> idummy;
 
-    vector<vector<scalar> > pred_V = pmetrics_solver(mix1_functor<F>(f),
-                                                     y0_PD, t0_dbl, t_dbl,
-                                                     theta, x_r, idummy);
+    // vector<vector<scalar> > pred_V = integrator(mix1_functor<F>(f),
+    vector<vector<scalar> > pred_V = integrator(f,
+                                                y0_PD, t0_dbl, t_dbl,
+                                                theta, x_r, idummy);
     size_t nOde = pred_V[0].size();
 
     pred.resize(nPK + nOde);

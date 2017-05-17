@@ -2,7 +2,7 @@
 #define STAN_MATH_TORSTEN_PKMODEL_PMETRICSCHECK_HPP
 
 #include <Eigen/Dense>
-#include <stan/math/torsten/PKModel/PKModel_class.hpp>
+#include <stan/math/torsten/PKModel/pmxModel.hpp>
 #include <stan/math/prim/scal/err/invalid_argument.hpp>
 #include <boost/lexical_cast.hpp>
 #include <vector>
@@ -57,7 +57,7 @@ void pmetricsCheck(const std::vector<T0>& time,
                    const std::vector<std::vector<T5> >& biovar,
                    const std::vector<std::vector<T6> >& tlag,
                    const char* function,
-                   PKModel& model) {
+                   pmxModel& model) {
   using std::vector;
   using std::string;
   using Eigen::Dynamic;

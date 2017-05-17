@@ -3,6 +3,7 @@
 
 #include <Eigen/Dense>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
+#include <stan/math/torsten/PKModel/pred/mix1_functor.hpp>
 #include <boost/math/tools/promotion.hpp>
 #include <vector>
 
@@ -57,30 +58,32 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-mixOdeOneCptModel_rk45(const F& f,
-                       const int nOde,
-                       const std::vector<T0>& time,
-                       const std::vector<T1>& amt,
-                       const std::vector<T2>& rate,
-                       const std::vector<T3>& ii,
-                       const std::vector<int>& evid,
-                       const std::vector<int>& cmt,
-                       const std::vector<int>& addl,
-                       const std::vector<int>& ss,
-                       const std::vector<std::vector<T4> >& theta,
-                       const std::vector<std::vector<T5> >& biovar,
-                       const std::vector<std::vector<T6> >& tlag,
-                       std::ostream* msgs = 0,
-                       double rel_tol = 1e-6,
-                       double abs_tol = 1e-6,
-                       long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
+mixOde1CptModel_rk45(const F& f,
+                     const int nOde,
+                     const std::vector<T0>& time,
+                     const std::vector<T1>& amt,
+                     const std::vector<T2>& rate,
+                     const std::vector<T3>& ii,
+                     const std::vector<int>& evid,
+                     const std::vector<int>& cmt,
+                     const std::vector<int>& addl,
+                     const std::vector<int>& ss,
+                     const std::vector<std::vector<T4> >& theta,
+                     const std::vector<std::vector<T5> >& biovar,
+                     const std::vector<std::vector<T6> >& tlag,
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
   using boost::math::tools::promote_args;
 
   int nPK = 2;
-  PKModel model(theta[0].size(), nOde + nPK);
+  pmxModel model(theta[0].size(), nOde + nPK,
+                 "mixOde1CptModel", "error", "rk45",
+                 rel_tol, abs_tol, max_num_steps);
 
   // check arguments
   static const char* function("mixOdeOneCptModel_rk45");
@@ -88,22 +91,16 @@ mixOdeOneCptModel_rk45(const F& f,
                 theta, biovar, tlag, function, model);
 
   // define functors used in Pred()
-  Pred1_structure new_Pred1("mixOdeOneCptModel");
-  Pred1 = new_Pred1;
-  PredSS_structure new_PredSS("error");
-  PredSS = new_PredSS;  // WARNING: PredSS returns an error
-  pmetrics_solver_structure new_pmetrics_solver(rel_tol, abs_tol,
-    max_num_steps, "rk45");
-  pmetrics_solver = new_pmetrics_solver;
+  
 
-  // Construct dummy matrix for last argument of pred
+  // Construct dummy array of matrix for last argument of pred
   Matrix<double, Dynamic, Dynamic> dummy_system;
   vector<Matrix<double, Dynamic, Dynamic> >
     dummy_systems(1, dummy_system);
 
- return  pred = Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-                     theta, biovar, tlag, model,
-                     f, dummy_systems);
+ return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
+             theta, biovar, tlag, model, mix1_functor<F>(f),
+             dummy_systems);
 }
 
 #endif

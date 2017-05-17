@@ -40,7 +40,7 @@ struct oneCptModelODE_functor {
     }
 };
 
-TEST(Torsten, genCpt_One_SingleDose) {
+TEST(Torsten, genCpt_One_MultipleDose) {
   using std::vector;
   using Eigen::Matrix;
   using Eigen::Dynamic;
@@ -132,7 +132,7 @@ TEST(Torsten, genCpt_One_SingleDose) {
   
 }
 
-TEST(Torsten, genCpt_One_SingleDose_overload) {
+TEST(Torsten, genCpt_One_MultipleDose_overload) {
   using std::vector;
   using Eigen::Matrix;
   using Eigen::Dynamic;

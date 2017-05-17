@@ -1,12 +1,9 @@
 #include <stan/math/rev/mat.hpp>  // FIX ME - more specific
 #include <stan/math/torsten/PKModel/Pred/Pred1_mix1.hpp>
+#include <stan/math/torsten/PKModel/Pred/mix1_functor.hpp>
 #include <gtest/gtest.h>
-#include <test/unit/math/prim/mat/fun/expect_near_matrix_eq.hpp>
-#include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
-#include <test/unit/math/torsten/util_generalOdeModel.hpp>
 
 struct ODE_functor {
-
   template <typename T0, typename T1, typename T2, typename T3>
   inline
   std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
@@ -74,12 +71,12 @@ TEST(Torsten, pred1_mix) {
   // more costly). FIX ME - is this the right approach?
   double rel_tol = 1e-8, abs_tol = 1e-8;
   long int max_num_steps = 1e+8;
-  pmetrics_solver_structure new_pmetrics_solver(rel_tol, abs_tol, max_num_steps,
-                                                "rk45");
-  pmetrics_solver = new_pmetrics_solver;
 
-  Eigen::VectorXd pred;
-  pred = Pred1_mix1(dt, parms, init, rate, ODE_functor());
+  Eigen::VectorXd pred = Pred1_mix1(dt, parms, init, rate,
+                                    mix1_functor<ODE_functor>(ODE_functor()),
+                                    integrator_structure(rel_tol, abs_tol,
+                                                         max_num_steps,
+                                                         "rk45"));
 
   // Compare to results obtained with mrgsolve
   Eigen::VectorXd mrgResults(5);
@@ -92,7 +89,7 @@ TEST(Torsten, pred1_mix) {
   EXPECT_FLOAT_EQ(mrgResults(3), pred(3));
   // EXPECT_FLOAT_EQ(mrgResults(4), pred(4));
   EXPECT_NEAR(mrgResults(4), pred(4), std::abs(mrgResults(4) * 1e-4));
-  
+
   // NOTE - for the last value, get very low value for pred(4)
   // which may introduce double precision errors. Still, the two
   // results agree within a 1e-4 relative error.
