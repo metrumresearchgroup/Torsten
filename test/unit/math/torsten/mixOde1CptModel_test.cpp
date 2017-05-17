@@ -1,9 +1,10 @@
 #include <stan/math/rev/mat.hpp>  // FIX ME - includes should be more specific
 #include <gtest/gtest.h>
+#include <test/unit/math/torsten/util_mixOde1CptModel.hpp>
 #include <test/unit/math/prim/mat/fun/expect_near_matrix_eq.hpp>
 #include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
 
-struct feebackODE {
+struct feedbackODE {
   template <typename T0, typename T1, typename T2, typename T3>
   inline
   std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
@@ -84,7 +85,7 @@ TEST(Torsten, mixOde1Cpt) {
   double rel_tol = 1e8, abs_tol = 1e-8;
   long int max_num_steps = 1e8;
   Matrix<double, Dynamic, Dynamic>
-    x = mixOde1CptModel_rk45(feebackODE(), nPD,
+    x = mixOde1CptModel_rk45(feedbackODE(), nPD,
                              time, amt, rate, ii, evid, cmt, addl, ss,
                              parameters, biovar, tlag,
                              0,
@@ -106,4 +107,9 @@ TEST(Torsten, mixOde1Cpt) {
   expect_near_matrix_eq(amounts, x, rel_err);
 
   // Test AutoDiff against FiniteDiff
+  double diff = 1e-8, diff2 = 5e-3;
+  test_mixOde1CptModel(feedbackODE(), nPD,
+                       time, amt, rate, ii, evid, cmt, addl, ss,
+                       parameters, biovar, tlag,
+                       rel_tol, abs_tol, max_num_steps, diff, diff2, "rk45");
 }
