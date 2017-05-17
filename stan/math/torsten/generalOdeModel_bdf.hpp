@@ -84,7 +84,7 @@ generalOdeModel_bdf(const F& f,
   // check arguments
   static const char* function("generalOdeModel_bdf");
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
-                pMatrix, biovar, tlag, function, model);
+                msgs, pMatrix, biovar, tlag, function, model);
 
   // Construct dummy matrix for last argument of pred
   Matrix<double, Dynamic, Dynamic> dummy_system;

@@ -44,40 +44,23 @@ private:
   double rel_tol;
   double abs_tol;
   long int max_num_steps;
+  std::ostream* msgs;
   std::string integratorType;
 
 public:
-/*  Pred1_structure() {
-    modeltype = "default";
-    rel_tol = 0;
-    abs_tol = 0;
-    max_num_steps = 0;
-    integratorType = "none";
-  }
-
-  Pred1_structure(std::string p_modeltype) {
-    modeltype = p_modeltype;
-    rel_tol = 0;
-    abs_tol = 0;
-    max_num_steps = 0;
-    integratorType = "none";
-  } */
-
   Pred1_structure(const std::string& p_modelType,
                   const double& rel_tol_p,
                   const double& abs_tol_p,
                   const long int& max_num_steps_p,  // NOLINT
+                  std::ostream* msgs_p,
                   const std::string& integratorType_p)
-  : modeltype(p_modelType), rel_tol(rel_tol_p), abs_tol(abs_tol_p),
-  max_num_steps(max_num_steps_p), integratorType(integratorType_p)
+  : modeltype(p_modelType),
+    rel_tol(rel_tol_p),
+    abs_tol(abs_tol_p),
+    max_num_steps(max_num_steps_p),
+    msgs(msgs_p),
+    integratorType(integratorType_p)
   { }
-/*
-    modeltype = p_modelType;
-    rel_tol = rel_tol_p;
-    abs_tol = abs_tol_p;
-    max_num_steps = max_num_steps_p;
-    integratorType = integratorType_p;
-*/
 
   template <typename T_time, typename T_parameters, typename T_biovar,
             typename T_tlag, typename T_rate, typename F, typename T_system>
@@ -105,6 +88,7 @@ public:
       return Pred1_general_solver(dt, parameter, init, rate, f, 
                                   integrator_structure(rel_tol, abs_tol,
                                                        max_num_steps,
+                                                       msgs,
                                                        integratorType));
     else if (modeltype == "linOdeModel")
       return Pred1_linOde(dt, parameter, init, rate);
@@ -112,6 +96,7 @@ public:
       return Pred1_mix1(dt, parameter, init, rate,
                         f, integrator_structure(rel_tol, abs_tol,
                                                 max_num_steps,
+                                                msgs,
                                                 integratorType));
     else {
       Eigen::Matrix<scalar, 1, Eigen::Dynamic> default_pred =

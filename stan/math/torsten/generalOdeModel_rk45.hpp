@@ -80,7 +80,7 @@ generalOdeModel_rk45(const F& f,
   // Define class of model
   pmxModel model(pMatrix[0].size(), nCmt,
                  "generalOdeModel", "error", "rk45",
-                 rel_tol, abs_tol, max_num_steps);
+                 msgs, rel_tol, abs_tol, max_num_steps);
 
   // check arguments
   static const char* function("generalOdeModel_rk45");

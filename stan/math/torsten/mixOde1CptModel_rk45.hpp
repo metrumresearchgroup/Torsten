@@ -83,7 +83,7 @@ mixOde1CptModel_rk45(const F& f,
   int nPK = 2;
   pmxModel model(theta[0].size(), nOde + nPK,
                  "mixOde1CptModel", "error", "rk45",
-                 rel_tol, abs_tol, max_num_steps);
+                 msgs, rel_tol, abs_tol, max_num_steps);
 
   // check arguments
   static const char* function("mixOdeOneCptModel_rk45");

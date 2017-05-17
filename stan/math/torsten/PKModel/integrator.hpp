@@ -17,6 +17,7 @@ struct integrator_structure {
 private:
   double rel_tol, abs_tol;
   long int max_num_steps;  // NOLINT(runtime/int)
+  std::ostream* msgs;
   std::string solver_type;
 
 public:
@@ -27,11 +28,15 @@ public:
     solver_type = "rk45";
   }
 
-  integrator_structure(double p_rel_tol, double p_abs_tol,
-    long int p_max_num_steps, std::string p_solver_type) {  // NOLINT
+  integrator_structure(double p_rel_tol,
+                       double p_abs_tol,
+                       long int p_max_num_steps,  // NOLINT
+                       std::ostream* p_msgs,
+                       std::string p_solver_type) {
       rel_tol = p_rel_tol;
       abs_tol = p_abs_tol;
       max_num_steps = p_max_num_steps;
+      msgs = p_msgs;
       solver_type = p_solver_type;
   }
 
@@ -47,11 +52,11 @@ public:
               const std::vector<int>& x_int) const {
     if (solver_type == "bdf")
       return stan::math::integrate_ode_bdf(f, y0, t0, ts, theta, x, x_int,
-                                           0,  // std::ostream * msgs
+                                           msgs,  // std::ostream * msgs
                                            rel_tol, abs_tol, max_num_steps);
     else  // if(solver_type == "rk45")
       return stan::math::integrate_ode_rk45(f, y0, t0, ts, theta, x, x_int,
-                                            0,  // std::ostream * msgs
+                                            msgs,  // std::ostream * msgs
                                             rel_tol, abs_tol, max_num_steps);
   }
 };

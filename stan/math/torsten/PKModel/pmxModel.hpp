@@ -28,6 +28,7 @@ private:
   std::string pred1Type_;
   std::string predSSType_;
   std::string integratorType_;
+  std::ostream* msgs_;
   double rel_tol_;
   double abs_tol_;
   long int max_num_steps_;  // NOLINT
@@ -39,6 +40,7 @@ public:
     pred1Type_ = "default";
     predSSType_ = "default";
     integratorType_ = "default";
+    msgs_ = 0;
     rel_tol_ = 1e-6;
     abs_tol_ = 1e-6;
     max_num_steps_ = 1e+6;
@@ -63,6 +65,7 @@ public:
            const std::string& pred1Type,
            const std::string& predSSType,
            const std::string& integratorType,
+           std::ostream* msgs,
            const double& rel_tol,
            const double& abs_tol,
            const long int& max_num_steps) {  // NOLINT
@@ -72,6 +75,7 @@ public:
     predSSType_ = predSSType;
 
     integratorType_ = integratorType;
+    msgs_ = msgs;
     rel_tol_ = rel_tol;
     abs_tol_ = abs_tol;
     max_num_steps_ = max_num_steps;
@@ -83,6 +87,7 @@ public:
   std::string GetPred1Type() const { return pred1Type_; }
   std::string GetPredSSType() const { return predSSType_; }
   std::string GetIntegratorType() const { return integratorType_; }
+  std::ostream* GetMsgs() const { return msgs_; }
   double GetRelTol() const { return rel_tol_; }
   double GetAbsTol() const { return abs_tol_; }
   long int GetMaxNumSteps() const { return max_num_steps_; }  // NOLINT
@@ -91,6 +96,7 @@ public:
     std::cout << nParm_ << " " << nCmt_ << " "
               << pred1Type_ << " " << predSSType_ << " "
               << integratorType_ << " "
+              << msgs_ << " "
               << rel_tol_ << " " << abs_tol_ << " "
               << max_num_steps_ << std::endl;
   }

@@ -114,6 +114,7 @@ Pred(const std::vector<T_time>& time,
                         model.GetRelTol(),
                         model.GetAbsTol(),
                         model.GetMaxNumSteps(),
+                        model.GetMsgs(),
                         model.GetIntegratorType());
 
   PredSS_structure PredSS(model.GetPredSSType());
