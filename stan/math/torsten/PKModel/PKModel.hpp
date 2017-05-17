@@ -14,17 +14,9 @@
 #include <stan/math/torsten/PKModel/ModelParameters.hpp>
 #include <stan/math/torsten/PKModel/integrator.hpp>
 #include <stan/math/torsten/PKModel/Pred/PolyExp.hpp>
-
 #include <stan/math/torsten/PKModel/Pred1.hpp>
 #include <stan/math/torsten/PKModel/PredSS.hpp>
 #include <stan/math/torsten/PKModel/Pred.hpp>
-
-// Initial functor for ODE solver
-// pmetrics_solver_structure pmetrics_solver;
-
-// Initial functor for evolution operators
-// Pred1_structure Pred1("default");
-// PredSS_structure PredSS("default");
 
 extern int marker_count;  // For testing purposes
 

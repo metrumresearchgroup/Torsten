@@ -90,9 +90,6 @@ mixOde1CptModel_rk45(const F& f,
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
                 theta, biovar, tlag, function, model);
 
-  // define functors used in Pred()
-  
-
   // Construct dummy array of matrix for last argument of pred
   Matrix<double, Dynamic, Dynamic> dummy_system;
   vector<Matrix<double, Dynamic, Dynamic> >

@@ -37,24 +37,26 @@ template<typename T_time,
          typename T_biovar,
          typename T_tlag,
          typename T_system,
+         typename T_init,
          typename F>
 Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_rate,
   T_parameters>::type, 1, Eigen::Dynamic>
 Pred1_mix1(const T_time& dt,
            const ModelParameters<T_time, T_parameters, T_biovar,
                                  T_tlag, T_system>& parameter,
-           const Eigen::Matrix<typename boost::math::tools::promote_args<
-             T_time, T_rate, T_parameters>::type, 1, Eigen::Dynamic>& init,
+           const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& init,
            const std::vector<T_rate>& rate,
            const F& f,
            const integrator_structure& integrator) {
   using std::vector;
   using stan::math::to_array_1d;
+  using boost::math::tools::promote_args;
 
-  // FIX ME - should I revise the scalar time for T_biovar and T_lag
-  // FIX ME - create other typedef to distinguish T_init and T_parms?
-  typedef typename boost::math::tools::promote_args<T_time, T_rate,
-    T_parameters>::type scalar;
+  // FIX ME - revise the scalar time for T_biovar and T_lag?
+  // FIX ME - define type for promote<T_init, T_parameters>?
+  typedef typename promote_args<T_time, T_rate,
+    T_parameters, T_init>::type scalar;
+  typedef typename promote_args<T_parameters, T_init>::type T_theta;
 
   assert((size_t) init.cols() == rate.size());
 
@@ -69,7 +71,11 @@ Pred1_mix1(const T_time& dt,
   for (size_t i = 0; i < rate.size(); i++) x_r[i] = unpromote(rate[i]);
   x_r.push_back(t0_dbl);  // need to pass the initial time!
 
-  vector<T_parameters> theta = parameter.get_RealParameters();
+  size_t nParm = parameter.get_RealParameters().size();
+  vector<T_theta> theta(nParm);
+  for (size_t i = 0; i < nParm; i++)
+    theta[i] = parameter.get_RealParameters()[i];
+
   vector<scalar> y0 = to_array_1d(init);
 
   Eigen::Matrix<scalar, 1, Eigen::Dynamic> pred;
@@ -91,6 +97,8 @@ Pred1_mix1(const T_time& dt,
     thetaPK[2] = theta[2];  // ka
 
     vector<scalar> xPK = fOneCpt(dt, thetaPK, y0_PK, rate);
+
+    // Construct augmented parameter vector
     for (size_t i = 0; i < nPK; i++) theta.push_back(init(i));
 
     // create vector with PD initial states
@@ -99,7 +107,6 @@ Pred1_mix1(const T_time& dt,
     for (size_t i = 0; i < nPD; i++) y0_PD[i] = y0[nPK + i];
     vector<int> idummy;
 
-    // vector<vector<scalar> > pred_V = integrator(mix1_functor<F>(f),
     vector<vector<scalar> > pred_V = integrator(f,
                                                 y0_PD, t0_dbl, t_dbl,
                                                 theta, x_r, idummy);

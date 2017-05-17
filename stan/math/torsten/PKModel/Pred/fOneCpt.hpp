@@ -6,7 +6,6 @@
 #include <vector>
 
 /**
- * EXPERIMENTAL
  *  One compartment model with first order absorption
  *  Calculates the amount in each compartment at dt time units after the time
  *  of the initial condition.

@@ -108,7 +108,7 @@ Pred(const std::vector<T_time>& time,
 
   Matrix<scalar, 1, Dynamic> zeros = Matrix<scalar, 1, Dynamic>::Zero(nCmt);
   Matrix<scalar, 1, Dynamic> init = zeros;
-  
+
   // CONSTRUCT PRED OPERATORS
   Pred1_structure Pred1(model.GetPred1Type(),
                         model.GetRelTol(),
