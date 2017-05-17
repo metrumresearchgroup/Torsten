@@ -91,13 +91,8 @@ generalOdeModel_bdf(const F& f,
   vector<Matrix<double, Dynamic, Dynamic> >
     dummy_systems(1, dummy_system);
 
-  Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-    typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-    Dynamic, Dynamic> pred;
-  pred = Pred(time, amt, rate, ii, evid, cmt, addl, ss,
+  return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
               pMatrix, biovar, tlag, model, f, dummy_systems);
-
-  return pred;
 }
 
 /**

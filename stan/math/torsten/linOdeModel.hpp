@@ -69,7 +69,7 @@ linOdeModel(const std::vector<T0>& time,
     stan::math::check_square(function, "system matrix", system[i]);
   int nCmt = system[0].cols();
 
-  PKModel model(0, nCmt);  // CHECK - what should I use for nParameters?
+  pmxModel model(0, nCmt, "linOdeModel");
 
   // Check arguments
   std::vector<double> parameters_dummy(0);
@@ -77,19 +77,8 @@ linOdeModel(const std::vector<T0>& time,
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
                 pMatrix_dummy, biovar, tlag, function, model);
 
-  // define functors used in Pred()
-  Pred1_structure new_Pred1("linOdeModel");
-  PredSS_structure new_PredSS("linOdeModel");
-  Pred1 = new_Pred1;
-  PredSS = new_PredSS;
-
-  Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-    typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-    Dynamic, Dynamic> pred;
-   pred = Pred(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_dummy,
-               biovar, tlag, model, dummy_ode(), system);
-
-  return pred;
+  return Pred(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_dummy,
+              biovar, tlag, model, dummy_ode(), system);
 }
 
 /**

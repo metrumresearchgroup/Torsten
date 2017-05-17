@@ -40,6 +40,9 @@ struct ODE_functor {
 
 
 TEST(Torsten, pred1_mix) {
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
+
   double dt = 1;
 
   int nParameters = 7;
@@ -61,7 +64,7 @@ TEST(Torsten, pred1_mix) {
     parms(dt, parameters, biovar_dummy, tlag_dummy, K);
 
   int nOdes = 5;
-  Eigen::VectorXd init(nOdes);
+  Matrix<double, 1, Dynamic> init(nOdes);
   init << 80000, 0, 0, 0, 0;  // initial dose in the gut
 
   std::vector<double> rate(5, 0);  // no rate
@@ -72,7 +75,7 @@ TEST(Torsten, pred1_mix) {
   double rel_tol = 1e-8, abs_tol = 1e-8;
   long int max_num_steps = 1e+8;
 
-  Eigen::VectorXd pred = Pred1_mix1(dt, parms, init, rate,
+  Matrix<double, 1, Dynamic> pred = Pred1_mix1(dt, parms, init, rate,
                                     mix1_functor<ODE_functor>(ODE_functor()),
                                     integrator_structure(rel_tol, abs_tol,
                                                          max_num_steps,

@@ -58,7 +58,8 @@ PKModelOneCpt(const std::vector<T0>& time,
   using boost::math::tools::promote_args;
   using stan::math::check_positive_finite;
 
-  PKModel model("OneCptModel");
+  int nPK = 2;
+  pmxModel model(pMatrix[0].size(), nPK, "OneCptModel");
 
   // Check arguments -- FIX ME: handle the new parameter arguments
   static const char* function("PKModelOneCpt");
@@ -73,9 +74,9 @@ PKModelOneCpt(const std::vector<T0>& time,
   // FIX ME - we want to check every array of pMatrix, not
   // just the first one (at index 0)
   std::string message4 = ", but must equal the number of parameters in the model: " // NOLINT
-    + boost::lexical_cast<std::string>(model.GetNParameter()) + "!";
+    + boost::lexical_cast<std::string>(model.GetNParm()) + "!";
   const char* length_error4 = message4.c_str();
-  if (!(pMatrix[0].size() == (size_t) model.GetNParameter()))
+  if (!(pMatrix[0].size() == (size_t) model.GetNParm()))
     stan::math::invalid_argument(function,
     "The number of parameters per event (length of a vector in the ninth argument) is", // NOLINT
     pMatrix[0].size(), "", length_error4);
@@ -93,25 +94,13 @@ PKModelOneCpt(const std::vector<T0>& time,
                                  "The number of lag times parameters per event (length of a vector in the eleventh argument) is", // NOLINT
                                  tlag[0].size(), "", length_error5);
 
-
-  // Construct Pred functions for the model.
-  Pred1_structure new_Pred1("OneCptModel");
-  PredSS_structure new_PredSS("OneCptModel");
-  Pred1 = new_Pred1;
-  PredSS = new_PredSS;
-
   // Construct dummy matrix for last argument of pred
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> dummy_system;
   std::vector<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> >
     dummy_systems(1, dummy_system);
 
-  Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-    typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-    Dynamic, Dynamic> pred;
-  pred = Pred(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar,
+  return Pred(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar,
               tlag, model, dummy_ode(), dummy_systems);
-
-  return pred;
 }
 
 /**

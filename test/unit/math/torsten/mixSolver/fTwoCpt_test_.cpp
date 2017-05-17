@@ -112,9 +112,6 @@ struct feedbackODE_mixed {
    }
 };
 
-
-
-
 TEST(Torsten, ODEs) {
   using std::vector;
   using stan::math::var;

@@ -44,23 +44,28 @@ public:
     max_num_steps_ = 1e+6;
   }
 
-  pmxModel(int nParm, int nCmt, std::string pred1Type,
-           std::string predSSType) {
+  pmxModel(const int& nParm,
+           const int& nCmt,
+           const std::string& predType) {
     nParm_ = nParm;
     nCmt_ = nCmt;
-    pred1Type_ = pred1Type;
-    predSSType_ = predSSType;
+    pred1Type_ = predType;
+    predSSType_ = predType;
 
     integratorType_ = "default";
-    rel_tol_ = 1e-6;
-    abs_tol_ = 1e-6;
-    max_num_steps_ = 1e+6;
+    rel_tol_ = 0;
+    abs_tol_ = 0;
+    max_num_steps_ = 0;
   }
 
-  pmxModel(int nParm, int nCmt, std::string pred1Type,
-           std::string predSSType, std::string integratorType,
-           double rel_tol, double abs_tol,
-           long int max_num_steps) {  // NOLINT
+  pmxModel(const int& nParm,
+           const int& nCmt,
+           const std::string& pred1Type,
+           const std::string& predSSType,
+           const std::string& integratorType,
+           const double& rel_tol,
+           const double& abs_tol,
+           const long int& max_num_steps) {  // NOLINT
     nParm_ = nParm;
     nCmt_ = nCmt;
     pred1Type_ = pred1Type;
@@ -71,23 +76,6 @@ public:
     abs_tol_ = abs_tol;
     max_num_steps_ = max_num_steps;
   }
-
-  // model specific constructor
-  /*
-  explicit PKModel(std::string p_nCmt) {
-    // class constructor for one and two compartment(s) model.
-    assert((p_nCmt == "OneCptModel") || (p_nCmt == "TwoCptModel"));
-    if (p_nCmt == "OneCptModel") {
-      nParameter = 3;
-      nCmt = 2;
-    } else if (p_nCmt == "TwoCptModel") {
-      nParameter = 5;
-      nCmt = 3;
-    } else {
-      nParameter = 0;
-      nCmt = 0;
-    }
-  } */
 
   // access function
   int GetNParm() const { return nParm_; }
