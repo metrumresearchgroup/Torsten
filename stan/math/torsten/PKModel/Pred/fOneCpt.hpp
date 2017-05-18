@@ -37,7 +37,7 @@ fOneCpt(const T_time& dt,
         const std::vector<T_parameters>& parameter,
         const std::vector<T_init>& init,
         const std::vector<T_rate>& rate) {
-  stan::math::check_finite("Pred1", "initial values", init);
+  stan::math::check_finite("fOneCpt", "initial values", init);
   using std::vector;
   using boost::math::tools::promote_args;
   using Eigen::Matrix;
@@ -53,8 +53,8 @@ fOneCpt(const T_time& dt,
   alpha[0] = k10;
   alpha[1] = ka;
 
-  std::vector<scalar> a(2);
-  std::vector<scalar> pred(2, 0);
+  vector<scalar> a(2);
+  vector<scalar> pred(2, 0);
 
   if ((init[0] != 0) || (rate[0] != 0)) {
     pred[0] = init[0] * exp(-ka * dt) + rate[0] * (1 - exp(-ka * dt)) / ka;

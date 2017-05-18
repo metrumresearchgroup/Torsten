@@ -8,6 +8,7 @@
 #include <stan/math/torsten/PKModel/Pred/Pred1_general_solver.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_linOde.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_mix1.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_mix2.hpp>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -94,6 +95,12 @@ public:
       return Pred1_linOde(dt, parameter, init, rate);
     else if (modeltype == "mixOde1CptModel")
       return Pred1_mix1(dt, parameter, init, rate,
+                        f, integrator_structure(rel_tol, abs_tol,
+                                                max_num_steps,
+                                                msgs,
+                                                integratorType));
+    else if (modeltype == "mixOde2CptModel")
+      return Pred1_mix2(dt, parameter, init, rate,
                         f, integrator_structure(rel_tol, abs_tol,
                                                 max_num_steps,
                                                 msgs,

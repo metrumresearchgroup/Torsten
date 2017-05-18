@@ -6,7 +6,7 @@
 #include <vector>
 
 /**
- * EXPERIMENTAL
+ *
  * Two compartment model with first order absorption
  * Calculates the amount in each compartment at dt time units after the time
  * of the initial condition.
@@ -27,35 +27,35 @@
  *   @return an eigen vector that contains predicted amount in each compartment
  *           at the current event.
  */
-template<typename T_time, typename T_rate, typename T_parameters,
+template<typename T_time,
+         typename T_rate,
+         typename T_parameters,
          typename T_init>
-Eigen::Matrix<typename boost::math::tools::promote_args<
-                T_time,
-                T_rate,
-                T_parameters,
-                T_init>::type, Eigen::Dynamic,1>
+std::vector<typename boost::math::tools::promote_args< T_time, T_parameters,
+                                                       T_init, T_rate>::type>
 fTwoCpt(const T_time& dt,
-        const Eigen::Matrix<T_parameters, Eigen::Dynamic, 1>& parameter,
-        const Eigen::Matrix<T_init, Eigen::Dynamic, 1>& init,
+        const std::vector<T_parameters>& parameter,
+        const std::vector<T_init>& init,
         const std::vector<T_rate>& rate) {
-  stan::math::check_finite("Pred1", "initial values", init);
-
+  stan::math::check_finite("fTwoCpt", "initial values", init);
   using std::vector;
+  using boost::math::tools::promote_args;
   using Eigen::Matrix;
   using Eigen::Dynamic;
 
-  typedef typename boost::math::tools::promote_args<T_time, T_rate,
-    T_parameters, T_init>::type scalar;
+  typedef typename promote_args<T_time, T_rate, T_parameters, T_init>::type scalar;
 
-  T_parameters CL = parameter(0),
-    Q = parameter(1),
-    V2 = parameter(2),
-    V3 = parameter(3),
-    ka = parameter(4);
+  T_parameters
+    CL = parameter[0],
+    Q = parameter[1],
+    VC = parameter[2],
+    VP = parameter[3],
+    ka = parameter[4];
 
-  T_parameters k10 = CL / V2,
-    k12 = Q / V2,
-    k21 = Q / V3,
+  T_parameters
+    k10 = CL / VC,
+    k12 = Q / VC,
+    k21 = Q / VP,
     ksum = k10 + k12 + k21;
 
   vector<T_parameters> alpha(3, 0);
@@ -63,41 +63,42 @@ fTwoCpt(const T_time& dt,
   alpha[1] = (ksum - sqrt(ksum * ksum - 4 * k10 * k21)) / 2;
   alpha[2] = ka;
 
-  vector<scalar> a(3, 0);
-  Matrix<scalar, 1, Dynamic> pred = Matrix<scalar, 1, Dynamic>::Zero(3);
+  vector<scalar> a(3);
+  vector<scalar> pred(3, 0);
+
   if ((init[0] != 0) || (rate[0] != 0))  {
-    pred(0, 0) = init[0] * exp(-ka * dt) + rate[0] * (1 - exp(-ka * dt)) / ka;
+    pred[0] = init[0] * exp(-ka * dt) + rate[0] * (1 - exp(-ka * dt)) / ka;
     a[0] = ka * (k21 - alpha[0]) / ((ka - alpha[0]) * (alpha[1] - alpha[0]));
     a[1] = ka * (k21 - alpha[1]) / ((ka - alpha[1]) * (alpha[0] - alpha[1]));
     a[2] = -(a[0] + a[1]);
-    pred(0, 1) += PolyExp(dt, init[0], 0, 0, 0, false, a, alpha, 3)
+    pred[1] += PolyExp(dt, init[0], 0, 0, 0, false, a, alpha, 3)
       + PolyExp(dt, 0, rate[0], dt, 0, false, a, alpha, 3);
     a[0] = ka * k12 / ((ka - alpha[0]) * (alpha[1] - alpha[0]));
     a[1] = ka * k12 / ((ka - alpha[1]) * (alpha[0] - alpha[1]));
     a[2] = -(a[0] + a[1]);
-    pred(0, 2) += PolyExp(dt, init[0], 0, 0, 0, false, a, alpha, 3)
+    pred[2] += PolyExp(dt, init[0], 0, 0, 0, false, a, alpha, 3)
       + PolyExp(dt, 0, rate[0], dt, 0, false, a, alpha, 3);
   }
 
   if ((init[1] != 0) || (rate[1] != 0)) {
     a[0] = (k21 - alpha[0]) / (alpha[1] - alpha[0]);
     a[1] = (k21 - alpha[1]) / (alpha[0] - alpha[1]);
-    pred(0, 1) += PolyExp(dt, init[1], 0, 0, 0, false, a, alpha, 2)
+    pred[1] += PolyExp(dt, init[1], 0, 0, 0, false, a, alpha, 2)
       + PolyExp(dt, 0, rate[1], dt, 0, false, a, alpha, 2);
     a[0] = k12 / (alpha[1] - alpha[0]);
     a[1] = -a[0];
-    pred(0, 2) += PolyExp(dt, init[1], 0, 0, 0, false, a, alpha, 2)
+    pred[2] += PolyExp(dt, init[1], 0, 0, 0, false, a, alpha, 2)
       + PolyExp(dt, 0, rate[1], dt, 0, false, a, alpha, 2);
   }
 
   if ((init[2] != 0) || (rate[2] != 0)) {
     a[0] = k21 / (alpha[1] - alpha[0]);
     a[1] = -a[0];
-    pred(0, 1) += PolyExp(dt, init[2], 0, 0, 0, false, a, alpha, 2)
+    pred[1] += PolyExp(dt, init[2], 0, 0, 0, false, a, alpha, 2)
       + PolyExp(dt, 0, rate[2], dt, 0, false, a, alpha, 2);
     a[0] = (k10 + k12 - alpha[0]) / (alpha[1] - alpha[0]);
     a[1] = (k10 + k12 - alpha[1]) / (alpha[0] - alpha[1]);
-    pred(0, 2) += PolyExp(dt, init[2], 0, 0, 0, false, a, alpha, 2)
+    pred[2] += PolyExp(dt, init[2], 0, 0, 0, false, a, alpha, 2)
       + PolyExp(dt, 0, rate[2], dt, 0, false, a, alpha, 2);
   }
 

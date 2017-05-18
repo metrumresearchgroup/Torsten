@@ -37,7 +37,7 @@ mod %>% ev(e1) %>% mrgsim(end = 500) %>% plot # plot data
 ## save some data for unit tests (see amounts at t = 1 hour, with no noise)
 time <- seq(from = 0.25, to = 2, by = 0.25)
 time <- c(time, 4)
-xdata <- mod %>% ev(e1) %>% mrgsim(Req = "GUT, CENT, PERI, PROL, TRANSIT, CIRC",
+xdata <- mod %>% ev(e1) %>% mrgsim(Req = "GUT, CENT, PROL, TRANSIT, CIRC",
                                    end = -1, add = time,
                                    rescort = 3) %>% as.data.frame
 xdata

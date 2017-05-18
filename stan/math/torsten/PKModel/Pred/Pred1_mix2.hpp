@@ -1,9 +1,9 @@
-#ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_MIX1_HPP
-#define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_MIX1_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_MIX2_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_MIX2_HPP
 
 #include <stan/math/torsten/PKModel/Pred/unpromote.hpp>
-#include <stan/math/torsten/PKModel/Pred/fOneCpt.hpp>
-#include <stan/math/torsten/PKModel/Pred/mix1_functor.hpp>
+#include <stan/math/torsten/PKModel/Pred/fTwoCpt.hpp>
+#include <stan/math/torsten/PKModel/Pred/mix2_functor.hpp>
 #include <stan/math/torsten/PKModel/integrator.hpp>
 #include <iostream>
 #include <vector>
@@ -42,7 +42,7 @@ template<typename T_time,
          typename F>
 Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_rate,
   T_parameters>::type, 1, Eigen::Dynamic>
-Pred1_mix1(const T_time& dt,
+Pred1_mix2(const T_time& dt,
            const ModelParameters<T_time, T_parameters, T_biovar,
                                  T_tlag, T_system>& parameter,
            const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& init,
@@ -54,7 +54,6 @@ Pred1_mix1(const T_time& dt,
   using boost::math::tools::promote_args;
 
   // FIX ME - revise the scalar time for T_biovar and T_lag?
-  // FIX ME - define type for promote<T_init, T_parameters>?
   typedef typename promote_args<T_time, T_rate,
     T_parameters, T_init>::type scalar;
   typedef typename promote_args<T_parameters, T_init>::type T_theta;
@@ -82,22 +81,25 @@ Pred1_mix1(const T_time& dt,
   Eigen::Matrix<scalar, 1, Eigen::Dynamic> pred;
   if (t_dbl[0] == t0_dbl) { pred = init;
   } else {
-    size_t nPK = 2;  // two states for 1Cpt with absorption
+    size_t nPK = 3;  // three states for 2Cpt with absorption
     // create vector with only PK initial states
     // (want to minmize the number of parameters that
     // get passed to a function)
     vector<scalar> y0_PK(nPK);
     y0_PK[0] = y0[0];
     y0_PK[1] = y0[1];
+    y0_PK[2] = y0[2];
 
     // create vector with only PK parameters
-    int nParmPK = 3;
+    int nParmPK = 5;
     vector<scalar> thetaPK(nParmPK);
     thetaPK[0] = theta[0];  // CL
-    thetaPK[1] = theta[1];  // VC
-    thetaPK[2] = theta[2];  // ka
+    thetaPK[1] = theta[1];  // Q
+    thetaPK[2] = theta[2];  // VC
+    thetaPK[3] = theta[3];  // VP
+    thetaPK[4] = theta[4];  // ka
 
-    vector<scalar> xPK = fOneCpt(dt, thetaPK, y0_PK, rate);
+    vector<scalar> xPK = fTwoCpt(dt, thetaPK, y0_PK, rate);
 
     // Construct augmented parameter vector
     for (size_t i = 0; i < nPK; i++) theta.push_back(init(i));
