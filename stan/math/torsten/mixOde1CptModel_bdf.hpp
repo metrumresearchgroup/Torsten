@@ -1,20 +1,22 @@
-#ifndef STAN_MATH_TORSTEN_GENERALODEMODEL_BDF_HPP
-#define STAN_MATH_TORSTEN_GENERALODEMODEL_BDF_HPP
+#ifndef STAN_MATH_TORSTEN_MIXODEONECPTMODEL_BDF_HPP
+#define STAN_MATH_TORSTEN_MIXODEONECPTMODEL_BDF_HPP
 
 #include <Eigen/Dense>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
+#include <stan/math/torsten/PKModel/pred/mix1_functor.hpp>
 #include <boost/math/tools/promotion.hpp>
 #include <vector>
 
 /**
- * Computes the predicted amounts in each compartment at each event
- * for a general compartment model, defined by a system of ordinary
- * differential equations. Uses the stan::math::integrate_ode_bdf 
- * function. 
+ * Compute the predicted amounts in each compartment at each event
+ * of an ODEs model. The model contains a base 1 Compartment PK
+ * component which gets solved analytically, while the other ODEs
+ * are solved numerically using stan::math::integrate_ode_bdf. This
+ * amounts to using the mixed solver method.
  *
- * <b>Warning:</b> This prototype does not handle steady state events. 
+ * <b>Warning:</b> This prototype does not handle steady state events.
  *
- * @tparam T0 type of scalar for time of events. 
+ * @tparam T0 type of scalar for time of events.
  * @tparam T1 type of scalar for amount at each event.
  * @tparam T2 type of scalar for rate at each event.
  * @tparam T3 type of scalar for inter-dose inteveral at each event.
@@ -22,90 +24,127 @@
  * @tparam T5 type of scalars for the bio-variability parameters.
  * @tparam T6 type of scalars for the model tlag parameters.
  * @tparam F type of ODE system function.
- * @param[in] f functor for base ordinary differential equation that defines 
- *            compartment model.
- * @param[in] nCmt number of compartments in model
- * @param[in] pMatrix parameters at each event
- * @param[in] time times of events  
+ * @param[in] f functor for base ordinary differential equation
+ *            which gets solved numerically.
+ * @param[in] nOde number of ODEs we solve numerically.
+ * @param[in] time times of events
  * @param[in] amt amount at each event
  * @param[in] rate rate at each event
  * @param[in] ii inter-dose interval at each event
- * @param[in] evid event identity: 
- *                    (0) observation 
+ * @param[in] evid event identity:
+ *                    (0) observation
  *                    (1) dosing
- *                    (2) other 
- *                    (3) reset 
- *                    (4) reset AND dosing 
- * @param[in] cmt compartment number at each event 
- * @param[in] addl additional dosing at each event 
+ *                    (2) other
+ *                    (3) reset
+ *                    (4) reset AND dosing
+ * @param[in] cmt compartment number at each event
+ * @param[in] addl additional dosing at each event
  * @param[in] ss steady state approximation at each event (0: no, 1: yes)
- * @param[in] rel_tol relative tolerance for the Boost ode solver 
+ * @param[in] theta vector of ODE parameters
+ * @param[in] biovar bio-availability in each compartment
+ * @param[in] tlag lag time in each compartment
+ * @param[in] rel_tol relative tolerance for the Boost ode solver
  * @param[in] abs_tol absolute tolerance for the Boost ode solver
- * @param[in] max_num_steps maximal number of steps to take within 
- *            the Boost ode solver 
- * @return a matrix with predicted amount in each compartment 
+ * @param[in] max_num_steps maximal number of steps to take within
+ *            the Boost ode solver
+ * @return a matrix with predicted amount in each compartment
  *         at each event.
  *
- * FIX ME: currently have a dummy msgs argument. Makes it easier
- * to expose to stan grammar files, because I can follow more closely
- * what was done for the ODE integrator. Not ideal.
+ * FIX ME: msg should be passed on to functor (allows use of
+ * print statement inside ODE system).
  */
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6, typename F>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-generalOdeModel_bdf(const F& f,
-                    const int nCmt,
-                    const std::vector<T0>& time,
-                    const std::vector<T1>& amt,
-                    const std::vector<T2>& rate,
-                    const std::vector<T3>& ii,
-                    const std::vector<int>& evid,
-                    const std::vector<int>& cmt,
-                    const std::vector<int>& addl,
-                    const std::vector<int>& ss,
-                    const std::vector<std::vector<T4> >& pMatrix,
-                    const std::vector<std::vector<T5> >& biovar,
-                    const std::vector<std::vector<T6> >& tlag,
-                    std::ostream* msgs = 0,
-                    double rel_tol = 1e-6,
-                    double abs_tol = 1e-6,
-                    long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
+mixOde1CptModel_bdf(const F& f,
+                     const int nOde,
+                     const std::vector<T0>& time,
+                     const std::vector<T1>& amt,
+                     const std::vector<T2>& rate,
+                     const std::vector<T3>& ii,
+                     const std::vector<int>& evid,
+                     const std::vector<int>& cmt,
+                     const std::vector<int>& addl,
+                     const std::vector<int>& ss,
+                     const std::vector<std::vector<T4> >& theta,
+                     const std::vector<std::vector<T5> >& biovar,
+                     const std::vector<std::vector<T6> >& tlag,
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
   using boost::math::tools::promote_args;
 
-  pmxModel model(pMatrix[0].size(), nCmt,
-                 "generalOdeModel", "error", "bdf",
+  int nPK = 2;
+  pmxModel model(theta[0].size(), nOde + nPK,
+                 "mixOde1CptModel", "error", "bdf",
                  msgs, rel_tol, abs_tol, max_num_steps);
 
   // check arguments
-  static const char* function("generalOdeModel_bdf");
+  static const char* function("mixOde1CptModel_bdf");
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
-                pMatrix, biovar, tlag, function, model);
+                theta, biovar, tlag, function, model);
 
-  // Construct dummy matrix for last argument of pred
+  // Construct dummy array of matrix for last argument of pred
   Matrix<double, Dynamic, Dynamic> dummy_system;
   vector<Matrix<double, Dynamic, Dynamic> >
     dummy_systems(1, dummy_system);
 
-  return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-              pMatrix, biovar, tlag, model, f, dummy_systems);
+ return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
+             theta, biovar, tlag, model, mix1_functor<F>(f),
+             dummy_systems);
 }
 
 /**
  * Overload function to allow user to pass an std::vector for 
- * pMatrix.
+ * theta.
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+  typename T5, typename T6, typename F>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+mixOde1CptModel_bdf(const F& f,
+                     const int nOde,
+                     const std::vector<T0>& time,
+                     const std::vector<T1>& amt,
+                     const std::vector<T2>& rate,
+                     const std::vector<T3>& ii,
+                     const std::vector<int>& evid,
+                     const std::vector<int>& cmt,
+                     const std::vector<int>& addl,
+                     const std::vector<int>& ss,
+                     const std::vector<T4>& theta,
+                     const std::vector<std::vector<T5> >& biovar,
+                     const std::vector<std::vector<T6> >& tlag,
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
+  std::vector<std::vector<T4> > vec_theta(1, theta);
+
+  return mixOde1CptModel_bdf(f, nOde,
+                              time, amt, rate, ii, evid, cmt, addl, ss,
+                              vec_theta, biovar, tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
+}
+
+/**
+ * Overload function to allow user to pass an std::vector for 
+ * theta and biovar.
  */
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6, typename F>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-generalOdeModel_bdf(const F& f,
-                     const int nCmt,
+mixOde1CptModel_bdf(const F& f,
+                     const int nOde,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
                      const std::vector<T2>& rate,
@@ -114,67 +153,33 @@ generalOdeModel_bdf(const F& f,
                      const std::vector<int>& cmt,
                      const std::vector<int>& addl,
                      const std::vector<int>& ss,
-                     const std::vector<T4>& pMatrix,
-                     const std::vector<std::vector<T5> >& biovar,
-                     const std::vector<std::vector<T6> >& tlag,
-                     std::ostream* msgs = 0,
-                     double rel_tol = 1e-6,
-                     double abs_tol = 1e-6,
-                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
-  std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
-
-  return generalOdeModel_bdf(f, nCmt,
-                              time, amt, rate, ii, evid, cmt, addl, ss,
-                              vec_pMatrix, biovar, tlag,
-                              msgs, rel_tol, abs_tol, max_num_steps);
-}
-
-/**
-* Overload function to allow user to pass an std::vector for 
-* pMatrix and biovar.
-*/
-template <typename T0, typename T1, typename T2, typename T3, typename T4,
-          typename T5, typename T6, typename F>
-Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-  Eigen::Dynamic, Eigen::Dynamic>
-generalOdeModel_bdf(const F& f,
-                     const int nCmt,
-                     const std::vector<T0>& time,
-                     const std::vector<T1>& amt,
-                     const std::vector<T2>& rate,
-                     const std::vector<T3>& ii,
-                     const std::vector<int>& evid,
-                     const std::vector<int>& cmt,
-                     const std::vector<int>& addl,
-                     const std::vector<int>& ss,
-                     const std::vector<T4>& pMatrix,
+                     const std::vector<T4>& theta,
                      const std::vector<T5>& biovar,
                      const std::vector<std::vector<T6> >& tlag,
                      std::ostream* msgs = 0,
                      double rel_tol = 1e-6,
                      double abs_tol = 1e-6,
                      long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
-  std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
+  std::vector<std::vector<T4> > vec_theta(1, theta);
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
 
-  return generalOdeModel_bdf(f, nCmt,
+  return mixOde1CptModel_bdf(f, nOde,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              vec_pMatrix, vec_biovar, tlag,
+                              vec_theta, vec_biovar, tlag,
                               msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
-* Overload function to allow user to pass an std::vector for 
-* pMatrix, biovar, and tlag.
-*/
+ * Overload function to allow user to pass an std::vector for 
+ * theta, biovar, and tlag.
+ */
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6, typename F>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-generalOdeModel_bdf(const F& f,
-                     const int nCmt,
+mixOde1CptModel_bdf(const F& f,
+                     const int nOde,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
                      const std::vector<T2>& rate,
@@ -183,34 +188,34 @@ generalOdeModel_bdf(const F& f,
                      const std::vector<int>& cmt,
                      const std::vector<int>& addl,
                      const std::vector<int>& ss,
-                     const std::vector<T4>& pMatrix,
+                     const std::vector<T4>& theta,
                      const std::vector<T5>& biovar,
                      const std::vector<T6>& tlag,
                      std::ostream* msgs = 0,
                      double rel_tol = 1e-6,
                      double abs_tol = 1e-6,
                      long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
-  std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
+  std::vector<std::vector<T4> > vec_theta(1, theta);
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
-  return generalOdeModel_bdf(f, nCmt,
+  return mixOde1CptModel_bdf(f, nOde,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              vec_pMatrix, vec_biovar, vec_tlag,
+                              vec_theta, vec_biovar, vec_tlag,
                               msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
-* Overload function to allow user to pass an std::vector for 
-* pMatrix and tlag.
-*/
+ * Overload function to allow user to pass an std::vector for 
+ * theta and tlag.
+ */
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6, typename F>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-generalOdeModel_bdf(const F& f,
-                     const int nCmt,
+mixOde1CptModel_bdf(const F& f,
+                     const int nOde,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
                      const std::vector<T2>& rate,
@@ -219,33 +224,33 @@ generalOdeModel_bdf(const F& f,
                      const std::vector<int>& cmt,
                      const std::vector<int>& addl,
                      const std::vector<int>& ss,
-                     const std::vector<T4>& pMatrix,
+                     const std::vector<T4>& theta,
                      const std::vector<std::vector<T5> >& biovar,
                      const std::vector<T6>& tlag,
                      std::ostream* msgs = 0,
                      double rel_tol = 1e-6,
                      double abs_tol = 1e-6,
                      long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
-  std::vector<std::vector<T4> > vec_pMatrix(1, pMatrix);
+  std::vector<std::vector<T4> > vec_theta(1, theta);
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
-  return generalOdeModel_bdf(f, nCmt,
+  return mixOde1CptModel_bdf(f, nOde,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              vec_pMatrix, biovar, vec_tlag,
+                              vec_theta, biovar, vec_tlag,
                               msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
-* Overload function to allow user to pass an std::vector for 
-* biovar.
-*/
+ * Overload function to allow user to pass an std::vector for 
+ * biovar.
+ */
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6, typename F>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-generalOdeModel_bdf(const F& f,
-                     const int nCmt,
+mixOde1CptModel_bdf(const F& f,
+                     const int nOde,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
                      const std::vector<T2>& rate,
@@ -254,7 +259,7 @@ generalOdeModel_bdf(const F& f,
                      const std::vector<int>& cmt,
                      const std::vector<int>& addl,
                      const std::vector<int>& ss,
-                     const std::vector<std::vector<T4> >& pMatrix,
+                     const std::vector<std::vector<T4> >& theta,
                      const std::vector<T5>& biovar,
                      const std::vector<std::vector<T6> >& tlag,
                      std::ostream* msgs = 0,
@@ -263,23 +268,23 @@ generalOdeModel_bdf(const F& f,
                      long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
 
-  return generalOdeModel_bdf(f, nCmt,
+  return mixOde1CptModel_bdf(f, nOde,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              pMatrix, vec_biovar, tlag,
+                              theta, vec_biovar, tlag,
                               msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 /**
-* Overload function to allow user to pass an std::vector for 
-* biovar and tlag.
-*/
+ * Overload function to allow user to pass an std::vector for 
+ * biovar and tlag.
+ */
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6, typename F>
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-generalOdeModel_bdf(const F& f,
-                     const int nCmt,
+mixOde1CptModel_bdf(const F& f,
+                     const int nOde,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
                      const std::vector<T2>& rate,
@@ -288,7 +293,7 @@ generalOdeModel_bdf(const F& f,
                      const std::vector<int>& cmt,
                      const std::vector<int>& addl,
                      const std::vector<int>& ss,
-                     const std::vector<std::vector<T4> >& pMatrix,
+                     const std::vector<std::vector<T4> >& theta,
                      const std::vector<T5>& biovar,
                      const std::vector<T6>& tlag,
                      std::ostream* msgs = 0,
@@ -298,11 +303,12 @@ generalOdeModel_bdf(const F& f,
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
-  return generalOdeModel_bdf(f, nCmt,
+  return mixOde1CptModel_bdf(f, nOde,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              pMatrix, vec_biovar, vec_tlag,
+                              theta, vec_biovar, vec_tlag,
                               msgs, rel_tol, abs_tol, max_num_steps);
 }
+
 
 /**
  * Overload function to allow user to pass an std::vector for 
@@ -313,8 +319,8 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-generalOdeModel_bdf(const F& f,
-                     const int nCmt,
+mixOde1CptModel_bdf(const F& f,
+                     const int nOde,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
                      const std::vector<T2>& rate,
@@ -323,7 +329,7 @@ generalOdeModel_bdf(const F& f,
                      const std::vector<int>& cmt,
                      const std::vector<int>& addl,
                      const std::vector<int>& ss,
-                     const std::vector<std::vector<T4> >& pMatrix,
+                     const std::vector<std::vector<T4> >& theta,
                      const std::vector<std::vector<T5> >& biovar,
                      const std::vector<T6>& tlag,
                      std::ostream* msgs = 0,
@@ -332,9 +338,9 @@ generalOdeModel_bdf(const F& f,
                      long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
-  return generalOdeModel_bdf(f, nCmt,
+  return mixOde1CptModel_bdf(f, nOde,
                               time, amt, rate, ii, evid, cmt, addl, ss,
-                              pMatrix, biovar, vec_tlag,
+                              theta, biovar, vec_tlag,
                               msgs, rel_tol, abs_tol, max_num_steps);
 }
 

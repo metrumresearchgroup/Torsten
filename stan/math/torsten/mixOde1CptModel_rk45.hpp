@@ -86,7 +86,7 @@ mixOde1CptModel_rk45(const F& f,
                  msgs, rel_tol, abs_tol, max_num_steps);
 
   // check arguments
-  static const char* function("mixOdeOneCptModel_rk45");
+  static const char* function("mixOde1CptModel_rk45");
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
                 theta, biovar, tlag, function, model);
 
@@ -98,6 +98,250 @@ mixOde1CptModel_rk45(const F& f,
  return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
              theta, biovar, tlag, model, mix1_functor<F>(f),
              dummy_systems);
+}
+
+/**
+ * Overload function to allow user to pass an std::vector for 
+ * theta.
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+  typename T5, typename T6, typename F>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+mixOde1CptModel_rk45(const F& f,
+                     const int nOde,
+                     const std::vector<T0>& time,
+                     const std::vector<T1>& amt,
+                     const std::vector<T2>& rate,
+                     const std::vector<T3>& ii,
+                     const std::vector<int>& evid,
+                     const std::vector<int>& cmt,
+                     const std::vector<int>& addl,
+                     const std::vector<int>& ss,
+                     const std::vector<T4>& theta,
+                     const std::vector<std::vector<T5> >& biovar,
+                     const std::vector<std::vector<T6> >& tlag,
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
+  std::vector<std::vector<T4> > vec_theta(1, theta);
+
+  return mixOde1CptModel_rk45(f, nOde,
+                              time, amt, rate, ii, evid, cmt, addl, ss,
+                              vec_theta, biovar, tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
+}
+
+/**
+ * Overload function to allow user to pass an std::vector for 
+ * theta and biovar.
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6, typename F>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+mixOde1CptModel_rk45(const F& f,
+                     const int nOde,
+                     const std::vector<T0>& time,
+                     const std::vector<T1>& amt,
+                     const std::vector<T2>& rate,
+                     const std::vector<T3>& ii,
+                     const std::vector<int>& evid,
+                     const std::vector<int>& cmt,
+                     const std::vector<int>& addl,
+                     const std::vector<int>& ss,
+                     const std::vector<T4>& theta,
+                     const std::vector<T5>& biovar,
+                     const std::vector<std::vector<T6> >& tlag,
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
+  std::vector<std::vector<T4> > vec_theta(1, theta);
+  std::vector<std::vector<T5> > vec_biovar(1, biovar);
+
+  return mixOde1CptModel_rk45(f, nOde,
+                              time, amt, rate, ii, evid, cmt, addl, ss,
+                              vec_theta, vec_biovar, tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
+}
+
+/**
+ * Overload function to allow user to pass an std::vector for 
+ * theta, biovar, and tlag.
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6, typename F>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+mixOde1CptModel_rk45(const F& f,
+                     const int nOde,
+                     const std::vector<T0>& time,
+                     const std::vector<T1>& amt,
+                     const std::vector<T2>& rate,
+                     const std::vector<T3>& ii,
+                     const std::vector<int>& evid,
+                     const std::vector<int>& cmt,
+                     const std::vector<int>& addl,
+                     const std::vector<int>& ss,
+                     const std::vector<T4>& theta,
+                     const std::vector<T5>& biovar,
+                     const std::vector<T6>& tlag,
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
+  std::vector<std::vector<T4> > vec_theta(1, theta);
+  std::vector<std::vector<T5> > vec_biovar(1, biovar);
+  std::vector<std::vector<T6> > vec_tlag(1, tlag);
+
+  return mixOde1CptModel_rk45(f, nOde,
+                              time, amt, rate, ii, evid, cmt, addl, ss,
+                              vec_theta, vec_biovar, vec_tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
+}
+
+/**
+ * Overload function to allow user to pass an std::vector for 
+ * theta and tlag.
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6, typename F>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+mixOde1CptModel_rk45(const F& f,
+                     const int nOde,
+                     const std::vector<T0>& time,
+                     const std::vector<T1>& amt,
+                     const std::vector<T2>& rate,
+                     const std::vector<T3>& ii,
+                     const std::vector<int>& evid,
+                     const std::vector<int>& cmt,
+                     const std::vector<int>& addl,
+                     const std::vector<int>& ss,
+                     const std::vector<T4>& theta,
+                     const std::vector<std::vector<T5> >& biovar,
+                     const std::vector<T6>& tlag,
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
+  std::vector<std::vector<T4> > vec_theta(1, theta);
+  std::vector<std::vector<T6> > vec_tlag(1, tlag);
+
+  return mixOde1CptModel_rk45(f, nOde,
+                              time, amt, rate, ii, evid, cmt, addl, ss,
+                              vec_theta, biovar, vec_tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
+}
+
+/**
+ * Overload function to allow user to pass an std::vector for 
+ * biovar.
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6, typename F>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+mixOde1CptModel_rk45(const F& f,
+                     const int nOde,
+                     const std::vector<T0>& time,
+                     const std::vector<T1>& amt,
+                     const std::vector<T2>& rate,
+                     const std::vector<T3>& ii,
+                     const std::vector<int>& evid,
+                     const std::vector<int>& cmt,
+                     const std::vector<int>& addl,
+                     const std::vector<int>& ss,
+                     const std::vector<std::vector<T4> >& theta,
+                     const std::vector<T5>& biovar,
+                     const std::vector<std::vector<T6> >& tlag,
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
+  std::vector<std::vector<T5> > vec_biovar(1, biovar);
+
+  return mixOde1CptModel_rk45(f, nOde,
+                              time, amt, rate, ii, evid, cmt, addl, ss,
+                              theta, vec_biovar, tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
+}
+
+/**
+ * Overload function to allow user to pass an std::vector for 
+ * biovar and tlag.
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6, typename F>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+mixOde1CptModel_rk45(const F& f,
+                     const int nOde,
+                     const std::vector<T0>& time,
+                     const std::vector<T1>& amt,
+                     const std::vector<T2>& rate,
+                     const std::vector<T3>& ii,
+                     const std::vector<int>& evid,
+                     const std::vector<int>& cmt,
+                     const std::vector<int>& addl,
+                     const std::vector<int>& ss,
+                     const std::vector<std::vector<T4> >& theta,
+                     const std::vector<T5>& biovar,
+                     const std::vector<T6>& tlag,
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
+  std::vector<std::vector<T5> > vec_biovar(1, biovar);
+  std::vector<std::vector<T6> > vec_tlag(1, tlag);
+
+  return mixOde1CptModel_rk45(f, nOde,
+                              time, amt, rate, ii, evid, cmt, addl, ss,
+                              theta, vec_biovar, vec_tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
+}
+
+
+/**
+ * Overload function to allow user to pass an std::vector for 
+ * tlag.
+ */
+template <typename T0, typename T1, typename T2, typename T3, typename T4,
+          typename T5, typename T6, typename F>
+Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
+  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
+  Eigen::Dynamic, Eigen::Dynamic>
+mixOde1CptModel_rk45(const F& f,
+                     const int nOde,
+                     const std::vector<T0>& time,
+                     const std::vector<T1>& amt,
+                     const std::vector<T2>& rate,
+                     const std::vector<T3>& ii,
+                     const std::vector<int>& evid,
+                     const std::vector<int>& cmt,
+                     const std::vector<int>& addl,
+                     const std::vector<int>& ss,
+                     const std::vector<std::vector<T4> >& theta,
+                     const std::vector<std::vector<T5> >& biovar,
+                     const std::vector<T6>& tlag,
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
+  std::vector<std::vector<T6> > vec_tlag(1, tlag);
+
+  return mixOde1CptModel_rk45(f, nOde,
+                              time, amt, rate, ii, evid, cmt, addl, ss,
+                              theta, biovar, vec_tlag,
+                              msgs, rel_tol, abs_tol, max_num_steps);
 }
 
 #endif

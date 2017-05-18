@@ -94,25 +94,25 @@ finite_diff_params(const F& f,
                                      0,
                                      rel_tol, abs_tol, max_num_steps);
   }
-  /*
+
   if (odeInt == "bdf") {
-    pk_res_ub = generalOdeModel_bdf(f, nCmt, time, amt, rate, ii,
+    pk_res_ub = mixOde1CptModel_bdf(f, nOde, time, amt, rate, ii,
                                     evid, cmt, addl, ss,
                                     pMatrix_ub, biovar_ub, tlag_ub,
                                     0,
                                     rel_tol, abs_tol, max_num_steps);
-    pk_res_lb = generalOdeModel_bdf(f, nCmt, time, amt, rate, ii,
+    pk_res_lb = mixOde1CptModel_bdf(f, nOde, time, amt, rate, ii,
                                     evid, cmt, addl, ss,
                                     pMatrix_lb, biovar_lb, tlag_lb,
                                     0,
                                     rel_tol, abs_tol, max_num_steps);
   }
-  */
+
   return (pk_res_ub - pk_res_lb) / (2 * diff);
 }
 
 /**
- * Test generalOdeModel with only pMatrix as vars and all other continuous
+ * Test mixOde1CptModel with only pMatrix as vars and all other continuous
  * arguments as double.
  */
 template <typename F>
@@ -177,13 +177,13 @@ void test_mixOde1CptModel_finite_diff_vdd(
                                    pMatrix_v, biovar, tlag,
                                    0,
                                    rel_tol, abs_tol, max_num_steps);
-  /*
+
   if (odeInt == "bdf")
-    ode_res = generalOdeModel_bdf(f, nCmt,
+    ode_res = mixOde1CptModel_bdf(f, nOde,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar, tlag,
                                   0,
-                                  rel_tol, abs_tol, max_num_steps); */
+                                  rel_tol, abs_tol, max_num_steps);
 
   size_t nEvent = time.size();
   int nPK = 2;
@@ -200,7 +200,7 @@ void test_mixOde1CptModel_finite_diff_vdd(
 
         EXPECT_NEAR(grads_eff[k * parmCols + l],
           finite_diff_res[k][l](i, j), diff2)
-          << "Gradient of generalOdeModel failed with known"
+          << "Gradient of mixOde1CptModel failed with known"
           << " time, amt, rate, ii, evid, cmt, addl, ss "
           << " and unknown parameters at event " << i
           << ", in compartment " << j
@@ -277,12 +277,12 @@ void test_mixOde1CptModel_finite_diff_dvd(
                                    0,
                                    rel_tol, abs_tol, max_num_steps);
 
-  /* if (odeInt == "bdf")
-    ode_res = generalOdeModel_bdf(f, nCmt,
+  if (odeInt == "bdf")
+    ode_res = mixOde1CptModel_bdf(f, nOde,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar_v, tlag,
                                   0,
-                                  rel_tol, abs_tol, max_num_steps); */
+                                  rel_tol, abs_tol, max_num_steps);
 
   size_t nEvent = time.size();
   int nPK = 2;
@@ -299,7 +299,7 @@ void test_mixOde1CptModel_finite_diff_dvd(
 
           EXPECT_NEAR(grads_eff[k * parmCols + l],
                       finite_diff_res[k][l](i, j), diff2)
-          << "Gradient of generalOdeModel failed with known"
+          << "Gradient of mixOde1CptModel failed with known"
           << " time, amt, rate, ii, evid, cmt, addl, ss "
           << " and unknown parameters at event " << i
           << ", in compartment " << j
@@ -379,12 +379,12 @@ void test_mixOde1CptModel_finite_diff_ddv(
                                    0,
                                    rel_tol, abs_tol, max_num_steps);
 
-  /* if (odeInt == "bdf")
-    ode_res = generalOdeModel_bdf(f, nCmt,
+  if (odeInt == "bdf")
+    ode_res = mixOde1CptModel_bdf(f, nOde,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar, tlag_v,
                                   0,
-                                  rel_tol, abs_tol, max_num_steps); */
+                                  rel_tol, abs_tol, max_num_steps);
 
   size_t nEvent = time.size();
   int nPK = 2;
@@ -410,7 +410,7 @@ void test_mixOde1CptModel_finite_diff_ddv(
           if (discontinuous == false) {
             EXPECT_NEAR(grads_eff[k * parmCols + l],
                         finite_diff_res[k][l](i, j), diff2)
-            << "Gradient of generalOdeModel failed with known"
+            << "Gradient of mixOde1CptModel failed with known"
             << " time, amt, rate, ii, evid, cmt, addl, ss "
             << " and unknown parameters at event " << i
             << ", in compartment " << j
