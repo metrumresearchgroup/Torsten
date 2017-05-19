@@ -78,7 +78,7 @@ TEST(Torsten, pred1_mix) {
   Matrix<double, 1, Dynamic> pred = Pred1_mix1(dt, parms, init, rate,
                                     mix1_functor<ODE_functor>(ODE_functor()),
                                     integrator_structure(rel_tol, abs_tol,
-                                                         max_num_steps,
+                                                         max_num_steps, 0,
                                                          "rk45"));
 
   // Compare to results obtained with mrgsolve

@@ -10,5 +10,7 @@
 #include <stan/math/torsten/linOdeModel.hpp>
 #include <stan/math/torsten/mixOde1CptModel_rk45.hpp>
 #include <stan/math/torsten/mixOde1CptModel_bdf.hpp>
+#include <stan/math/torsten/mixOde2CptModel_rk45.hpp>
+#include <stan/math/torsten/mixOde2CptModel_bdf.hpp>
 
 #endif

@@ -82,7 +82,7 @@ finite_diff_params(const F& f,
 
   Matrix<double, Dynamic, Dynamic> pk_res_ub;
   Matrix<double, Dynamic, Dynamic> pk_res_lb;
-  if (odeInt == "rk45") {
+  if (odeInt == "1_rk45") {
     pk_res_ub = mixOde1CptModel_rk45(f, nOde, time, amt, rate, ii,
                                      evid, cmt, addl, ss,
                                      pMatrix_ub, biovar_ub, tlag_ub,
@@ -95,13 +95,39 @@ finite_diff_params(const F& f,
                                      rel_tol, abs_tol, max_num_steps);
   }
 
-  if (odeInt == "bdf") {
+  if (odeInt == "1_bdf") {
     pk_res_ub = mixOde1CptModel_bdf(f, nOde, time, amt, rate, ii,
                                     evid, cmt, addl, ss,
                                     pMatrix_ub, biovar_ub, tlag_ub,
                                     0,
                                     rel_tol, abs_tol, max_num_steps);
     pk_res_lb = mixOde1CptModel_bdf(f, nOde, time, amt, rate, ii,
+                                    evid, cmt, addl, ss,
+                                    pMatrix_lb, biovar_lb, tlag_lb,
+                                    0,
+                                    rel_tol, abs_tol, max_num_steps);
+  }
+
+  if (odeInt == "2_rk45") {
+    pk_res_ub = mixOde2CptModel_rk45(f, nOde, time, amt, rate, ii,
+                                     evid, cmt, addl, ss,
+                                     pMatrix_ub, biovar_ub, tlag_ub,
+                                     0,
+                                     rel_tol, abs_tol, max_num_steps);
+    pk_res_lb = mixOde2CptModel_rk45(f, nOde, time, amt, rate, ii,
+                                     evid, cmt, addl, ss,
+                                     pMatrix_lb, biovar_lb, tlag_lb,
+                                     0,
+                                     rel_tol, abs_tol, max_num_steps);
+  }
+
+  if (odeInt == "2_bdf") {
+    pk_res_ub = mixOde2CptModel_bdf(f, nOde, time, amt, rate, ii,
+                                    evid, cmt, addl, ss,
+                                    pMatrix_ub, biovar_ub, tlag_ub,
+                                    0,
+                                    rel_tol, abs_tol, max_num_steps);
+    pk_res_lb = mixOde2CptModel_bdf(f, nOde, time, amt, rate, ii,
                                     evid, cmt, addl, ss,
                                     pMatrix_lb, biovar_lb, tlag_lb,
                                     0,
@@ -116,7 +142,7 @@ finite_diff_params(const F& f,
  * arguments as double.
  */
 template <typename F>
-void test_mixOde1CptModel_finite_diff_vdd(
+void test_mixOdeCptModel_finite_diff_vdd(
     const F& f,
     const int nOde,
     const std::vector<double>& time,
@@ -171,22 +197,38 @@ void test_mixOde1CptModel_finite_diff_vdd(
   }
 
   Matrix<var, Dynamic, Dynamic> ode_res;
-  if (odeInt == "rk45")
+  if (odeInt == "1_rk45")
     ode_res = mixOde1CptModel_rk45(f, nOde,
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    pMatrix_v, biovar, tlag,
                                    0,
                                    rel_tol, abs_tol, max_num_steps);
 
-  if (odeInt == "bdf")
+  if (odeInt == "1_bdf")
     ode_res = mixOde1CptModel_bdf(f, nOde,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar, tlag,
                                   0,
                                   rel_tol, abs_tol, max_num_steps);
 
+  if (odeInt == "2_rk45")
+    ode_res = mixOde2CptModel_rk45(f, nOde,
+                                   time, amt, rate, ii, evid, cmt, addl, ss,
+                                   pMatrix_v, biovar, tlag,
+                                   0,
+                                   rel_tol, abs_tol, max_num_steps);
+
+  if (odeInt == "2_bdf")
+    ode_res = mixOde2CptModel_bdf(f, nOde,
+                                  time, amt, rate, ii, evid, cmt, addl, ss,
+                                  pMatrix_v, biovar, tlag,
+                                  0,
+                                  rel_tol, abs_tol, max_num_steps);
+
   size_t nEvent = time.size();
-  int nPK = 2;
+  int nPK;
+  if (odeInt == "1_rk45" || odeInt == "1_bdf") nPK = 2;
+  if (odeInt == "2_rk45" || odeInt == "2_bdf") nPK = 3;
   int nCmt = nOde + nPK;
 
   vector<double> grads_eff(nEvent * nCmt);
@@ -215,7 +257,7 @@ void test_mixOde1CptModel_finite_diff_vdd(
  * arguments as double.
  */
 template <typename F>
-void test_mixOde1CptModel_finite_diff_dvd(
+void test_mixOdeCptModel_finite_diff_dvd(
     const F& f,
     const int nOde,
     const std::vector<double>& time,
@@ -270,22 +312,38 @@ void test_mixOde1CptModel_finite_diff_dvd(
   }
 
   Matrix<var, Dynamic, Dynamic> ode_res;
-  if (odeInt == "rk45")
+  if (odeInt == "1_rk45")
     ode_res = mixOde1CptModel_rk45(f, nOde,
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    pMatrix, biovar_v, tlag,
                                    0,
                                    rel_tol, abs_tol, max_num_steps);
 
-  if (odeInt == "bdf")
+  if (odeInt == "1_bdf")
     ode_res = mixOde1CptModel_bdf(f, nOde,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar_v, tlag,
                                   0,
                                   rel_tol, abs_tol, max_num_steps);
 
+  if (odeInt == "2_rk45")
+    ode_res = mixOde2CptModel_rk45(f, nOde,
+                                   time, amt, rate, ii, evid, cmt, addl, ss,
+                                   pMatrix, biovar_v, tlag,
+                                   0,
+                                   rel_tol, abs_tol, max_num_steps);
+
+  if (odeInt == "2_bdf")
+    ode_res = mixOde2CptModel_bdf(f, nOde,
+                                  time, amt, rate, ii, evid, cmt, addl, ss,
+                                  pMatrix, biovar_v, tlag,
+                                  0,
+                                  rel_tol, abs_tol, max_num_steps);
+
   size_t nEvent = time.size();
-  int nPK = 2;
+  int nPK;
+  if (odeInt == "1_rk45" || odeInt == "1_bdf") nPK = 2;
+  if (odeInt == "2_rk45" || odeInt == "2_bdf") nPK = 3;
   int nCmt = nOde + nPK;
 
   vector<double> grads_eff(nEvent * nCmt);
@@ -317,7 +375,7 @@ void test_mixOde1CptModel_finite_diff_dvd(
  * and the unit test overlooks it.
  */
 template <typename F>
-void test_mixOde1CptModel_finite_diff_ddv(
+void test_mixOdeCptModel_finite_diff_ddv(
     const F& f,
     const int nOde,
     const std::vector<double>& time,
@@ -372,22 +430,38 @@ void test_mixOde1CptModel_finite_diff_ddv(
   }
 
   Matrix<var, Dynamic, Dynamic> ode_res;
-  if (odeInt == "rk45")
+  if (odeInt == "1_rk45")
     ode_res = mixOde1CptModel_rk45(f, nOde,
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    pMatrix, biovar, tlag_v,
                                    0,
                                    rel_tol, abs_tol, max_num_steps);
 
-  if (odeInt == "bdf")
+  if (odeInt == "1_bdf")
     ode_res = mixOde1CptModel_bdf(f, nOde,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar, tlag_v,
                                   0,
                                   rel_tol, abs_tol, max_num_steps);
 
+  if (odeInt == "2_rk45")
+    ode_res = mixOde2CptModel_rk45(f, nOde,
+                                   time, amt, rate, ii, evid, cmt, addl, ss,
+                                   pMatrix, biovar, tlag_v,
+                                   0,
+                                   rel_tol, abs_tol, max_num_steps);
+
+  if (odeInt == "2_bdf")
+    ode_res = mixOde2CptModel_bdf(f, nOde,
+                                  time, amt, rate, ii, evid, cmt, addl, ss,
+                                  pMatrix, biovar, tlag_v,
+                                  0,
+                                  rel_tol, abs_tol, max_num_steps);
+
   size_t nEvent = time.size();
-  int nPK = 2;
+  int nPK;
+  if (odeInt == "1_rk45" || odeInt == "1_bdf") nPK = 2;
+  if (odeInt == "2_rk45" || odeInt == "2_bdf") nPK = 3;
   int nCmt = nPK + nOde;
 
   // Identify dosing compartment
@@ -422,42 +496,42 @@ void test_mixOde1CptModel_finite_diff_ddv(
 }
 
 template <typename F>
-void test_mixOde1CptModel(const F& f,
-                          const int nOde,
-                          const std::vector<double>& time,
-                          const std::vector<double>& amt,
-                          const std::vector<double>& rate,
-                          const std::vector<double>& ii,
-                          const std::vector<int>& evid,
-                          const std::vector<int>& cmt,
-                          const std::vector<int>& addl,
-                          const std::vector<int>& ss,
-                          const std::vector<std::vector<double> >& pMatrix,
-                          const std::vector<std::vector<double> >& biovar,
-                          const std::vector<std::vector<double> >& tlag,
-                          const double rel_tol,
-                          const double abs_tol,
-                          const long int max_num_steps,
-                          const double& diff,
-                          const double& diff2,
-                          std::string odeInt) {
-  test_mixOde1CptModel_finite_diff_vdd(f, nOde, time, amt, rate,
-                                     ii, evid, cmt, addl, ss,
-                                     pMatrix, biovar, tlag,
-                                     rel_tol, abs_tol, max_num_steps,
-                                     diff, diff2, odeInt);
+void test_mixOdeCptModel(const F& f,
+                         const int nOde,
+                         const std::vector<double>& time,
+                         const std::vector<double>& amt,
+                         const std::vector<double>& rate,
+                         const std::vector<double>& ii,
+                         const std::vector<int>& evid,
+                         const std::vector<int>& cmt,
+                         const std::vector<int>& addl,
+                         const std::vector<int>& ss,
+                         const std::vector<std::vector<double> >& pMatrix,
+                         const std::vector<std::vector<double> >& biovar,
+                         const std::vector<std::vector<double> >& tlag,
+                         const double rel_tol,
+                         const double abs_tol,
+                         const long int max_num_steps,
+                         const double& diff,
+                         const double& diff2,
+                         std::string odeInt) {
+  test_mixOdeCptModel_finite_diff_vdd(f, nOde, time, amt, rate,
+                                    ii, evid, cmt, addl, ss,
+                                    pMatrix, biovar, tlag,
+                                    rel_tol, abs_tol, max_num_steps,
+                                    diff, diff2, odeInt);
 
-  test_mixOde1CptModel_finite_diff_dvd(f, nOde, time, amt, rate,
-                                       ii, evid, cmt, addl, ss,
-                                       pMatrix, biovar, tlag,
-                                       rel_tol, abs_tol, max_num_steps,
-                                       diff, diff2, odeInt);
+  test_mixOdeCptModel_finite_diff_dvd(f, nOde, time, amt, rate,
+                                      ii, evid, cmt, addl, ss,
+                                      pMatrix, biovar, tlag,
+                                      rel_tol, abs_tol, max_num_steps,
+                                      diff, diff2, odeInt);
 
-  test_mixOde1CptModel_finite_diff_ddv(f, nOde, time, amt, rate,
-                                       ii, evid, cmt, addl, ss,
-                                       pMatrix, biovar, tlag,
-                                       rel_tol, abs_tol, max_num_steps,
-                                       diff, diff2, odeInt);
+  test_mixOdeCptModel_finite_diff_ddv(f, nOde, time, amt, rate,
+                                      ii, evid, cmt, addl, ss,
+                                      pMatrix, biovar, tlag,
+                                      rel_tol, abs_tol, max_num_steps,
+                                      diff, diff2, odeInt);
 }
 
 // More tests

@@ -1,18 +1,18 @@
-#ifndef STAN_MATH_TORSTEN_MIXODE1CPTMODEL_RK45_HPP
-#define STAN_MATH_TORSTEN_MIXODE1CPTMODEL_RK45_HPP
+#ifndef STAN_MATH_TORSTEN_MIXODE2CPTMODEL_BDF_HPP
+#define STAN_MATH_TORSTEN_MIXODE2CPTMODEL_BDF_HPP
 
 #include <Eigen/Dense>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
-#include <stan/math/torsten/PKModel/pred/mix1_functor.hpp>
+#include <stan/math/torsten/PKModel/pred/mix2_functor.hpp>
 #include <boost/math/tools/promotion.hpp>
 #include <vector>
 
 /**
  * Compute the predicted amounts in each compartment at each event
- * of an ODEs model. The model contains a base 1 Compartment PK
+ * of an ODE model. The model contains a base 2 Compartment PK
  * component which gets solved analytically, while the other ODEs
  * are solved numerically using stan::math::integrate_ode_rk45. This
- * amounts to using the mixed solver method.
+ * amounts to using the mix solver method.
  *
  * <b>Warning:</b> This prototype does not handle steady state events.
  *
@@ -58,35 +58,35 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-mixOde1CptModel_rk45(const F& f,
-                     const int nOde,
-                     const std::vector<T0>& time,
-                     const std::vector<T1>& amt,
-                     const std::vector<T2>& rate,
-                     const std::vector<T3>& ii,
-                     const std::vector<int>& evid,
-                     const std::vector<int>& cmt,
-                     const std::vector<int>& addl,
-                     const std::vector<int>& ss,
-                     const std::vector<std::vector<T4> >& theta,
-                     const std::vector<std::vector<T5> >& biovar,
-                     const std::vector<std::vector<T6> >& tlag,
-                     std::ostream* msgs = 0,
-                     double rel_tol = 1e-6,
-                     double abs_tol = 1e-6,
-                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
+mixOde2CptModel_bdf(const F& f,
+                    const int nOde,
+                    const std::vector<T0>& time,
+                    const std::vector<T1>& amt,
+                    const std::vector<T2>& rate,
+                    const std::vector<T3>& ii,
+                    const std::vector<int>& evid,
+                    const std::vector<int>& cmt,
+                    const std::vector<int>& addl,
+                    const std::vector<int>& ss,
+                    const std::vector<std::vector<T4> >& theta,
+                    const std::vector<std::vector<T5> >& biovar,
+                    const std::vector<std::vector<T6> >& tlag,
+                    std::ostream* msgs = 0,
+                    double rel_tol = 1e-6,
+                    double abs_tol = 1e-6,
+                    long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
   using boost::math::tools::promote_args;
 
-  int nPK = 2;
+  int nPK = 3;
   pmxModel model(theta[0].size(), nOde + nPK,
-                 "mixOde1CptModel", "error", "rk45",
+                 "mixOde2CptModel", "error", "bdf",
                  msgs, rel_tol, abs_tol, max_num_steps);
 
   // check arguments
-  static const char* function("mixOde1CptModel_rk45");
+  static const char* function("mixOde2CptModel_bdf");
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
                 theta, biovar, tlag, function, model);
 
@@ -96,7 +96,7 @@ mixOde1CptModel_rk45(const F& f,
     dummy_systems(1, dummy_system);
 
  return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-             theta, biovar, tlag, model, mix1_functor<F>(f),
+             theta, biovar, tlag, model, mix2_functor<F>(f),
              dummy_systems);
 }
 
@@ -109,7 +109,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-mixOde1CptModel_rk45(const F& f,
+mixOde2CptModel_bdf(const F& f,
                      const int nOde,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
@@ -128,7 +128,7 @@ mixOde1CptModel_rk45(const F& f,
                      long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   std::vector<std::vector<T4> > vec_theta(1, theta);
 
-  return mixOde1CptModel_rk45(f, nOde,
+  return mixOde2CptModel_bdf(f, nOde,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               vec_theta, biovar, tlag,
                               msgs, rel_tol, abs_tol, max_num_steps);
@@ -143,7 +143,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-mixOde1CptModel_rk45(const F& f,
+mixOde2CptModel_bdf(const F& f,
                      const int nOde,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
@@ -163,7 +163,7 @@ mixOde1CptModel_rk45(const F& f,
   std::vector<std::vector<T4> > vec_theta(1, theta);
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
 
-  return mixOde1CptModel_rk45(f, nOde,
+  return mixOde2CptModel_bdf(f, nOde,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               vec_theta, vec_biovar, tlag,
                               msgs, rel_tol, abs_tol, max_num_steps);
@@ -178,7 +178,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-mixOde1CptModel_rk45(const F& f,
+mixOde2CptModel_bdf(const F& f,
                      const int nOde,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
@@ -199,7 +199,7 @@ mixOde1CptModel_rk45(const F& f,
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
-  return mixOde1CptModel_rk45(f, nOde,
+  return mixOde2CptModel_bdf(f, nOde,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               vec_theta, vec_biovar, vec_tlag,
                               msgs, rel_tol, abs_tol, max_num_steps);
@@ -214,7 +214,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-mixOde1CptModel_rk45(const F& f,
+mixOde2CptModel_bdf(const F& f,
                      const int nOde,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
@@ -234,7 +234,7 @@ mixOde1CptModel_rk45(const F& f,
   std::vector<std::vector<T4> > vec_theta(1, theta);
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
-  return mixOde1CptModel_rk45(f, nOde,
+  return mixOde2CptModel_bdf(f, nOde,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               vec_theta, biovar, vec_tlag,
                               msgs, rel_tol, abs_tol, max_num_steps);
@@ -249,7 +249,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-mixOde1CptModel_rk45(const F& f,
+mixOde2CptModel_bdf(const F& f,
                      const int nOde,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
@@ -268,7 +268,7 @@ mixOde1CptModel_rk45(const F& f,
                      long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
 
-  return mixOde1CptModel_rk45(f, nOde,
+  return mixOde2CptModel_bdf(f, nOde,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               theta, vec_biovar, tlag,
                               msgs, rel_tol, abs_tol, max_num_steps);
@@ -283,7 +283,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-mixOde1CptModel_rk45(const F& f,
+mixOde2CptModel_bdf(const F& f,
                      const int nOde,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
@@ -303,7 +303,7 @@ mixOde1CptModel_rk45(const F& f,
   std::vector<std::vector<T5> > vec_biovar(1, biovar);
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
-  return mixOde1CptModel_rk45(f, nOde,
+  return mixOde2CptModel_bdf(f, nOde,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               theta, vec_biovar, vec_tlag,
                               msgs, rel_tol, abs_tol, max_num_steps);
@@ -319,7 +319,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
   typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
   Eigen::Dynamic, Eigen::Dynamic>
-mixOde1CptModel_rk45(const F& f,
+mixOde2CptModel_bdf(const F& f,
                      const int nOde,
                      const std::vector<T0>& time,
                      const std::vector<T1>& amt,
@@ -338,7 +338,7 @@ mixOde1CptModel_rk45(const F& f,
                      long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
   std::vector<std::vector<T6> > vec_tlag(1, tlag);
 
-  return mixOde1CptModel_rk45(f, nOde,
+  return mixOde2CptModel_bdf(f, nOde,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               theta, biovar, vec_tlag,
                               msgs, rel_tol, abs_tol, max_num_steps);
