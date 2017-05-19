@@ -3,7 +3,7 @@
 
 #include <Eigen/Dense>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
-#include <stan/math/torsten/PKModel/pred/mix2_functor.hpp>
+#include <stan/math/torsten/PKModel/Pred/mix2_functor.hpp>
 #include <boost/math/tools/promotion.hpp>
 #include <vector>
 
