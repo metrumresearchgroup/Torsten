@@ -43,7 +43,8 @@ fOneCpt(const T_time& dt,
   using Eigen::Matrix;
   using Eigen::Dynamic;
 
-  typedef typename promote_args<T_time, T_parameters, T_init, T_rate>::type scalar;
+  typedef typename promote_args<T_time, T_parameters, T_init, T_rate>::type
+    scalar;
   T_parameters CL = parameter[0],
                V2 = parameter[1],
                ka = parameter[2];

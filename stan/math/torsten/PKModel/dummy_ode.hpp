@@ -22,7 +22,7 @@ struct dummy_ode {
               typedef typename boost::math::tools::
                 promote_args<T0, T1, T2, T3>::type scalar;
     std::vector<scalar> returned_vector = std::vector<scalar>(0, scalar(0));
-    return returned_vector;             
+    return returned_vector;
   }
 };
 

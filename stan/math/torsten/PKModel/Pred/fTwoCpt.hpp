@@ -43,7 +43,8 @@ fTwoCpt(const T_time& dt,
   using Eigen::Matrix;
   using Eigen::Dynamic;
 
-  typedef typename promote_args<T_time, T_rate, T_parameters, T_init>::type scalar;
+  typedef typename promote_args<T_time, T_rate, T_parameters, T_init>::type
+    scalar;
 
   T_parameters
     CL = parameter[0],

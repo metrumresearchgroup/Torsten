@@ -44,7 +44,7 @@ private:
   std::string modeltype;
   double rel_tol;
   double abs_tol;
-  long int max_num_steps;
+  long int max_num_steps;  // NOLINT
   std::ostream* msgs;
   std::string integratorType;
 
@@ -86,7 +86,7 @@ public:
     else if (modeltype == "TwoCptModel")
       return Pred1_two(dt, parameter, init, rate);
     else if (modeltype == "generalOdeModel")
-      return Pred1_general_solver(dt, parameter, init, rate, f, 
+      return Pred1_general_solver(dt, parameter, init, rate, f,
                                   integrator_structure(rel_tol, abs_tol,
                                                        max_num_steps,
                                                        msgs,
@@ -99,13 +99,14 @@ public:
                                                 max_num_steps,
                                                 msgs,
                                                 integratorType));
-    else if (modeltype == "mixOde2CptModel")
+    else
+      if (modeltype == "mixOde2CptModel") {
       return Pred1_mix2(dt, parameter, init, rate,
                         f, integrator_structure(rel_tol, abs_tol,
                                                 max_num_steps,
                                                 msgs,
                                                 integratorType));
-    else {
+    } else {
       Eigen::Matrix<scalar, 1, Eigen::Dynamic> default_pred =
         Eigen::Matrix<scalar, 1, Eigen::Dynamic>::Zero(1);
       return default_pred;

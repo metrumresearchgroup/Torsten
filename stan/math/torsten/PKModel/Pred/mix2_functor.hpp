@@ -3,6 +3,7 @@
 
 #include <stan/math/rev/core.hpp>
 #include <stan/math/fwd/core.hpp>
+#include <vector>
 #include <iostream>
 
 /**
@@ -13,7 +14,7 @@ template <typename F0>
 struct mix2_functor {
   F0 f0_;
 
-  mix2_functor(const F0& f0) : f0_(f0) { }
+  explicit mix2_functor(const F0& f0) : f0_(f0) { }
 
   /**
    *  Returns the derivative of the base ODE system. The base 1 PK
