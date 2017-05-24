@@ -63,7 +63,7 @@ public:
        const std::vector<std::vector<T_4> >& pMatrix,
        const std::vector<std::vector<T_5> >& biovar,
        const std::vector<std::vector<T_6> >& tlag,
-       PKModel model,
+       const pmxModel& model,
        const F& f,
        const std::vector<Eigen::Matrix<T_7, Eigen::Dynamic, Eigen::Dynamic> >&
          system);

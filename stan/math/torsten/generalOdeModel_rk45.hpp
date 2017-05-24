@@ -78,33 +78,22 @@ generalOdeModel_rk45(const F& f,
   using boost::math::tools::promote_args;
 
   // Define class of model
-  PKModel model(pMatrix[0].size(), nCmt);
+  pmxModel model(pMatrix[0].size(), nCmt,
+                 "generalOdeModel", "error", "rk45",
+                 msgs, rel_tol, abs_tol, max_num_steps);
 
   // check arguments
   static const char* function("generalOdeModel_rk45");
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
     pMatrix, biovar, tlag, function, model);
 
-  // Construct Pred functions for the model.
-  Pred1_structure new_Pred1("generalOdeModel");
-  PredSS_structure new_PredSS("error");
-  Pred1 = new_Pred1;
-  PredSS = new_PredSS;  // WARNING: PredSS returns an error
-  pmetrics_solver_structure new_pmetrics_solver(rel_tol, abs_tol,
-    max_num_steps, "rk45");
-  pmetrics_solver = new_pmetrics_solver;
-
   // Construct dummy matrix for last argument of pred
   Matrix<double, Dynamic, Dynamic> dummy_system;
   vector<Matrix<double, Dynamic, Dynamic> >
     dummy_systems(1, dummy_system);
 
-  Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-    typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-    Dynamic, Dynamic> pred;
-  pred = Pred(time, amt, rate, ii, evid, cmt, addl, ss,
+  return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
               pMatrix, biovar, tlag, model, f, dummy_systems);
-  return pred;
 }
 
 /**

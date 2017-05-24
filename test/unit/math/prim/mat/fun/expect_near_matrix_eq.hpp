@@ -11,7 +11,7 @@ void expect_near_matrix_eq(const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dy
   double err;
   for (int i = 0; i < a.rows(); ++i)
     for (int j = 0; j < a.cols(); ++j) {
-     err = rel_err * a(i,j);
+     err = std::abs(rel_err * a(i,j));
      EXPECT_NEAR(a(i,j), b(i,j), err);
     }
 }

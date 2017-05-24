@@ -57,7 +57,8 @@ PKModelTwoCpt(const std::vector<T0>& time,
   using boost::math::tools::promote_args;
   using stan::math::check_positive_finite;
 
-  PKModel model("TwoCptModel");  // Define class of model
+  int nPK = 3;
+  pmxModel model(pMatrix[0].size(), nPK, "TwoCptModel");
   static const char* function("PKModelTwoCpt");
 
   // Check arguments
@@ -71,9 +72,9 @@ PKModelTwoCpt(const std::vector<T0>& time,
     check_positive_finite(function, "PK parameter ka", pMatrix[i][4]);
   }
   std::string message4 = ", but must equal the number of parameters in the model: " // NOLINT
-    + boost::lexical_cast<std::string>(model.GetNParameter()) + "!";
+    + boost::lexical_cast<std::string>(model.GetNParm()) + "!";
   const char* length_error4 = message4.c_str();
-  if (!(pMatrix[0].size() == (size_t) model.GetNParameter()))
+  if (!(pMatrix[0].size() == (size_t) model.GetNParm()))
     stan::math::invalid_argument(function,
     "The number of parameters per event (length of a vector in the first argument) is", // NOLINT
     pMatrix[0].size(), "", length_error4);
@@ -81,9 +82,9 @@ PKModelTwoCpt(const std::vector<T0>& time,
   // FIX ME - we want to check every array of pMatrix, not
   // just the first one (at index 0)
   std::string message5 = ", but must equal the number of parameters in the model: " // NOLINT
-  + boost::lexical_cast<std::string>(model.GetNParameter()) + "!";
+  + boost::lexical_cast<std::string>(model.GetNParm()) + "!";
   const char* length_error5 = message5.c_str();
-  if (!(pMatrix[0].size() == (size_t) model.GetNParameter()))
+  if (!(pMatrix[0].size() == (size_t) model.GetNParm()))
     stan::math::invalid_argument(function,
     "The number of parameters per event (length of a vector in the ninth argument) is", // NOLINT
     pMatrix[0].size(), "", length_error5);
@@ -101,24 +102,13 @@ PKModelTwoCpt(const std::vector<T0>& time,
     "The number of lag times parameters per event (length of a vector in the eleventh argument) is", // NOLINT
     tlag[0].size(), "", length_error5);
 
-  // Construct Pred functions for the model.
-  Pred1_structure new_Pred1("TwoCptModel");
-  PredSS_structure new_PredSS("TwoCptModel");
-  Pred1 = new_Pred1;
-  PredSS = new_PredSS;
-
   // Construct dummy matrix for last argument of pred
   Matrix<double, Dynamic, Dynamic> dummy_system;
   vector<Matrix<double, Dynamic, Dynamic> >
     dummy_systems(1, dummy_system);
 
-  Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-    typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-    Dynamic, Dynamic> pred;
-  pred = Pred(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix,
+  return Pred(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix,
               biovar, tlag, model, dummy_ode(), dummy_systems);
-
-  return pred;
 }
 
 /**

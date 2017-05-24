@@ -46,8 +46,7 @@
  * (0: no, 1: yes)
  * @param[in] pMatrix parameters at each event
  * @param[in] addParm additional parameters at each event
- * @parem[in] model basic structural information on compartment
- * model
+ * @parem[in] model basic info for ODE model and evolution operators
  * @param[in] f functor for base ordinary differential equation
  * that defines compartment model. Used for ODE integrators
  * (optional).
@@ -74,7 +73,7 @@ Pred(const std::vector<T_time>& time,
      const std::vector<std::vector<T_parameters> >& pMatrix,
      const std::vector<std::vector<T_biovar> >& biovar,
      const std::vector<std::vector<T_tlag> >& tlag,
-     PKModel model,
+     const pmxModel& model,
      const F& f,
      const std::vector<Eigen::Matrix<T_system,
        Eigen::Dynamic, Eigen::Dynamic> >& system) {
@@ -87,7 +86,6 @@ Pred(const std::vector<T_time>& time,
     typename promote_args<T_parameters, T_biovar, T_tlag,
                           T_system>::type >::type scalar;
 
-  /////////////////////////////////////////////////////////////////////////////
   // BOOK-KEEPING: UPDATE DATA SETS
   int nCmt = model.GetNCmt();
 
@@ -111,18 +109,19 @@ Pred(const std::vector<T_time>& time,
   Matrix<scalar, 1, Dynamic> zeros = Matrix<scalar, 1, Dynamic>::Zero(nCmt);
   Matrix<scalar, 1, Dynamic> init = zeros;
 
-  // Construct the output matrix pred
-  // The matrix needs to be a dynamically-sized matrix to be returned
-  // by the function. The matrix is resized, but the resize function
-  // of the eigen library is destructive. This means arbitrary values
-  // are assigned to the elements in the matrix.
-  // For the "COMPUTE PREDICTIONS" half of the function to run properly,
-  // we need to set the values of each element to 0.
+  // CONSTRUCT PRED OPERATORS
+  Pred1_structure Pred1(model.GetPred1Type(),
+                        model.GetRelTol(),
+                        model.GetAbsTol(),
+                        model.GetMaxNumSteps(),
+                        model.GetMsgs(),
+                        model.GetIntegratorType());
+
+  PredSS_structure PredSS(model.GetPredSSType());
+
+  // COMPUTE PREDICTIONS
   Matrix<scalar, Dynamic, Dynamic>
     pred = Matrix<scalar, Dynamic, Dynamic>::Zero(nKeep, nCmt);
-
-  /////////////////////////////////////////////////////////////////////////////
-  // COMPUTE PREDICTIONS
 
   scalar dt, tprev = events.get_time(0);
   Matrix<scalar, 1, Dynamic> pred1;

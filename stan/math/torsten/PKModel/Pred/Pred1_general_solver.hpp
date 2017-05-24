@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 
+// FIX ME -- update signature (add integrator type!!)
+
 /**
  *	General compartment model using the built-in ODE solver.
  *	Calculates the amount in each compartment at dt time units after the time
@@ -42,7 +44,8 @@ Pred1_general_solver(const T_time& dt,
                        promote_args<T_time,
                        T_rate, T_parameters>::type, 1, Eigen::Dynamic>& init,
                      const std::vector<T_rate>& rate,
-                     const F& f) {
+                     const F& f,
+                     const integrator_structure& integrator) {
   using std::vector;
 
   typedef typename boost::math::tools::promote_args<T_time, T_rate,
@@ -67,11 +70,11 @@ Pred1_general_solver(const T_time& dt,
   Eigen::Matrix<scalar, 1, Eigen::Dynamic> pred;
   if (EventTime_d[0] == InitTime_d) { pred = init;
   } else {
-    vector< vector<scalar> > pred_V;
     vector<int> idummy;
-    pred_V = pmetrics_solver(f, init_vector, InitTime_d,
-                             EventTime_d, theta, rate_d,
-                             idummy);
+    vector<vector<scalar> >
+       pred_V = integrator(f, init_vector, InitTime_d,
+                           EventTime_d, theta, rate_d,
+                           idummy);
 
     // Convert vector in row-major vector (eigen Matrix)
     // CHECK - inefficient step ?
