@@ -143,9 +143,13 @@ TEST(mix_solver, dbl) {
     vector<double> init_mix(nStates);
     for (int i = 0; i < nStates; i++) init_mix[i] = init[nBase + i];
 
+    // clock_t start2 = clock();
+
     vector<vector<scalar> >
       temp_PD = integrate_ode_rk45(OneCpt_mix_functor(), init_mix, 0, dt, parms,
                                    x_r, x_i);
+
+    // clock_t end2 = clock();
 
     scalar tempBase = init[0] * exp(-parms[2] * dt[0]);
 
@@ -241,9 +245,13 @@ TEST(mix_solver,var) {
     vector<scalar> init_mix(nStates);
     for (int i = 0; i < nStates; i++) init_mix[i] = init[nBase + i];
 
+    // clock_t start2 = clock();
+
     vector<vector<scalar> >
       temp_PD = integrate_ode_rk45(OneCpt_mix_functor(), init_mix, 0, dt, parms,
                                    x_r, x_i);
+
+    // clock_t end2 = clock();
 
     scalar tempBase = init[0] * exp(-parms[2] * dt[0]);
 
