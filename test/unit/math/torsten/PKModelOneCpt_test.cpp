@@ -9,7 +9,6 @@ using Eigen::Matrix;
 using Eigen::Dynamic;
 
 TEST(Torsten, PKModelOneCpt_MultipleDoses) {
-
 	vector<vector<double> > pMatrix(1);
 	pMatrix[0].resize(3);
 	pMatrix[0][0] = 10;  // CL
@@ -594,3 +593,72 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses_timePara) {
     test_PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, biovar, tlag, 1e-8, 1e-4);
 }
+
+TEST(Torsten, PKModelOneCptModel_Rate) {
+  using std::vector;
+
+  vector<vector<double> > pMatrix(1);
+  pMatrix[0].resize(3);
+  pMatrix[0][0] = 10;  // CL
+  pMatrix[0][1] = 80;  // Vc
+  pMatrix[0][2] = 1.2;  // ka
+
+  int nCmt = 2;
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(nCmt);
+  biovar[0][0] = 1;  // F1
+  biovar[0][1] = 1;  // F2
+
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(nCmt);
+  tlag[0][0] = 0;  // tlag1
+  tlag[0][1] = 0;  // tlag2
+
+  vector<double> time(10);
+  time[0] = 0;
+  for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
+  time[9] = 4.0;
+
+  vector<double> amt(10, 0);
+  amt[0] = 1200;
+
+  vector<double> rate(10, 0);
+  rate[0] = 1200;
+
+  vector<int> cmt(10, 2);
+  cmt[0] = 1;
+
+  vector<int> evid(10, 0);
+  evid[0] = 1;
+
+  vector<double> ii(10, 0);
+  ii[0] = 12;
+
+  vector<int> addl(10, 0);
+  addl[0] = 14;
+
+  vector<int> ss(10, 0);
+
+  Matrix<double, Dynamic, Dynamic> x;
+  x = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                    pMatrix, biovar, tlag);
+
+  Matrix<double, Dynamic, Dynamic> amounts(10, 2);
+  amounts << 0.00000,   0.00000,
+             259.18178,  40.38605,
+             451.18836, 145.61440,
+             593.43034, 296.56207,
+             698.80579, 479.13371,
+             517.68806, 642.57025,
+             383.51275, 754.79790,
+             284.11323, 829.36134,
+             210.47626, 876.28631,
+             19.09398, 844.11769;
+
+  expect_matrix_eq(amounts, x);
+
+  // Test AutoDiff against FiniteDiff
+  test_PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                     pMatrix, biovar, tlag, 1e-8, 5e-4);
+}
+
