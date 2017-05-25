@@ -287,7 +287,7 @@ TEST(Torsten, PKModelOneCpt_signature_test) {
                            pMatrix[0], biovar_v, tlag_v[0]);
   x_121[6] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix[0], biovar, tlag_v[0]);
-  
+
   for (size_t i = 0; i < x_121.size(); i++)
     for (int j = 0; j < x_121[i].rows(); j++)
       for (int k = 0; k < x_121[i].cols(); k++)

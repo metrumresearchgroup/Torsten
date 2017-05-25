@@ -25,6 +25,7 @@ public:
     rel_tol = 1e-10;
     abs_tol = 1e-10;
     max_num_steps = 1e8;
+    msgs = 0;
     solver_type = "rk45";
   }
 
@@ -52,11 +53,11 @@ public:
               const std::vector<int>& x_int) const {
     if (solver_type == "bdf")
       return stan::math::integrate_ode_bdf(f, y0, t0, ts, theta, x, x_int,
-                                           msgs,  // std::ostream * msgs
+                                           msgs,
                                            rel_tol, abs_tol, max_num_steps);
     else  // if(solver_type == "rk45")
       return stan::math::integrate_ode_rk45(f, y0, t0, ts, theta, x, x_int,
-                                            msgs,  // std::ostream * msgs
+                                            msgs,
                                             rel_tol, abs_tol, max_num_steps);
   }
 };
