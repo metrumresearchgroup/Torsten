@@ -67,12 +67,9 @@ Pred1_general_solver(const T_time& dt,
   // FIX ME - see issue #30
   vector<double> EventTime_d(1, unpromote(EventTime));
   double InitTime_d = unpromote(InitTime);
-  // vector<double> rate_d(rate.size(), 0);
-  // for (size_t i = 0; i < rate.size(); i++) rate_d[i] = unpromote(rate[i]);
 
   vector<T_parameters> theta = parameter.get_RealParameters();
   vector<scalar> init_vector = to_array_1d(init);
-  // for (size_t i = 0; i < init_vector.size(); i++) init_vector[i] = init(0, i);
 
   Eigen::Matrix<scalar, 1, Eigen::Dynamic> pred;
   if (EventTime_d[0] == InitTime_d) { pred = init;

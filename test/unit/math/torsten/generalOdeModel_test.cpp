@@ -1125,9 +1125,9 @@ TEST(Torsten, genCptOne_MultipleDoses_timePara) {
 			   6.772877e-02, 16.5774607,
 			   3.372017e-03, 3.4974152,
 			   1.678828e-04, 0.7342228;
-			   
-    expect_near_matrix_eq(amounts, x_rk45, rel_err_rk45);
-    expect_near_matrix_eq(amounts, x_bdf, rel_err_bdf);
+
+  expect_near_matrix_eq(amounts, x_rk45, rel_err_rk45);
+  expect_near_matrix_eq(amounts, x_bdf, rel_err_bdf);
 
   // Test AutoDiff against FiniteDiff
   double diff = 1e-8, diff2 = 2e-2;
@@ -1192,8 +1192,15 @@ TEST(Torsten, genCptOne_Rate) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e6;
 
-  Matrix<double, Dynamic, Dynamic> x_rk45;
-  x_rk45 = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
+  Matrix<double, Dynamic, Dynamic>
+    x_rk45 = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
+                                  time, amt, rate, ii, evid, cmt, addl, ss,
+                                  pMatrix, biovar, tlag,
+                                  0,
+                                  rel_tol, abs_tol, max_num_steps);
+
+  Matrix<double, Dynamic, Dynamic>
+    x_bdf = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
                                 time, amt, rate, ii, evid, cmt, addl, ss,
                                 pMatrix, biovar, tlag,
                                 0,
@@ -1210,9 +1217,11 @@ TEST(Torsten, genCptOne_Rate) {
              284.11323, 829.36134,
              210.47626, 876.28631,
              19.09398, 844.11769;
-  
-  // double rel_err_rk45 = 1e-6;
-  // expect_near_matrix_eq(amounts, x_rk45, rel_err_rk45);
+
+  // rel err determined empirically
+  double rel_err_rk45 = 1e-6, rel_err_bdf = 1e-5;
+  expect_near_matrix_eq(amounts, x_rk45, rel_err_rk45);
+  expect_near_matrix_eq(amounts, x_bdf, rel_err_bdf);
 
   // Test Autodiff
   double diff = 1e-8, diff2 = 2e-2;
@@ -1220,6 +1229,10 @@ TEST(Torsten, genCptOne_Rate) {
                        time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, biovar, tlag,
                        rel_tol, abs_tol, max_num_steps, diff, diff2, "rk45");
+  test_generalOdeModel(oneCptModelODE_functor(), nCmt,
+                       time, amt, rate, ii, evid, cmt, addl, ss,
+                       pMatrix, biovar, tlag,
+                       rel_tol, abs_tol, max_num_steps, diff, diff2, "bdf");
 }
 
 
@@ -1309,12 +1322,17 @@ TEST(Torsten, generalTwoCptModel_Rate) {
 
   int nCmt = 3;
 
-  Matrix<double, Dynamic, Dynamic> x_rk45;
+  Matrix<double, Dynamic, Dynamic> x_rk45, x_bdf;
   x_rk45 = generalOdeModel_rk45(twoCptModelODE_functor(), nCmt,
                                 time, amt, rate, ii, evid, cmt, addl, ss,
                                 pMatrix, biovar, tlag,
                                 0,
                                 rel_tol, abs_tol, max_num_steps);
+  x_bdf = generalOdeModel_bdf(twoCptModelODE_functor(), nCmt,
+                              time, amt, rate, ii, evid, cmt, addl, ss,
+                              pMatrix, biovar, tlag,
+                              0,
+                              rel_tol, abs_tol, max_num_steps);
 
   Matrix<double, Dynamic, Dynamic> amounts(10, 3);
   amounts << 0.00000,   0.00000,   0.0000000,
@@ -1328,8 +1346,10 @@ TEST(Torsten, generalTwoCptModel_Rate) {
              210.47626, 703.65965, 172.6607082,
              19.09398, 486.11014, 406.6342765;
 
-  double rel_err_rk45 = 1e-6;
+  // relative error determined empirically
+  double rel_err_rk45 = 1e-6, rel_err_bdf = 1e-4;
   expect_near_matrix_eq(amounts, x_rk45, rel_err_rk45);
+  expect_near_matrix_eq(amounts, x_bdf, rel_err_bdf);
 
   // Test Autodiff
   double diff = 1e-8, diff2 = 2e-2;
@@ -1337,4 +1357,8 @@ TEST(Torsten, generalTwoCptModel_Rate) {
                        time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, biovar, tlag,
                        rel_tol, abs_tol, max_num_steps, diff, diff2, "rk45");
+  test_generalOdeModel(twoCptModelODE_functor(), nCmt,
+                       time, amt, rate, ii, evid, cmt, addl, ss,
+                       pMatrix, biovar, tlag,
+                       rel_tol, abs_tol, max_num_steps, diff, diff2, "bdf");
 }
