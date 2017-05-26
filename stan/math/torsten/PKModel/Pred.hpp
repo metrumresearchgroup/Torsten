@@ -91,9 +91,14 @@ Pred(const std::vector<T_time>& time,
 
   EventHistory<scalar, scalar, scalar, scalar>
     events(time, amt, rate, ii, evid, cmt, addl, ss);
+  // EventHistory<T_time, T_amt, T_rate, T_ii>
+  //  events(time, amt, rate, ii, evid, cmt, addl, ss);
+  
   ModelParameterHistory<scalar, T_parameters, T_biovar, T_tlag, T_system>
     parameters(time, pMatrix, biovar, tlag, system);
+  // ModelParameterHistory<T_time, T_parameters, T_biovar, T_tlag, T_system>
   RateHistory<scalar, scalar> rates;
+  // RateHistory<T_time, T_rate> rates;
 
   events.Sort();
   parameters.Sort();
@@ -124,9 +129,12 @@ Pred(const std::vector<T_time>& time,
     pred = Matrix<scalar, Dynamic, Dynamic>::Zero(nKeep, nCmt);
 
   scalar dt, tprev = events.get_time(0);
+  // T_time dt, tprev = events.get_time(0);
   Matrix<scalar, 1, Dynamic> pred1;
   Event<scalar, scalar, scalar, scalar> event;  // CHECK change type (scalars)?
+  // Event<T_time, T_amt, T_rate, T_ii> event;
   ModelParameters<scalar, T_parameters, T_biovar, T_tlag, T_system> parameter;
+  // ModelParameters<T_time, T_parameters, T_biovar, T_tlag, T_system> parameter;
   int iRate = 0, ikeep = 0;
 
   for (int i = 0; i < events.get_size(); i++) {
@@ -136,6 +144,7 @@ Pred(const std::vector<T_time>& time,
     // is one rate per time, not per event.
     if (rates.get_time(iRate) != events.get_time(i)) iRate++;
     Rate<scalar, scalar> rate2 = rates.GetRate(iRate);
+    // Rate<T_time, T_rate> rate2 = rates.GetRate(iRate);
 
     for (int j = 0; j < nCmt; j++)
       rate2.rate[j] *= parameters.GetValueBio(i, j);

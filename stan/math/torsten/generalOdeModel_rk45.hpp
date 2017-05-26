@@ -92,6 +92,8 @@ generalOdeModel_rk45(const F& f,
   vector<Matrix<double, Dynamic, Dynamic> >
     dummy_systems(1, dummy_system);
 
+  // vector<double> rate_test(time.size(), 0);
+
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
               pMatrix, biovar, tlag, model, f, dummy_systems);
 }
