@@ -11,7 +11,8 @@ template<typename T_time, typename T_rate> class RateHistory;
 
 /**
  * The Rate class defines objects that contain the rate in each compartment
- * at each time of the event schedule (but not nescessarily at each event)
+ * at each time of the event schedule (but not nescessarily at each event,
+ * since two events may happen at the same time).
  */
 template<typename T_time, typename T_rate>
 class Rate {
