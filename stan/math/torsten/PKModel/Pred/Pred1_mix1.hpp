@@ -101,7 +101,7 @@ Pred1_mix1(const T_time& dt,
     for (size_t i = 0; i < nPD; i++) y0_PD[i] = y0[nPK + i];
     vector<int> idummy;
 
-    vector<vector<scalar> > 
+    vector<vector<scalar> >
       pred_V = integrator(ode_rate_dbl_functor<F>(f),
                           y0_PD, t0_dbl, t_dbl,
                           theta, x_r, idummy);
@@ -195,7 +195,7 @@ Pred1_mix1(const T_time& dt,
     x_r[0] = nPK;
     x_r[1] = t0_dbl;
 
-    vector<vector<scalar> > 
+    vector<vector<scalar> >
       pred_V = integrator(ode_rate_var_functor<F>(f),
                           y0_PD, t0_dbl, t_dbl,
                           theta, x_r, idummy);

@@ -39,7 +39,6 @@ struct dummy_ode {
     std::vector<scalar> returned_vector = std::vector<scalar>(0, scalar(0));
     return returned_vector;
   }
-
 };
 
 #endif

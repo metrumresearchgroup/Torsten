@@ -76,7 +76,7 @@ Pred1_general_solver(const T_time& dt,
   } else {
     vector<int> idummy;
     vector<vector<scalar> >
-       pred_V = integrator(ode_rate_dbl_functor<F>(f), 
+       pred_V = integrator(ode_rate_dbl_functor<F>(f),
                            init_vector, InitTime_d,
                            EventTime_d, theta, rate,
                            idummy);
@@ -114,7 +114,7 @@ Pred1_general_solver(const T_time& dt,
   using std::vector;
   using boost::math::tools::promote_args;
 
-  typedef typename promote_args<T_time, T_init, 
+  typedef typename promote_args<T_time, T_init,
                                 T_parameters, T_rate>::type scalar;
 
   assert((size_t) init.cols() == rate.size());
@@ -144,7 +144,7 @@ Pred1_general_solver(const T_time& dt,
   } else {
     vector<int> idummy;
     vector<vector<scalar> >
-       pred_V = integrator(ode_rate_var_functor<F>(f), 
+       pred_V = integrator(ode_rate_var_functor<F>(f),
                            init_vector, InitTime_d,
                            EventTime_d, theta, x_r,
                            idummy);

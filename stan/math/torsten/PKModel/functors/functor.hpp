@@ -42,7 +42,7 @@ struct ode_rate_dbl_functor {
              const std::vector<T3>& x_r,
              const std::vector<int>& x_i,
              std::ostream* pstream_) const {
-     return f0_.rate_dbl(t, y, theta, x_r, x_i, pstream_); 
+     return f0_.rate_dbl(t, y, theta, x_r, x_i, pstream_);
   }
 };
 

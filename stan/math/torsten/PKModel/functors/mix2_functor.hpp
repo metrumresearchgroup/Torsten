@@ -63,7 +63,7 @@ struct mix2_functor {
     std::vector<T_pk> y_pk = fTwoCpt(dt, thetaPK, init_pk, x_r);
     std::vector<scalar> dydt = f0_(dt, y, y_pk, theta, x_r, x_i, pstream_);
 
-    for(size_t i = 0; i < dydt.size(); i++)
+    for (size_t i = 0; i < dydt.size(); i++)
       dydt[i] += x_r[nPK + i];
 
     return dydt;
@@ -129,7 +129,7 @@ struct mix2_functor {
     vector<T_pk> y_pk = fTwoCpt(dt, thetaPK, init_pk, ratePK);
     vector<scalar> dydt = f0_(dt, y, y_pk, theta, x_r, x_i, pstream_);
 
-    for(size_t i = 0; i < dydt.size(); i++)
+    for (size_t i = 0; i < dydt.size(); i++)
       dydt[i] += ratePD[i];
 
     return dydt;
@@ -148,9 +148,8 @@ struct mix2_functor {
              std::ostream* pstream_) const {
     std::cout << "mix2_functor: REPORT A BUG IF YOU SEE THIS." << std::endl;
     std::vector<T2> y_pk;
-    return f0_(t, y, y_pk, theta, x_r, x_i, pstream_);  
+    return f0_(t, y, y_pk, theta, x_r, x_i, pstream_);
   }
-
 };
 
 #endif
