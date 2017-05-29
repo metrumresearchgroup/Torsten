@@ -131,7 +131,7 @@ TEST(Torsten, mixOde1Cpt_singleDose) {
   expect_near_matrix_eq(amounts, x_bdf, rel_err);
 
   // Test AutoDiff against FiniteDiff
-  double diff = 1e-8, diff2 = 5e-3;
+  double diff = 1e-8, diff2 = 5e-2;
   test_mixOdeCptModel(feedbackODE(), nPD,
                        time, amt, rate, ii, evid, cmt, addl, ss,
                        parameters, biovar, tlag,
@@ -188,7 +188,6 @@ TEST(Torsten, mixOde2Cpt_singleDose_overload) {
   for (int i = 0; i < nOde; i++) tlag[0][i] = 0;
 
   int nPD = 3;
-
 
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e6;
@@ -316,4 +315,102 @@ TEST(Torsten, mixOde2Cpt_singleDose_overload) {
   expect_near_matrix_eq(amounts, x_bdf_212, rel_err_bdf);
   expect_near_matrix_eq(amounts, x_bdf_211, rel_err_bdf);
   expect_near_matrix_eq(amounts, x_bdf_221, rel_err_bdf);
+}
+
+TEST(Torsten, mixOde2Cpt_rate) {
+  using std::vector;
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
+  
+  int nEvents = 10;
+  vector<double> time(nEvents);
+  time[0] = 0.0;
+  for (int i = 1; i < (nEvents - 1); i++) time[i] = time[i - 1] + 0.25;
+  time[9] = 4.0;
+  vector<double> amt(nEvents, 0);
+  amt[0] = 12000;
+  vector<double> rate(nEvents, 0);
+  rate[0] = 12000;
+  vector<int> cmt(nEvents, 2);
+  cmt[0] = 1;
+  vector<int> evid(nEvents, 0);
+  evid[0] = 1;
+  vector<double> ii(nEvents, 0);
+  ii[0] = 12;
+  vector<int> addl(nEvents, 0);
+  addl[0] = 14;
+  vector<int> ss(nEvents, 0);
+  
+  int nParameters = 9;
+  vector<vector<double> > parameters(1);
+  parameters[0].resize(nParameters);
+  parameters[0][0] = 10;  // CL
+  parameters[0][1] = 15;  // Q
+  parameters[0][2] = 35;  // VC
+  parameters[0][3] = 105;  // VP
+  parameters[0][4] = 2.0;  // ka
+  parameters[0][5] = 125;  // Mtt
+  parameters[0][6] = 5;  // Circ0
+  parameters[0][7] = 3e-4;  // alpha
+  parameters[0][8] = 0.17;  // gamma
+  
+  int nOde = 6;
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(nOde);
+  for (int i = 0; i < nOde; i++) biovar[0][i] = 1;
+  
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(nOde);
+  for (int i = 0; i < nOde; i++) tlag[0][i] = 0;
+  
+  int nPD = 3;
+  double rel_tol = 1e-6, abs_tol = 1e-6;
+  long int max_num_steps = 1e6;
+  Matrix<double, Dynamic, Dynamic>
+    x_rk45 = mixOde2CptModel_rk45(feedbackODE(), nPD,
+                                  time, amt, rate, ii, evid, cmt, addl, ss,
+                                  parameters, biovar, tlag,
+                                  0,
+                                  rel_tol, abs_tol, max_num_steps);
+  
+  rel_tol = 1e-10, abs_tol = 1e-10;
+  max_num_steps = 1e8;
+  Matrix<double, Dynamic, Dynamic>
+    x_bdf = mixOde2CptModel_bdf(feedbackODE(), nPD,
+                                time, amt, rate, ii, evid, cmt, addl, ss,
+                                parameters, biovar, tlag,
+                                0,
+                                rel_tol, abs_tol, max_num_steps);
+
+  // Solution from mrgsolve (uses an LSODA integrator)
+  Matrix<double, Dynamic, Dynamic> amounts(nEvents, nOde);
+  amounts << 0.00000,    0.0000,    0.00000,  0.0000000000,  0.000000,  0.000000,
+             2360.81604,  601.5528,   22.49548, -0.0000726505, -1.499109e-07, -2.448992e-10,
+             3792.72335, 1951.4716,  152.31877, -0.0004967093, -2.110375e-06, -7.029932e-09,
+             4661.21904, 3599.5932,  438.32811, -0.0014439180, -9.454212e-06, -4.809775e-08,
+             5187.98830, 5301.0082,  892.11236, -0.0029697950, -2.658409e-05, -1.833674e-07,
+             3146.67402, 6328.6148, 1483.47278, -0.0049954464, -5.788643e-05, -5.079766e-07,
+             1908.55427, 6478.2514, 2110.88020, -0.0072059086, -1.060159e-04, -1.145673e-06,
+             1157.59667, 6180.6685, 2705.53777, -0.0093809310, -1.713345e-04, -2.230652e-06,
+             702.11786, 5681.5688, 3235.76051, -0.0114135989, -2.529409e-04, -3.893275e-06,
+             12.85974, 2316.1858, 5156.18535, -0.0216237650, -1.312811e-03, -4.956987e-05;
+  
+  double rel_err = 1e-4;
+  // add absolute error to deal with round-off errors for
+  // very low values.
+  double abs_err = 1e-12;
+  expect_near_matrix_eq(amounts, x_rk45, rel_err, abs_err);
+  expect_near_matrix_eq(amounts, x_bdf, rel_err, abs_err);
+  
+  // Test AutoDiff against FiniteDiff
+  double diff = 1e-8, diff2 = 1e-2;
+  test_mixOdeCptModel(feedbackODE(), nPD,
+                      time, amt, rate, ii, evid, cmt, addl, ss,
+                      parameters, biovar, tlag,
+                      rel_tol, abs_tol, max_num_steps, diff, diff2, "2_rk45");
+  
+  test_mixOdeCptModel(feedbackODE(), nPD,
+                      time, amt, rate, ii, evid, cmt, addl, ss,
+                      parameters, biovar, tlag,
+                      rel_tol, abs_tol, max_num_steps, diff, diff2, "2_bdf");
 }

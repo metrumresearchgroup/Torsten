@@ -105,16 +105,7 @@ struct mix_rate_dbl_functor {
              const std::vector<T3>& x_r,
              const std::vector<int>& x_i,
              std::ostream* pstream_) const {
-    typedef typename boost::math::tools::promote_args<T0, T1, T2, T3>::type
-      scalar;
-    std::vector<scalar> dydt = f0_(t, y, theta, x_r, x_i, pstream_);
-
-    size_t nOde = dydt.size();
-    int indexRate = x_r.size() - 1 - nOde;
-    for (size_t i = 0; i < nOde; i++)
-      dydt[i] += x_r[indexRate + i];
-
-    return dydt;
+    return f0_.rate_dbl(t, y, theta, x_r, x_i, pstream_); 
   }
 };
 
@@ -142,21 +133,7 @@ struct mix_rate_var_functor {
               const std::vector<T3>& x_r,
               const std::vector<int>& x_i,
               std::ostream* pstream_) const {
-      typedef typename boost::math::tools::promote_args<T0, T1, T2, T3>::type
-        scalar;
-
-      std::vector<scalar> dydt = f0_(t, y, theta, x_r, x_i, pstream_);
-
-      size_t 
-        nTheta = theta.size(),
-        nPK = x_r[x_r.size() - 2],
-        nOde = dydt.size();
-
-      int indexRate = nTheta - nPK - nOde;
-      for (size_t i = 0; i < nOde; i++)
-        dydt[i] += theta[indexRate + i];
-
-      return dydt;
+      return f0_.rate_var(t, y, theta, x_r, x_i, pstream_);
   }
 };
 

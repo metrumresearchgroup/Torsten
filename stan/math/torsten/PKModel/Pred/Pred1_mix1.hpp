@@ -115,7 +115,7 @@ Pred1_mix1(const T_time& dt,
 }
 
 /**
- * Overload function for case rate is a vector of rate.
+ * Overload function for case rate is a vector of var.
  * The parameters are stored in theta in this order:
  *   (1) ODE parameters
  *   (2) rate
