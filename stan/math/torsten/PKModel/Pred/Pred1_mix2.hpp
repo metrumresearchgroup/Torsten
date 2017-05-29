@@ -3,7 +3,6 @@
 
 #include <stan/math/torsten/PKModel/Pred/unpromote.hpp>
 #include <stan/math/torsten/PKModel/Pred/fTwoCpt.hpp>
-#include <stan/math/torsten/PKModel/Pred/mix2_functor.hpp>
 #include <stan/math/torsten/PKModel/integrator.hpp>
 #include <iostream>
 #include <vector>
@@ -103,7 +102,7 @@ Pred1_mix2(const T_time& dt,
     vector<int> idummy;
 
     vector<vector<scalar> > 
-      pred_V = integrator(mix_rate_dbl_functor<F>(f),
+      pred_V = integrator(ode_rate_dbl_functor<F>(f),
                           y0_PD, t0_dbl, t_dbl,
                           theta, x_r, idummy);
     size_t nOde = pred_V[0].size();
@@ -202,7 +201,7 @@ Pred1_mix2(const T_time& dt,
     x_r[1] = t0_dbl;
 
     vector<vector<scalar> > 
-      pred_V = integrator(mix_rate_var_functor<F>(f),
+      pred_V = integrator(ode_rate_var_functor<F>(f),
                           y0_PD, t0_dbl, t_dbl,
                           theta, x_r, idummy);
     size_t nOde = pred_V[0].size();
@@ -213,6 +212,5 @@ Pred1_mix2(const T_time& dt,
   }
   return pred;
 }
-
 
 #endif

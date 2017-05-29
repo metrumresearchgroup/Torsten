@@ -2,7 +2,7 @@
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_GENERAL_SOLVER_HPP
 
 #include <stan/math/torsten/PKModel/Pred/unpromote.hpp>
-#include <stan/math/torsten/PKModel/Pred/general_functor.hpp>
+#include <stan/math/torsten/PKModel/functors/functor.hpp>
 #include <stan/math/prim/mat/fun/to_array_1d.hpp>
 #include <iostream>
 #include <vector>
@@ -76,7 +76,7 @@ Pred1_general_solver(const T_time& dt,
   } else {
     vector<int> idummy;
     vector<vector<scalar> >
-       pred_V = integrator(general_rate_dbl_functor<F>(f), 
+       pred_V = integrator(ode_rate_dbl_functor<F>(f), 
                            init_vector, InitTime_d,
                            EventTime_d, theta, rate,
                            idummy);
@@ -144,7 +144,7 @@ Pred1_general_solver(const T_time& dt,
   } else {
     vector<int> idummy;
     vector<vector<scalar> >
-       pred_V = integrator(general_rate_var_functor<F>(f), 
+       pred_V = integrator(ode_rate_var_functor<F>(f), 
                            init_vector, InitTime_d,
                            EventTime_d, theta, x_r,
                            idummy);

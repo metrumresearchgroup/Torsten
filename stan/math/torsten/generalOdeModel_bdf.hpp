@@ -2,6 +2,7 @@
 #define STAN_MATH_TORSTEN_GENERALODEMODEL_BDF_HPP
 
 #include <Eigen/Dense>
+#include <stan/math/torsten/PKModel/functors/general_functor.hpp>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
 #include <boost/math/tools/promotion.hpp>
 #include <vector>
@@ -92,7 +93,9 @@ generalOdeModel_bdf(const F& f,
     dummy_systems(1, dummy_system);
 
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-              pMatrix, biovar, tlag, model, f, dummy_systems);
+              pMatrix, biovar, tlag, model,
+              general_functor<F>(f),
+              dummy_systems);
 }
 
 /**
