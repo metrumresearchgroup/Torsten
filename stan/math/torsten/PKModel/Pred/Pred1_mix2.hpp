@@ -64,7 +64,7 @@ Pred1_mix2(const T_time& dt,
   T_time t0 = t - dt;  // time of previous event
   vector<double> t_dbl(1, unpromote(t));
   double t0_dbl = unpromote(t0);
-  std::vector<double> x_r = rate;
+  vector<double> x_r = rate;
   x_r.push_back(t0_dbl);  // need to pass the initial time!
 
   vector<scalar> y0 = to_array_1d(init);
@@ -77,7 +77,7 @@ Pred1_mix2(const T_time& dt,
   Eigen::Matrix<scalar, 1, Eigen::Dynamic> pred;
   if (t_dbl[0] == t0_dbl) { pred = init;
   } else {
-    size_t nPK = 3;  // two states for 1Cpt with absorption
+    size_t nPK = 3;  // three states for 1Cpt with absorption
     vector<scalar> y0_PK(nPK);
     y0_PK[0] = y0[0];
     y0_PK[1] = y0[1];

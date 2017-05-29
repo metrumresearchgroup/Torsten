@@ -66,6 +66,9 @@ Pred1_mix1(const T_time& dt,
   vector<double> t_dbl(1, unpromote(t));
   double t0_dbl = unpromote(t0);
 
+  vector<double> x_r = rate;
+  x_r.push_back(t0_dbl);  // need to pass the initial time!
+
   vector<scalar> y0 = to_array_1d(init);
 
   size_t nParm = parameter.get_RealParameters().size();
@@ -97,9 +100,6 @@ Pred1_mix1(const T_time& dt,
     vector<scalar> y0_PD(nPD);
     for (size_t i = 0; i < nPD; i++) y0_PD[i] = y0[nPK + i];
     vector<int> idummy;
-
-    std::vector<double> x_r = rate;
-    x_r.push_back(t0_dbl);  // need to pass the initial time!
 
     vector<vector<scalar> > 
       pred_V = integrator(mix_rate_dbl_functor<F>(f),
@@ -199,8 +199,8 @@ Pred1_mix1(const T_time& dt,
       pred_V = integrator(mix_rate_var_functor<F>(f),
                           y0_PD, t0_dbl, t_dbl,
                           theta, x_r, idummy);
-    size_t nOde = pred_V[0].size();
 
+    size_t nOde = pred_V[0].size();
     pred.resize(nPK + nOde);
     for (size_t i = 0; i < nPK; i++) pred(i) = xPK[i];
     for (size_t i = 0; i < nOde; i++) pred(nPK + i) = pred_V[0][i];

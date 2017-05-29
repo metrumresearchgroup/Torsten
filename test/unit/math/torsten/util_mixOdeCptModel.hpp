@@ -82,7 +82,7 @@ finite_diff_params(const F& f,
 
   Matrix<double, Dynamic, Dynamic> pk_res_ub;
   Matrix<double, Dynamic, Dynamic> pk_res_lb;
-  /*if (odeInt == "1_rk45") {
+  if (odeInt == "1_rk45") {
     pk_res_ub = mixOde1CptModel_rk45(f, nOde, time, amt, rate, ii,
                                      evid, cmt, addl, ss,
                                      pMatrix_ub, biovar_ub, tlag_ub,
@@ -106,7 +106,7 @@ finite_diff_params(const F& f,
                                     pMatrix_lb, biovar_lb, tlag_lb,
                                     0,
                                     rel_tol, abs_tol, max_num_steps);
-  } */
+  }
 
   if (odeInt == "2_rk45") {
     pk_res_ub = mixOde2CptModel_rk45(f, nOde, time, amt, rate, ii,
@@ -197,7 +197,7 @@ void test_mixOdeCptModel_finite_diff_vdd(
   }
 
   Matrix<var, Dynamic, Dynamic> ode_res;
-  /*if (odeInt == "1_rk45")
+  if (odeInt == "1_rk45")
     ode_res = mixOde1CptModel_rk45(f, nOde,
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    pMatrix_v, biovar, tlag,
@@ -209,7 +209,7 @@ void test_mixOdeCptModel_finite_diff_vdd(
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar, tlag,
                                   0,
-                                  rel_tol, abs_tol, max_num_steps); */
+                                  rel_tol, abs_tol, max_num_steps);
 
   if (odeInt == "2_rk45")
     ode_res = mixOde2CptModel_rk45(f, nOde,
@@ -312,7 +312,7 @@ void test_mixOdeCptModel_finite_diff_dvd(
   }
 
   Matrix<var, Dynamic, Dynamic> ode_res;
-  /* if (odeInt == "1_rk45")
+  if (odeInt == "1_rk45")
     ode_res = mixOde1CptModel_rk45(f, nOde,
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    pMatrix, biovar_v, tlag,
@@ -324,7 +324,7 @@ void test_mixOdeCptModel_finite_diff_dvd(
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar_v, tlag,
                                   0,
-                                  rel_tol, abs_tol, max_num_steps); */
+                                  rel_tol, abs_tol, max_num_steps);
 
   if (odeInt == "2_rk45")
     ode_res = mixOde2CptModel_rk45(f, nOde,
@@ -430,7 +430,7 @@ void test_mixOdeCptModel_finite_diff_ddv(
   }
 
   Matrix<var, Dynamic, Dynamic> ode_res;
-  /*if (odeInt == "1_rk45")
+  if (odeInt == "1_rk45")
     ode_res = mixOde1CptModel_rk45(f, nOde,
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    pMatrix, biovar, tlag_v,
@@ -442,7 +442,7 @@ void test_mixOdeCptModel_finite_diff_ddv(
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar, tlag_v,
                                   0,
-                                  rel_tol, abs_tol, max_num_steps); */
+                                  rel_tol, abs_tol, max_num_steps);
 
   if (odeInt == "2_rk45")
     ode_res = mixOde2CptModel_rk45(f, nOde,

@@ -136,9 +136,10 @@ TEST(Torsten, mixOde1Cpt_singleDose) {
   rel_err = 2e-5;
   expect_near_matrix_eq(amounts, x_bdf, rel_err);
 
+
   // Test AutoDiff against FiniteDiff
   // diff2 obtained empirically
-  double diff = 1e-8, diff2 = 2.61e-2;
+  double diff = 1e-8, diff2 = 6e-2;
   test_mixOdeCptModel(feedbackODE(), nPD,
                       time, amt, rate, ii, evid, cmt, addl, ss,
                       parameters, biovar, tlag,
