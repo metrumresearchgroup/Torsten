@@ -4,7 +4,7 @@
 #include <Eigen/Dense>
 #include <boost/math/tools/promotion.hpp>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
-#include <stan/math/torsten/PKModel/dummy_ode.hpp>
+#include <stan/math/torsten/PKModel/functors/dummy_ode.hpp>
 #include <string>
 #include <vector>
 

@@ -359,7 +359,7 @@ void test_mixOdeCptModel_finite_diff_dvd(
                       finite_diff_res[k][l](i, j), diff2)
           << "Gradient of mixOde1CptModel failed with known"
           << " time, amt, rate, ii, evid, cmt, addl, ss "
-          << " and unknown parameters at event " << i
+          << " and unknown biovar at event " << i
           << ", in compartment " << j
           << ", and parameter index (" << k << ", " << l << ")";
         }
@@ -486,7 +486,7 @@ void test_mixOdeCptModel_finite_diff_ddv(
                         finite_diff_res[k][l](i, j), diff2)
             << "Gradient of mixOde1CptModel failed with known"
             << " time, amt, rate, ii, evid, cmt, addl, ss "
-            << " and unknown parameters at event " << i
+            << " and unknown lag times at event " << i
             << ", in compartment " << j
             << ", and parameter index (" << k << ", " << l << ")";
           }
@@ -516,10 +516,10 @@ void test_mixOdeCptModel(const F& f,
                          const double& diff2,
                          std::string odeInt) {
   test_mixOdeCptModel_finite_diff_vdd(f, nOde, time, amt, rate,
-                                    ii, evid, cmt, addl, ss,
-                                    pMatrix, biovar, tlag,
-                                    rel_tol, abs_tol, max_num_steps,
-                                    diff, diff2, odeInt);
+                                      ii, evid, cmt, addl, ss,
+                                      pMatrix, biovar, tlag,
+                                      rel_tol, abs_tol, max_num_steps,
+                                      diff, diff2, odeInt);
 
   test_mixOdeCptModel_finite_diff_dvd(f, nOde, time, amt, rate,
                                       ii, evid, cmt, addl, ss,

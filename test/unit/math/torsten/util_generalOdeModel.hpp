@@ -192,8 +192,7 @@ void test_generalOdeModel_finite_diff_vdd(
       ode_res(i, j).grad(parameters, grads_eff);
 
       for (size_t k = 0; k < parmRows; k++)
-        for (size_t l = 0; l < parmCols; l++) {
-
+        for (size_t l = 0; l < parmCols; l++) { 
         EXPECT_NEAR(grads_eff[k * parmCols + l],
           finite_diff_res[k][l](i, j), diff2)
           << "Gradient of generalOdeModel failed with known"

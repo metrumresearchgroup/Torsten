@@ -91,6 +91,7 @@ Pred(const std::vector<T_time>& time,
 
   EventHistory<scalar, scalar, scalar, scalar>
     events(time, amt, rate, ii, evid, cmt, addl, ss);
+
   ModelParameterHistory<scalar, T_parameters, T_biovar, T_tlag, T_system>
     parameters(time, pMatrix, biovar, tlag, system);
   RateHistory<scalar, scalar> rates;
