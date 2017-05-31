@@ -28,6 +28,8 @@ template <typename F0>
 struct ode_rate_dbl_functor {
   F0 f0_;
 
+  ode_rate_dbl_functor() { };
+
   explicit ode_rate_dbl_functor(const F0& f0) : f0_(f0) { }
 
   /**
