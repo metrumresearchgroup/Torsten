@@ -104,8 +104,9 @@ PolyExp(const T_x& x,
     if (tau <= 0) {
       if (x >= 0) {
         if (x <= xinf) {
-          for (int i = 0; i < n; i++)
+           for (int i = 0; i < n; i++) {
             result += a[i] * (1 - exp(-alpha[i] * x)) / alpha[i];
+           }
         } else {
           for (int i = 0; i < n; i++)
             result += a[i] * (1 - exp(-alpha[i] * xinf))

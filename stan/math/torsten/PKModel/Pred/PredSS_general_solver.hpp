@@ -92,7 +92,7 @@ PredSS_general_solver(const ModelParameters<T_time,
 
     x_r.push_back(amt);
 
-    pred = algebra_solver(system, y, 
+    pred = algebra_solver(system, y,
                           to_vector(parameter.get_RealParameters()),
                           x_r, x_i,
                           0, rel_tol, f_tol, max_num_steps);
@@ -100,7 +100,7 @@ PredSS_general_solver(const ModelParameters<T_time,
     // DEV - what tuning parameters should we use for the algebra solver?
     // DEV - update initial guess or tuning parameters if result not good?
 
-  } else if (ii > 0) {  // multiple truncated infusions
+  } /* else if (ii > 0) {  // multiple truncated infusions
     // compute initial guess
     x_r[cmt - 1] = rate;
     y = Pred1_general_solver(ii_dbl,
@@ -114,7 +114,7 @@ PredSS_general_solver(const ModelParameters<T_time,
                           to_vector(parameter.get_RealParameters()),
                           x_r, x_i,
                           0, rel_tol, 1e-3, max_num_steps);  // should use ftol
-  } else {  // constant infusion
+  } */ else {  // constant infusion
     x_r[cmt - 1] = rate;
     y = Pred1_general_solver(100.0, unpromote(parameter),
                              init_dbl, x_r, f, integrator);

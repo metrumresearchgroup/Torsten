@@ -45,6 +45,8 @@ PredSS_one(const ModelParameters<T_time, T_parameters, T_biovar,
     typename boost::math::tools::promote_args< T_ii, T_parameters>
       ::type>::type scalar;
 
+  double inf = std::numeric_limits<double>::max();  // "infinity"
+
   T_parameters CL = parameter.get_RealParameters()[0],
     V2 = parameter.get_RealParameters()[1],
     ka = parameter.get_RealParameters()[2],
@@ -61,37 +63,37 @@ PredSS_one(const ModelParameters<T_time, T_parameters, T_biovar,
     if (cmt == 1) {
       a[0] = 0;
       a[1] = 1;
-      pred(0, 0) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 2);
+      pred(0) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 2);
       a[0] = ka / (ka - alpha[0]);
       a[1] = -a[0];
-      pred(0, 1) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 2);
+      pred(1) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 2);
     } else {  // cmt=2
       a[0] = 1;
-      pred(0, 1) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 1);
+      pred(1) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 1);
     }
   } else if (ii > 0) {  // multiple truncated infusions
       if (cmt == 1) {
         a[0] = 0;
         a[1] = 1;
-        pred(0, 0) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 2);
+        pred(0) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 2);
         a[0] = ka / (ka - alpha[0]);
         a[1] = -a[0];
-        pred(0, 1) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 2);
+        pred(1) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 2);
     } else {  // cmt = 2
       a[0] = 1;
-      pred(0, 1) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 1);
+      pred(1) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 1);
     }
   } else {  // constant infusion
     if (cmt == 1) {
       a[0] = 0;
       a[1] = 1;
-      pred(0, 0) = PolyExp(0, 0, rate, 0, 0, true, a, alpha, 2);
+      pred(0) = PolyExp(0, 0, rate, inf, 0, true, a, alpha, 2);
       a[0] = ka / (ka - alpha[0]);
       a[1] = -a[0];
-      pred(0, 1) = PolyExp(0, 0, rate, 0, 0, true, a, alpha, 2);
+      pred(1) = PolyExp(0, 0, rate, inf, 0, true, a, alpha, 2);
     } else {  // cmt = 2
       a[0] = 1;
-      pred(0, 1) = PolyExp(0, 0, rate, 0, 0, true, a, alpha, 1);
+      pred(1) = PolyExp(0, 0, rate, inf, 0, true, a, alpha, 1);
     }
   }
   return pred;

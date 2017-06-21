@@ -19,7 +19,7 @@ struct OneCpt_functor {
     typedef typename boost::math::tools::promote_args<T0, T1, T2, T3>::type
       scalar;
 
-    scalar 
+    scalar
       CL = theta[0],
       VC = theta[1],
       ka = theta[2];
@@ -122,7 +122,7 @@ struct OneCpt_functor {
   // Compare to results obtained with analytical solution
   // (note: matrix exponential solution agrees with analytical solution).
   Matrix<double, 1, Dynamic>
-    pred_an = PredSS_one(parms, amt, rate, ii, cmt);  
+    pred_an = PredSS_one(parms, amt, rate, ii, cmt);
 
   // relative error for 1st term determined empirically
   EXPECT_FLOAT_EQ(pred_an(0), pred(0));
@@ -162,28 +162,18 @@ TEST(Torsten, predSS_general_OneCpt_constant_infusion) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
 
-std::cout << "marker a" << std::endl; 
-
   Matrix<double, 1, Dynamic>
     pred = PredSS_general_solver(parms, amt, rate, ii, cmt,
                                  general_functor<OneCpt_functor>(OneCpt_functor()),
                                  integrator_structure(rel_tol, abs_tol,
                                                       max_num_steps, 0,
                                                       "rk45"));
-  std::cout << pred << std::endl;
-
-std::cout << "marker b" << std::endl;
 
   // Compare to results obtained with analytical solution
-  // (note: matrix exponential solution agrees with analytical solution).
   Matrix<double, 1, Dynamic>
-    pred_an = PredSS_one(parms, amt, rate, ii, cmt);  
-    
-  std::cout << pred_an << std::endl;
+    pred_an = PredSS_one(parms, amt, rate, ii, cmt);
 
   // relative error for 1st term determined empirically
   EXPECT_FLOAT_EQ(pred_an(0), pred(0));
   EXPECT_FLOAT_EQ(pred_an(1), pred(1));
-  
-  std::cout << "marker c" << std::endl;
 }
