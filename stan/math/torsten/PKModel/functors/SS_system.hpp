@@ -45,6 +45,7 @@ struct SS_system {
     using Eigen::Matrix;
     using Eigen::Dynamic;
     using std::vector;
+    using stan::math::to_vector;
     typedef typename boost::math::tools::promote_args<T0, T1>::type scalar;
     typedef typename stan::return_type<T0, T1>::type T_deriv;
 
@@ -60,19 +61,24 @@ struct SS_system {
 
     Matrix<scalar, Dynamic, 1> result(x.size());
 
-    if (rate == 0 || ii_ > 0) {  // non-constant infusion
-      if (rate == 0) {  // bolus dose
-        x0[cmt_ - 1] += amt;
-        ts[0] = ii_;
-      } else if (ii_ > 0) {  // multiple truncated infusions
-        ts[0] = amt / rate;
-        x0 = integrator_(f_, to_array_1d(x), t0, ts, to_array_1d(y),
-                         dat, dat_int)[0];
-        rate_v[cmt_ - 1] = 0;
-        ts[0] = ii_ - amt / rate;
-      }
+    if (rate == 0) {  // bolus dose
+      x0[cmt_ - 1] += amt;
+      ts[0] = ii_;
       vector<scalar> pred = integrator_(f_, x0, t0, ts, to_array_1d(y),
                                         dat, dat_int)[0];
+
+      for (int i = 0; i < result.size(); i++)
+        result(i) = x(i) - pred[i];
+
+    } else if (ii_ > 0) {  // multiple truncated infusions
+      ts[0] = amt / rate;
+      x0 = integrator_(f_, to_array_1d(x), t0, ts, to_array_1d(y),
+                       dat, dat_int)[0];
+      ts[0] = ii_ - amt / rate;
+      std::vector<double> rate_v = dat;
+      rate_v[cmt_ - 1] = 0;
+      vector<scalar> pred = integrator_(f_, x0, t0, ts, to_array_1d(y),
+                                        rate_v, dat_int)[0];
       for (int i = 0; i < result.size(); i++)
         result(i) = x(i) - pred[i];
 

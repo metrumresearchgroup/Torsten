@@ -32,7 +32,7 @@ struct OneCpt_functor {
   }
 };
 
-/*TEST(Torsten, predSS_general_OneCpt_bolus) {
+TEST(Torsten, predSS_general_OneCpt_bolus) {
   using Eigen::Matrix;
   using Eigen::Dynamic;
 
@@ -77,9 +77,9 @@ struct OneCpt_functor {
   // relative error for 1st term determined empirically
   EXPECT_NEAR(pred_an(0), pred(0), pred_an(0) * 5e-2);
   EXPECT_FLOAT_EQ(pred_an(1), pred(1));
-} */
+}
 
-/* TEST(Torsten, predSS_general_OneCpt_truncated_infusion) {
+TEST(Torsten, predSS_general_OneCpt_truncated_infusion) {
   using Eigen::Matrix;
   using Eigen::Dynamic;
 
@@ -125,9 +125,10 @@ struct OneCpt_functor {
     pred_an = PredSS_one(parms, amt, rate, ii, cmt);
 
   // relative error for 1st term determined empirically
-  EXPECT_FLOAT_EQ(pred_an(0), pred(0));
+  double rel_err = 2e-2;
+  EXPECT_NEAR(pred_an(0), pred(0), pred_an(0) * rel_err);
   EXPECT_FLOAT_EQ(pred_an(1), pred(1));
-} */
+}
 
 TEST(Torsten, predSS_general_OneCpt_constant_infusion) {
   using Eigen::Matrix;
