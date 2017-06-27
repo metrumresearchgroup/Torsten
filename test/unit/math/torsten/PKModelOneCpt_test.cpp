@@ -662,3 +662,78 @@ TEST(Torsten, PKModelOneCptModel_Rate) {
                      pMatrix, biovar, tlag, 1e-8, 5e-4);
 }
 
+TEST(Torsten, PKModelOneCptModel_SS_rate_2) {
+  // Test the special case where the infusion rate is longer than
+  // the interdose interval.
+  // THIS TEST FAILS.
+  using std::vector;
+
+  vector<vector<double> > pMatrix(1);
+  pMatrix[0].resize(3);
+  pMatrix[0][0] = 10;  // CL
+  pMatrix[0][1] = 80;  // Vc
+  pMatrix[0][2] = 1.2;  // ka
+
+  int nCmt = 2;
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(nCmt);
+  biovar[0][0] = 1;  // F1
+  biovar[0][1] = 1;  // F2
+
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(nCmt);
+  tlag[0][0] = 0;  // tlag1
+  tlag[0][1] = 0;  // tlag2
+
+  vector<double> time(10);
+  time[0] = 0;
+  for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
+  time[9] = 4.0;
+
+  vector<double> amt(10, 0);
+  amt[0] = 1200;
+
+  vector<double> rate(10, 0);
+  rate[0] = 75;
+
+  vector<int> cmt(10, 2);
+  cmt[0] = 1;
+
+  vector<int> evid(10, 0);
+  evid[0] = 1;
+
+  vector<double> ii(10, 0);
+  ii[0] = 12;
+
+  vector<int> addl(10, 0);
+  addl[0] = 14;
+
+  vector<int> ss(10, 0);
+
+  Matrix<double, Dynamic, Dynamic> x;
+  x = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                    pMatrix, biovar, tlag);
+
+  std::cout << x << std::endl;
+  
+  Matrix<double, Dynamic, Dynamic> amounts(10, 2);
+  amounts << 62.50420, 724.7889,
+             78.70197, 723.4747,
+             90.70158, 726.3310,
+             99.59110, 732.1591,
+             106.17663, 740.0744,
+             111.05530, 749.4253,
+             114.66951, 759.7325,
+             117.34699, 770.6441,
+             119.33051, 781.9027,
+             124.48568, 870.0308;
+
+  // expect_matrix_eq(amounts, x);
+
+  // Test AutoDiff against FiniteDiff
+  // test_PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+  //                   pMatrix, biovar, tlag, 1e-8, 5e-4);
+}
+
+
+

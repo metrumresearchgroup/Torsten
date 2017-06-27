@@ -71,14 +71,37 @@ struct SS_system {
         result(i) = x(i) - pred[i];
 
     } else if (ii_ > 0) {  // multiple truncated infusions
-      ts[0] = amt / rate;
-      x0 = integrator_(f_, to_array_1d(x), t0, ts, to_array_1d(y),
-                       dat, dat_int)[0];
-      ts[0] = ii_ - amt / rate;
-      std::vector<double> rate_v = dat;
-      rate_v[cmt_ - 1] = 0;
-      vector<scalar> pred = integrator_(f_, x0, t0, ts, to_array_1d(y),
-                                        rate_v, dat_int)[0];
+      double delta = amt / rate;
+      vector<scalar> pred;
+      
+      if (delta < ii_) {
+        // In the case where the duration of the infusion is less
+        // than the dosing interval, we can do the calculation without
+        // using any discrete variables.
+        ts[0] = delta;  // time at which infusion stops
+        x0 = integrator_(f_, to_array_1d(x), t0, ts, to_array_1d(y),
+                         dat, dat_int)[0];
+        ts[0] = ii_ - delta;
+        vector<double> rate_v(dat.size(), 0);
+        pred = integrator_(f_, x0, t0, ts, to_array_1d(y), rate_v, dat_int)[0];
+      } else {
+        int N = trunc(delta / ii_) + 1;  // number of overlapping rates
+        ts[0] = delta - (N - 1) * ii_;  // time at which the oldest infusion dies
+        vector<double> rate_v(dat.size());
+        for (size_t i = 0; i < rate_v.size(); i++)
+          rate_v[i] = N * dat[i];  // compute superposition of rates
+
+        x0 = integrator_(f_, to_array_1d(x), t0, ts, to_array_1d(y),
+                         rate_v, dat_int)[0];
+
+        ts[0] = ii_ - ts[0];
+        for (size_t i = 0; i < rate_v.size(); i++)
+          rate_v[i] = (N - 1) * dat[i];
+  
+        pred = integrator_(f_, to_array_1d(x), t0, ts,
+                           to_array_1d(y), rate_v, dat_int)[0];
+
+      }
       for (int i = 0; i < result.size(); i++)
         result(i) = x(i) - pred[i];
 

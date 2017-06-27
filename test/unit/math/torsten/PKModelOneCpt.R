@@ -23,6 +23,7 @@ capture DV = CP * exp(EPS(1));
 $CAPTURE CP
 '
 
+## Input 1: multiple drug infusion
 mod <- mread("acum", tempdir(), code)
 e1 <- ev(amt = 1200, rate = 1200, addl = 14, ii = 12)
 mod %>% ev(e1) %>% mrgsim(end = 500) %>% plot # plot data
@@ -46,7 +47,7 @@ xdata
 # 9   1 2.00 210.47626 876.28631
 # 10  1 4.00  19.09398 844.11769
 
-
+## Input 2: multiple drug infusion. System is at a steady state
 e1 <- ev(amt = 1200, rate = 150, addl = 14, ii = 6, ss = 1)
 mod %>% ev(e1) %>% mrgsim(end = 100) %>% plot # plot data
 
@@ -69,4 +70,30 @@ xdata
 # 8   1 1.75 109.69295 140.740426
 # 9   1 2.00 113.66026 169.427503
 # 10  1 4.00 123.97128 388.679360
+
+
+## Input 3: multiple drug infusion, where the duration of the infusion
+## is longer than the interdose interval.
+e1 <- ev(amt = 1200, rate = 75, ii = 12, ss = 1, addl = 14)
+mod %>% ev(e1) %>% mrgsim(end = 100) %>% plot # plot data
+
+
+## save some data for unit tests (see amounts at t = 1 hour, with no noise)
+time <- seq(from = 0.25, to = 2, by = 0.25)
+time <- c(time, 4)
+xdata <- mod %>% ev(e1) %>% mrgsim(Req = "GUT, CENT",
+                                   end = -1, add = time,
+                                   rescort = 3) %>% as.data.frame
+xdata
+# ID time       GUT     CENT
+# 1   1 0.00  62.50420 724.7889
+# 2   1 0.25  78.70197 723.4747
+# 3   1 0.50  90.70158 726.3310
+# 4   1 0.75  99.59110 732.1591
+# 5   1 1.00 106.17663 740.0744
+# 6   1 1.25 111.05530 749.4253
+# 7   1 1.50 114.66951 759.7325
+# 8   1 1.75 117.34699 770.6441
+# 9   1 2.00 119.33051 781.9027
+# 10  1 4.00 124.48568 870.0308
 

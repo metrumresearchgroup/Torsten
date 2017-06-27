@@ -133,6 +133,58 @@ TEST(Torsten, predSS_general_OneCpt_truncated_infusion) {
 TEST(Torsten, predSS_general_OneCpt_constant_infusion) {
   using Eigen::Matrix;
   using Eigen::Dynamic;
+  
+  double dt = 0;
+  
+  int nParameters = 3;
+  std::vector<double> parameters(nParameters);
+  parameters[0] = 10;  // CL
+  parameters[1] = 80;  // VC
+  parameters[2] = 1.2;  // ka
+  
+  int nCmt = 2;
+  std::vector<double> biovar(nCmt, 0);
+  std::vector<double> tlag(nCmt, 0);
+  // Matrix<double, Dynamic, Dynamic> K(0, 0);
+  Matrix<double, Dynamic, Dynamic> K(2, 2);
+  K << -parameters[2], 0,
+       parameters[2], - parameters[0] / parameters[1];
+  
+  ModelParameters<double, double, double, double, double>
+    parms(dt, parameters, biovar, tlag, K);
+  
+  // constant infusion
+  double amt = 1200;
+  double rate = 1200;
+  double ii = 0;
+  double cmt = 1;  // compartment number starts at 1
+  
+  // arguments for integrator constructor
+  double rel_tol = 1e-6, abs_tol = 1e-6;
+  long int max_num_steps = 1e+6;
+  
+  Matrix<double, 1, Dynamic>
+    pred = PredSS_general_solver(parms, amt, rate, ii, cmt,
+                                 general_functor<OneCpt_functor>(OneCpt_functor()),
+                                 integrator_structure(rel_tol, abs_tol,
+                                                      max_num_steps, 0,
+                                                      "rk45"));
+  
+  // Compare to results obtained with analytical solution
+  Matrix<double, 1, Dynamic>
+    pred_an = PredSS_one(parms, amt, rate, ii, cmt);
+  
+  // relative error for 1st term determined empirically
+  EXPECT_FLOAT_EQ(pred_an(0), pred(0));
+  EXPECT_FLOAT_EQ(pred_an(1), pred(1));
+}
+
+/* Won't run current version of the test.
+TEST(Torsten, predSS_general_OneCpt_truncated_infusion_2) {
+  // test the case where the duration of the infusion is longer
+  // than the inter-dose interval.
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
 
   double dt = 0;
 
@@ -153,10 +205,10 @@ TEST(Torsten, predSS_general_OneCpt_constant_infusion) {
   ModelParameters<double, double, double, double, double>
     parms(dt, parameters, biovar, tlag, K);
 
-  // constant infusion
+  // multiple truncated infusion
   double amt = 1200;
-  double rate = 1200;
-  double ii = 0;
+  double rate = 75;
+  double ii = 12;
   double cmt = 1;  // compartment number starts at 1
 
   // arguments for integrator constructor
@@ -169,12 +221,25 @@ TEST(Torsten, predSS_general_OneCpt_constant_infusion) {
                                  integrator_structure(rel_tol, abs_tol,
                                                       max_num_steps, 0,
                                                       "rk45"));
-
+  std::cout << pred << std::endl;
+  
+  
   // Compare to results obtained with analytical solution
+  // mrgsolve solution: 62.50420 724.7889
+  // Neither PredSS_linOde nor PredSS_one are able to run -- the
+  // call causes a failed assertion. It could be the rates are handled
+  // in pred.
+  
+  
+  // std::cout << PredSS_linOde(parms, amt, rate, ii, cmt) << std::endl;
+  
+  std::cout << "marker a" << std::endl;
   Matrix<double, 1, Dynamic>
     pred_an = PredSS_one(parms, amt, rate, ii, cmt);
+  std::cout << "marker b" << std::endl;
 
   // relative error for 1st term determined empirically
-  EXPECT_FLOAT_EQ(pred_an(0), pred(0));
+  double rel_err = 2e-2;
+  EXPECT_NEAR(pred_an(0), pred(0), pred_an(0) * rel_err);
   EXPECT_FLOAT_EQ(pred_an(1), pred(1));
-}
+} */
