@@ -70,6 +70,16 @@ PredSS_linOde(const ModelParameters<T_time, T_parameters, T_biovar,
     amounts = mdivide_left(workMatrix, amounts);  // FIXME - check singularity
     pred = matrix_exp(ii_system) * amounts;
   } else if (ii > 0) {  // multiple truncated infusions
+    double delta = amt / rate;
+    if(delta > ii) {
+      std::string msg = " but must be smaller than the interdose interval (ii): "  // NOLINT
+      + boost::lexical_cast<std::string>(ii) + "!";
+      const char* msg2 = msg.c_str();
+      stan::math::invalid_argument("Steady State Solution",
+                                   "Infusion time (F * amt / rate)", delta,
+                                   "is ", msg2);
+    }
+
     amounts(cmt - 1) = rate;
     scalar t = amt / rate;
     assert(t <= ii);

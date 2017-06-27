@@ -224,6 +224,14 @@ TEST(Torsten, predSS_general_exception) {
                      max_num_steps, 0, "rk45")),
                    std::invalid_argument,
                    msg);
+
+  EXPECT_THROW_MSG(PredSS_one(parms, amt, rate, ii, cmt),
+                   std::invalid_argument,
+                   msg);
+  
+  EXPECT_THROW_MSG(PredSS_linOde(parms, amt, rate, ii, cmt),
+                   std::invalid_argument,
+                   msg);
 }
 
 // Use this test for future versions

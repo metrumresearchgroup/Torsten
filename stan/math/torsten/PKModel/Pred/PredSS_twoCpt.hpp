@@ -97,6 +97,16 @@ PredSS_two(const ModelParameters<T_time, T_parameters, T_biovar,
       pred(0, 2) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 2);
     }
   } else if (ii > 0) {  // multiple truncated infusions
+    double delta = amt / rate;
+    if(delta > ii) {
+      std::string msg = " but must be smaller than the interdose interval (ii): "  // NOLINT
+      + boost::lexical_cast<std::string>(ii) + "!";
+      const char* msg2 = msg.c_str();
+      stan::math::invalid_argument("Steady State Solution",
+                                   "Infusion time (F * amt / rate)", delta,
+                                   "is ", msg2);
+    }
+
     if (cmt == 1) {
       a[2] = 1;
       pred(0, 0) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 3);
