@@ -40,6 +40,81 @@ struct oneCptModelODE_functor {
     }
 };
 
+TEST(Torsten, genCpt_One_SS) {
+  using std::vector;
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
+
+  vector<vector<double> > pMatrix(1);
+  pMatrix[0].resize(3);
+  pMatrix[0][0] = 10; // CL
+  pMatrix[0][1] = 80; // Vc
+  pMatrix[0][2] = 1.2; // ka
+
+  int nCmt = 2;
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(nCmt);
+  biovar[0][0] = 1;  // F1
+  biovar[0][1] = 1;  // F2
+
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(nCmt);
+  tlag[0][0] = 0;  // tlag1
+  tlag[0][1] = 0;  // tlag2
+
+  vector<double> time(10);
+  time[0] = 0.0;
+  time[1] = 0.0;
+  for(int i = 2; i < 10; i++) time[i] = time[i - 1] + 5;
+
+  vector<double> amt(10, 0);
+  amt[0] = 1200;
+
+  vector<double> rate(10, 0);
+
+  vector<int> cmt(10, 2);
+  cmt[0] = 1;
+
+  vector<int> evid(10, 0);
+  evid[0] = 1;
+
+  vector<double> ii(10, 0);
+  ii[0] = 12;
+
+  vector<int> addl(10, 0);
+  addl[0] = 10;
+
+  vector<int> ss(10, 0);
+  ss[0] = 1;
+
+  double rel_tol = 1e-8, abs_tol = 1e-8;
+  long int max_num_steps = 1e8;
+  Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_rk45;
+  x_rk45 = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
+                                time, amt, rate, ii, evid, cmt, addl, ss,
+                                pMatrix, biovar, tlag,
+                                0,
+                                rel_tol, abs_tol, max_num_steps);
+
+  Matrix<double, Dynamic, Dynamic> amounts(10, 2);
+  amounts << 1200.0, 384.7363,
+             1200.0, 384.7363,
+             2.974504, 919.6159,
+             7.373062e-3, 494.0040,
+             3.278849e+1, 1148.4725,
+             8.127454e-2, 634.2335,
+             3.614333e+2, 1118.2043,
+             8.959035e-1, 813.4883,
+             2.220724e-3, 435.9617,
+             9.875702, 1034.7998;
+
+  for(int i = 0; i < amounts.rows(); i++) {
+    EXPECT_NEAR(amounts(i, 0), x_rk45(i, 0), std::max(amounts(i, 0), x_rk45(i, 0)) * 1e-6);
+    EXPECT_NEAR(amounts(i, 1), x_rk45(i, 1), std::max(amounts(i, 1), x_rk45(i, 1)) * 1e-6);
+  }
+}
+
+/*
 TEST(Torsten, genCpt_One_MultipleDose) {
   using std::vector;
   using Eigen::Matrix;
@@ -1361,4 +1436,4 @@ TEST(Torsten, generalTwoCptModel_Rate) {
                        time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, biovar, tlag,
                        rel_tol, abs_tol, max_num_steps, diff, diff2, "bdf");
-}
+} */

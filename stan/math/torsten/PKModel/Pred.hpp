@@ -118,7 +118,13 @@ Pred(const std::vector<T_time>& time,
                         model.GetMsgs(),
                         model.GetIntegratorType());
 
-  PredSS_structure PredSS(model.GetPredSSType());
+  PredSS_structure PredSS(model.GetPredSSType(),
+                          model.GetRelTol(),
+                          model.GetAbsTol(),
+                          model.GetMaxNumSteps(),
+                          model.GetMsgs(),
+                          model.GetIntegratorType(),
+                          nCmt);
 
   // COMPUTE PREDICTIONS
   Matrix<scalar, Dynamic, Dynamic>
@@ -175,6 +181,7 @@ Pred(const std::vector<T_time>& time,
       ikeep++;
     }
   tprev = event.get_time();
+
   }
 
   return pred;

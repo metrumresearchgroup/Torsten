@@ -53,7 +53,8 @@ PredSS_general_solver(const ModelParameters<T_time,
                       const T_ii& ii,
                       const int& cmt,
                       const F& f,
-                      const integrator_structure& integrator) {
+                      const integrator_structure& integrator,
+                      const int& nCmt = 1) {
   using Eigen::Matrix;
   using Eigen::Dynamic;
   using Eigen::VectorXd;
@@ -68,7 +69,6 @@ PredSS_general_solver(const ModelParameters<T_time,
 
   // Arguments for ODE integrator
   double ii_dbl = unpromote(ii);
-  int nCmt = 2;  // DEV - how do I get nCmt? Use f...
   Matrix<double, 1, Dynamic> init_dbl(nCmt);
   for (int i = 0; i < nCmt; i++) init_dbl(i) = 0;
   vector<double> x_r(nCmt, 0);
@@ -91,7 +91,6 @@ PredSS_general_solver(const ModelParameters<T_time,
                              init_dbl, x_r, f, integrator);
 
     x_r.push_back(amt);
-
     pred = algebra_solver(system, y,
                           to_vector(parameter.get_RealParameters()),
                           x_r, x_i,
@@ -106,10 +105,8 @@ PredSS_general_solver(const ModelParameters<T_time,
     y = Pred1_general_solver(ii_dbl,
                              unpromote(parameter),
                              init_dbl, x_r, f, integrator);
-    y << 0.0012932115491361106, 409.81573;
 
     x_r.push_back(amt);
-
     pred = algebra_solver(system, y,
                           to_vector(parameter.get_RealParameters()),
                           x_r, x_i,

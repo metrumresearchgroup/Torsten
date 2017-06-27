@@ -72,7 +72,7 @@ PredSS_one(const ModelParameters<T_time, T_parameters, T_biovar,
       pred(1) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 1);
     }
   } else if (ii > 0) {  // multiple truncated infusions
-    double delta = amt / rate;
+    double delta = unpromote(amt / rate);
     if(delta > ii) {
       std::string msg = " but must be smaller than the interdose interval (ii): "  // NOLINT
       + boost::lexical_cast<std::string>(ii) + "!";

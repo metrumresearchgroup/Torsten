@@ -6,6 +6,7 @@
 #include <stan/math/torsten/PKModel/Pred/PredSS_twoCpt.hpp>
 #include <stan/math/torsten/PKModel/Pred/PredSS_general_solver.hpp>
 #include <stan/math/torsten/PKModel/Pred/PredSS_linOde.hpp>
+#include <stan/math/torsten/PKModel/integrator.hpp>
 #include <iostream>
 #include <string>
 
@@ -42,22 +43,46 @@
  */
 struct PredSS_structure {
 private:
-  std::string modeltype;
+  std::string modeltype_;
+  double rel_tol_;
+  double abs_tol_;
+  long int max_num_steps_;  // NOLINT
+  std::ostream* msgs_;
+  std::string integratorType_;
+  int nCmt_;
 
 public:
-  explicit PredSS_structure(std::string p_modeltype) {
-    modeltype = p_modeltype;
-  }
+  PredSS_structure(const std::string& modeltype,
+                   const double& rel_tol,
+                   const double& abs_tol,
+                   const long int& max_num_steps,  // NOLINT
+                   std::ostream* msgs,
+                   const std::string& integratorType,
+                   const int& nCmt)
+    : modeltype_(modeltype),
+      rel_tol_(rel_tol),
+      abs_tol_(abs_tol),
+      max_num_steps_(max_num_steps),
+      msgs_(msgs),
+      integratorType_(integratorType),
+      nCmt_(nCmt)
+  { }
 
   // constructor for operator
-  template<typename T_time, typename T_amt, typename T_rate, typename T_ii,
-    typename T_parameters, typename T_biovar, typename T_tlag, typename F,
-    typename T_system>
+  template<typename T_time,
+           typename T_amt,
+           typename T_rate,
+           typename T_ii,
+           typename T_parameters,
+           typename T_biovar,
+           typename T_tlag,
+           typename F,
+           typename T_system>
     Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_amt,
       T_rate, typename boost::math::tools::promote_args< T_ii, T_parameters,
       T_biovar, typename boost::math::tools::promote_args<T_tlag,
       T_system>::type>::type>::type, Eigen::Dynamic, 1>
-  operator()(const ModelParameters<T_time, T_parameters, T_biovar,
+  operator()(const ModelParameters<T_time,T_parameters, T_biovar,
                                    T_tlag, T_system>& parameter,
              const T_amt& amt,
              const T_rate& rate,
@@ -68,16 +93,22 @@ public:
       T_parameters, typename boost::math::tools::promote_args<T_biovar,
       T_tlag, T_system>::type>::type scalar;
 
-    if (modeltype == "OneCptModel")
+    if (modeltype_ == "OneCptModel")
       return PredSS_one(parameter, amt, rate, ii, cmt);
-    else if (modeltype == "TwoCptModel")
+    else if (modeltype_ == "TwoCptModel")
       return PredSS_two(parameter, amt, rate, ii, cmt);
-    else if (modeltype == "generalOdeModel")
-      return PredSS_general_solver(parameter, amt, rate, ii, cmt, f);
+    else if (modeltype_ == "generalOdeModel")
+      return PredSS_general_solver(parameter, amt, rate, ii, cmt, f,
+                                   integrator_structure(rel_tol_, abs_tol_,
+                                                        max_num_steps_,
+                                                        msgs_,
+                                                        integratorType_), 
+                                   nCmt_);
     else
-      if (modeltype == "linOdeModel") {
+      if (modeltype_ == "linOdeModel") {
         return PredSS_linOde(parameter, amt, rate, ii, cmt);
     } else {
+      std::cout << "IF YOU SEE THIS REPORT AN ISSUE (PREDSS)" << std::endl;
       Eigen::Matrix<scalar, 1, Eigen::Dynamic> default_pred
         = Eigen::Matrix<scalar, 1, Eigen::Dynamic>::Zero(1);
       return default_pred;

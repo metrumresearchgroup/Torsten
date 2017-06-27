@@ -69,7 +69,7 @@ TEST(Torsten, predSS_general_OneCpt_bolus) {
                                  general_functor<OneCpt_functor>(OneCpt_functor()),
                                  integrator_structure(rel_tol, abs_tol,
                                                       max_num_steps, 0,
-                                                      "rk45"));
+                                                      "rk45"), nCmt);
 
   // Compare to results obtained with analytical solution
   Matrix<double, 1, Dynamic>
@@ -118,7 +118,7 @@ TEST(Torsten, predSS_general_OneCpt_truncated_infusion) {
                                  general_functor<OneCpt_functor>(OneCpt_functor()),
                                  integrator_structure(rel_tol, abs_tol,
                                                       max_num_steps, 0,
-                                                      "rk45"));
+                                                      "rk45"), nCmt);
 
   // Compare to results obtained with analytical solution
   // (note: matrix exponential solution agrees with analytical solution).
@@ -159,7 +159,7 @@ TEST(Torsten, predSS_general_OneCpt_constant_infusion) {
   double rate = 1200;
   double ii = 0;
   double cmt = 1;  // compartment number starts at 1
-  
+
   // arguments for integrator constructor
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
@@ -169,7 +169,7 @@ TEST(Torsten, predSS_general_OneCpt_constant_infusion) {
                                  general_functor<OneCpt_functor>(OneCpt_functor()),
                                  integrator_structure(rel_tol, abs_tol,
                                                       max_num_steps, 0,
-                                                      "rk45"));
+                                                      "rk45"), nCmt);
   
   // Compare to results obtained with analytical solution
   Matrix<double, 1, Dynamic>
@@ -221,7 +221,7 @@ TEST(Torsten, predSS_general_exception) {
   EXPECT_THROW_MSG(PredSS_general_solver(parms, amt, rate, ii, cmt,
                      general_functor<OneCpt_functor>(OneCpt_functor()),
                      integrator_structure(rel_tol, abs_tol,
-                     max_num_steps, 0, "rk45")),
+                     max_num_steps, 0, "rk45"), nCmt),
                    std::invalid_argument,
                    msg);
 
