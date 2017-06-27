@@ -72,19 +72,28 @@ struct SS_system {
 
     } else if (ii_ > 0) {  // multiple truncated infusions
       double delta = amt / rate;
+      if(delta > ii_) {
+        std::string msg = " but must be smaller than the interdose interval (ii): "  // NOLINT
+          + boost::lexical_cast<std::string>(ii_) + "!";
+        const char* msg2 = msg.c_str();
+        stan::math::invalid_argument("Steady State Solution",
+                                     "Infusion time (F * amt / rate)", delta,
+                                     "is ", msg2);
+      }
+
       vector<scalar> pred;
-      
-      if (delta < ii_) {
-        // In the case where the duration of the infusion is less
-        // than the dosing interval, we can do the calculation without
-        // using any discrete variables.
-        ts[0] = delta;  // time at which infusion stops
-        x0 = integrator_(f_, to_array_1d(x), t0, ts, to_array_1d(y),
-                         dat, dat_int)[0];
-        ts[0] = ii_ - delta;
-        vector<double> rate_v(dat.size(), 0);
-        pred = integrator_(f_, x0, t0, ts, to_array_1d(y), rate_v, dat_int)[0];
-      } else {
+      ts[0] = delta;  // time at which infusion stops
+      x0 = integrator_(f_, to_array_1d(x), t0, ts, to_array_1d(y),
+                       dat, dat_int)[0];
+      ts[0] = ii_ - delta;
+      vector<double> rate_v(dat.size(), 0);
+      pred = integrator_(f_, x0, t0, ts, to_array_1d(y), rate_v, dat_int)[0];
+
+      // The commented out section of the code corresponds to an implementation
+      // of the SS solution for the case where delta > ii_. Will be useful
+      // for future releases. Also, still needs to be tested.
+      /*
+        else {
         int N = trunc(delta / ii_) + 1;  // number of overlapping rates
         ts[0] = delta - (N - 1) * ii_;  // time at which the oldest infusion dies
         vector<double> rate_v(dat.size());
@@ -101,7 +110,7 @@ struct SS_system {
         pred = integrator_(f_, to_array_1d(x), t0, ts,
                            to_array_1d(y), rate_v, dat_int)[0];
 
-      }
+      } */
       for (int i = 0; i < result.size(); i++)
         result(i) = x(i) - pred[i];
 

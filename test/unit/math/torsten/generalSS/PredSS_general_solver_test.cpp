@@ -1,6 +1,7 @@
 #include <stan/math/rev/mat.hpp>  // FIX ME - more specific
 #include <stan/math/torsten/PKModel/Pred/PredSS_general_solver.hpp>
 #include <gtest/gtest.h>
+#include <test/unit/util.hpp>
 
 // Currently test doesn't work if I do not include rev/mat.hpp.
 // If I remove the header file, I get an odd bug with the
@@ -179,7 +180,54 @@ TEST(Torsten, predSS_general_OneCpt_constant_infusion) {
   EXPECT_FLOAT_EQ(pred_an(1), pred(1));
 }
 
-/* Won't run current version of the test.
+TEST(Torsten, predSS_general_exception) {
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
+
+  double dt = 0;
+
+  int nParameters = 3;
+  std::vector<double> parameters(nParameters);
+  parameters[0] = 10;  // CL
+  parameters[1] = 80;  // VC
+  parameters[2] = 1.2;  // ka
+
+  int nCmt = 2;
+  std::vector<double> biovar(nCmt, 0);
+  std::vector<double> tlag(nCmt, 0);
+  // Matrix<double, Dynamic, Dynamic> K(0, 0);
+  Matrix<double, Dynamic, Dynamic> K(2, 2);
+  K << -parameters[2], 0,
+       parameters[2], - parameters[0] / parameters[1];
+
+  ModelParameters<double, double, double, double, double>
+    parms(dt, parameters, biovar, tlag, K);
+
+  // multiple truncated infusion
+  double amt = 1200;
+  double rate = 75;
+  double ii = 12;
+  double cmt = 1;  // compartment number starts at 1
+
+  // arguments for integrator constructor
+  double rel_tol = 1e-6, abs_tol = 1e-6;
+  long int max_num_steps = 1e+6;
+
+  std::stringstream err_msg;
+  err_msg << "Steady State Solution: Infusion time (F * amt / rate) is 16"
+          << " but must be smaller than the interdose interval (ii): 12!";
+  std::string msg = err_msg.str();
+
+  EXPECT_THROW_MSG(PredSS_general_solver(parms, amt, rate, ii, cmt,
+                     general_functor<OneCpt_functor>(OneCpt_functor()),
+                     integrator_structure(rel_tol, abs_tol,
+                     max_num_steps, 0, "rk45")),
+                   std::invalid_argument,
+                   msg);
+}
+
+// Use this test for future versions
+/*
 TEST(Torsten, predSS_general_OneCpt_truncated_infusion_2) {
   // test the case where the duration of the infusion is longer
   // than the inter-dose interval.
