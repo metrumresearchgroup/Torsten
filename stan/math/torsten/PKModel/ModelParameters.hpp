@@ -8,87 +8,90 @@
 #include <algorithm>
 #include <vector>
 
-template<typename T_time, typename T_parameters, typename T_biovar,
-         typename T_tlag, typename T_system>
+template<typename T_time,
+         typename T_parameters,
+         typename T_biovar,
+         typename T_tlag>
   class ModelParameterHistory;
 /**
  * The ModelParameters class defines objects that contain the parameters of
  * a model at a given time.
  */
-template<typename T_time, typename T_parameters, typename T_biovar,
-         typename T_tlag, typename T_system>
+template<typename T_time,
+         typename T_parameters,
+         typename T_biovar,
+         typename T_tlag>
 class ModelParameters {
 private:
-  T_time time;
-  std::vector<T_parameters> RealParameters;
-  std::vector<T_biovar> biovar;
-  std::vector<T_tlag> tlag;
-  Eigen::Matrix<T_system, Eigen::Dynamic, Eigen::Dynamic> K;
+  T_time time_;
+  std::vector<T_parameters> theta_;
+  std::vector<T_biovar> biovar_;
+  std::vector<T_tlag> tlag_;
+  Eigen::Matrix<T_parameters, Eigen::Dynamic, Eigen::Dynamic> K_;
 
 public:
   ModelParameters() {
-    time = 0;
-
-    std::vector<T_parameters> p_RealParameters(1, 0);
-    RealParameters = p_RealParameters;
-
-    std::vector<T_biovar> p_biovar(1, 0);
-    biovar = p_biovar;
-
-    std::vector<T_tlag> p_tlag(1, 0);
-    tlag = p_tlag;
-
-    Eigen::Matrix<T_system, Eigen::Dynamic, Eigen::Dynamic> K_(0, 0);
-    K = K_;
+    time_ = 0;
+    std::vector<T_parameters> theta(1, 0);
+    theta_ = theta;
+    std::vector<T_biovar> biovar(1, 0);
+    biovar_ = biovar;
+    std::vector<T_tlag> tlag(1, 0);
+    tlag_ = tlag;
+    Eigen::Matrix<T_parameters, Eigen::Dynamic, Eigen::Dynamic> K;
+    K_ = K;
   }
 
-  ModelParameters(const T_time& p_time,
-                  const std::vector<T_parameters>& p_RealParameters,
-                  const std::vector<T_biovar>& p_biovar,
-                  const std::vector<T_tlag>& p_tlag,
-                  const Eigen::Matrix<T_system, Eigen::Dynamic,
-                    Eigen::Dynamic>& p_K) {
-    time = p_time;
-    RealParameters = p_RealParameters;
-    biovar = p_biovar;
-    tlag = p_tlag;
-    K = p_K;
-  }
+  ModelParameters(const T_time& time,
+                  const std::vector<T_parameters>& theta,
+                  const std::vector<T_biovar>& biovar,
+                  const std::vector<T_tlag>& tlag,
+                  const Eigen::Matrix<T_parameters, Eigen::Dynamic,
+                    Eigen::Dynamic>& K)
+    : time_(time), theta_(theta), biovar_(biovar), tlag_(tlag), K_(K) { }
 
+  ModelParameters(const T_time& time,
+                  const std::vector<T_parameters>& theta,
+                  const std::vector<T_biovar>& biovar,
+                  const std::vector<T_tlag>& tlag)
+    : time_(time), theta_(theta), biovar_(biovar), tlag_(tlag) {
+    Eigen::Matrix<T_parameters, Eigen::Dynamic, Eigen::Dynamic> dummy_system;
+    K_ = dummy_system;
+  }
+  
   int CountParameters() const {
-    return RealParameters.size();  // FIX ME - account for parameters in K,
-                                   // biovar, and tlag?
+    return theta_.size();  // FIX ME - account for parameters in K,
+                           // biovar, and tlag?
   }
 
   void Print() {
-    std::cout << time << " ";
-    for (int i = 0; i < RealParameters.size(); i++)
-      std::cout << RealParameters[i] << " ";
-    for (int i = 0; i < biovar.size(); i++)
-      std::cout << biovar[i] << " ";
-    for (int i = 0; i < tlag.size(); i++)
-      std::cout << tlag[i] << " ";
-    if (K.rows() != 0) std::cout << K;
+    std::cout << time_ << " ";
+    for (int i = 0; i < theta_.size(); i++)
+      std::cout << theta_[i] << " ";
+    for (int i = 0; i < biovar_.size(); i++)
+      std::cout << biovar_[i] << " ";
+    for (int i = 0; i < tlag_.size(); i++)
+      std::cout << tlag_[i] << " ";
+    if (K_.rows() != 0) std::cout << K_;
     std::cout << std::endl;
   }
 
   // access functions
-  T_time get_time() const { return time; }
+  T_time get_time() const { return time_; }
   std::vector<T_parameters> get_RealParameters() const {
-    return RealParameters;
+    return theta_;  // FIX ME - name should be get_theta.
   }
   std::vector<T_biovar> get_biovar() const {
-    return biovar;
+    return biovar_;
   }
   std::vector<T_tlag> get_tlag() const {
-    return tlag;
+    return tlag_;
   }
-  Eigen::Matrix<T_system, Eigen::Dynamic, Eigen::Dynamic> get_K() const {
-    return K;
+  Eigen::Matrix<T_parameters, Eigen::Dynamic, Eigen::Dynamic> get_K() const {
+    return K_;
   }
 
-  friend class ModelParameterHistory<T_time, T_parameters, T_biovar,
-                                     T_tlag, T_system>;
+  friend class ModelParameterHistory<T_time, T_parameters, T_biovar, T_tlag>;
 };
 
 /**
@@ -96,176 +99,174 @@ public:
  * of ModelParameters, along with a series of functions that operate on
  * them.
  */
-template<typename T_time, typename T_parameters, typename T_biovar,
-         typename T_tlag, typename T_system>
+template<typename T_time,
+         typename T_parameters,
+         typename T_biovar,
+         typename T_tlag>
 class ModelParameterHistory{
 private:
   std::vector< ModelParameters<T_time, T_parameters,
-                               T_biovar, T_tlag, T_system> > MPV;
+                               T_biovar, T_tlag> > MPV_;
 
 public:
-  template<typename T0, typename T1, typename T2, typename T3, typename T4>
-  ModelParameterHistory(std::vector<T0> p_time,
-                        std::vector<std::vector<T1> > p_RealParameters,
-                        std::vector<std::vector<T2> > p_biovar,
-                        std::vector<std::vector<T3> > p_tlag,
-                        std::vector< Eigen::Matrix<T4, Eigen::Dynamic,
-                          Eigen::Dynamic> > p_K) {
+  template<typename T0, typename T1, typename T2, typename T3>
+  ModelParameterHistory(std::vector<T0> time,
+                        std::vector<std::vector<T1> > theta,
+                        std::vector<std::vector<T2> > biovar,
+                        std::vector<std::vector<T3> > tlag,
+                        std::vector< Eigen::Matrix<T1, Eigen::Dynamic,
+                          Eigen::Dynamic> > K) {
     using std::max;
-    int nParameters = max(p_RealParameters.size(),
-                          max(p_K.size(), p_biovar.size()));
-    MPV.resize(nParameters);
+    int nParameters = max(theta.size(),
+                          max(K.size(), max(biovar.size(), tlag.size())));
+    MPV_.resize(nParameters);
     int j, k, l, m;
-    // FIX ME - is this an efficient way to store data?
+    // FIX ME - is this the most efficient way of storing data?
     for (int i = 0; i < nParameters; i++) {
-      (p_RealParameters.size() == 1) ? j = 0 : j = i;
-      (p_biovar.size() == 1) ? k = 0 : k = i;
-      (p_tlag.size() == 1) ? l = 0 : l = i;
-      (p_K.size() == 1) ? m = 0 : m = i;
-       MPV[i] = ModelParameters<T_time, T_parameters, T_biovar,
-                                T_tlag, T_system>
-         (p_time[i], p_RealParameters[j], p_biovar[k], p_tlag[l], p_K[m]);
+      (theta.size() == 1) ? j = 0 : j = i;
+      (biovar.size() == 1) ? k = 0 : k = i;
+      (tlag.size() == 1) ? l = 0 : l = i;
+      (K.size() == 1) ? m = 0 : m = i;
+       MPV_[i] = ModelParameters<T_time, T_parameters, T_biovar, T_tlag>
+         (time[i], theta[j], biovar[k], tlag[l], K[m]);
     }
   }
 
-  ModelParameters<T_time, T_parameters, T_biovar, T_tlag, T_system>
+  ModelParameters<T_time, T_parameters, T_biovar, T_tlag>
     GetModelParameters(int i) {
-    ModelParameters<T_time, T_parameters, T_biovar, T_tlag, T_system>
-      newPara(MPV[i].time, MPV[i].RealParameters, MPV[i].biovar,
-              MPV[i].tlag, MPV[i].K);
-    return newPara;
+      return MPV_[i];
   }
 
   /**
    * MPV.size gives us the number of events.
-   * MPV[i].RealParameters.size gives us the number of parameters
-   * (not including additional parameters) for the first event. 
+   * MPV[i].RealParameters.size gives us the number of
+   * ODE parameters for the ith event.
+   * 
+   * FIX ME - rename this GetValueTheta
    */
   T_parameters GetValue(int iEvent, int iParameter) {
-    assert((iEvent >= 0) && ((size_t) iEvent < MPV.size()));
+    assert((iEvent >= 0) && ((size_t) iEvent < MPV_.size()));
     assert((iParameter >= 0) && ((size_t) iParameter
-      < MPV[iEvent].RealParameters.size()));
-    return MPV[iEvent].RealParameters[iParameter];
+      < MPV_[iEvent].theta_.size()));
+    return MPV_[iEvent].theta_[iParameter];
   }
 
   T_biovar GetValueBio(int iEvent, int iParameter) {
-    assert(iEvent >= 0 && (size_t) iEvent < MPV.size());
+    assert(iEvent >= 0 && (size_t) iEvent < MPV_.size());
     assert(iParameter >= 0 && (size_t) iParameter
-             < MPV[iEvent].biovar.size());
-    return MPV[iEvent].biovar[iParameter];
+             < MPV_[iEvent].biovar_.size());
+    return MPV_[iEvent].biovar_[iParameter];
   }
 
   T_tlag GetValueTlag(int iEvent, int iParameter) {
-    assert(iEvent >= 0 && (size_t) iEvent < MPV.size());
+    assert(iEvent >= 0 && (size_t) iEvent < MPV_.size());
     assert(iParameter >= 0 && (size_t) iParameter
-             < MPV[iEvent].tlag.size());
-    return MPV[iEvent].tlag[iParameter];
+             < MPV_[iEvent].tlag_.size());
+    return MPV_[iEvent].tlag_[iParameter];
   }
 
   void InsertModelParameters(ModelParameters<T_time, T_parameters,
-    T_biovar, T_tlag, T_system> p_M) {
-    MPV.push_back(p_M);
+    T_biovar, T_tlag> M) {
+    MPV_.push_back(M);
   }
 
   int get_size() {
-    return MPV.size();
+    return MPV_.size();
   }
 
   struct by_time {
     bool operator()(ModelParameters<T_time, T_parameters, T_biovar,
-                                    T_tlag, T_system> const &a,
+                                    T_tlag> const &a,
                     ModelParameters<T_time, T_parameters, T_biovar,
-                                    T_tlag, T_system> const &b) {
-      return a.time < b.time;
+                                    T_tlag> const &b) {
+      return a.time_ < b.time_;
     }
   };
 
   void Sort() {
-    std::sort(MPV.begin(), MPV.end(), by_time());
+    std::sort(MPV_.begin(), MPV_.end(), by_time());
   }
 
   bool Check() {
   // check that elements are in chronological order.
-    int i = MPV.size() - 1;
+    int i = MPV_.size() - 1;
     bool ordered = true;
 
     while (i > 0 && ordered) {
-      ordered = (MPV[i].time >= MPV[i-1].time);
+      ordered = (MPV_[i].time_ >= MPV_[i-1].time_);
       i--;
     }
     return ordered;
   }
 
   void Print(int j) {
-    std::cout << MPV[j].time << " ";
-      for (size_t i = 0; i < MPV[j].RealParameters.size(); i++)
-        std::cout << MPV[j].RealParameters[i] << " ";
-      for (size_t i = 0; i < MPV[j].biovar.size(); i++)
-        std::cout << MPV[j].biovar[i] << " ";
-      for (size_t i = 0; i < MPV[j].tlag.size(); i++)
-        std::cout << MPV[j].tlag[i] << " ";
+    std::cout << MPV_[j].time_ << " ";
+      for (size_t i = 0; i < MPV_[j].theta_.size(); i++)
+        std::cout << MPV_[j].theta_[i] << " ";
+      for (size_t i = 0; i < MPV_[j].biovar_.size(); i++)
+        std::cout << MPV_[j].biovar_[i] << " ";
+      for (size_t i = 0; i < MPV_[j].tlag_.size(); i++)
+        std::cout << MPV_[j].tlag_[i] << " ";
       std::cout << std::endl;
   }
 
   /**
    * COMPLETE MODEL PARAMETERS
    *
-   * Completes parameters so that it contains model parameters for each event in events.
-   * If parameters contains only one set of parameters (case where the parameters are
-   * constant), this set is replicated for each event in events.
-   * Otherwise a new parameter vector is added for each new event (isnew = true). This
-   * parameter vector is identical to the parameter vector at the subsequent event. If the
-   * new event occurs at a time posterior to the time of the last event, than the
-   * new vector parameter equals the parameter vector of the last event. This amounts to
-   * doing an LOCF (Last Observation Carried Forward).
+   * Completes parameters so that it contains model parameters for each event 
+   * in events. If parameters contains only one set of parameters (case where
+   * the parameters are constant), this set is replicated for each event in
+   * events. Otherwise a new parameter vector is added for each new event 
+   * (isnew = true). This parameter vector is identical to the parameter vector
+   * at the subsequent event. If the new event occurs at a time posterior to
+   * the time of the last event, than the new vector parameter equals the
+   * parameter vector of the last event. This amounts to doing an LOCF
+   * (Last Observation Carried Forward).
    *
    * Events and Parameters are sorted at the end of the procedure.
    *
    * @param[in] parameters at each event
    * @param[in] events elements (following NONMEM convention) at each event
    * @return - modified parameters and events.
-   *
    */
-  template<typename T_amt, typename T_rate, typename T_ii>
-  void CompleteParameterHistory(EventHistory<T_time, T_amt, T_rate,
-                                T_ii>& events) {
+  template<typename T0, typename T1, typename T2, typename T3>
+  void CompleteParameterHistory(EventHistory<T0, T1, T2, T3>& events) {
     int nEvent = events.get_size();
     assert(nEvent > 0);
-    int len_Parameters = MPV.size();  // numbers of events for which parameters
-                                      // are determined
+    int len_Parameters = MPV_.size();  // numbers of events for which parameters
+                                       // are determined
     assert(len_Parameters > 0);
 
     if (!Check()) Sort();
     if (!events.Check()) events.Sort();
-    MPV.resize(nEvent);
+    MPV_.resize(nEvent);
 
     int iEvent = 0;
     for (int i = 0; i < len_Parameters - 1; i++) {
       while (events.get_isnew(iEvent)) iEvent++;  // skip new events
-      assert(MPV[i].time == events.get_time(iEvent));  // compare time of "old"
-                                                       // events to time of
-                                                       // parameters.
+      assert(MPV_[i].time_ == events.get_time(iEvent));  // compare time of "old"
+                                                         // events to time of
+                                                         // parameters.
       iEvent++;
     }
 
     if (len_Parameters == 1)  {
       for (int i = 0; i < nEvent; i++) {
         // FIX ME - inefficient data storage
-        MPV[i].RealParameters = MPV[0].RealParameters;
-        MPV[i].biovar = MPV[0].biovar;
-        MPV[i].tlag = MPV[0].tlag;
-        MPV[i].K = MPV[0].K;
-        MPV[i].time = events.get_time(i);
+        MPV_[i].theta_ = MPV_[0].theta_;
+        MPV_[i].biovar_ = MPV_[0].biovar_;
+        MPV_[i].tlag_ = MPV_[0].tlag_;
+        MPV_[i].K_ = MPV_[0].K_;
+        MPV_[i].time_ = events.get_time(i);
         events.Events[i].isnew = false;
       }
     } else {  // parameters are event dependent.
       std::vector<T_time> times(nEvent, 0);
-      for (int i = 0; i < nEvent; i++) times[i] = MPV[i].time;
+      for (int i = 0; i < nEvent; i++) times[i] = MPV_[i].time_;
       iEvent = 0;
 
       int k, j = 0;
-      ModelParameters<T_time, T_parameters, T_biovar,
-                      T_tlag, T_system> newParameter;
+      ModelParameters<T_time, T_parameters, T_biovar, T_tlag> newParameter;
 
       for (int i = 0; i < nEvent; i++) {
         while (events.get_isnew(iEvent)) {
@@ -287,13 +288,13 @@ public:
           k = SearchReal(times, len_Parameters - 1, events.get_time(iEvent));
 
           if ((k == len_Parameters) ||
-            (events.get_time(iEvent) == MPV[k - 1].time))
+            (events.get_time(iEvent) == MPV_[k - 1].time_))
             newParameter = GetModelParameters(k - 1);
           else
             newParameter = GetModelParameters(k);
 
-          newParameter.time = events.get_time(iEvent);
-          MPV[len_Parameters + j] = newParameter;  // Include new element in MPV
+          newParameter.time_ = events.get_time(iEvent);
+          MPV_[len_Parameters + j] = newParameter;  // Include new element in MPV
           events.Events[iEvent].isnew = false;
           if (iEvent < nEvent - 1) iEvent++;
           j++;
@@ -306,8 +307,7 @@ public:
   }
 
   // declare friends
-  friend class ModelParameters<T_time, T_parameters, T_biovar,
-                               T_tlag, T_system>;
+  friend class ModelParameters<T_time, T_parameters, T_biovar, T_tlag>;
   template<typename T1, typename T2, typename T3, typename T4>
     friend class Events;
 };

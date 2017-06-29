@@ -12,8 +12,7 @@ template <typename T_time, typename T_amt,
   typename T_rate, typename T_ii> class EventHistory;
 template <typename T_time, typename T_amt> class RateHistory;
 template<typename T_time, typename T_parameters, typename T_biovar,
-         typename T_tlag, typename T_system>
-  class ModelParameterHistory;
+  typename T_tlag> class ModelParameterHistory;
 
 /**
  * The Event class defines objects that contain the elements of an event,
@@ -121,8 +120,7 @@ public:
 
   // declare friends
   friend class EventHistory<T_time, T_amt, T_rate, T_ii>;
-  template<typename T1, typename T2, typename T3, typename T4,
-           typename T5> friend
+  template<typename T1, typename T2, typename T3, typename T4> friend
     class ModelParameterHistory;
 };
 
@@ -151,8 +149,8 @@ public:
     Events.resize(nEvent);
     for (int i = 0; i <= nEvent - 1; i++) {
       Events[i] = Event<T_time, T_amt, T_rate, T_ii>(p_time[i],
-      p_amt[i], p_rate[i], p_ii[i], p_evid[i], p_cmt[i],
-      p_addl[i], p_ss[i], true, false);
+        p_amt[i], p_rate[i], p_ii[i], p_evid[i], p_cmt[i],
+        p_addl[i], p_ss[i], true, false);
     }
   }
 
@@ -270,10 +268,9 @@ public:
    * @param[in] nCmt
    * @return - modified events that account for absorption lag times
    */
-  template<typename T_parameters, typename T_biovar, typename T_tlag,
-           typename T_system>
+  template<typename T_parameters, typename T_biovar, typename T_tlag>
   void AddLagTimes(ModelParameterHistory<T_time, T_parameters, T_biovar,
-                   T_tlag, T_system> Parameters, int nCmt) {
+                   T_tlag> Parameters, int nCmt) {
     int nEvent = Events.size(), pSize = Parameters.get_size();
     assert((pSize = nEvent) || (pSize == 1));
 
@@ -307,8 +304,7 @@ public:
 
   // declare friends
   friend class Event<T_time, T_amt, T_rate, T_ii>;
-  template<typename T1, typename T2, typename T3, typename T4,
-           typename T5> friend
+  template<typename T1, typename T2, typename T3, typename T4> friend
     class ModelParameterHistory;
 };
 

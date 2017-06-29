@@ -23,8 +23,6 @@
  * @tparam T_ii type of scalar for interdose interval
  * @tparam T_parameters type of scalar for model parameters
  * @tparam T_addParm type of scalar for additional parameters
- * @tparam T_system type of elements of Matrix that describes
- * ODE
  * @param[in] parameter model parameters at current event
  * @param[in] rate
  * @param[in] ii interdose interval
@@ -35,12 +33,12 @@
  *   at the current event.
  */
 template<typename T_time, typename T_parameters, typename T_biovar,
-         typename T_tlag, typename T_system,  typename T_amt, typename T_rate,
+         typename T_tlag, typename T_amt, typename T_rate,
          typename T_ii>
 Eigen::Matrix<typename boost::math::tools::promote_args<T_amt, T_rate,
-  T_ii, T_system>::type, 1, Eigen::Dynamic>
+  T_ii, T_parameters>::type, 1, Eigen::Dynamic>
 PredSS_linOde(const ModelParameters<T_time, T_parameters, T_biovar,
-                                    T_tlag, T_system>& parameter,
+                                    T_tlag>& parameter,
               const T_amt& amt,
               const T_rate& rate,
               const T_ii& ii,
@@ -50,14 +48,16 @@ PredSS_linOde(const ModelParameters<T_time, T_parameters, T_biovar,
   using stan::math::matrix_exp;
   using stan::math::mdivide_left;
   using stan::math::multiply;
+  using boost::math::tools::promote_args;
 
-  typedef typename boost::math::tools::promote_args<T_amt, T_rate, T_ii,
-    T_system>::type scalar;
+  typedef typename promote_args<T_ii, T_parameters>::type T0;
+  typedef typename promote_args<T_amt, T_rate, T_ii,
+                                T_parameters>::type scalar;
 
-  Matrix<T_system, Dynamic, Dynamic> system = parameter.get_K();
+  Matrix<T_parameters, Dynamic, Dynamic> system = parameter.get_K();
   int nCmt = system.rows();
-  Matrix<scalar, Dynamic, Dynamic> workMatrix, ii_system
-    = multiply(ii, system);  // Check
+  Matrix<T0, Dynamic, Dynamic> workMatrix, ii_system = multiply(ii, system);
+
   Matrix<scalar, 1, Dynamic> pred(nCmt);
   pred.setZero();
   Matrix<scalar, Dynamic, 1> amounts(nCmt);
@@ -68,10 +68,10 @@ PredSS_linOde(const ModelParameters<T_time, T_parameters, T_biovar,
     workMatrix = - matrix_exp(ii_system);
     for (int i = 0; i < nCmt; i++) workMatrix(i, i) += 1;
     amounts = mdivide_left(workMatrix, amounts);  // FIXME - check singularity
-    pred = matrix_exp(ii_system) * amounts;
+    pred = multiply(matrix_exp(ii_system), amounts);
   } else if (ii > 0) {  // multiple truncated infusions
-    double delta = amt / rate;
-    if(delta > ii) {
+    scalar delta = amt / rate;
+    if(unpromote(delta) > ii) {
       std::string msg = " but must be smaller than the interdose interval (ii): "  // NOLINT
       + boost::lexical_cast<std::string>(ii) + "!";
       const char* msg2 = msg.c_str();
@@ -81,11 +81,10 @@ PredSS_linOde(const ModelParameters<T_time, T_parameters, T_biovar,
     }
 
     amounts(cmt - 1) = rate;
-    scalar t = amt / rate;
-    assert(t <= ii);
+    scalar t = delta;
     amounts = mdivide_left(system, amounts);
     // CHECK - case where t and system have different types (should work)
-    Matrix<scalar, Dynamic, Dynamic> t_system = multiply(t, system);
+    Matrix<scalar, Dynamic, Dynamic> t_system = multiply(delta, system);
     pred = matrix_exp(t_system) * amounts;
     pred -= amounts;
 

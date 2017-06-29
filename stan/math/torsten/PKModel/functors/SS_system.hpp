@@ -10,6 +10,9 @@
  * A structure to store the algebraic system
  * which gets solved when computing the steady
  * state solution.
+ * 
+ * In this structure, both amt and rate are fixed
+ * variables.
  */
 template <typename F>
 struct SS_system {
@@ -18,16 +21,16 @@ struct SS_system {
   int cmt_;  // dosing compartment
   integrator_structure integrator_;
 
-  SS_system() { };
+  SS_system () { };
 
-  SS_system(const F& f,
-            const double& ii,
-            int cmt,
-            const integrator_structure& integrator)
+  SS_system (const F& f,
+             const double& ii,
+             int cmt,
+             const integrator_structure& integrator)
    : f_(f), ii_(ii), cmt_(cmt), integrator_(integrator) { }
 
   /**
-   *  Case where amt is fixed data.
+   *  dd regime.
    *  dat contains the rates in each compartment followed
    *  by the adjusted amount.
    */
@@ -42,10 +45,9 @@ struct SS_system {
              std::ostream* msgs) const {
     using stan::math::to_array_1d;
     using stan::math::to_vector;
-    using Eigen::Matrix;
-    using Eigen::Dynamic;
     using std::vector;
     using stan::math::to_vector;
+
     typedef typename boost::math::tools::promote_args<T0, T1>::type scalar;
     typedef typename stan::return_type<T0, T1>::type T_deriv;
 
@@ -57,9 +59,9 @@ struct SS_system {
     vector<scalar> x0(x.size());
     for (size_t i = 0; i < x0.size(); i++) x0[i] = x(i);
     double amt = dat[dat.size() - 1];
-    double rate  = dat[cmt_ - 1];
+    double rate = dat[cmt_ - 1];
 
-    Matrix<scalar, Dynamic, 1> result(x.size());
+    Eigen::Matrix<scalar, Eigen::Dynamic, 1> result(x.size());
 
     if (rate == 0) {  // bolus dose
       x0[cmt_ - 1] += amt;
@@ -123,5 +125,107 @@ struct SS_system {
     return result;
   }
 };
+
+/**
+ * A structure to store the algebraic system
+ * which gets solved when computing the steady
+ * state solution.
+ *
+ * In this structure, amt is a random variable
+ * and rate a fixed variable.
+ */
+/* template <typename F>
+struct SS_system_vd {
+  F f_;
+  double ii_;
+  int cmt_;  // dosing compartment
+  integrator_structure integrator_;
+
+  SS_system_vd () { };
+
+  SS_system_vd (const F& f,
+                const double& ii,
+                int cmt,
+                const integrator_structure& integrator)
+    : f_(f), ii_(ii), cmt_(cmt), integrator_(integrator) { } */
+
+  /**
+  *  Case where amt is a random variable.
+  *  The last element of y is contains amt.
+  *  dat stores the rate.
+  */
+/*  template <typename T0, typename T1>
+  inline
+    Eigen::Matrix<typename boost::math::tools::promote_args<T0, T1>::type,
+                  Eigen::Dynamic, 1>
+  operator()(const Eigen::Matrix<T0, Eigen::Dynamic, 1>& x,
+             const Eigen::Matrix<T1, Eigen::Dynamic, 1>& y,
+             const std::vector<double>& dat,
+             const std::vector<int>& dat_int,
+             std::ostream* msgs) const {
+    using stan::math::to_array_1d;
+    using stan::math::to_vector;
+    using std::vector;
+    using stan::math::to_vector;
+
+    typedef typename boost::math::tools::promote_args<T0, T1>::type scalar;
+    typedef typename stan::return_type<T0, T1>::type T_deriv;
+    
+    double t0 = 0;
+    vector<double> ts(1);
+    vector<double> rate_v(dat.size() - 1, 0);
+    for (size_t i = 0; i < rate_v.size(); i++) rate_v[i] = dat[i];
+    
+    vector<scalar> x0(x.size());
+    for (size_t i = 0; i < x0.size(); i++) x0[i] = x(i);
+    scalar amt = y(y.size() - 1);
+    double rate = dat[cmt_ - 1];
+
+    Matrix<scalar, Dynamic, 1> result(x.size());
+
+    // parms contains the ODE parameters only
+    // (no need to have amt, which is in y)
+    std::vector<scalar> parms(y.size() - 1);
+    for (int i = 0; i < parms.size(); i++) parms[i] = y(i);
+
+    if (rate == 0) {  // bolus dose
+      x0[cmt_ - 1] += amt;
+      ts[0] = ii_;
+      vector<scalar> pred = integrator_(f_, x0, t0, ts, parms,
+                                        dat, dat_int)[0];
+
+      for (int i = 0; i < result.size(); i++)
+        result(i) = x(i) - pred[i];
+
+    } else if (ii_ > 0) {  // multiple truncated infusions
+      double delta = unpromote(amt / rate);
+      if(delta > ii_) {
+        std::string msg = " but must be smaller than the interdose interval (ii): "  // NOLINT
+        + boost::lexical_cast<std::string>(ii_) + "!";
+        const char* msg2 = msg.c_str();
+        stan::math::invalid_argument("Steady State Solution",
+                                     "Infusion time (F * amt / rate)", delta,
+                                     "is ", msg2);
+      }
+      
+      vector<scalar> pred;
+      ts[0] = delta;  // time at which infusion stops
+      x0 = integrator_(f_, to_array_1d(x), t0, ts, to_array_1d(y),
+                       dat, dat_int)[0];
+      ts[0] = ii_ - delta;
+      vector<double> rate_v(dat.size(), 0);
+      pred = integrator_(f_, x0, t0, ts, to_array_1d(y), rate_v, dat_int)[0];
+      for (int i = 0; i < result.size(); i++)
+        result(i) = x(i) - pred[i];
+      
+    } else {  // constant infusion
+      vector<T_deriv> derivative = f_(0, to_array_1d(x), to_array_1d(y),
+                                      dat, dat_int, 0);
+      result = to_vector(derivative);
+    }
+    
+    return result;
+  }
+}; */
 
 #endif

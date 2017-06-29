@@ -51,31 +51,28 @@ unpromote(const std::vector<double>& x) {
  * @tparam T0 scalar type for time in the object
  * @tparam T1 scalar type for bio-availability in the object
  * @tparam T2 scalar type for time lag in the object
- * @tparam T3 scalar type for the constant rate matrix
  * @param[in] object we wish to unpromote.
  * @return the same object with unpromote RealParameters
  */
-template <typename T0, typename T1, 
-          typename T2, typename T3>
+template <typename T0, typename T1, typename T2>
 inline
-ModelParameters<T0, double, T1, T2, T3>
-unpromote(const ModelParameters<T0, stan::math::var, T1, T2, T3>&
+ModelParameters<T0, double, T1, T2>
+unpromote(const ModelParameters<T0, stan::math::var, T1, T2>&
             parameters) {
   std::vector<double>
     RealParameters_dbl = unpromote(parameters.get_RealParameters());
 
-  return ModelParameters<T0, double, T1, T2, T3>
+  return ModelParameters<T0, double, T1, T2>
     (parameters.get_time(),
      RealParameters_dbl,
      parameters.get_biovar(),
      parameters.get_tlag());
 }
 
-template <typename T0, typename T1,
-          typename T2, typename T3>
+template <typename T0, typename T1, typename T2>
 inline
-ModelParameters<T0, double, T1, T2, T3>
-unpromote(const ModelParameters<T0, double, T1, T2, T3>& parameters) {
+ModelParameters<T0, double, T1, T2>
+unpromote(const ModelParameters<T0, double, T1, T2>& parameters) {
   return parameters;
 }
 

@@ -28,16 +28,13 @@
  *           at the current event.
  */
 template<typename T_time, typename T_rate, typename T_parameters,
-         typename T_biovar, typename T_tlag, typename T_system>
-Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_rate,
-  T_parameters>::type, 1, Eigen::Dynamic>
+         typename T_biovar, typename T_tlag, typename T_init>
+Eigen::Matrix<typename boost::math::tools::promote_args<T_time, 
+  T_rate, T_parameters>::type, 1, Eigen::Dynamic>
 Pred1_one(const T_time& dt,
           const ModelParameters<T_time, T_parameters, T_biovar,
-                                T_tlag, T_system>& parameter,
-          const Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
-            T_rate, T_parameters, typename boost::math::tools::
-            promote_args<T_biovar, T_tlag>::type>::type, 1, Eigen::Dynamic>&
-            init,
+                                T_tlag>& parameter,
+          const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& init,
           const std::vector<T_rate>& rate) {
   stan::math::check_finite("Pred1", "initial values", init);
 
@@ -46,7 +43,8 @@ Pred1_one(const T_time& dt,
   using Eigen::Matrix;
   using Eigen::Dynamic;
 
-  typedef typename promote_args<T_time, T_rate, T_parameters>::type scalar;
+  typedef typename promote_args<T_time, T_rate, T_parameters,
+                                T_init>::type scalar;
 
   T_parameters CL = parameter.get_RealParameters()[0],
     V2 = parameter.get_RealParameters()[1],

@@ -40,7 +40,7 @@ struct oneCptModelODE_functor {
     }
 };
 
-TEST(Torsten, genCpt_One_SS) {
+/* TEST(Torsten, genCpt_One_SS) {
   using std::vector;
   using Eigen::Matrix;
   using Eigen::Dynamic;
@@ -108,13 +108,20 @@ TEST(Torsten, genCpt_One_SS) {
              2.220724e-3, 435.9617,
              9.875702, 1034.7998;
 
-  for(int i = 0; i < amounts.rows(); i++) {
+  for (int i = 0; i < amounts.rows(); i++) {
     EXPECT_NEAR(amounts(i, 0), x_rk45(i, 0), std::max(amounts(i, 0), x_rk45(i, 0)) * 1e-6);
     EXPECT_NEAR(amounts(i, 1), x_rk45(i, 1), std::max(amounts(i, 1), x_rk45(i, 1)) * 1e-6);
   }
-}
+  
+  // Test AutoDiff against FiniteDiff
+  double diff = 1e-8, diff2 = 5e-3;
+  test_generalOdeModel(oneCptModelODE_functor(), nCmt,
+                       time, amt, rate, ii, evid, cmt, addl, ss,
+                       pMatrix, biovar, tlag,
+                       rel_tol, abs_tol, max_num_steps, diff, diff2, "rk45");
+} */
 
-/*
+
 TEST(Torsten, genCpt_One_MultipleDose) {
   using std::vector;
   using Eigen::Matrix;
@@ -192,7 +199,7 @@ TEST(Torsten, genCpt_One_MultipleDose) {
 			 8.229747, 667.87079;
 
   expect_near_matrix_eq(amounts, x_rk45, rel_err);
-  // expect_near_matrix_eq(amounts, x_bdf, rel_err);
+  expect_near_matrix_eq(amounts, x_bdf, rel_err);
 
   // Test AutoDiff against FiniteDiff
   double diff = 1e-8, diff2 = 5e-3;
@@ -206,7 +213,7 @@ TEST(Torsten, genCpt_One_MultipleDose) {
                        rel_tol, abs_tol, max_num_steps, diff, diff2, "bdf");
   
 }
-
+/*
 TEST(Torsten, genCpt_One_MultipleDose_overload) {
   using std::vector;
   using Eigen::Matrix;

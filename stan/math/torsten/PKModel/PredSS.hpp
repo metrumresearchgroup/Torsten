@@ -76,22 +76,18 @@ public:
            typename T_parameters,
            typename T_biovar,
            typename T_tlag,
-           typename F,
-           typename T_system>
-    Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_amt,
-      T_rate, typename boost::math::tools::promote_args< T_ii, T_parameters,
-      T_biovar, typename boost::math::tools::promote_args<T_tlag,
-      T_system>::type>::type>::type, Eigen::Dynamic, 1>
+           typename F>
+  Eigen::Matrix<typename boost::math::tools::promote_args<T_amt, T_rate,
+    T_ii, T_parameters>::type, 1, Eigen::Dynamic> 
   operator()(const ModelParameters<T_time,T_parameters, T_biovar,
-                                   T_tlag, T_system>& parameter,
+                                   T_tlag>& parameter,
              const T_amt& amt,
              const T_rate& rate,
              const T_ii& ii,
              const int& cmt,
              const F& f) {
-    typedef typename boost::math::tools::promote_args<T_time, T_rate,
-      T_parameters, typename boost::math::tools::promote_args<T_biovar,
-      T_tlag, T_system>::type>::type scalar;
+    typedef typename boost::math::tools::promote_args<T_amt, T_rate,
+      T_ii, T_parameters>::type scalar;
 
     if (modeltype_ == "OneCptModel")
       return PredSS_one(parameter, amt, rate, ii, cmt);
@@ -104,10 +100,9 @@ public:
                                                         msgs_,
                                                         integratorType_), 
                                    nCmt_);
-    else
-      if (modeltype_ == "linOdeModel") {
-        return PredSS_linOde(parameter, amt, rate, ii, cmt);
-    } else {
+    else if (modeltype_ == "linOdeModel")
+      return PredSS_linOde(parameter, amt, rate, ii, cmt);
+    else {
       std::cout << "IF YOU SEE THIS REPORT AN ISSUE (PREDSS)" << std::endl;
       Eigen::Matrix<scalar, 1, Eigen::Dynamic> default_pred
         = Eigen::Matrix<scalar, 1, Eigen::Dynamic>::Zero(1);

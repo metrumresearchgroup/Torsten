@@ -20,8 +20,8 @@
  *   Calls the different versions of Pred1 stored in the Pred directory.
  *
  *   Built-in Model types:
- *       1 - One Compartment Model with first-order absorption
- *       2 - Two Compartment Model with first-order absorption
+ *     1 - One Compartment Model with first-order absorption
+ *     2 - Two Compartment Model with first-order absorption
  *		 3 - General Compartment Model using numerical ODE solver
  *		 4 - EXPERIMENTAL: PKPD model using semi-analytical solver
  *
@@ -64,17 +64,16 @@ public:
   { }
 
   template <typename T_time, typename T_parameters, typename T_biovar,
-            typename T_tlag, typename T_rate, typename F, typename T_system>
-  Eigen::Matrix<typename boost::math::tools::promote_args<T_time, T_rate,
-    T_parameters, typename boost::math::tools::promote_args<T_biovar,
-    T_tlag, T_system>::type>::type, 1, Eigen::Dynamic>
+            typename T_tlag, typename T_rate, typename F>
+  Eigen::Matrix<typename boost::math::tools::promote_args<T_time, 
+    T_rate, T_parameters>::type, 1, Eigen::Dynamic>
     operator()(const T_time& dt,
                const ModelParameters<T_time, T_parameters, T_biovar,
-                                     T_tlag, T_system>& parameter,
+                                     T_tlag>& parameter,
                const Eigen::Matrix<typename boost::math::tools::
                  promote_args<T_time, T_rate, T_parameters,
                    typename boost::math::tools::promote_args<T_biovar,
-                   T_tlag, T_system>::type>::type, 1, Eigen::Dynamic>& init,
+                   T_tlag>::type>::type, 1, Eigen::Dynamic>& init,
                const std::vector<T_rate>& rate,
                const F& f) {
     typedef typename boost::math::tools::promote_args<T_time, T_rate,

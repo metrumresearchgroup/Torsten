@@ -95,8 +95,8 @@ PKModelOneCpt(const std::vector<T0>& time,
                                  tlag[0].size(), "", length_error5);
 
   // Construct dummy matrix for last argument of pred
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> dummy_system;
-  std::vector<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> >
+  Eigen::Matrix<T4, Eigen::Dynamic, Eigen::Dynamic> dummy_system;
+  std::vector<Eigen::Matrix<T4, Eigen::Dynamic, Eigen::Dynamic> >
     dummy_systems(1, dummy_system);
 
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar,
