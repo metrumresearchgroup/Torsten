@@ -439,17 +439,17 @@ void test_generalOdeModel(const F& f,
                                      rel_tol, abs_tol, max_num_steps,
                                      diff, diff2, odeInt);
 
-  /*test_generalOdeModel_finite_diff_dvd(f, nCmt, time, amt, rate,
+  test_generalOdeModel_finite_diff_dvd(f, nCmt, time, amt, rate,
                                        ii, evid, cmt, addl, ss, 
                                        pMatrix, biovar, tlag, 
                                        rel_tol, abs_tol, max_num_steps,
-                                       diff, diff2, odeInt); */
+                                       diff, diff2, odeInt);
   
-  /* test_generalOdeModel_finite_diff_ddv(f, nCmt, time, amt, rate,
+  test_generalOdeModel_finite_diff_ddv(f, nCmt, time, amt, rate,
                                        ii, evid, cmt, addl, ss, 
                                        pMatrix, biovar, tlag, 
                                        rel_tol, abs_tol, max_num_steps,
-                                       diff, diff2, odeInt); */
+                                       diff, diff2, odeInt);
 }
 
 // More tests

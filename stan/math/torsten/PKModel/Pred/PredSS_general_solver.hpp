@@ -16,7 +16,11 @@
  * and root-finder.
  * Calculate amount in each compartment at the end of a
  * steady-state dosing interval or during a steady-state
- * constant input (if ii = 0)
+ * constant input (if ii = 0). The function is overloaded
+ * to address the cases where amt or rate may be fixed or
+ * random variables (yielding a total of 4 cases).
+ * 
+ * Case 1 (dd): amt and rate are fixed.
  *
  *	 @tparam T_time type of scalar for time
  *	 @tparam T_ii type of scalar for interdose interval
@@ -38,9 +42,8 @@ template<typename T_time,
          typename T_biovar,
          typename T_tlag,
          typename F>
-Eigen::Matrix<typename boost::math::tools::promote_args<T_time, T_ii,
-  T_parameters, typename boost::math::tools::promote_args<T_biovar,
-  T_tlag>::type>::type, 1, Eigen::Dynamic>
+Eigen::Matrix<typename boost::math::tools::promote_args<T_ii,
+  T_parameters>::type, 1, Eigen::Dynamic>
 PredSS_general_solver(const ModelParameters<T_time,
                                             T_parameters,
                                             T_biovar,
@@ -59,12 +62,12 @@ PredSS_general_solver(const ModelParameters<T_time,
   using stan::math::algebra_solver;
   using stan::math::to_vector;
 
-  typedef typename boost::math::tools::promote_args<T_time, T_ii,
+  typedef typename boost::math::tools::promote_args<T_ii,
     T_parameters>::type scalar;
 
   Matrix<scalar, Dynamic, 1> pred;
 
-  // Arguments for ODE integrator
+  // Arguments for ODE integrator (and initial guess)
   double ii_dbl = unpromote(ii);
   Matrix<double, 1, Dynamic> init_dbl(nCmt);
   for (int i = 0; i < nCmt; i++) init_dbl(i) = 0;
@@ -78,7 +81,7 @@ PredSS_general_solver(const ModelParameters<T_time,
   long int max_num_steps = 1e3;  // default
 
   // construct algebraic function
-  SS_system<ode_rate_dbl_functor<F> >
+  SS_system_dd<ode_rate_dbl_functor<F> >
     system(ode_rate_dbl_functor<F>(f), ii_dbl, cmt, integrator);
 
   if (rate == 0) {  // bolus dose
@@ -86,7 +89,6 @@ PredSS_general_solver(const ModelParameters<T_time,
     init_dbl(cmt - 1) = amt;
     y = Pred1_general_solver(ii_dbl, unpromote(parameter),
                              init_dbl, x_r, f, integrator);
-
     x_r.push_back(amt);
     pred = algebra_solver(system, y,
                           to_vector(parameter.get_RealParameters()),
@@ -123,27 +125,21 @@ PredSS_general_solver(const ModelParameters<T_time,
 }
 
 /**
- * Overload function for case where amt is a vector of var.
- * That occurs either amt is passed as a parameter, or F,
- * the bio-availibility factor is a parameter -- thus making
- * the amt that gets passed a latent parameter.
- */ /*
+ * Case 2 (vd): amt is random, rate is fixed.
+ */
 template<typename T_time,
          typename T_amt,
          typename T_ii,
          typename T_parameters,
          typename T_biovar,
          typename T_tlag,
-         typename T_system,
          typename F>
-Eigen::Matrix<typename boost::math::tools::promote_args<T_time, T_ii,
-  T_parameters, typename boost::math::tools::promote_args<T_biovar,
-  T_tlag>::type>::type, 1, Eigen::Dynamic>                                                                                                                T_tlag>::type>::type, 1, Eigen::Dynamic>
+Eigen::Matrix<typename boost::math::tools::promote_args<T_ii, T_parameters,
+  T_amt>::type, 1, Eigen::Dynamic>
 PredSS_general_solver(const ModelParameters<T_time,
-                      T_parameters,
-                      T_biovar,
-                      T_tlag,
-                      T_system>& parameter,
+                                            T_parameters,
+                                            T_biovar,
+                                            T_tlag>& parameter,
                       const T_amt& amt,
                       const double& rate,
                       const T_ii& ii,
@@ -157,13 +153,13 @@ PredSS_general_solver(const ModelParameters<T_time,
   using std::vector;
   using stan::math::algebra_solver;
   using stan::math::to_vector;
-  
+
   typedef typename boost::math::tools::promote_args<T_time, T_ii,
     T_parameters, T_amt>::type scalar;
 
   Matrix<scalar, Dynamic, 1> pred;
 
-  // Arguments for ODE integrator
+  // Arguments for the ODE integrator
   double ii_dbl = unpromote(ii);
   Matrix<double, 1, Dynamic> init_dbl(nCmt);
   for (int i = 0; i < nCmt; i++) init_dbl(i) = 0;
@@ -177,23 +173,25 @@ PredSS_general_solver(const ModelParameters<T_time,
   long int max_num_steps = 1e3;  // default
   
   // construct algebraic function
-  SS_system<ode_rate_dbl_functor<F> >
+  SS_system_vd<ode_rate_dbl_functor<F> >
     system(ode_rate_dbl_functor<F>(f), ii_dbl, cmt, integrator);
 
+  int nParameters = parameter.get_RealParameters().size();
+  Matrix<scalar, Dynamic, 1> parms(nParameters + 1);
+  for (int i = 0; i < nParameters; i++)
+    parms(i) = parameter.get_RealParameters()[i];
+  parms(nParameters) = amt;
+  
   if (rate == 0) {  // bolus dose
     // compute initial guess
     init_dbl(cmt - 1) = unpromote(amt);
     y = Pred1_general_solver(ii_dbl, unpromote(parameter),
                              init_dbl, x_r, f, integrator);
 
-    x_r.push_back(amt);
     pred = algebra_solver(system, y,
-                          to_vector(parameter.get_RealParameters()),
+                          parms,
                           x_r, x_i,
                           0, rel_tol, f_tol, max_num_steps);
-
-    // DEV - what tuning parameters should we use for the algebra solver?
-    // DEV - update initial guess or tuning parameters if result not good?
 
   }  else if (ii > 0) {  // multiple truncated infusions
     // compute initial guess
@@ -202,9 +200,8 @@ PredSS_general_solver(const ModelParameters<T_time,
                              unpromote(parameter),
                              init_dbl, x_r, f, integrator);
 
-    x_r.push_back(amt);
     pred = algebra_solver(system, y,
-                          to_vector(parameter.get_RealParameters()),
+                          parms,
                           x_r, x_i,
                           0, rel_tol, 1e-3, max_num_steps);  // should use ftol
   } else {  // constant infusion
@@ -213,13 +210,12 @@ PredSS_general_solver(const ModelParameters<T_time,
                              init_dbl, x_r, f, integrator);
 
     pred = algebra_solver(system, y,
-                          to_vector(parameter.get_RealParameters()),
+                          parms,
                           x_r, x_i,
                           0, rel_tol, f_tol, max_num_steps);
   }
 
   return pred;
 }
- */
 
 #endif

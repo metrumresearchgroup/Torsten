@@ -81,8 +81,6 @@ Pred1_general_solver(const T_time& dt,
                            idummy);
 
     // Convert vector in row-major vector (eigen Matrix)
-    // FIX ME - want to return column-major vector to use Stan's
-    // to_vector function.
     pred.resize(pred_V[0].size());
     for (size_t i = 0; i < pred_V[0].size(); i++) pred(0, i) = pred_V[0][i];
   }

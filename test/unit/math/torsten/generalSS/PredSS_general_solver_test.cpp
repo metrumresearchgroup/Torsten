@@ -51,7 +51,7 @@ TEST(Torsten, predSS_general_OneCpt_bolus) {
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> K(0, 0);
 
   // initialize Model Parameters object
-  ModelParameters<double, double, double, double, double>
+  ModelParameters<double, double, double, double>
     parms(dt, parameters, biovar, tlag, K);
 
   // bolus dose
@@ -100,7 +100,7 @@ TEST(Torsten, predSS_general_OneCpt_truncated_infusion) {
   K << -parameters[2], 0,
        parameters[2], - parameters[0] / parameters[1];
 
-  ModelParameters<double, double, double, double, double>
+  ModelParameters<double, double, double, double>
     parms(dt, parameters, biovar, tlag, K);
 
   // multiple truncated infusion
@@ -151,7 +151,7 @@ TEST(Torsten, predSS_general_OneCpt_constant_infusion) {
   K << -parameters[2], 0,
        parameters[2], - parameters[0] / parameters[1];
   
-  ModelParameters<double, double, double, double, double>
+  ModelParameters<double, double, double, double>
     parms(dt, parameters, biovar, tlag, K);
   
   // constant infusion
@@ -200,7 +200,7 @@ TEST(Torsten, predSS_general_exception) {
   K << -parameters[2], 0,
        parameters[2], - parameters[0] / parameters[1];
 
-  ModelParameters<double, double, double, double, double>
+  ModelParameters<double, double, double, double>
     parms(dt, parameters, biovar, tlag, K);
 
   // multiple truncated infusion

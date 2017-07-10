@@ -275,7 +275,7 @@ void test_PKModelOneCpt_finite_diff_ddv(
     }
   }
 
-  // Create biovar with vars
+  // Create tlag with vars
   vector<var> parameters(total_param);
   vector<vector<var> > tlag_v(parmRows);
   for (size_t i = 0; i < parmRows; i++) tlag_v[i].resize(parmCols);

@@ -80,6 +80,7 @@ Pred(const std::vector<T_time>& time,
   using Eigen::Dynamic;
   using boost::math::tools::promote_args;
   using std::vector;
+  using::stan::math::multiply;
 
   typedef typename promote_args<T_time, T_amt, T_rate, T_ii,
     typename promote_args<T_parameters, T_biovar, T_tlag>::type >::type scalar;
@@ -96,7 +97,6 @@ Pred(const std::vector<T_time>& time,
   // ModelParameterHistory<scalar, T_parameters, T_biovar, T_tlag, T_system>
   ModelParameterHistory<T_tau, T_parameters, T_biovar, T_tlag>
     parameters(time, pMatrix, biovar, tlag, system);
-  // RateHistory<scalar, scalar> rates;
   RateHistory<T_tau, T_rate> rates;
 
   events.Sort();
@@ -133,9 +133,8 @@ Pred(const std::vector<T_time>& time,
   Matrix<scalar, Dynamic, Dynamic>
     pred = Matrix<scalar, Dynamic, Dynamic>::Zero(nKeep, nCmt);
 
-  Matrix<scalar, 1, Dynamic> alpha(nCmt);  // trick to promote variables to scalar
-  for (int i = 0; i < nCmt; i++) alpha(i) = 1;
-
+  scalar Scalar = 1;  // trick to promote variables to scalar
+  
   T_tau dt, tprev = events.get_time(0);
   Matrix<scalar, 1, Dynamic> pred1;
   Event<T_tau, T_amt, T_rate, T_ii> event;
@@ -167,12 +166,18 @@ Pred(const std::vector<T_time>& time,
 
     if (((event.get_evid() == 1 || event.get_evid() == 4)
       && (event.get_ss() == 1 || event.get_ss() == 2)) ||
-      event.get_ss() == 3) {  // steady dose event
-      pred1 = PredSS(parameter, parameters.GetValueBio(i, event.get_cmt() - 1),
-                     event.get_rate(), event.get_ii(), event.get_cmt(), f)
-              * alpha;  // trick to make PredSS has scalar type
+      event.get_ss() == 3) {  // steady state event
+      pred1 = multiply(PredSS(parameter,
+                              parameters.GetValueBio(i, event.get_cmt() - 1)
+                                * event.get_amt(),
+                              event.get_rate(), event.get_ii(),
+                              event.get_cmt(), f),
+                       Scalar);
 
-      // FIX ME - promote this to a scalar
+      // the object PredSS returns doesn't always have a scalar type. For
+      // instance, PredSS does not depend on tlag, but pred does. So if
+      // tlag were a var, the code must promote PredSS to match the type
+      // of pred1. This is done by using multiply and Scalar.
 
       if (event.get_ss() == 2) init += pred1;  // steady state without reset
       else

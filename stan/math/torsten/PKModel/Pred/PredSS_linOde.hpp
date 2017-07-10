@@ -56,8 +56,8 @@ PredSS_linOde(const ModelParameters<T_time, T_parameters, T_biovar,
 
   Matrix<T_parameters, Dynamic, Dynamic> system = parameter.get_K();
   int nCmt = system.rows();
-  Matrix<T0, Dynamic, Dynamic> workMatrix, ii_system = multiply(ii, system);
-
+  Matrix<T0, Dynamic, Dynamic> workMatrix;
+  Matrix<T0, Dynamic, Dynamic> ii_system = multiply(ii, system);
   Matrix<scalar, 1, Dynamic> pred(nCmt);
   pred.setZero();
   Matrix<scalar, Dynamic, 1> amounts(nCmt);
@@ -67,8 +67,9 @@ PredSS_linOde(const ModelParameters<T_time, T_parameters, T_biovar,
     amounts(cmt - 1) = amt;
     workMatrix = - matrix_exp(ii_system);
     for (int i = 0; i < nCmt; i++) workMatrix(i, i) += 1;
-    amounts = mdivide_left(workMatrix, amounts);  // FIXME - check singularity
+    amounts = mdivide_left(workMatrix, amounts);
     pred = multiply(matrix_exp(ii_system), amounts);
+
   } else if (ii > 0) {  // multiple truncated infusions
     scalar delta = amt / rate;
     if(unpromote(delta) > ii) {
@@ -79,11 +80,9 @@ PredSS_linOde(const ModelParameters<T_time, T_parameters, T_biovar,
                                    "Infusion time (F * amt / rate)", delta,
                                    "is ", msg2);
     }
-
     amounts(cmt - 1) = rate;
     scalar t = delta;
     amounts = mdivide_left(system, amounts);
-    // CHECK - case where t and system have different types (should work)
     Matrix<scalar, Dynamic, Dynamic> t_system = multiply(delta, system);
     pred = matrix_exp(t_system) * amounts;
     pred -= amounts;
@@ -97,6 +96,7 @@ PredSS_linOde(const ModelParameters<T_time, T_parameters, T_biovar,
     t_system = multiply(t, system);
     pred_t = matrix_exp(t_system) * pred_t;
     pred = pred_t.transpose();
+
   } else {  // constant infusion
     amounts(cmt - 1) -= rate;
     pred = mdivide_left(system, amounts);
