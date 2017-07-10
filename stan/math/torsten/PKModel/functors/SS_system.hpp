@@ -110,7 +110,7 @@ struct SS_system_dd {
         ts[0] = ii_ - ts[0];
         for (size_t i = 0; i < rate_v.size(); i++)
           rate_v[i] = (N - 1) * dat[i];
-  
+
         pred = integrator_(f_, to_array_1d(x), t0, ts,
                            to_array_1d(y), rate_v, dat_int)[0];
 
@@ -120,7 +120,7 @@ struct SS_system_dd {
 
     } else {  // constant infusion
       vector<T_deriv> derivative = f_(0, to_array_1d(x), to_array_1d(y),
-                                      dat, dat_int, 0);
+                                      rate_v, dat_int, 0);
       result = to_vector(derivative);
     }
 
@@ -153,7 +153,7 @@ struct SS_system_vd {
 
  /**
   *  Case where the modified amt is a random variable. This
-  *  will usually be because biovar is a parameter, making 
+  *  will usually happen because biovar is a parameter, making 
   *  amt a transformed parameter.
   *  The last element of y is contains amt.
   *  dat stores the rate.
@@ -178,7 +178,7 @@ struct SS_system_vd {
 
     double t0 = 0;
     vector<double> ts(1);
-    vector<double> rate_v(dat.size() - 1, 0);
+    vector<double> rate_v(dat.size(), 0);
     for (size_t i = 0; i < rate_v.size(); i++) rate_v[i] = dat[i];
 
     vector<scalar> x0(x.size());

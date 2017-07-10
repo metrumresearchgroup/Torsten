@@ -90,11 +90,9 @@ Pred(const std::vector<T_time>& time,
   // BOOK-KEEPING: UPDATE DATA SETS
   int nCmt = model.GetNCmt();
 
-  // EventHistory<scalar, scalar, scalar, scalar>
   EventHistory<T_tau, T_amt, T_rate, T_ii>
     events(time, amt, rate, ii, evid, cmt, addl, ss);
 
-  // ModelParameterHistory<scalar, T_parameters, T_biovar, T_tlag, T_system>
   ModelParameterHistory<T_tau, T_parameters, T_biovar, T_tlag>
     parameters(time, pMatrix, biovar, tlag, system);
   RateHistory<T_tau, T_rate> rates;

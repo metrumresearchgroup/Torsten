@@ -196,7 +196,7 @@ void test_generalOdeModel_finite_diff_vdd(
         EXPECT_NEAR(grads_eff[k * parmCols + l],
           finite_diff_res[k][l](i, j), diff2)
           << "Gradient of generalOdeModel failed with known"
-          << " time, amt, rate, ii, evid, cmt, addl, ss "
+          << " biovar, tlags, and event data "
           << " and unknown parameters at event " << i
           << ", in compartment " << j
           << ", and parameter index (" << k << ", " << l << ")";
@@ -294,8 +294,8 @@ void test_generalOdeModel_finite_diff_dvd(
           EXPECT_NEAR(grads_eff[k * parmCols + l],
                       finite_diff_res[k][l](i, j), diff2)
           << "Gradient of generalOdeModel failed with known"
-          << " time, amt, rate, ii, evid, cmt, addl, ss "
-          << " and unknown parameters at event " << i
+          << " parameters, tlags, and event data, "
+          << " and unknown biovar at event " << i
           << ", in compartment " << j
           << ", and parameter index (" << k << ", " << l << ")";
         }
@@ -403,8 +403,8 @@ void test_generalOdeModel_finite_diff_ddv(
             EXPECT_NEAR(grads_eff[k * parmCols + l],
                         finite_diff_res[k][l](i, j), diff2)
             << "Gradient of generalOdeModel failed with known"
-            << " time, amt, rate, ii, evid, cmt, addl, ss "
-            << " and unknown parameters at event " << i
+            << " parameters, biovar, and event data, "
+            << " and unknown lag times at event " << i
             << ", in compartment " << j
             << ", and parameter index (" << k << ", " << l << ")";
           }

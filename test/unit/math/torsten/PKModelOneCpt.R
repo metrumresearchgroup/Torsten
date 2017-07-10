@@ -23,7 +23,7 @@ capture DV = CP * exp(EPS(1));
 $CAPTURE CP
 '
 
-## Input 1: multiple drug infusion
+## Input 1: multiple truncated infusions
 mod <- mread("acum", tempdir(), code)
 e1 <- ev(amt = 1200, rate = 1200, addl = 14, ii = 12)
 mod %>% ev(e1) %>% mrgsim(end = 500) %>% plot # plot data
@@ -47,7 +47,7 @@ xdata
 # 9   1 2.00 210.47626 876.28631
 # 10  1 4.00  19.09398 844.11769
 
-## Input 2: multiple drug infusion. System is at a steady state
+## Input 2: multiple truncated infusions. Steady state.
 e1 <- ev(amt = 1200, rate = 150, addl = 14, ii = 6, ss = 1)
 mod %>% ev(e1) %>% mrgsim(end = 100) %>% plot # plot data
 
@@ -77,7 +77,6 @@ xdata
 e1 <- ev(amt = 1200, rate = 75, ii = 12, ss = 1, addl = 14)
 mod %>% ev(e1) %>% mrgsim(end = 100) %>% plot # plot data
 
-
 ## save some data for unit tests (see amounts at t = 1 hour, with no noise)
 time <- seq(from = 0.25, to = 2, by = 0.25)
 time <- c(time, 4)
@@ -97,3 +96,28 @@ xdata
 # 9   1 2.00 119.33051 781.9027
 # 10  1 4.00 124.48568 870.0308
 
+
+## Input 4: constant rate infusion, steady state
+## Doesn't look like I can use ss = 1 and ii <= 0. I'll hack it with ii = amt / rate.
+e1 <- ev(amt = 1200, rate = 150, ss = 1, ii = 8)
+mod %>% ev(e1) %>% mrgsim(end = 100) %>% plot
+
+## save some data for unit tests (see amounts at t = 1 hour, with no noise)
+time <- seq(from = 0, to = 22.5, by = 2.5)
+xdata <- mod %>% ev(e1) %>% mrgsim(Req = "GUT, CENT",
+                                   end = -1, add = time,
+                                   rescort = 3) %>% as.data.frame
+
+xdata
+# ID time          GUT      CENT
+# 1   1  0.0 0.000000e+00    0.0000
+# 2   1  0.0 1.250000e+02 1200.0000
+# 3   1  2.5 1.250000e+02 1200.0000
+# 4   1  5.0 1.250000e+02 1200.0000
+# 5   1  7.5 1.250000e+02 1200.0000
+# 6   1 10.0 1.133974e+01 1030.5725
+# 7   1 12.5 5.645726e-01  762.6137
+# 8   1 15.0 2.810842e-02  558.3698
+# 9   1 17.5 1.399436e-03  408.5335
+# 10  1 20.0 6.967380e-05  298.8906
+# 11  1 22.5 3.468854e-06  218.6731

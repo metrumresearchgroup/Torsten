@@ -79,7 +79,7 @@ generalOdeModel_bdf(const F& f,
   using boost::math::tools::promote_args;
 
   pmxModel model(pMatrix[0].size(), nCmt,
-                 "generalOdeModel", "error", "bdf",
+                 "generalOdeModel", "generalOdeModel", "bdf",
                  msgs, rel_tol, abs_tol, max_num_steps);
 
   // check arguments

@@ -115,6 +115,7 @@ PredSS_general_solver(const ModelParameters<T_time,
     y = Pred1_general_solver(100.0, unpromote(parameter),
                              init_dbl, x_r, f, integrator);
 
+    x_r.push_back(amt);
     pred = algebra_solver(system, y,
                           to_vector(parameter.get_RealParameters()),
                           x_r, x_i,
@@ -153,6 +154,7 @@ PredSS_general_solver(const ModelParameters<T_time,
   using std::vector;
   using stan::math::algebra_solver;
   using stan::math::to_vector;
+  using stan::math::invalid_argument;
 
   typedef typename boost::math::tools::promote_args<T_time, T_ii,
     T_parameters, T_amt>::type scalar;
