@@ -99,12 +99,11 @@ PredSS_general_solver(const ModelParameters<T_time,
     // DEV - update initial guess or tuning parameters if result not good?
 
   }  else if (ii > 0) {  // multiple truncated infusions
-    // compute initial guess
     x_r[cmt - 1] = rate;
+    // compute initial guess
     y = Pred1_general_solver(ii_dbl,
                              unpromote(parameter),
                              init_dbl, x_r, f, integrator);
-
     x_r.push_back(amt);
     pred = algebra_solver(system, y,
                           to_vector(parameter.get_RealParameters()),

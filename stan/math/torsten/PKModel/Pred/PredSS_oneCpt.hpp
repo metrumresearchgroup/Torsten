@@ -2,6 +2,7 @@
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_ONECPT_HPP
 
 #include <stan/math/torsten/PKModel/Pred/PolyExp.hpp>
+#include <stan/math/torsten/PKModel/functors/check_mti.hpp>
 #include <iostream>
 #include <vector>
 
@@ -70,22 +71,16 @@ PredSS_one(const ModelParameters<T_time, T_parameters, T_biovar,
     }
   } else if (ii > 0) {  // multiple truncated infusions
     double delta = unpromote(amt / rate);
-    if(delta > ii) {
-      std::string msg = " but must be smaller than the interdose interval (ii): "  // NOLINT
-      + boost::lexical_cast<std::string>(ii) + "!";
-      const char* msg2 = msg.c_str();
-      stan::math::invalid_argument("Steady State Solution",
-                                   "Infusion time (F * amt / rate)", delta,
-                                   "is ", msg2);
-    }
+    static const char* function("Steady State Event");
+    check_mti(amt, delta, ii, function);
 
-      if (cmt == 1) {
-        a[0] = 0;
-        a[1] = 1;
-        pred(0) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 2);
-        a[0] = ka / (ka - alpha[0]);
-        a[1] = -a[0];
-        pred(1) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 2);
+    if (cmt == 1) {
+      a[0] = 0;
+      a[1] = 1;
+      pred(0) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 2);
+      a[0] = ka / (ka - alpha[0]);
+      a[1] = -a[0];
+      pred(1) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 2);
     } else {  // cmt = 2
       a[0] = 1;
       pred(1) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 1);

@@ -163,7 +163,6 @@ TEST(Torsten, genCpt_One_SS_2) {
   for(int i = 1; i < 10; i++) time[i] = time[i - 1] + 2.5;
 
   vector<double> amt(10, 0);
-  // amt[0] = 1200;
 
   vector<double> rate(10, 0);
   rate[0] = 150;
@@ -177,7 +176,6 @@ TEST(Torsten, genCpt_One_SS_2) {
   vector<double> ii(10, 0);
 
   vector<int> addl(10, 0);
-  // addl[0] = 10;
 
   vector<int> ss(10, 0);
   ss[0] = 1;
@@ -198,40 +196,27 @@ TEST(Torsten, genCpt_One_SS_2) {
                               0,
                               rel_tol, abs_tol, max_num_steps);
 
+  // Couldn't get solution from mrgsolve, so comparing analytical and 
+  // numerical solutions as a provisional unit test.
   Matrix<double, Dynamic, Dynamic> x_an;
   x_an = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, biovar, tlag);
 
-  // Couldn't get solution from mrgsolve, so comparing analytical and 
-  // numerical solutions as a provisional unit test.
-  // Matrix<double, Dynamic, Dynamic> amounts(10, 2);
-  // amounts << 1.250000e+02, 1200.0000,
-  //            1.250000e+02, 1200.0000,
-  //            1.250000e+02, 1200.0000,
-  //            1.250000e+02, 1200.0000,
-  //            1.133974e+01, 1030.5725,
-  //            5.645726e-01,  762.6137,
-  //            2.810842e-02,  558.3698,
-  //            1.399436e-03,  408.5335,
-  //            6.967380e-05,  298.8906,
-  //            3.468854e-06,  218.6731;
-
-  double rel_err;
-  
+  double err;
   for (int i = 0; i < x_an.rows(); i++) {
     // relative error is determined empirically
     // (seems to be relatively high -- could be the method is not that precised)
-    rel_err = std::max(std::max(x_an(i, 0), x_rk45(i, 0)) * 3.5e-3, 1e-11);
-    EXPECT_NEAR(x_an(i, 0), x_rk45(i, 0), rel_err);
+    err = std::max(std::max(x_an(i, 0), x_rk45(i, 0)) * 3.5e-3, 1e-11);
+    EXPECT_NEAR(x_an(i, 0), x_rk45(i, 0), err);
 
-    rel_err = std::max(std::max(x_an(i, 1), x_rk45(i, 1)) * 3.5e-3, 1e-11);
-    EXPECT_NEAR(x_an(i, 1), x_rk45(i, 1), rel_err);
+    err = std::max(std::max(x_an(i, 1), x_rk45(i, 1)) * 3.5e-3, 1e-11);
+    EXPECT_NEAR(x_an(i, 1), x_rk45(i, 1), err);
 
-    rel_err = std::max(std::max(x_an(i, 0), x_bdf(i, 0)) * 1e-2, 1e-11);
-    EXPECT_NEAR(x_an(i, 0), x_bdf(i, 0), rel_err);
+    err = std::max(std::max(x_an(i, 0), x_bdf(i, 0)) * 1e-2, 1e-11);
+    EXPECT_NEAR(x_an(i, 0), x_bdf(i, 0), err);
 
-    rel_err = std::max(std::max(x_an(i, 1), x_bdf(i, 1)) * 1e-2, 1e-11);
-    EXPECT_NEAR(x_an(i, 1), x_bdf(i, 1), rel_err);
+    err = std::max(std::max(x_an(i, 1), x_bdf(i, 1)) * 1e-2, 1e-11);
+    EXPECT_NEAR(x_an(i, 1), x_bdf(i, 1), err);
   }
 
   // Test AutoDiff against FiniteDiff
@@ -245,6 +230,110 @@ TEST(Torsten, genCpt_One_SS_2) {
                        pMatrix, biovar, tlag,
                        rel_tol, abs_tol, max_num_steps, diff, diff2, "bdf");
 }
+
+TEST(Torsten, genCpt_One_SS_3) {
+  // Steady state with multiple truncated infusions 
+  // (SS = 1, rate != 0, ii > 0)
+  using std::vector;
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
+  
+  vector<vector<double> > pMatrix(1);
+  pMatrix[0].resize(3);
+  pMatrix[0][0] = 10; // CL
+  pMatrix[0][1] = 80; // Vc
+  pMatrix[0][2] = 1.2; // ka
+  
+  int nCmt = 2;
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(nCmt);
+  biovar[0][0] = 1;  // F1
+  biovar[0][1] = 1;  // F2
+  
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(nCmt);
+  tlag[0][0] = 0;  // tlag1
+  tlag[0][1] = 0;  // tlag2
+  
+  vector<double> time(10);
+  time[0] = 0.0;
+  for(int i = 1; i < 10; i++) time[i] = time[i - 1] + 2.5;
+  
+  vector<double> amt(10, 0);
+  amt[0] = 1200;
+  
+  vector<double> rate(10, 0);
+  rate[0] = 150;
+  
+  vector<int> cmt(10, 2);
+  cmt[0] = 1;
+  
+  vector<int> evid(10, 0);
+  evid[0] = 1;
+  
+  vector<double> ii(10, 0);
+  ii[0] = 16;
+  
+  vector<int> addl(10, 0);
+  
+  vector<int> ss(10, 0);
+  ss[0] = 1;
+  
+  double rel_tol = 1e-8, abs_tol = 1e-8;
+  long int max_num_steps = 1e8;
+  Matrix<double, Dynamic, Dynamic> x_rk45;
+  x_rk45 = generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
+                                time, amt, rate, ii, evid, cmt, addl, ss,
+                                pMatrix, biovar, tlag,
+                                0,
+                                rel_tol, abs_tol, max_num_steps);
+
+  Matrix<double, Dynamic, Dynamic> x_bdf;
+  x_bdf = generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
+                              time, amt, rate, ii, evid, cmt, addl, ss,
+                              pMatrix, biovar, tlag,
+                              0,
+                              rel_tol, abs_tol, max_num_steps);
+
+  Matrix<double, Dynamic, Dynamic> amounts(10, 2);
+  amounts << 8.465519e-03, 360.2470,
+             1.187770e+02, 490.4911,
+             1.246902e+02, 676.1759,
+             1.249846e+02, 816.5263,
+             1.133898e+01, 750.0054,
+             5.645344e-01, 557.3459,
+             2.810651e-02, 408.1926,
+             1.399341e-03, 298.6615,
+             6.966908e-05, 218.5065,
+             3.468619e-06, 159.8628;
+
+  for (int i = 0; i < amounts.rows(); i++) {
+    EXPECT_NEAR(amounts(i, 0), x_rk45(i, 0), std::max(amounts(i, 0), x_rk45(i, 0)) * 1e-3);
+    EXPECT_NEAR(amounts(i, 1), x_rk45(i, 1), std::max(amounts(i, 1), x_rk45(i, 1)) * 1e-3);
+    EXPECT_NEAR(amounts(i, 0), x_bdf(i, 0), std::max(amounts(i, 0), x_bdf(i, 0)) * 1e-3);
+    EXPECT_NEAR(amounts(i, 1), x_bdf(i, 1), std::max(amounts(i, 1), x_bdf(i, 1)) * 1e-3);
+  }
+
+  // Test AutoDiff against FiniteDiff
+  // Currently, torsten does not handle multiple truncated infusions case when
+  // amt * F is a parameter (this scenario returns an exception and is not
+  // tested here).
+  double diff = 1e-8, diff2 = 5e-3;
+  test_generalOdeModel(oneCptModelODE_functor(), nCmt,
+                       time, amt, rate, ii, evid, cmt, addl, ss,
+                       pMatrix, biovar, tlag,
+                       rel_tol, abs_tol, max_num_steps, diff, diff2, "rk45",
+                       2);
+
+  // diff_bdf2 determined empirically
+  double diff_bdf2 = 1e-2;
+  test_generalOdeModel(oneCptModelODE_functor(), nCmt,
+                       time, amt, rate, ii, evid, cmt, addl, ss,
+                       pMatrix, biovar, tlag,
+                       rel_tol, abs_tol, max_num_steps, diff, diff_bdf2,
+                       "bdf", 2);
+}
+
 
 TEST(Torsten, genCpt_One_MultipleDose) {
   using std::vector;

@@ -1,6 +1,8 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_FUNCTORS_SS_SYSTEM_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_FUNCTORS_SS_SYSTEM_HPP
 
+#include <stan/math/torsten/PKModel/Pred/Pred1_general_solver.hpp>
+#include <stan/math/torsten/PKModel/functors/check_mti.hpp>
 #include <stan/math/rev/core.hpp>
 #include <stan/math/fwd/core.hpp>
 #include <vector>
@@ -74,14 +76,9 @@ struct SS_system_dd {
 
     } else if (ii_ > 0) {  // multiple truncated infusions
       double delta = amt / rate;
-      if(delta > ii_) {
-        std::string msg = " but must be smaller than the interdose interval (ii): "  // NOLINT
-          + boost::lexical_cast<std::string>(ii_) + "!";
-        const char* msg2 = msg.c_str();
-        stan::math::invalid_argument("Steady State Solution",
-                                     "Infusion time (F * amt / rate)", delta,
-                                     "is ", msg2);
-      }
+
+      static const char* function("Steady State Event");
+      check_mti(amt, delta, ii_, function);
 
       vector<scalar> pred;
       ts[0] = delta;  // time at which infusion stops
@@ -201,10 +198,10 @@ struct SS_system_vd {
 
     } else if (ii_ > 0) {  // multiple truncated infusions
       // FIX ME: can actually work out a solution.
-      invalid_argument("Steady State Solution",
-                       "Current version does not handle case of a",
-                       "", " multple truncated infusion solution",
-                       "(i.e ii > 0 and rate > 0) when F * amt is a parameter");  // NOLINT
+      invalid_argument("Steady State Event",
+                       "Current version does not handle the case of",
+                       "", " multiple truncated infusions ",
+                       "(i.e ii > 0 and rate > 0) when F * amt is a parameter.");  // NOLINT
 
     } else {  // constant infusion
       vector<T_deriv> derivative = f_(0, to_array_1d(x), parms,

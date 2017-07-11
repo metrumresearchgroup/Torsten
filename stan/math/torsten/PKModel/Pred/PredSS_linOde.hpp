@@ -1,6 +1,7 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_LINODE_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_LINODE_HPP
 
+#include <stan/math/torsten/PKModel/functors/check_mti.hpp>
 #include <stan/math/rev/mat/fun/mdivide_left.hpp>
 #include <stan/math/rev/mat/fun/multiply.hpp>
 #include <stan/math/prim/mat/fun/matrix_exp.hpp>
@@ -72,14 +73,9 @@ PredSS_linOde(const ModelParameters<T_time, T_parameters, T_biovar,
 
   } else if (ii > 0) {  // multiple truncated infusions
     scalar delta = amt / rate;
-    if(unpromote(delta) > ii) {
-      std::string msg = " but must be smaller than the interdose interval (ii): "  // NOLINT
-      + boost::lexical_cast<std::string>(ii) + "!";
-      const char* msg2 = msg.c_str();
-      stan::math::invalid_argument("Steady State Solution",
-                                   "Infusion time (F * amt / rate)", delta,
-                                   "is ", msg2);
-    }
+    static const char* function("Steady State Event");
+    check_mti(amt, delta, ii, function);
+
     amounts(cmt - 1) = rate;
     scalar t = delta;
     amounts = mdivide_left(system, amounts);

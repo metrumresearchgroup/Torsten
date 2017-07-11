@@ -432,24 +432,26 @@ void test_generalOdeModel(const F& f,
                           const long int max_num_steps,
                           const double& diff,
                           const double& diff2,
-                          std::string odeInt) {
-  test_generalOdeModel_finite_diff_vdd(f, nCmt, time, amt, rate,
-                                     ii, evid, cmt, addl, ss, 
-                                     pMatrix, biovar, tlag, 
-                                     rel_tol, abs_tol, max_num_steps,
-                                     diff, diff2, odeInt);
-
-  test_generalOdeModel_finite_diff_dvd(f, nCmt, time, amt, rate,
-                                       ii, evid, cmt, addl, ss, 
-                                       pMatrix, biovar, tlag, 
-                                       rel_tol, abs_tol, max_num_steps,
-                                       diff, diff2, odeInt);
-  
-  test_generalOdeModel_finite_diff_ddv(f, nCmt, time, amt, rate,
-                                       ii, evid, cmt, addl, ss, 
-                                       pMatrix, biovar, tlag, 
-                                       rel_tol, abs_tol, max_num_steps,
-                                       diff, diff2, odeInt);
+                          std::string odeInt,
+                          int skip = 0) {
+  if (skip != 1)
+    test_generalOdeModel_finite_diff_vdd(f, nCmt, time, amt, rate,
+                                         ii, evid, cmt, addl, ss, 
+                                         pMatrix, biovar, tlag, 
+                                         rel_tol, abs_tol, max_num_steps,
+                                         diff, diff2, odeInt);
+  if (skip != 2)
+    test_generalOdeModel_finite_diff_dvd(f, nCmt, time, amt, rate,
+                                         ii, evid, cmt, addl, ss, 
+                                         pMatrix, biovar, tlag, 
+                                         rel_tol, abs_tol, max_num_steps,
+                                         diff, diff2, odeInt);
+  if (skip != 3)
+    test_generalOdeModel_finite_diff_ddv(f, nCmt, time, amt, rate,
+                                         ii, evid, cmt, addl, ss, 
+                                         pMatrix, biovar, tlag, 
+                                         rel_tol, abs_tol, max_num_steps,
+                                         diff, diff2, odeInt);
 }
 
 // More tests

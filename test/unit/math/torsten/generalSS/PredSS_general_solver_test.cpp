@@ -214,7 +214,7 @@ TEST(Torsten, predSS_general_exception) {
   long int max_num_steps = 1e+6;
 
   std::stringstream err_msg;
-  err_msg << "Steady State Solution: Infusion time (F * amt / rate) is 16"
+  err_msg << "Steady State Event: Infusion time (F * amt / rate) is 16"
           << " but must be smaller than the interdose interval (ii): 12!";
   std::string msg = err_msg.str();
 
@@ -228,7 +228,7 @@ TEST(Torsten, predSS_general_exception) {
   EXPECT_THROW_MSG(PredSS_one(parms, amt, rate, ii, cmt),
                    std::invalid_argument,
                    msg);
-  
+
   EXPECT_THROW_MSG(PredSS_linOde(parms, amt, rate, ii, cmt),
                    std::invalid_argument,
                    msg);

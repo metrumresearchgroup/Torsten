@@ -95,14 +95,8 @@ PredSS_two(const ModelParameters<T_time, T_parameters, T_biovar,
     }
   } else if (ii > 0) {  // multiple truncated infusions
     double delta = unpromote(amt / rate);
-    if(delta > ii) {
-      std::string msg = " but must be smaller than the interdose interval (ii): "  // NOLINT
-      + boost::lexical_cast<std::string>(ii) + "!";
-      const char* msg2 = msg.c_str();
-      stan::math::invalid_argument("Steady State Solution",
-                                   "Infusion time (F * amt / rate)", delta,
-                                   "is ", msg2);
-    }
+    static const char* function("Steady State Event");
+    check_mti(amt, delta, ii, function);
 
     if (cmt == 1) {
       a[2] = 1;

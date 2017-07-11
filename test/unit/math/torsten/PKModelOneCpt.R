@@ -99,6 +99,7 @@ xdata
 
 ## Input 4: constant rate infusion, steady state
 ## Doesn't look like I can use ss = 1 and ii <= 0. I'll hack it with ii = amt / rate.
+## According to Bill, HACK DOESN'T WORK.
 e1 <- ev(amt = 1200, rate = 150, ss = 1, ii = 8)
 mod %>% ev(e1) %>% mrgsim(end = 100) %>% plot
 
@@ -121,3 +122,26 @@ xdata
 # 9   1 17.5 1.399436e-03  408.5335
 # 10  1 20.0 6.967380e-05  298.8906
 # 11  1 22.5 3.468854e-06  218.6731
+
+## Input 5: multiple truncated infusion, steady state
+e1 <- ev(amt = 1200, rate = 150, ii = 16, ss = 1)
+mod %>% ev(e1) %>% mrgsim(end = 100) %>% plot
+
+time <- seq(from = 0, to = 22.5, by = 2.5)
+xdata <- mod %>% ev(e1) %>% mrgsim(Req = "GUT, CENT",
+                                   end = -1, add = time,
+                                   rescort = 3) %>% as.data.frame
+
+xdata
+# ID time          GUT     CENT
+# 1   1  0.0 0.000000e+00   0.0000
+# 2   1  0.0 8.465519e-03 360.2470
+# 3   1  2.5 1.187770e+02 490.4911
+# 4   1  5.0 1.246902e+02 676.1759
+# 5   1  7.5 1.249846e+02 816.5263
+# 6   1 10.0 1.133898e+01 750.0054
+# 7   1 12.5 5.645344e-01 557.3459
+# 8   1 15.0 2.810651e-02 408.1926
+# 9   1 17.5 1.399341e-03 298.6615
+# 10  1 20.0 6.966908e-05 218.5065
+# 11  1 22.5 3.468619e-06 159.8628
