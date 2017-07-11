@@ -33,7 +33,7 @@
  */
 template<typename T_time, typename T_parameters, typename T_biovar,
          typename T_tlag, typename T_rate, typename T_init>
-Eigen::Matrix<typename boost::math::tools::promote_args<T_time, 
+Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
   T_parameters, T_rate>::type, 1, Eigen::Dynamic>
 Pred1_linOde(const T_time& dt,
              const ModelParameters<T_time, T_parameters, T_biovar,
@@ -52,7 +52,7 @@ Pred1_linOde(const T_time& dt,
   if (dt == 0) { return init;
   } else {
     Matrix<T_parameters, Dynamic, Dynamic> system = parameter.get_K();
-    
+
     bool rate_zeros = true;
     for (size_t i = 0; i < rate.size(); i++)
       if (rate[i] != 0) rate_zeros = false;

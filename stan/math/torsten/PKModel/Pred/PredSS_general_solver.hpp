@@ -9,6 +9,7 @@
 #include <stan/math/rev/mat/functor/algebra_system.hpp>
 #include <stan/math/prim/mat/fun/to_vector.hpp>
 #include <stan/math/prim/mat/fun/to_array_1d.hpp>
+#include <vector>
 #include <iostream>
 
 /**
@@ -78,7 +79,7 @@ PredSS_general_solver(const ModelParameters<T_time,
   Matrix<double, 1, Dynamic> y;
   double rel_tol = 1e-10;  // default
   double f_tol = 1e-4;  // empirical
-  long int max_num_steps = 1e3;  // default
+  long int max_num_steps = 1e3;  // default // NOLINT
 
   // construct algebraic function
   SS_system_dd<ode_rate_dbl_functor<F> >
@@ -94,10 +95,8 @@ PredSS_general_solver(const ModelParameters<T_time,
                           to_vector(parameter.get_RealParameters()),
                           x_r, x_i,
                           0, rel_tol, f_tol, max_num_steps);
-
     // DEV - what tuning parameters should we use for the algebra solver?
     // DEV - update initial guess or tuning parameters if result not good?
-
   }  else if (ii > 0) {  // multiple truncated infusions
     x_r[cmt - 1] = rate;
     // compute initial guess
@@ -171,8 +170,8 @@ PredSS_general_solver(const ModelParameters<T_time,
   Matrix<double, 1, Dynamic> y;
   double rel_tol = 1e-10;  // default
   double f_tol = 1e-4;  // empirical
-  long int max_num_steps = 1e3;  // default
-  
+  long int max_num_steps = 1e3;  // default  // NOLINT
+
   // construct algebraic function
   SS_system_vd<ode_rate_dbl_functor<F> >
     system(ode_rate_dbl_functor<F>(f), ii_dbl, cmt, integrator);
@@ -182,7 +181,7 @@ PredSS_general_solver(const ModelParameters<T_time,
   for (int i = 0; i < nParameters; i++)
     parms(i) = parameter.get_RealParameters()[i];
   parms(nParameters) = amt;
-  
+
   if (rate == 0) {  // bolus dose
     // compute initial guess
     init_dbl(cmt - 1) = unpromote(amt);
@@ -193,7 +192,6 @@ PredSS_general_solver(const ModelParameters<T_time,
                           parms,
                           x_r, x_i,
                           0, rel_tol, f_tol, max_num_steps);
-
   }  else if (ii > 0) {  // multiple truncated infusions
     // compute initial guess
     x_r[cmt - 1] = rate;

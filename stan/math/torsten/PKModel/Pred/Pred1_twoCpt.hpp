@@ -28,7 +28,7 @@
  */
 template<typename T_time, typename T_rate, typename T_parameters,
          typename T_biovar, typename T_tlag>
-Eigen::Matrix<typename boost::math::tools::promote_args<T_time, 
+Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
   T_rate, T_parameters>::type, 1, Eigen::Dynamic>
 Pred1_two(const T_time& dt,
           const ModelParameters<T_time, T_parameters, T_biovar,

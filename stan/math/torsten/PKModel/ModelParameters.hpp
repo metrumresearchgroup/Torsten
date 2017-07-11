@@ -58,7 +58,7 @@ public:
     Eigen::Matrix<T_parameters, Eigen::Dynamic, Eigen::Dynamic> dummy_system;
     K_ = dummy_system;
   }
-  
+
   int CountParameters() const {
     return theta_.size();  // FIX ME - account for parameters in K,
                            // biovar, and tlag?
@@ -244,8 +244,9 @@ public:
     int iEvent = 0;
     for (int i = 0; i < len_Parameters - 1; i++) {
       while (events.get_isnew(iEvent)) iEvent++;  // skip new events
-      assert(MPV_[i].time_ == events.get_time(iEvent));  // compare time of "old"
-                                                         // events to time of
+      assert(MPV_[i].time_ == events.get_time(iEvent));  // compare time of
+                                                         // "old' events to
+                                                         // time of
                                                          // parameters.
       iEvent++;
     }
@@ -294,7 +295,7 @@ public:
             newParameter = GetModelParameters(k);
 
           newParameter.time_ = events.get_time(iEvent);
-          MPV_[len_Parameters + j] = newParameter;  // Include new element in MPV
+          MPV_[len_Parameters + j] = newParameter;
           events.Events[iEvent].isnew = false;
           if (iEvent < nEvent - 1) iEvent++;
           j++;

@@ -2,6 +2,7 @@
 #define STAN_MATH_TORSTEN_PKMODEL_FUNCTORS_CHECK_MTI_HPP
 
 #include <stan/math/torsten/PKModel/Pred/unpromote.hpp>
+#include <string>
 
 /**
  * Checks arguments in a multiple truncated infusion 
@@ -18,17 +19,17 @@
  * @return void
  */
 template <typename T0, typename T1, typename T2>
-void check_mti (const T0& amt,
-                const T1& delta,
-                const T2& ii,
-                const char* function) {
+void check_mti(const T0& amt,
+               const T1& delta,
+               const T2& ii,
+               const char* function) {
   using stan::math::invalid_argument;
 
-  if (! (unpromote(amt) > 0)) {
+  if (!(unpromote(amt) > 0)) {
     invalid_argument(function, "Amount (amt)", amt, "is ",
                      " but must be stricly positive when ii > 0!");
   }
-  
+
   if (unpromote(delta) > unpromote(ii)) {
     std::string msg = " but must be smaller than the interdose interval (ii): "  // NOLINT
     + boost::lexical_cast<std::string>(ii) + "!";

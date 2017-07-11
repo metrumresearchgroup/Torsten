@@ -79,8 +79,8 @@ public:
            typename F>
   Eigen::Matrix<typename boost::math::tools::promote_args<T_amt, T_rate,
     T_ii, T_parameters>::type, 1, Eigen::Dynamic>
-  operator()(const ModelParameters<T_time,T_parameters, T_biovar,
-                                   T_tlag>& parameter,
+  operator()(const ModelParameters<T_time, T_parameters, T_biovar,
+               T_tlag>& parameter,
              const T_amt& amt,
              const T_rate& rate,
              const T_ii& ii,
@@ -89,20 +89,20 @@ public:
     typedef typename boost::math::tools::promote_args<T_amt, T_rate,
       T_ii, T_parameters>::type scalar;
 
-    if (modeltype_ == "OneCptModel")
+    if (modeltype_ == "OneCptModel") {
       return PredSS_one(parameter, amt, rate, ii, cmt);
-    else if (modeltype_ == "TwoCptModel")
+    } else if (modeltype_ == "TwoCptModel") {
       return PredSS_two(parameter, amt, rate, ii, cmt);
-    else if (modeltype_ == "generalOdeModel")
+    } else if (modeltype_ == "generalOdeModel") {
       return PredSS_general_solver(parameter, amt, rate, ii, cmt, f,
                                    integrator_structure(rel_tol_, abs_tol_,
                                                         max_num_steps_,
                                                         msgs_,
-                                                        integratorType_), 
+                                                        integratorType_),
                                    nCmt_);
-    else if (modeltype_ == "linOdeModel")
+    } else if (modeltype_ == "linOdeModel") {
       return PredSS_linOde(parameter, amt, rate, ii, cmt);
-    else {
+    } else {
       std::cout << "IF YOU SEE THIS REPORT AN ISSUE (PREDSS)" << std::endl;
       Eigen::Matrix<scalar, 1, Eigen::Dynamic> default_pred
         = Eigen::Matrix<scalar, 1, Eigen::Dynamic>::Zero(1);

@@ -132,7 +132,7 @@ Pred(const std::vector<T_time>& time,
     pred = Matrix<scalar, Dynamic, Dynamic>::Zero(nKeep, nCmt);
 
   scalar Scalar = 1;  // trick to promote variables to scalar
-  
+
   T_tau dt, tprev = events.get_time(0);
   Matrix<scalar, 1, Dynamic> pred1;
   Event<T_tau, T_amt, T_rate, T_ii> event;
@@ -145,7 +145,7 @@ Pred(const std::vector<T_time>& time,
     // Use index iRate instead of i to find rate at matching time, given there
     // is one rate per time, not per event.
     if (rates.get_time(iRate) != events.get_time(i)) iRate++;
-    Rate<T_tau, T_rate2> rate2; 
+    Rate<T_tau, T_rate2> rate2;
     rate2.copy(rates.GetRate(iRate));
 
     for (int j = 0; j < nCmt; j++)
@@ -193,7 +193,6 @@ Pred(const std::vector<T_time>& time,
       ikeep++;
     }
   tprev = event.get_time();
-
   }
 
   return pred;

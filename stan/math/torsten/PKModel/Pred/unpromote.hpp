@@ -4,9 +4,8 @@
 #include <stan/math/torsten/PKModel/ModelParameters.hpp>
 #include <stan/math/rev/core.hpp>
 #include <stan/math/fwd/core.hpp>
+#include <vector>
 #include <iostream>
-
-// DEV: Not a big fan of having to use this function.
 
 /**
  * Functions that converts an autodiff variable into a double.

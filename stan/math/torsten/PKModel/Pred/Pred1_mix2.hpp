@@ -37,7 +37,7 @@ template<typename T_time,
          typename T_tlag,
          typename T_init,
          typename F>
-Eigen::Matrix<typename boost::math::tools::promote_args<T_time, 
+Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
   T_parameters, T_init>::type, 1, Eigen::Dynamic>
 Pred1_mix2(const T_time& dt,
            const ModelParameters<T_time, T_parameters, T_biovar,
@@ -129,7 +129,7 @@ template<typename T_time,
          typename T_init,
          typename T_rate,
          typename F>
-Eigen::Matrix<typename boost::math::tools::promote_args<T_time, 
+Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
   T_rate, T_parameters, T_init>::type, 1, Eigen::Dynamic>
 Pred1_mix2(const T_time& dt,
            const ModelParameters<T_time, T_parameters, T_biovar,

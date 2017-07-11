@@ -23,12 +23,12 @@ struct SS_system_dd {
   int cmt_;  // dosing compartment
   integrator_structure integrator_;
 
-  SS_system_dd () { };
+  SS_system_dd() { }
 
-  SS_system_dd (const F& f,
-                const double& ii,
-                int cmt,
-                const integrator_structure& integrator)
+  SS_system_dd(const F& f,
+               const double& ii,
+               int cmt,
+               const integrator_structure& integrator)
    : f_(f), ii_(ii), cmt_(cmt), integrator_(integrator) { }
 
   /**
@@ -140,12 +140,12 @@ struct SS_system_vd {
   int cmt_;  // dosing compartment
   integrator_structure integrator_;
 
-  SS_system_vd () { };
+  SS_system_vd() { }
 
-  SS_system_vd (const F& f,
-                const double& ii,
-                int cmt,
-                const integrator_structure& integrator)
+  SS_system_vd(const F& f,
+               const double& ii,
+               int cmt,
+               const integrator_structure& integrator)
     : f_(f), ii_(ii), cmt_(cmt), integrator_(integrator) { }
 
  /**
