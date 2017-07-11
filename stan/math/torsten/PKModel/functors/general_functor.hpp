@@ -13,7 +13,7 @@ template <typename F0>
 struct general_functor {
   F0 f0_;
 
-  general_functor() { };
+  general_functor() { }
 
   explicit general_functor(const F0& f0) : f0_(f0) { }
 

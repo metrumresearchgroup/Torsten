@@ -14,19 +14,20 @@
  *
  * In this first structure, pass the rate as a standard
  * vector of real. In the second one, pass the rate as
- * as parameters. Do this for the general and the mix
- * solver (need 4 functors).
+ * as parameters.
  *
- * DEV NOTE: This is a non-mix approach, in the sense 
+ * DEV NOTE: This is a non-mix approach, in the sense
  * I'm assuming all rates are parameters. An alternative
  * would be to only treat non-zero rates as parameters. While
  * this reduces the size of theta, it seems a bit risky. Until
- * I figure out if the latter method is reliable, I'll play it 
+ * I figure out if the latter method is reliable, I'll play it
  * on the safe side.
  */
 template <typename F0>
 struct ode_rate_dbl_functor {
   F0 f0_;
+
+  ode_rate_dbl_functor() { }
 
   explicit ode_rate_dbl_functor(const F0& f0) : f0_(f0) { }
 

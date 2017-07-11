@@ -31,13 +31,11 @@
  *           at the current event.
  */
 template<typename T_time, typename T_amt, typename T_rate, typename T_ii,
-         typename T_parameters, typename T_biovar, typename T_tlag,
-         typename T_system>
-Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_amt, T_rate,
-  typename boost::math::tools::promote_args< T_ii, T_parameters, T_biovar,
-  T_tlag>::type>::type, 1, Eigen::Dynamic>
+         typename T_parameters, typename T_biovar, typename T_tlag>
+Eigen::Matrix<typename boost::math::tools::promote_args<T_amt, T_rate,
+  T_ii, T_parameters>::type, 1, Eigen::Dynamic>
 PredSS_two(const ModelParameters<T_time, T_parameters, T_biovar,
-                                 T_tlag, T_system>& parameter,
+                                 T_tlag>& parameter,
            const T_amt& amt,
            const T_rate& rate,
            const T_ii& ii,
@@ -47,9 +45,8 @@ PredSS_two(const ModelParameters<T_time, T_parameters, T_biovar,
   using Eigen::Dynamic;
   using boost::math::tools::promote_args;
 
-  typedef typename promote_args< T_time, T_amt, T_rate,
-    typename promote_args< T_ii, T_parameters, T_biovar, T_tlag>::type>::type
-    scalar;
+  typedef typename boost::math::tools::promote_args<T_amt, T_rate,
+    T_ii, T_parameters>::type scalar;
 
   double inf = std::numeric_limits<double>::max();  // "infinity"
 
@@ -97,6 +94,10 @@ PredSS_two(const ModelParameters<T_time, T_parameters, T_biovar,
       pred(0, 2) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 2);
     }
   } else if (ii > 0) {  // multiple truncated infusions
+    double delta = unpromote(amt / rate);
+    static const char* function("Steady State Event");
+    check_mti(amt, delta, ii, function);
+
     if (cmt == 1) {
       a[2] = 1;
       pred(0, 0) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 3);

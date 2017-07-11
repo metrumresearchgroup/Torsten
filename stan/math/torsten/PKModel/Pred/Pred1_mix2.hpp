@@ -35,14 +35,13 @@ template<typename T_time,
          typename T_parameters,
          typename T_biovar,
          typename T_tlag,
-         typename T_system,
          typename T_init,
          typename F>
 Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
-  T_parameters>::type, 1, Eigen::Dynamic>
+  T_parameters, T_init>::type, 1, Eigen::Dynamic>
 Pred1_mix2(const T_time& dt,
            const ModelParameters<T_time, T_parameters, T_biovar,
-                                 T_tlag, T_system>& parameter,
+                                 T_tlag>& parameter,
            const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& init,
            const std::vector<double>& rate,
            const F& f,
@@ -50,8 +49,6 @@ Pred1_mix2(const T_time& dt,
   using std::vector;
   using stan::math::to_array_1d;
   using boost::math::tools::promote_args;
-
-// std::cout << "marker a" << std::endl;
 
   typedef typename promote_args<T_time, T_parameters, T_init>::type scalar;
   typedef typename promote_args<T_parameters, T_init>::type T_theta;
@@ -121,7 +118,7 @@ Pred1_mix2(const T_time& dt,
  *   (2) rate
  *   (3) initial states for base PK
  *
- *  Unlike the general solver (pred1_general_solver), we'll
+ * Unlike the general solver (pred1_general_solver), we'll
  * call the mix_rate_var_functor, which will know where rate
  * is located inside theta.
  */
@@ -129,15 +126,14 @@ template<typename T_time,
          typename T_parameters,
          typename T_biovar,
          typename T_tlag,
-         typename T_system,
          typename T_init,
          typename T_rate,
          typename F>
-Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_rate,
-  T_parameters>::type, 1, Eigen::Dynamic>
+Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
+  T_rate, T_parameters, T_init>::type, 1, Eigen::Dynamic>
 Pred1_mix2(const T_time& dt,
            const ModelParameters<T_time, T_parameters, T_biovar,
-                                 T_tlag, T_system>& parameter,
+                                 T_tlag>& parameter,
            const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& init,
            const std::vector<T_rate>& rate,
            const F& f,
@@ -146,10 +142,9 @@ Pred1_mix2(const T_time& dt,
   using stan::math::to_array_1d;
   using boost::math::tools::promote_args;
 
-// std::cout << "marker b" << std::endl;
-
   typedef typename promote_args<T_time, T_rate,
     T_parameters, T_init>::type scalar;
+
   typedef typename promote_args<T_parameters, T_init, T_rate>::type T_theta;
 
   assert((size_t) init.cols() == rate.size());

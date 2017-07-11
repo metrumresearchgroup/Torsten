@@ -14,6 +14,8 @@ template <typename F0>
 struct mix2_functor {
   F0 f0_;
 
+  mix2_functor() { }
+
   explicit mix2_functor(const F0& f0) : f0_(f0) { }
 
   /**

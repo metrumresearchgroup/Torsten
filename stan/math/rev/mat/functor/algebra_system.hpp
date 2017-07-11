@@ -38,7 +38,7 @@ namespace stan {
                      const std::vector<int>& dat_int,
                      std::ostream* msgs,
                      const bool& x_is_dv)
-        : f_() {
+        : f_(f) {
         x_ = x;
         y_ = y;
         dat_ = dat;

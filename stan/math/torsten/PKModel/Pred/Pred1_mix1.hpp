@@ -23,7 +23,6 @@
  *	 @tparam T_parameters type of scalar for Ode parameters in ModelParameters.
  *   @tparam T_biovar type of scalar of biovar in ModelParameters.
  *   @tparam T_tlag type of scalar of lag times in ModelParameters.
- *   @tparam T_system type of scalar of rate constant matrix in ModelParameters.
  *   @tparam T_init type of scalar for the initial state
  *	 @tparam F type of ODE system function
  *	 @param[in] dt time between current and previous event
@@ -39,14 +38,13 @@ template<typename T_time,
          typename T_parameters,
          typename T_biovar,
          typename T_tlag,
-         typename T_system,
          typename T_init,
          typename F>
 Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
-  T_parameters>::type, 1, Eigen::Dynamic>
+  T_parameters, T_init>::type, 1, Eigen::Dynamic>
 Pred1_mix1(const T_time& dt,
            const ModelParameters<T_time, T_parameters, T_biovar,
-                                 T_tlag, T_system>& parameter,
+                                 T_tlag>& parameter,
            const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& init,
            const std::vector<double>& rate,
            const F& f,
@@ -129,15 +127,14 @@ template<typename T_time,
          typename T_parameters,
          typename T_biovar,
          typename T_tlag,
-         typename T_system,
          typename T_init,
          typename T_rate,
          typename F>
-Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_rate,
-  T_parameters>::type, 1, Eigen::Dynamic>
+Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
+  T_rate, T_parameters, T_init>::type, 1, Eigen::Dynamic>
 Pred1_mix1(const T_time& dt,
            const ModelParameters<T_time, T_parameters, T_biovar,
-                                 T_tlag, T_system>& parameter,
+                                 T_tlag>& parameter,
            const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& init,
            const std::vector<T_rate>& rate,
            const F& f,
@@ -146,8 +143,8 @@ Pred1_mix1(const T_time& dt,
   using stan::math::to_array_1d;
   using boost::math::tools::promote_args;
 
-  typedef typename promote_args<T_time, T_rate,
-    T_parameters, T_init>::type scalar;
+  typedef typename promote_args<T_time, T_rate, T_parameters,
+                                T_init>::type scalar;
   typedef typename promote_args<T_parameters, T_init, T_rate>::type T_theta;
 
   assert((size_t) init.cols() == rate.size());

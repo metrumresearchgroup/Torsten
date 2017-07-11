@@ -79,7 +79,7 @@ generalOdeModel_bdf(const F& f,
   using boost::math::tools::promote_args;
 
   pmxModel model(pMatrix[0].size(), nCmt,
-                 "generalOdeModel", "error", "bdf",
+                 "generalOdeModel", "generalOdeModel", "bdf",
                  msgs, rel_tol, abs_tol, max_num_steps);
 
   // check arguments
@@ -88,8 +88,8 @@ generalOdeModel_bdf(const F& f,
                 pMatrix, biovar, tlag, function, model);
 
   // Construct dummy matrix for last argument of pred
-  Matrix<double, Dynamic, Dynamic> dummy_system;
-  vector<Matrix<double, Dynamic, Dynamic> >
+  Matrix<T4, Dynamic, Dynamic> dummy_system;
+  vector<Matrix<T4, Dynamic, Dynamic> >
     dummy_systems(1, dummy_system);
 
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss,

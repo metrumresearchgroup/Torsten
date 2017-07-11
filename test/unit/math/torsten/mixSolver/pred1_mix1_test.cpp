@@ -60,7 +60,7 @@ TEST(Torsten, pred1_mix) {
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> K(0, 0);
 
   // initialize Model Parameters object
-  ModelParameters<double, double, double, double, double>
+  ModelParameters<double, double, double, double>
     parms(dt, parameters, biovar_dummy, tlag_dummy, K);
 
   int nOdes = 5;

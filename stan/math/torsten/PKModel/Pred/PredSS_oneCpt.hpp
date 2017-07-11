@@ -2,8 +2,10 @@
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_ONECPT_HPP
 
 #include <stan/math/torsten/PKModel/Pred/PolyExp.hpp>
+#include <stan/math/torsten/PKModel/functors/check_mti.hpp>
 #include <iostream>
 #include <vector>
+#include <limits>
 
 /**
  * One compartment model with first-order absorption.
@@ -30,20 +32,19 @@
  *   at the current event.
  */
 template<typename T_time, typename T_amt, typename T_rate, typename T_ii,
-         typename T_parameters, typename T_biovar, typename T_tlag,
-         typename T_system>
-Eigen::Matrix<typename boost::math::tools::promote_args< T_time, T_amt, T_rate,
-  typename boost::math::tools::promote_args< T_ii, T_parameters>
-  ::type>::type, 1, Eigen::Dynamic>
+         typename T_parameters, typename T_biovar, typename T_tlag>
+Eigen::Matrix<typename boost::math::tools::promote_args<T_amt, T_rate,
+  T_ii, T_parameters>::type, 1, Eigen::Dynamic>
 PredSS_one(const ModelParameters<T_time, T_parameters, T_biovar,
-                                 T_tlag, T_system>& parameter,
+                                 T_tlag>& parameter,
            const T_amt& amt,
            const T_rate& rate,
            const T_ii& ii,
            const int& cmt) {
-  typedef typename boost::math::tools::promote_args< T_time, T_amt, T_rate,
-    typename boost::math::tools::promote_args< T_ii, T_parameters>
-      ::type>::type scalar;
+  typedef typename boost::math::tools::promote_args<T_amt, T_rate,
+    T_ii, T_parameters>::type scalar;
+
+  double inf = std::numeric_limits<double>::max();  // "infinity"
 
   T_parameters CL = parameter.get_RealParameters()[0],
     V2 = parameter.get_RealParameters()[1],
@@ -61,37 +62,41 @@ PredSS_one(const ModelParameters<T_time, T_parameters, T_biovar,
     if (cmt == 1) {
       a[0] = 0;
       a[1] = 1;
-      pred(0, 0) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 2);
+      pred(0) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 2);
       a[0] = ka / (ka - alpha[0]);
       a[1] = -a[0];
-      pred(0, 1) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 2);
+      pred(1) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 2);
     } else {  // cmt=2
       a[0] = 1;
-      pred(0, 1) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 1);
+      pred(1) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 1);
     }
   } else if (ii > 0) {  // multiple truncated infusions
-      if (cmt == 1) {
-        a[0] = 0;
-        a[1] = 1;
-        pred(0, 0) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 2);
-        a[0] = ka / (ka - alpha[0]);
-        a[1] = -a[0];
-        pred(0, 1) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 2);
+    double delta = unpromote(amt / rate);
+    static const char* function("Steady State Event");
+    check_mti(amt, delta, ii, function);
+
+    if (cmt == 1) {
+      a[0] = 0;
+      a[1] = 1;
+      pred(0) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 2);
+      a[0] = ka / (ka - alpha[0]);
+      a[1] = -a[0];
+      pred(1) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 2);
     } else {  // cmt = 2
       a[0] = 1;
-      pred(0, 1) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 1);
+      pred(1) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 1);
     }
   } else {  // constant infusion
     if (cmt == 1) {
       a[0] = 0;
       a[1] = 1;
-      pred(0, 0) = PolyExp(0, 0, rate, 0, 0, true, a, alpha, 2);
+      pred(0) = PolyExp(0, 0, rate, inf, 0, true, a, alpha, 2);
       a[0] = ka / (ka - alpha[0]);
       a[1] = -a[0];
-      pred(0, 1) = PolyExp(0, 0, rate, 0, 0, true, a, alpha, 2);
+      pred(1) = PolyExp(0, 0, rate, inf, 0, true, a, alpha, 2);
     } else {  // cmt = 2
       a[0] = 1;
-      pred(0, 1) = PolyExp(0, 0, rate, 0, 0, true, a, alpha, 1);
+      pred(1) = PolyExp(0, 0, rate, inf, 0, true, a, alpha, 1);
     }
   }
   return pred;

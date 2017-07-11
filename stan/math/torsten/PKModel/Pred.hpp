@@ -26,7 +26,7 @@
  * @tparam T_amt type of scalar for amount
  * @tparam T_rate type of scalar for rate
  * @tparam T_ii type of scalar for interdose interval
- * @tparam T_parameters type of scalar for the model parameters
+ * @tparam T_parameters type of scalar for the ODE parameters
  * @tparam T_biovar type of scalar for bio-variability parameters
  * @tparam T_tlag type of scalar for lag times parameters
  * @tparam F type of ODE system function
@@ -57,11 +57,10 @@
  * at each event.
  */
 template <typename T_time, typename T_amt, typename T_rate, typename T_ii,
-  typename T_parameters, typename T_biovar, typename T_tlag,
-  typename F, typename T_system>
+  typename T_parameters, typename T_biovar, typename T_tlag, typename F>
 Eigen::Matrix<typename boost::math::tools::promote_args<T_time, T_amt, T_rate,
   T_ii, typename boost::math::tools::promote_args<T_parameters, T_biovar,
-  T_tlag, T_system>::type >::type, Eigen::Dynamic, Eigen::Dynamic>
+  T_tlag>::type >::type, Eigen::Dynamic, Eigen::Dynamic>
 Pred(const std::vector<T_time>& time,
      const std::vector<T_amt>& amt,
      const std::vector<T_rate>& rate,
@@ -75,26 +74,28 @@ Pred(const std::vector<T_time>& time,
      const std::vector<std::vector<T_tlag> >& tlag,
      const pmxModel& model,
      const F& f,
-     const std::vector<Eigen::Matrix<T_system,
+     const std::vector<Eigen::Matrix<T_parameters,
        Eigen::Dynamic, Eigen::Dynamic> >& system) {
   using Eigen::Matrix;
   using Eigen::Dynamic;
   using boost::math::tools::promote_args;
   using std::vector;
+  using::stan::math::multiply;
 
   typedef typename promote_args<T_time, T_amt, T_rate, T_ii,
-    typename promote_args<T_parameters, T_biovar, T_tlag,
-                          T_system>::type >::type scalar;
+    typename promote_args<T_parameters, T_biovar, T_tlag>::type >::type scalar;
+  typedef typename promote_args<T_time, T_tlag>::type T_tau;
+  typedef typename promote_args<T_rate, T_biovar>::type T_rate2;
 
   // BOOK-KEEPING: UPDATE DATA SETS
   int nCmt = model.GetNCmt();
 
-  EventHistory<scalar, scalar, scalar, scalar>
+  EventHistory<T_tau, T_amt, T_rate, T_ii>
     events(time, amt, rate, ii, evid, cmt, addl, ss);
 
-  ModelParameterHistory<scalar, T_parameters, T_biovar, T_tlag, T_system>
+  ModelParameterHistory<T_tau, T_parameters, T_biovar, T_tlag>
     parameters(time, pMatrix, biovar, tlag, system);
-  RateHistory<scalar, scalar> rates;
+  RateHistory<T_tau, T_rate> rates;
 
   events.Sort();
   parameters.Sort();
@@ -118,16 +119,24 @@ Pred(const std::vector<T_time>& time,
                         model.GetMsgs(),
                         model.GetIntegratorType());
 
-  PredSS_structure PredSS(model.GetPredSSType());
+  PredSS_structure PredSS(model.GetPredSSType(),
+                          model.GetRelTol(),
+                          model.GetAbsTol(),
+                          model.GetMaxNumSteps(),
+                          model.GetMsgs(),
+                          model.GetIntegratorType(),
+                          nCmt);
 
   // COMPUTE PREDICTIONS
   Matrix<scalar, Dynamic, Dynamic>
     pred = Matrix<scalar, Dynamic, Dynamic>::Zero(nKeep, nCmt);
 
-  scalar dt, tprev = events.get_time(0);
+  scalar Scalar = 1;  // trick to promote variables to scalar
+
+  T_tau dt, tprev = events.get_time(0);
   Matrix<scalar, 1, Dynamic> pred1;
-  Event<scalar, scalar, scalar, scalar> event;  // CHECK change type (scalars)?
-  ModelParameters<scalar, T_parameters, T_biovar, T_tlag, T_system> parameter;
+  Event<T_tau, T_amt, T_rate, T_ii> event;
+  ModelParameters<T_tau, T_parameters, T_biovar, T_tlag> parameter;
   int iRate = 0, ikeep = 0;
 
   for (int i = 0; i < events.get_size(); i++) {
@@ -136,7 +145,8 @@ Pred(const std::vector<T_time>& time,
     // Use index iRate instead of i to find rate at matching time, given there
     // is one rate per time, not per event.
     if (rates.get_time(iRate) != events.get_time(i)) iRate++;
-    Rate<scalar, scalar> rate2 = rates.GetRate(iRate);
+    Rate<T_tau, T_rate2> rate2;
+    rate2.copy(rates.GetRate(iRate));
 
     for (int j = 0; j < nCmt; j++)
       rate2.rate[j] *= parameters.GetValueBio(i, j);
@@ -154,10 +164,18 @@ Pred(const std::vector<T_time>& time,
 
     if (((event.get_evid() == 1 || event.get_evid() == 4)
       && (event.get_ss() == 1 || event.get_ss() == 2)) ||
-      event.get_ss() == 3) {  // steady dose event
-      pred1 = PredSS(parameter, parameters.GetValueBio(i, event.get_cmt() - 1)
-                     * event.get_amt(), event.get_rate(),
-                     event.get_ii(), event.get_cmt(), f);
+      event.get_ss() == 3) {  // steady state event
+      pred1 = multiply(PredSS(parameter,
+                              parameters.GetValueBio(i, event.get_cmt() - 1)
+                                * event.get_amt(),
+                              event.get_rate(), event.get_ii(),
+                              event.get_cmt(), f),
+                       Scalar);
+
+      // the object PredSS returns doesn't always have a scalar type. For
+      // instance, PredSS does not depend on tlag, but pred does. So if
+      // tlag were a var, the code must promote PredSS to match the type
+      // of pred1. This is done by using multiply and Scalar.
 
       if (event.get_ss() == 2) init += pred1;  // steady state without reset
       else

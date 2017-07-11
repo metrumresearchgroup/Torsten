@@ -49,6 +49,7 @@ TEST(Torsten, LinCpt_OneSS) {
 
 	vector<int> ss(10, 0);
 	ss[0] = 1;
+
 	Matrix<double, Dynamic, Dynamic> x;
 	x = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                  system_array, biovar, tlag);
@@ -623,5 +624,3 @@ TEST(Torsten, linOde_rate) {
 
   expect_matrix_eq(amounts, x);
 }
-
-
