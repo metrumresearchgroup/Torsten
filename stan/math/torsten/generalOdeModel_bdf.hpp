@@ -4,6 +4,8 @@
 #include <Eigen/Dense>
 #include <stan/math/torsten/PKModel/functors/general_functor.hpp>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_general.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_general.hpp>
 #include <boost/math/tools/promotion.hpp>
 #include <vector>
 
@@ -78,14 +80,10 @@ generalOdeModel_bdf(const F& f,
   using Eigen::Matrix;
   using boost::math::tools::promote_args;
 
-  pmxModel model(pMatrix[0].size(), nCmt,
-                 "generalOdeModel", "generalOdeModel", "bdf",
-                 msgs, rel_tol, abs_tol, max_num_steps);
-
   // check arguments
   static const char* function("generalOdeModel_bdf");
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
-                pMatrix, biovar, tlag, function, model);
+                pMatrix, biovar, tlag, function);
 
   // Construct dummy matrix for last argument of pred
   Matrix<T4, Dynamic, Dynamic> dummy_system;
@@ -93,9 +91,11 @@ generalOdeModel_bdf(const F& f,
     dummy_systems(1, dummy_system);
 
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-              pMatrix, biovar, tlag, model,
-              general_functor<F>(f),
-              dummy_systems);
+              pMatrix, biovar, tlag, nCmt,
+              general_functor<F>(f), dummy_systems,
+              Pred1_general(rel_tol, abs_tol, max_num_steps, msgs, "rk45"),
+              PredSS_general(rel_tol, abs_tol, max_num_steps, msgs, "rk45",
+                             nCmt));
 }
 
 /**

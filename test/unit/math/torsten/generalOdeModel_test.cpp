@@ -7,7 +7,6 @@
 // Developer's note: for the autodiff test, the rk45 agrees
 // more closely with finite diff than bdf by an order of
 // magnitude.
-/*
 template <typename T0, typename T1, typename T2, typename T3>
 inline
 std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
@@ -1655,7 +1654,7 @@ TEST(Torsten, generalTwoCptModel_Rate) {
                        time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, biovar, tlag,
                        rel_tol, abs_tol, max_num_steps, diff, diff2, "bdf");
-                       } */
+  }
 
 struct FK_functor {
   /**
@@ -1733,15 +1732,20 @@ TEST(Torsten, genCpt_FK_SS) {
   theta[7] = 3e-4;  // alpha
   theta[8] = 0.17;  // gamma
 
+  vector<vector<double> > theta_v(1, theta);
+
   int nCmt = 8;
   vector<double> biovar(nCmt);
   for (int i = 0; i < nCmt; i++)
     biovar[i] = 1;
 
+  vector<vector<double> > biovar_v(1, biovar);
+
   vector<double> tlag(nCmt);
   for (int i = 0; i < nCmt; i++)
     tlag[i] = 0;
 
+  vector<vector<double> > tlag_v(1, tlag);
 
   vector<double> time(10);
   time[0] = 0;
@@ -1799,15 +1803,14 @@ TEST(Torsten, genCpt_FK_SS) {
   expect_near_matrix_eq(amounts, x_rk45, rel_err_rk45);
   expect_near_matrix_eq(amounts, x_bdf, rel_err_bdf);
 
-  /*
   // Test Autodiff
   double diff = 1e-8, diff2 = 2e-2;
-  test_generalOdeModel(twoCptModelODE_functor(), nCmt,
+  test_generalOdeModel(FK_functor(), nCmt,
                        time, amt, rate, ii, evid, cmt, addl, ss,
-                       pMatrix, biovar, tlag,
+                       theta_v, biovar_v, tlag_v,
                        rel_tol, abs_tol, max_num_steps, diff, diff2, "rk45");
-  test_generalOdeModel(twoCptModelODE_functor(), nCmt,
+  test_generalOdeModel(FK_functor(), nCmt,
                        time, amt, rate, ii, evid, cmt, addl, ss,
-                       pMatrix, biovar, tlag,
-                       rel_tol, abs_tol, max_num_steps, diff, diff2, "bdf"); */
+                       theta_v, biovar_v, tlag_v,
+                       rel_tol, abs_tol, max_num_steps, diff, diff2, "bdf");
 }
