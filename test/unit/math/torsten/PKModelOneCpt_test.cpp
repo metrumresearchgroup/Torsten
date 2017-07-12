@@ -72,7 +72,6 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses) {
                      pMatrix, biovar, tlag, 1e-8, 1e-4);
 }
 
-/*
 TEST(Torsten, PKModelOneCpt_MultipleDoses_overload) {
 
   vector<vector<double> > pMatrix(1);
@@ -662,7 +661,7 @@ TEST(Torsten, PKModelOneCptModel_Rate) {
   test_PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                      pMatrix, biovar, tlag, 1e-8, 5e-4);
 }
-*/
+
 /*
 TEST(Torsten, PKModelOneCptModel_SS_rate_2) {
   // Test the special case where the infusion rate is longer than

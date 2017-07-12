@@ -57,7 +57,8 @@
  * at each event.
  */
 template <typename T_time, typename T_amt, typename T_rate, typename T_ii,
-  typename T_parameters, typename T_biovar, typename T_tlag, typename F>
+  typename T_parameters, typename T_biovar, typename T_tlag, typename F,
+  typename F_1, typename F_SS>
 Eigen::Matrix<typename boost::math::tools::promote_args<T_time, T_amt, T_rate,
   T_ii, typename boost::math::tools::promote_args<T_parameters, T_biovar,
   T_tlag>::type >::type, Eigen::Dynamic, Eigen::Dynamic>
@@ -72,10 +73,13 @@ Pred(const std::vector<T_time>& time,
      const std::vector<std::vector<T_parameters> >& pMatrix,
      const std::vector<std::vector<T_biovar> >& biovar,
      const std::vector<std::vector<T_tlag> >& tlag,
-     const pmxModel& model,
+     const int& nCmt,
+     // const pmxModel& model,
      const F& f,
      const std::vector<Eigen::Matrix<T_parameters,
-       Eigen::Dynamic, Eigen::Dynamic> >& system) {
+       Eigen::Dynamic, Eigen::Dynamic> >& system,
+     const F_1& Pred1,
+     const F_SS& PredSS) {
   using Eigen::Matrix;
   using Eigen::Dynamic;
   using boost::math::tools::promote_args;
@@ -88,7 +92,7 @@ Pred(const std::vector<T_time>& time,
   typedef typename promote_args<T_rate, T_biovar>::type T_rate2;
 
   // BOOK-KEEPING: UPDATE DATA SETS
-  int nCmt = model.GetNCmt();
+  // int nCmt = model.GetNCmt();
 
   EventHistory<T_tau, T_amt, T_rate, T_ii>
     events(time, amt, rate, ii, evid, cmt, addl, ss);
@@ -112,7 +116,7 @@ Pred(const std::vector<T_time>& time,
   Matrix<scalar, 1, Dynamic> init = zeros;
 
   // CONSTRUCT PRED OPERATORS
-  Pred1_structure Pred1(model.GetPred1Type(),
+  /*Pred1_structure Pred1(model.GetPred1Type(),
                         model.GetRelTol(),
                         model.GetAbsTol(),
                         model.GetMaxNumSteps(),
@@ -125,7 +129,7 @@ Pred(const std::vector<T_time>& time,
                           model.GetMaxNumSteps(),
                           model.GetMsgs(),
                           model.GetIntegratorType(),
-                          nCmt);
+                          nCmt); */
 
   // COMPUTE PREDICTIONS
   Matrix<scalar, Dynamic, Dynamic>
@@ -134,7 +138,7 @@ Pred(const std::vector<T_time>& time,
   scalar Scalar = 1;  // trick to promote variables to scalar
 
   T_tau dt, tprev = events.get_time(0);
-  Matrix<scalar, 1, Dynamic> pred1;
+  Matrix<scalar, Dynamic, 1> pred1;
   Event<T_tau, T_amt, T_rate, T_ii> event;
   ModelParameters<T_tau, T_parameters, T_biovar, T_tlag> parameter;
   int iRate = 0, ikeep = 0;
