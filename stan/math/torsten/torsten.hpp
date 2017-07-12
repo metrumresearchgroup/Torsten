@@ -9,6 +9,6 @@
 #include <stan/math/torsten/mixOde2CptModel_rk45.hpp>
 #include <stan/math/torsten/mixOde2CptModel_bdf.hpp> */
 #include <stan/math/torsten/PKModelOneCpt.hpp>
-// #include <stan/math/torsten/PKModelTwoCpt.hpp>
+#include <stan/math/torsten/PKModelTwoCpt.hpp>
 
 #endif
