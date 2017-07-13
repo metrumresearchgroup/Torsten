@@ -177,7 +177,7 @@ struct PredSS_general {
     // Arguments for algebraic solver
     Matrix<double, 1, Dynamic> y;
     double rel_tol = 1e-10;  // default
-    double f_tol = 1e-4;  // empirical
+    double f_tol = 5e-4;  // empirical (note: differs from other function)
     long int max_num_steps = 1e4;  // default  // NOLINT
 
     // construct algebraic function
