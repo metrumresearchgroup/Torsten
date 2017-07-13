@@ -1,6 +1,7 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_FUNCTORS_MIX2_FUNCTOR_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_FUNCTORS_MIX2_FUNCTOR_HPP
 
+#include <stan/math/torsten/PKModel/Pred/fTwoCpt.hpp>
 #include <stan/math/rev/core.hpp>
 #include <stan/math/fwd/core.hpp>
 #include <vector>
