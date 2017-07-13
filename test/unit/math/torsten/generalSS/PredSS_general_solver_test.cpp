@@ -66,15 +66,15 @@ TEST(Torsten, predSS_general_OneCpt_bolus) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
 
-  PredSS_general PredSS(rel_tol, abs_tol, max_num_steps, 0, "rk45", nCmt);
-  Matrix<double, 1, Dynamic>
-    pred = PredSS(parms, amt, rate, ii, cmt,
-                  general_functor<OneCpt_functor>(OneCpt_functor()));
+  typedef general_functor<OneCpt_functor> F0;
+  PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
+                            max_num_steps, 0, "rk45", nCmt);
+  Matrix<double, 1, Dynamic> pred = PredSS(parms, amt, rate, ii, cmt);
 
   // Compare to results obtained with analytical solution
   PredSS_oneCpt PredSS_one;
   Matrix<double, 1, Dynamic>
-    pred_an = PredSS_one(parms, amt, rate, ii, cmt, 0);
+    pred_an = PredSS_one(parms, amt, rate, ii, cmt);
 
   // relative error for 1st term determined empirically
   EXPECT_NEAR(pred_an(0), pred(0), pred_an(0) * 5e-2);
@@ -114,16 +114,16 @@ TEST(Torsten, predSS_general_OneCpt_truncated_infusion) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
 
-  PredSS_general PredSS(rel_tol, abs_tol, max_num_steps, 0, "rk45", nCmt);
-  Matrix<double, 1, Dynamic>
-    pred = PredSS(parms, amt, rate, ii, cmt,
-                  general_functor<OneCpt_functor>(OneCpt_functor()));
+  typedef general_functor<OneCpt_functor> F0;
+  PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
+                            max_num_steps, 0, "rk45", nCmt);
+  Matrix<double, 1, Dynamic> pred = PredSS(parms, amt, rate, ii, cmt);
 
   // Compare to results obtained with analytical solution
   // (note: matrix exponential solution agrees with analytical solution).
   PredSS_oneCpt PredSS_one;
   Matrix<double, 1, Dynamic>
-    pred_an = PredSS_one(parms, amt, rate, ii, cmt, 0);
+    pred_an = PredSS_one(parms, amt, rate, ii, cmt);
 
   // relative error for 1st term determined empirically
   double rel_err = 2e-2;
@@ -146,7 +146,6 @@ TEST(Torsten, predSS_general_OneCpt_constant_infusion) {
   int nCmt = 2;
   std::vector<double> biovar(nCmt, 0);
   std::vector<double> tlag(nCmt, 0);
-  // Matrix<double, Dynamic, Dynamic> K(0, 0);
   Matrix<double, Dynamic, Dynamic> K(2, 2);
   K << -parameters[2], 0,
        parameters[2], - parameters[0] / parameters[1];
@@ -164,15 +163,15 @@ TEST(Torsten, predSS_general_OneCpt_constant_infusion) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
   
-  PredSS_general PredSS(rel_tol, abs_tol, max_num_steps, 0, "rk45", nCmt);
-  Matrix<double, 1, Dynamic>
-    pred = PredSS(parms, amt, rate, ii, cmt,
-                  general_functor<OneCpt_functor>(OneCpt_functor()));
+  typedef general_functor<OneCpt_functor> F0;
+  PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
+                            max_num_steps, 0, "rk45", nCmt);
+  Matrix<double, 1, Dynamic> pred = PredSS(parms, amt, rate, ii, cmt);
   
   // Compare to results obtained with analytical solution
   PredSS_oneCpt PredSS_one;
   Matrix<double, 1, Dynamic>
-    pred_an = PredSS_one(parms, amt, rate, ii, cmt, 0);
+    pred_an = PredSS_one(parms, amt, rate, ii, cmt);
   
   // relative error for 1st term determined empirically
   EXPECT_FLOAT_EQ(pred_an(0), pred(0));
@@ -212,7 +211,9 @@ TEST(Torsten, predSS_general_exception) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
 
-  PredSS_general PredSS(rel_tol, abs_tol, max_num_steps, 0, "rk45", nCmt);
+  typedef general_functor<OneCpt_functor> F0;
+  PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
+                            max_num_steps, 0, "rk45", nCmt);
   PredSS_oneCpt PredSS_one;
   PredSS_linOde PredSS_lin;
 
@@ -221,16 +222,15 @@ TEST(Torsten, predSS_general_exception) {
           << " but must be smaller than the interdose interval (ii): 12!";
   std::string msg = err_msg.str();
 
-  EXPECT_THROW_MSG(PredSS(parms, amt, rate, ii, cmt,
-                     general_functor<OneCpt_functor>(OneCpt_functor())),
+  EXPECT_THROW_MSG(PredSS(parms, amt, rate, ii, cmt),
                    std::invalid_argument,
                    msg);
 
-  EXPECT_THROW_MSG(PredSS_one(parms, amt, rate, ii, cmt, 0),
+  EXPECT_THROW_MSG(PredSS_one(parms, amt, rate, ii, cmt),
                    std::invalid_argument,
                    msg);
 
-  EXPECT_THROW_MSG(PredSS_lin(parms, amt, rate, ii, cmt, 0),
+  EXPECT_THROW_MSG(PredSS_lin(parms, amt, rate, ii, cmt),
                    std::invalid_argument,
                    msg);
 }
