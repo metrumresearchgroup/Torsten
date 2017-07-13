@@ -4,6 +4,8 @@
 #include <Eigen/Dense>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
 #include <stan/math/torsten/PKModel/functors/mix2_functor.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_mix2.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_err.hpp>
 #include <boost/math/tools/promotion.hpp>
 #include <vector>
 
@@ -81,23 +83,24 @@ mixOde2CptModel_rk45(const F& f,
   using boost::math::tools::promote_args;
 
   int nPK = 3;
-  pmxModel model(theta[0].size(), nOde + nPK,
-                 "mixOde2CptModel", "error", "rk45",
-                 msgs, rel_tol, abs_tol, max_num_steps);
 
   // check arguments
   static const char* function("mixOde2CptModel_rk45");
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
-                theta, biovar, tlag, function, model);
+                theta, biovar, tlag, function);
 
   // Construct dummy array of matrix for last argument of pred
   Matrix<T4, Dynamic, Dynamic> dummy_system;
   vector<Matrix<T4, Dynamic, Dynamic> >
     dummy_systems(1, dummy_system);
 
+  typedef mix2_functor<F> F0;
+
  return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-             theta, biovar, tlag, model, mix2_functor<F>(f),
-             dummy_systems);
+             theta, biovar, tlag, nPK + nOde, dummy_systems,
+             Pred1_mix2<F0>(F0(f), rel_tol, abs_tol, max_num_steps, msgs,
+                            "rk45"),
+             PredSS_err(function));
 }
 
 /**

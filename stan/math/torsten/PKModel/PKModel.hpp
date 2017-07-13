@@ -14,8 +14,8 @@
 #include <stan/math/torsten/PKModel/ModelParameters.hpp>
 #include <stan/math/torsten/PKModel/integrator.hpp>
 #include <stan/math/torsten/PKModel/Pred/PolyExp.hpp>
-#include <stan/math/torsten/PKModel/Pred1.hpp>
-#include <stan/math/torsten/PKModel/PredSS.hpp>
+// #include <stan/math/torsten/PKModel/Pred1.hpp>
+// #include <stan/math/torsten/PKModel/PredSS.hpp>
 #include <stan/math/torsten/PKModel/Pred.hpp>
 
 extern int marker_count;  // For testing purposes

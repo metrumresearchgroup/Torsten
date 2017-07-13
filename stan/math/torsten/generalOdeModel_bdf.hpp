@@ -4,6 +4,8 @@
 #include <Eigen/Dense>
 #include <stan/math/torsten/PKModel/functors/general_functor.hpp>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_general.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_general.hpp>
 #include <boost/math/tools/promotion.hpp>
 #include <vector>
 
@@ -70,32 +72,51 @@ generalOdeModel_bdf(const F& f,
                     const std::vector<std::vector<T5> >& biovar,
                     const std::vector<std::vector<T6> >& tlag,
                     std::ostream* msgs = 0,
-                    double rel_tol = 1e-6,
-                    double abs_tol = 1e-6,
-                    long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
+                    double rel_tol = 1e-10,
+                    double abs_tol = 1e-10,
+                    long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
   using boost::math::tools::promote_args;
 
-  pmxModel model(pMatrix[0].size(), nCmt,
-                 "generalOdeModel", "generalOdeModel", "bdf",
-                 msgs, rel_tol, abs_tol, max_num_steps);
-
   // check arguments
   static const char* function("generalOdeModel_bdf");
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
-                pMatrix, biovar, tlag, function, model);
+                pMatrix, biovar, tlag, function);
 
   // Construct dummy matrix for last argument of pred
   Matrix<T4, Dynamic, Dynamic> dummy_system;
   vector<Matrix<T4, Dynamic, Dynamic> >
     dummy_systems(1, dummy_system);
 
+  typedef general_functor<F> F0;
+
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-              pMatrix, biovar, tlag, model,
-              general_functor<F>(f),
-              dummy_systems);
+              pMatrix, biovar, tlag, nCmt, dummy_systems,
+              Pred1_general<F0>(F0(f), rel_tol, abs_tol,
+                                max_num_steps, msgs, "bdf"),
+              PredSS_general<F0>(F0(f), rel_tol, abs_tol,
+                                 max_num_steps, msgs, "bdf", nCmt));
+
+  // // check arguments
+  // static const char* function("generalOdeModel_bdf");
+  // pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
+  //               pMatrix, biovar, tlag, function);
+  //
+  // // Construct dummy matrix for last argument of pred
+  // Matrix<T4, Dynamic, Dynamic> dummy_system;
+  // vector<Matrix<T4, Dynamic, Dynamic> >
+  //   dummy_systems(1, dummy_system);
+  //
+  // typedef general_functor<F> F0;
+  //
+  // return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
+  //             pMatrix, biovar, tlag, nCmt, dummy_systems,
+  //             Pred1_general<F0>(F0(f), rel_tol, abs_tol,
+  //                               max_num_steps, msgs, "rk45"),
+  //             PredSS_general<F0>(F0(f), rel_tol, abs_tol,
+  //                                max_num_steps, msgs, "bdf", nCmt));
 }
 
 /**

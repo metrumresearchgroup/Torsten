@@ -29,7 +29,6 @@
  * @tparam T_parameters type of scalar for the ODE parameters
  * @tparam T_biovar type of scalar for bio-variability parameters
  * @tparam T_tlag type of scalar for lag times parameters
- * @tparam F type of ODE system function
  * @param[in] time times of events
  * @param[in] amt amount at each event
  * @param[in] rate rate at each event
@@ -47,17 +46,21 @@
  * @param[in] pMatrix parameters at each event
  * @param[in] addParm additional parameters at each event
  * @parem[in] model basic info for ODE model and evolution operators
- * @param[in] f functor for base ordinary differential equation
- * that defines compartment model. Used for ODE integrators
- * (optional).
  * @param[in] SystemODE matrix describing linear ODE system that
- * defines compartment model. Used for matrix exponential solutions
- * (optional).
+ * defines compartment model. Used for matrix exponential solutions.
+ * Included because it may get updated in modelParameters.
  * @return a matrix with predicted amount in each compartment
  * at each event.
  */
-template <typename T_time, typename T_amt, typename T_rate, typename T_ii,
-  typename T_parameters, typename T_biovar, typename T_tlag, typename F>
+template<typename T_time,
+        typename T_amt,
+        typename T_rate,
+        typename T_ii,
+        typename T_parameters,
+        typename T_biovar,
+        typename T_tlag,
+        typename F_one,
+        typename F_SS>
 Eigen::Matrix<typename boost::math::tools::promote_args<T_time, T_amt, T_rate,
   T_ii, typename boost::math::tools::promote_args<T_parameters, T_biovar,
   T_tlag>::type >::type, Eigen::Dynamic, Eigen::Dynamic>
@@ -72,10 +75,11 @@ Pred(const std::vector<T_time>& time,
      const std::vector<std::vector<T_parameters> >& pMatrix,
      const std::vector<std::vector<T_biovar> >& biovar,
      const std::vector<std::vector<T_tlag> >& tlag,
-     const pmxModel& model,
-     const F& f,
+     const int& nCmt,
      const std::vector<Eigen::Matrix<T_parameters,
-       Eigen::Dynamic, Eigen::Dynamic> >& system) {
+       Eigen::Dynamic, Eigen::Dynamic> >& system,
+     const F_one& Pred1,
+     const F_SS& PredSS) {
   using Eigen::Matrix;
   using Eigen::Dynamic;
   using boost::math::tools::promote_args;
@@ -88,8 +92,6 @@ Pred(const std::vector<T_time>& time,
   typedef typename promote_args<T_rate, T_biovar>::type T_rate2;
 
   // BOOK-KEEPING: UPDATE DATA SETS
-  int nCmt = model.GetNCmt();
-
   EventHistory<T_tau, T_amt, T_rate, T_ii>
     events(time, amt, rate, ii, evid, cmt, addl, ss);
 
@@ -111,22 +113,6 @@ Pred(const std::vector<T_time>& time,
   Matrix<scalar, 1, Dynamic> zeros = Matrix<scalar, 1, Dynamic>::Zero(nCmt);
   Matrix<scalar, 1, Dynamic> init = zeros;
 
-  // CONSTRUCT PRED OPERATORS
-  Pred1_structure Pred1(model.GetPred1Type(),
-                        model.GetRelTol(),
-                        model.GetAbsTol(),
-                        model.GetMaxNumSteps(),
-                        model.GetMsgs(),
-                        model.GetIntegratorType());
-
-  PredSS_structure PredSS(model.GetPredSSType(),
-                          model.GetRelTol(),
-                          model.GetAbsTol(),
-                          model.GetMaxNumSteps(),
-                          model.GetMsgs(),
-                          model.GetIntegratorType(),
-                          nCmt);
-
   // COMPUTE PREDICTIONS
   Matrix<scalar, Dynamic, Dynamic>
     pred = Matrix<scalar, Dynamic, Dynamic>::Zero(nKeep, nCmt);
@@ -134,7 +120,7 @@ Pred(const std::vector<T_time>& time,
   scalar Scalar = 1;  // trick to promote variables to scalar
 
   T_tau dt, tprev = events.get_time(0);
-  Matrix<scalar, 1, Dynamic> pred1;
+  Matrix<scalar, Dynamic, 1> pred1;
   Event<T_tau, T_amt, T_rate, T_ii> event;
   ModelParameters<T_tau, T_parameters, T_biovar, T_tlag> parameter;
   int iRate = 0, ikeep = 0;
@@ -158,7 +144,7 @@ Pred(const std::vector<T_time>& time,
       init = zeros;
     } else {
       dt = event.get_time() - tprev;
-      pred1 = Pred1(dt, parameter, init, rate2.get_rate(), f);
+      pred1 = Pred1(dt, parameter, init, rate2.get_rate());
       init = pred1;
     }
 
@@ -169,13 +155,13 @@ Pred(const std::vector<T_time>& time,
                               parameters.GetValueBio(i, event.get_cmt() - 1)
                                 * event.get_amt(),
                               event.get_rate(), event.get_ii(),
-                              event.get_cmt(), f),
+                              event.get_cmt()),
                        Scalar);
 
       // the object PredSS returns doesn't always have a scalar type. For
       // instance, PredSS does not depend on tlag, but pred does. So if
       // tlag were a var, the code must promote PredSS to match the type
-      // of pred1. This is done by using multiply and Scalar.
+      // of pred1. This is done by using multiply predSS by a Scalar.
 
       if (event.get_ss() == 2) init += pred1;  // steady state without reset
       else

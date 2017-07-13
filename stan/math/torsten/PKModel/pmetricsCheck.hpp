@@ -56,8 +56,7 @@ void pmetricsCheck(const std::vector<T0>& time,
                    const std::vector<std::vector<T4> >& pMatrix,
                    const std::vector<std::vector<T5> >& biovar,
                    const std::vector<std::vector<T6> >& tlag,
-                   const char* function,
-                   pmxModel& model) {
+                   const char* function) {
   using std::vector;
   using std::string;
   using Eigen::Dynamic;
