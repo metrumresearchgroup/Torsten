@@ -7,6 +7,7 @@
 #include <stan/math/prim/mat/fun/to_array_1d.hpp>
 #include <iostream>
 #include <vector>
+#include <string>
 
 template <typename F>
 struct Pred1_general {
@@ -16,10 +17,10 @@ struct Pred1_general {
   Pred1_general(const F& f,
                 const double& rel_tol,
                 const double& abs_tol,
-                const long int& max_num_steps,
+                const long int& max_num_steps,  // NOLINT
                 std::ostream* msgs,
-                const std::string& integratorType) 
-    : f_(f), 
+                const std::string& integratorType)
+    : f_(f),
       integrator_(rel_tol, abs_tol, max_num_steps, msgs, integratorType) { }
 
   Pred1_general(const F& f,

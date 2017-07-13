@@ -5,9 +5,9 @@
 #include <stan/math/torsten/PKModel/functors/functor.hpp>
 #include <stan/math/torsten/PKModel/Pred/unpromote.hpp>
 #include <stan/math/torsten/PKModel/Pred/fOneCpt.hpp>
-
 #include <iostream>
 #include <vector>
+#include <string>
 
 template <typename F>
 struct Pred1_mix1 {
@@ -17,10 +17,10 @@ struct Pred1_mix1 {
   Pred1_mix1(const F& f,
              const double& rel_tol,
              const double& abs_tol,
-             const long int& max_num_steps,
+             const long int& max_num_steps,  // NOLINT
              std::ostream* msgs,
-             const std::string& integratorType) 
-    : f_(f), 
+             const std::string& integratorType)
+    : f_(f),
       integrator_(rel_tol, abs_tol, max_num_steps, msgs, integratorType) { }
 
   Pred1_mix1(const F& f,

@@ -8,7 +8,6 @@
 #include <iostream>
 
 struct PredSS_linOde {
-
   PredSS_linOde() { }
 
   /**

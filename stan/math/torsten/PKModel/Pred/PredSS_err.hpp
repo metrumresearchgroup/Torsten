@@ -6,7 +6,7 @@
 struct PredSS_err {
   const char* function_;
 
-  PredSS_err(const char* function)
+  explicit PredSS_err(const char* function)
     : function_(function) { }
 
   /**
@@ -30,8 +30,8 @@ struct PredSS_err {
               const T_ii& ii,
               const int& cmt) const {
     stan::math::invalid_argument(function_,
-      "This function does not handle the Steady State case!", 
-      "", "","");
+      "This function does not handle the Steady State case!",
+      "", "", "");
 
     // return dummy matrix to suppress warning.
     typedef typename boost::math::tools::promote_args<T_ii,

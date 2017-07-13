@@ -7,7 +7,6 @@
 #include <limits>
 
 struct PredSS_twoCpt {
-
   PredSS_twoCpt() { }
 
   /**
@@ -74,8 +73,10 @@ struct PredSS_twoCpt {
     if (rate == 0) {  // bolus dose
       if (cmt == 1) {
         pred(0, 0) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 3);
-        a[0] = ka * (k21 - alpha[0]) / ((ka - alpha[0]) * (alpha[1] - alpha[0]));
-        a[1] = ka * (k21 - alpha[1]) / ((ka - alpha[1]) * (alpha[0] - alpha[1]));
+        a[0] = ka * (k21 - alpha[0]) / ((ka - alpha[0])
+                                          * (alpha[1] - alpha[0]));
+        a[1] = ka * (k21 - alpha[1]) / ((ka - alpha[1])
+                                          * (alpha[0] - alpha[1]));
         a[2] = -(a[0] + a[1]);
         pred(0, 1) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 3);
         a[0] = ka * k12 / ((ka - alpha[0]) * (alpha[1] - alpha[0]));
@@ -105,8 +106,10 @@ struct PredSS_twoCpt {
       if (cmt == 1) {
         a[2] = 1;
         pred(0, 0) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 3);
-        a[0] = ka * (k21 - alpha[0]) / ((ka - alpha[0]) * (alpha[1] - alpha[0]));
-        a[1] = ka * (k21 - alpha[1]) / ((ka - alpha[1]) * (alpha[0] - alpha[1]));
+        a[0] = ka * (k21 - alpha[0]) / ((ka - alpha[0])
+                                          * (alpha[1] - alpha[0]));
+        a[1] = ka * (k21 - alpha[1]) / ((ka - alpha[1])
+                                          * (alpha[0] - alpha[1]));
         a[2] = - (a[0] + a[1]);
         pred(0, 1) = PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha, 3);
         a[0] = ka * k12 / ((ka - alpha[0]) * (alpha[1] - alpha[0]));
@@ -132,8 +135,10 @@ struct PredSS_twoCpt {
       if (cmt == 1) {
         a[2] = 1;
         pred(0, 0) = PolyExp(0, 0, rate, inf, 0, true, a, alpha, 3);
-        a[0] = ka * (k21 - alpha[0]) / ((ka - alpha[0]) * (alpha[1] - alpha[0]));
-        a[1] = ka * (k21 - alpha[1]) / ((ka - alpha[1]) * (alpha[0] - alpha[1]));
+        a[0] = ka * (k21 - alpha[0]) / ((ka - alpha[0])
+                                          * (alpha[1] - alpha[0]));
+        a[1] = ka * (k21 - alpha[1]) / ((ka - alpha[1])
+                                          * (alpha[0] - alpha[1]));
         a[2] = -(a[0] + a[1]);
         pred(0, 1) = PolyExp(0, 0, rate, inf, 0, true, a, alpha, 3);
         a[0] = ka * k12 / ((ka - alpha[0]) * (alpha[1] - alpha[0]));

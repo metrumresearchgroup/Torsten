@@ -9,7 +9,6 @@
 #include <vector>
 
 struct Pred1_linOde {
-
   Pred1_linOde() { }
 
   /**

@@ -6,7 +6,6 @@
 #include <vector>
 
 struct Pred1_twoCpt {
-
   Pred1_twoCpt() { }
 
   /**

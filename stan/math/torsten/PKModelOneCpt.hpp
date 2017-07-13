@@ -102,7 +102,7 @@ PKModelOneCpt(const std::vector<T0>& time,
     dummy_systems(1, dummy_system);
 
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-              pMatrix, biovar, tlag, 
+              pMatrix, biovar, tlag,
               nCmt, dummy_systems,
               Pred1_oneCpt(), PredSS_oneCpt());
 }

@@ -6,6 +6,7 @@
 #include <stan/math/torsten/PKModel/integrator.hpp>
 #include <iostream>
 #include <vector>
+#include<string>
 
 template <typename F>
 struct Pred1_mix2 {
@@ -15,9 +16,9 @@ struct Pred1_mix2 {
   Pred1_mix2(const F& f,
              const double& rel_tol,
              const double& abs_tol,
-             const long int& max_num_steps,
+             const long int& max_num_steps,  // NOLINT
              std::ostream* msgs,
-             const std::string& integratorType) 
+             const std::string& integratorType)
     : f_(f),
       integrator_(rel_tol, abs_tol, max_num_steps, msgs, integratorType) { }
 
@@ -220,7 +221,6 @@ struct Pred1_mix2 {
     }
     return pred;
   }
-
 };
 
 #endif

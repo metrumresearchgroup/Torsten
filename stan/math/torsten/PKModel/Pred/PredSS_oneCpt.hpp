@@ -8,7 +8,6 @@
 #include <limits>
 
 struct PredSS_oneCpt {
-
   PredSS_oneCpt() { }
 
   /**
@@ -46,7 +45,7 @@ struct PredSS_oneCpt {
              const T_ii& ii,
              const int& cmt) const {
     typedef typename boost::math::tools::promote_args<T_amt, T_rate,
-                                                      T_ii, T_parameters>::type scalar;
+      T_ii, T_parameters>::type scalar;
 
     double inf = std::numeric_limits<double>::max();  // "infinity"
 

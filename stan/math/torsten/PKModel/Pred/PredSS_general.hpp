@@ -11,6 +11,7 @@
 #include <stan/math/prim/mat/fun/to_array_1d.hpp>
 #include <vector>
 #include <iostream>
+#include <string>
 
 template <typename F>
 struct PredSS_general {
@@ -21,10 +22,10 @@ struct PredSS_general {
   PredSS_general(const F& f,
                  const double& rel_tol,
                  const double& abs_tol,
-                 const long int& max_num_steps,
+                 const long int& max_num_steps,  // NOLINT
                  std::ostream* msgs,
                  const std::string& integratorType,
-                 const int& nCmt) 
+                 const int& nCmt)
     : f_(f),
       integrator_(rel_tol, abs_tol, max_num_steps, msgs, integratorType),
       nCmt_(nCmt) { }
@@ -120,7 +121,8 @@ struct PredSS_general {
       pred = algebra_solver(system, y,
                             to_vector(parameter.get_RealParameters()),
                             x_r, x_i,
-                            0, rel_tol, 1e-3, max_num_steps);  // should use ftol
+                            0, rel_tol, 1e-3, max_num_steps);  // FIX ME
+                                                               // use ftol
     } else {  // constant infusion
       x_r[cmt - 1] = rate;
       y = Pred1(100.0, unpromote(parameter), init_dbl, x_r);
@@ -206,7 +208,7 @@ struct PredSS_general {
       y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r);
 
       pred = algebra_solver(system, y, parms, x_r, x_i,
-                            0, rel_tol, 1e-3, max_num_steps);  // should use ftol
+                            0, rel_tol, 1e-3, max_num_steps);  // use ftol
     } else {  // constant infusion
       x_r[cmt - 1] = rate;
       y = Pred1(100.0, unpromote(parameter), init_dbl, x_r);
@@ -217,7 +219,6 @@ struct PredSS_general {
 
     return pred;
   }
-
 };
 
 #endif
