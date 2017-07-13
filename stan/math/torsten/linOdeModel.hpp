@@ -4,7 +4,6 @@
 #include <Eigen/Dense>
 #include <boost/math/tools/promotion.hpp>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
-#include <stan/math/torsten/PKModel/functors/dummy_ode.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_linOde.hpp>
 #include <stan/math/torsten/PKModel/Pred/PredSS_linOde.hpp>
 #include <stan/math/prim/mat/err/check_square.hpp>
@@ -76,8 +75,7 @@ linOdeModel(const std::vector<T0>& time,
                 pMatrix_dummy, biovar, tlag, function);
 
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-              pMatrix_dummy, biovar, tlag, nCmt,
-              dummy_ode(), system,
+              pMatrix_dummy, biovar, tlag, nCmt, system,
               Pred1_linOde(), PredSS_linOde());
 }
 

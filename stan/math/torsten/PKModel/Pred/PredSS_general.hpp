@@ -4,7 +4,7 @@
 #include <stan/math/torsten/PKModel/integrator.hpp>
 #include <stan/math/torsten/PKModel/functors/functor.hpp>
 #include <stan/math/torsten/PKModel/functors/SS_system.hpp>
-#include <stan/math/torsten/PKModel/Pred/pred1_general.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_general.hpp>
 #include <stan/math/rev/mat/functor/algebra_solver.hpp>
 #include <stan/math/rev/mat/functor/algebra_system.hpp>
 #include <stan/math/prim/mat/fun/to_vector.hpp>
@@ -12,17 +12,21 @@
 #include <vector>
 #include <iostream>
 
+template <typename F>
 struct PredSS_general {
+  F f_;
   integrator_structure integrator_;
   int nCmt_;
 
-  PredSS_general(const double& rel_tol,
+  PredSS_general(const F& f,
+                 const double& rel_tol,
                  const double& abs_tol,
                  const long int& max_num_steps,
                  std::ostream* msgs,
                  const std::string& integratorType,
                  const int& nCmt) 
-    : integrator_(rel_tol, abs_tol, max_num_steps, msgs, integratorType),
+    : f_(f),
+      integrator_(rel_tol, abs_tol, max_num_steps, msgs, integratorType),
       nCmt_(nCmt) { }
 
   /**
@@ -54,8 +58,7 @@ struct PredSS_general {
            typename T_ii,
            typename T_parameters,
            typename T_biovar,
-           typename T_tlag,
-           typename F>
+           typename T_tlag>
   Eigen::Matrix<typename boost::math::tools::promote_args<T_ii,
     T_parameters>::type, Eigen::Dynamic, 1>
   operator() (const ModelParameters<T_time,
@@ -65,8 +68,7 @@ struct PredSS_general {
               const double& amt,
               const double& rate,
               const T_ii& ii,
-              const int& cmt,
-              const F& f) const {
+              const int& cmt) const {
     using Eigen::Matrix;
     using Eigen::Dynamic;
     using Eigen::VectorXd;
@@ -94,15 +96,15 @@ struct PredSS_general {
 
     // construct algebraic function
     SS_system_dd<ode_rate_dbl_functor<F> >
-      system(ode_rate_dbl_functor<F>(f), ii_dbl, cmt, integrator_);
+      system(ode_rate_dbl_functor<F>(f_), ii_dbl, cmt, integrator_);
 
     // Construct Pred1_general functor
-    Pred1_general Pred1(integrator_);
+    Pred1_general<F> Pred1(f_, integrator_);
 
     if (rate == 0) {  // bolus dose
       // compute initial guess
       init_dbl(cmt - 1) = amt;
-      y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r, f);
+      y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r);
       x_r.push_back(amt);
       pred = algebra_solver(system, y,
                             to_vector(parameter.get_RealParameters()),
@@ -113,7 +115,7 @@ struct PredSS_general {
     }  else if (ii > 0) {  // multiple truncated infusions
       x_r[cmt - 1] = rate;
       // compute initial guess
-      y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r, f);
+      y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r);
       x_r.push_back(amt);
       pred = algebra_solver(system, y,
                             to_vector(parameter.get_RealParameters()),
@@ -121,7 +123,7 @@ struct PredSS_general {
                             0, rel_tol, 1e-3, max_num_steps);  // should use ftol
     } else {  // constant infusion
       x_r[cmt - 1] = rate;
-      y = Pred1(100.0, unpromote(parameter), init_dbl, x_r, f);
+      y = Pred1(100.0, unpromote(parameter), init_dbl, x_r);
 
       x_r.push_back(amt);
       pred = algebra_solver(system, y,
@@ -141,8 +143,7 @@ struct PredSS_general {
            typename T_ii,
            typename T_parameters,
            typename T_biovar,
-           typename T_tlag,
-           typename F>
+           typename T_tlag>
   Eigen::Matrix<typename boost::math::tools::promote_args<T_ii, T_parameters,
     T_amt>::type, Eigen::Dynamic, 1>
   operator() (const ModelParameters<T_time,
@@ -152,8 +153,7 @@ struct PredSS_general {
               const T_amt& amt,
               const double& rate,
               const T_ii& ii,
-              const int& cmt,
-              const F& f) const {
+              const int& cmt) const {
     using Eigen::Matrix;
     using Eigen::Dynamic;
     using Eigen::VectorXd;
@@ -177,15 +177,15 @@ struct PredSS_general {
     // Arguments for algebraic solver
     Matrix<double, 1, Dynamic> y;
     double rel_tol = 1e-10;  // default
-    double f_tol = 5e-4;  // empirical
+    double f_tol = 1e-4;  // empirical
     long int max_num_steps = 1e4;  // default  // NOLINT
 
     // construct algebraic function
     SS_system_vd<ode_rate_dbl_functor<F> >
-      system(ode_rate_dbl_functor<F>(f), ii_dbl, cmt, integrator_);
+      system(ode_rate_dbl_functor<F>(f_), ii_dbl, cmt, integrator_);
 
     // Construct Pred1_general functor
-    Pred1_general Pred1(integrator_);
+    Pred1_general<F> Pred1(f_, integrator_);
 
     int nParameters = parameter.get_RealParameters().size();
     Matrix<scalar, Dynamic, 1> parms(nParameters + 1);
@@ -196,20 +196,20 @@ struct PredSS_general {
     if (rate == 0) {  // bolus dose
       // compute initial guess
       init_dbl(cmt - 1) = unpromote(amt);
-      y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r, f);
+      y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r);
 
       pred = algebra_solver(system, y, parms, x_r, x_i,
                             0, rel_tol, f_tol, max_num_steps);
     }  else if (ii > 0) {  // multiple truncated infusions
       // compute initial guess
       x_r[cmt - 1] = rate;
-      y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r, f);
+      y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r);
 
       pred = algebra_solver(system, y, parms, x_r, x_i,
                             0, rel_tol, 1e-3, max_num_steps);  // should use ftol
     } else {  // constant infusion
       x_r[cmt - 1] = rate;
-      y = Pred1(100.0, unpromote(parameter), init_dbl, x_r, f);
+      y = Pred1(100.0, unpromote(parameter), init_dbl, x_r);
 
       pred = algebra_solver(system, y, parms, x_r, x_i,
                             0, rel_tol, f_tol, max_num_steps);

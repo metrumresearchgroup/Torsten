@@ -4,7 +4,6 @@
 #include <Eigen/Dense>
 #include <boost/math/tools/promotion.hpp>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
-#include <stan/math/torsten/PKModel/functors/dummy_ode.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_oneCpt.hpp>
 #include <stan/math/torsten/PKModel/Pred/PredSS_oneCpt.hpp>
 #include <string>
@@ -104,8 +103,7 @@ PKModelOneCpt(const std::vector<T0>& time,
 
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
               pMatrix, biovar, tlag, 
-              nCmt,
-              dummy_ode(), dummy_systems,
+              nCmt, dummy_systems,
               Pred1_oneCpt(), PredSS_oneCpt());
 }
 

@@ -8,18 +8,23 @@
 #include <iostream>
 #include <vector>
 
+template <typename F>
 struct Pred1_general {
+  F f_;
   integrator_structure integrator_;
 
-  Pred1_general(const double& rel_tol,
+  Pred1_general(const F& f,
+                const double& rel_tol,
                 const double& abs_tol,
                 const long int& max_num_steps,
                 std::ostream* msgs,
                 const std::string& integratorType) 
-    : integrator_(rel_tol, abs_tol, max_num_steps, msgs, integratorType) { }
+    : f_(f), 
+      integrator_(rel_tol, abs_tol, max_num_steps, msgs, integratorType) { }
 
-  Pred1_general(const integrator_structure& integrator)
-    : integrator_(integrator) { }
+  Pred1_general(const F& f,
+                const integrator_structure& integrator)
+    : f_(f), integrator_(integrator) { }
 
   /**
    *	General compartment model using the built-in ODE solver.
@@ -40,7 +45,6 @@ struct Pred1_general {
    *   @tparam T_biovar type of scalar of biovar in ModelParameters.
    *   @tparam T_tlag type of scalar of lag times in ModelParameters.
    *   @tparam T_init type of scalar for the initial state
-   *	 @tparam F type of ODE system function
    *	 @param[in] dt time between current and previous event
    *	 @param[in] parameter model parameters at current event
    *	 @param[in] init amount in each compartment at previous event
@@ -54,16 +58,14 @@ struct Pred1_general {
            typename T_parameters,
            typename T_biovar,
            typename T_tlag,
-           typename T_init,
-           typename F>
+           typename T_init>
   Eigen::Matrix<typename boost::math::tools::promote_args<T_time, T_init,
     T_parameters>::type, Eigen::Dynamic, 1>
   operator() (const T_time& dt,
               const ModelParameters<T_time, T_parameters, T_biovar,
                                     T_tlag>& parameter,
               const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& init,
-              const std::vector<double>& rate,
-              const F& f) const {
+              const std::vector<double>& rate) const {
     using stan::math::to_array_1d;
     using std::vector;
     using boost::math::tools::promote_args;
@@ -88,7 +90,7 @@ struct Pred1_general {
     } else {
       vector<int> idummy;
       vector<vector<scalar> >
-        pred_V = integrator_(ode_rate_dbl_functor<F>(f),
+        pred_V = integrator_(ode_rate_dbl_functor<F>(f_),
                              init_vector, InitTime_d,
                              EventTime_d, theta, rate,
                              idummy);
@@ -111,16 +113,14 @@ struct Pred1_general {
            typename T_biovar,
            typename T_tlag,
            typename T_init,
-           typename T_rate,
-           typename F>
+           typename T_rate>
   Eigen::Matrix<typename boost::math::tools::promote_args<T_time, T_init,
     T_parameters, T_rate>::type, Eigen::Dynamic, 1>
   operator() (const T_time& dt,
               const ModelParameters<T_time, T_parameters, T_biovar,
                                     T_tlag>& parameter,
               const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& init,
-              const std::vector<T_rate>& rate,
-              const F& f) const {
+              const std::vector<T_rate>& rate) const {
     using stan::math::to_array_1d;
     using std::vector;
     using boost::math::tools::promote_args;
@@ -155,7 +155,7 @@ struct Pred1_general {
     } else {
       vector<int> idummy;
       vector<vector<scalar> >
-        pred_V = integrator_(ode_rate_var_functor<F>(f),
+        pred_V = integrator_(ode_rate_var_functor<F>(f_),
                              init_vector, InitTime_d,
                              EventTime_d, theta, x_r,
                              idummy);

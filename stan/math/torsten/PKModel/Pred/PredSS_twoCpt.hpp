@@ -35,8 +35,7 @@ struct PredSS_twoCpt {
    *           at the current event.
    */
   template<typename T_time, typename T_amt, typename T_rate, typename T_ii,
-           typename T_parameters, typename T_biovar, typename T_tlag,
-           typename F>
+           typename T_parameters, typename T_biovar, typename T_tlag>
   Eigen::Matrix<typename boost::math::tools::promote_args<T_amt, T_rate,
     T_ii, T_parameters>::type, 1, Eigen::Dynamic>
   operator() (const ModelParameters<T_time, T_parameters, T_biovar,
@@ -44,8 +43,7 @@ struct PredSS_twoCpt {
               const T_amt& amt,
               const T_rate& rate,
               const T_ii& ii,
-              const int& cmt,
-              const F& dummy_ode) const {
+              const int& cmt) const {
     using std::vector;
     using Eigen::Matrix;
     using Eigen::Dynamic;

@@ -72,9 +72,9 @@ generalOdeModel_bdf(const F& f,
                     const std::vector<std::vector<T5> >& biovar,
                     const std::vector<std::vector<T6> >& tlag,
                     std::ostream* msgs = 0,
-                    double rel_tol = 1e-6,
-                    double abs_tol = 1e-6,
-                    long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
+                    double rel_tol = 1e-10,
+                    double abs_tol = 1e-10,
+                    long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
@@ -84,18 +84,39 @@ generalOdeModel_bdf(const F& f,
   static const char* function("generalOdeModel_bdf");
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
                 pMatrix, biovar, tlag, function);
-
+  
   // Construct dummy matrix for last argument of pred
   Matrix<T4, Dynamic, Dynamic> dummy_system;
   vector<Matrix<T4, Dynamic, Dynamic> >
     dummy_systems(1, dummy_system);
-
+  
+  typedef general_functor<F> F0;
+  
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-              pMatrix, biovar, tlag, nCmt,
-              general_functor<F>(f), dummy_systems,
-              Pred1_general(rel_tol, abs_tol, max_num_steps, msgs, "rk45"),
-              PredSS_general(rel_tol, abs_tol, max_num_steps, msgs, "rk45",
-                             nCmt));
+              pMatrix, biovar, tlag, nCmt, dummy_systems,
+              Pred1_general<F0>(F0(f), rel_tol, abs_tol,
+                                max_num_steps, msgs, "bdf"),
+                                PredSS_general<F0>(F0(f), rel_tol, abs_tol,
+                                                   max_num_steps, msgs, "bdf", nCmt));
+  
+  // // check arguments
+  // static const char* function("generalOdeModel_bdf");
+  // pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
+  //               pMatrix, biovar, tlag, function);
+  // 
+  // // Construct dummy matrix for last argument of pred
+  // Matrix<T4, Dynamic, Dynamic> dummy_system;
+  // vector<Matrix<T4, Dynamic, Dynamic> >
+  //   dummy_systems(1, dummy_system);
+  // 
+  // typedef general_functor<F> F0;
+  // 
+  // return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
+  //             pMatrix, biovar, tlag, nCmt, dummy_systems,
+  //             Pred1_general<F0>(F0(f), rel_tol, abs_tol,
+  //                               max_num_steps, msgs, "rk45"),
+  //             PredSS_general<F0>(F0(f), rel_tol, abs_tol,
+  //                                max_num_steps, msgs, "bdf", nCmt));
 }
 
 /**

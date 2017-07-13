@@ -58,8 +58,7 @@ public:
     RateHistory<T_time, T_rate>&);
 
   template <typename T_0, typename T_1, typename T_2, typename T_3,
-    typename T_4, typename T_5, typename T_6, typename F, typename F_1,
-    typename F_SS>
+    typename T_4, typename T_5, typename T_6, typename F_1, typename F_2>
   friend
   Eigen::Matrix<typename boost::math::tools::promote_args<T_0, T_1, T_2, T_3,
     typename boost::math::tools::promote_args<T_4, T_5, T_6>::type
@@ -76,11 +75,10 @@ public:
        const std::vector<std::vector<T_5> >& biovar,
        const std::vector<std::vector<T_6> >& tlag,
        const int& nCmt,
-       const F& f,
        const std::vector<Eigen::Matrix<T_4, Eigen::Dynamic, Eigen::Dynamic> >&
          system,
        const F_1& f1,
-       const F_SS& fss);
+       const F_2& fss);
 };
 
 /**

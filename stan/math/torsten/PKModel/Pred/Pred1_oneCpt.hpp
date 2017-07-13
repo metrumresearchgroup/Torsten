@@ -32,16 +32,14 @@ struct Pred1_oneCpt {
    *           at the current event.
    */
   template<typename T_time, typename T_rate, typename T_parameters,
-           typename T_biovar, typename T_tlag, typename T_init,
-           typename F>
+           typename T_biovar, typename T_tlag, typename T_init>
   Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
     T_rate, T_parameters>::type, Eigen::Dynamic, 1>
   operator()(const T_time& dt,
              const ModelParameters<T_time, T_parameters, T_biovar,
                                   T_tlag>& parameter,
              const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& init,
-             const std::vector<T_rate>& rate,
-             const F& dummy_ode) const {
+             const std::vector<T_rate>& rate) const {
     stan::math::check_finite("Pred1", "initial values", init);
 
     using std::vector;

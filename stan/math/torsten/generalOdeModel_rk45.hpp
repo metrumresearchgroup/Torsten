@@ -80,11 +80,6 @@ generalOdeModel_rk45(const F& f,
   using Eigen::Matrix;
   using boost::math::tools::promote_args;
 
-  // Define class of model
-  pmxModel model(pMatrix[0].size(), nCmt,
-                 "generalOdeModel", "generalOdeModel", "rk45",
-                 msgs, rel_tol, abs_tol, max_num_steps);
-
   // check arguments
   static const char* function("generalOdeModel_rk45");
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
@@ -95,12 +90,14 @@ generalOdeModel_rk45(const F& f,
   vector<Matrix<T4, Dynamic, Dynamic> >
     dummy_systems(1, dummy_system);
 
+  typedef general_functor<F> F0;
+
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-              pMatrix, biovar, tlag, nCmt,
-              general_functor<F>(f), dummy_systems,
-              Pred1_general(rel_tol, abs_tol, max_num_steps, msgs, "rk45"),
-              PredSS_general(rel_tol, abs_tol, max_num_steps, msgs, "rk45",
-                             nCmt));
+              pMatrix, biovar, tlag, nCmt, dummy_systems,
+              Pred1_general<F0>(F0(f), rel_tol, abs_tol,
+                            max_num_steps, msgs, "rk45"),
+              PredSS_general<F0>(F0(f), rel_tol, abs_tol,
+                             max_num_steps, msgs, "rk45", nCmt));
 }
 
 /**
