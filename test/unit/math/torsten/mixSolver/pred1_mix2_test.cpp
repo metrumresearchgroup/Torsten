@@ -75,9 +75,10 @@ TEST(Torsten, pred1_mix) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
 
-  Pred1_mix2 Pred1(rel_tol, abs_tol, max_num_steps, 0, "rk45");
-  Matrix<double, 1, Dynamic> pred = Pred1(dt, parms, init, rate,
-                                    mix2_functor<ODE_functor>(ODE_functor()));
+  typedef mix2_functor<ODE_functor> F0;
+  Pred1_mix2<F0> Pred1(F0(ODE_functor()), rel_tol, abs_tol, max_num_steps, 0,
+                       "rk45");
+  Matrix<double, 1, Dynamic> pred = Pred1(dt, parms, init, rate);
 
   // Compare to results obtained with mrgsolve
   Eigen::VectorXd mrgResults(6);
