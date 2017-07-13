@@ -94,10 +94,12 @@ mixOde2CptModel_rk45(const F& f,
   vector<Matrix<T4, Dynamic, Dynamic> >
     dummy_systems(1, dummy_system);
 
+  typedef mix2_functor<F> F0;
+  
  return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-             theta, biovar, tlag, nPK + nOde,
-             mix2_functor<F>(f), dummy_systems,
-             Pred1_mix2(rel_tol, abs_tol, max_num_steps, msgs, "rk45"),
+             theta, biovar, tlag, nPK + nOde, dummy_systems,
+             Pred1_mix2<F0>(F0(f), rel_tol, abs_tol, max_num_steps, msgs,
+                            "rk45"),
              PredSS_err(function));
 }
 

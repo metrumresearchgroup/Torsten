@@ -7,18 +7,24 @@
 #include <iostream>
 #include <vector>
 
+template <typename F>
 struct Pred1_mix2 {
+  F f_;
   integrator_structure integrator_;
-  
-  Pred1_mix2(const double& rel_tol,
+
+  Pred1_mix2(const F& f,
+             const double& rel_tol,
              const double& abs_tol,
              const long int& max_num_steps,
              std::ostream* msgs,
              const std::string& integratorType) 
-    : integrator_(rel_tol, abs_tol, max_num_steps, msgs, integratorType) { }
-  
-  Pred1_mix2(const integrator_structure& integrator)
-    : integrator_(integrator) { }
+    : f_(f),
+      integrator_(rel_tol, abs_tol, max_num_steps, msgs, integratorType) { }
+
+  Pred1_mix2(const F& f,
+             const integrator_structure& integrator)
+    : f_(f),
+      integrator_(integrator) { }
 
   /**
    *	ODE model with base 1 compartment PK. Use mix solver.
@@ -48,16 +54,14 @@ struct Pred1_mix2 {
            typename T_parameters,
            typename T_biovar,
            typename T_tlag,
-           typename T_init,
-           typename F>
+           typename T_init>
   Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
     T_parameters, T_init>::type, 1, Eigen::Dynamic>
   operator() (const T_time& dt,
               const ModelParameters<T_time, T_parameters, T_biovar,
                                     T_tlag>& parameter,
               const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& init,
-              const std::vector<double>& rate,
-              const F& f) const {
+              const std::vector<double>& rate) const {
     using std::vector;
     using stan::math::to_array_1d;
     using boost::math::tools::promote_args;
@@ -111,7 +115,7 @@ struct Pred1_mix2 {
       vector<int> idummy;
 
       vector<vector<scalar> >
-        pred_V = integrator_(ode_rate_dbl_functor<F>(f),
+        pred_V = integrator_(ode_rate_dbl_functor<F>(f_),
                              y0_PD, t0_dbl, t_dbl,
                              theta, x_r, idummy);
       size_t nOde = pred_V[0].size();
@@ -139,16 +143,14 @@ struct Pred1_mix2 {
            typename T_biovar,
            typename T_tlag,
            typename T_init,
-           typename T_rate,
-           typename F>
+           typename T_rate>
   Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
     T_rate, T_parameters, T_init>::type, 1, Eigen::Dynamic>
   operator() (const T_time& dt,
               const ModelParameters<T_time, T_parameters, T_biovar,
                                     T_tlag>& parameter,
               const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& init,
-              const std::vector<T_rate>& rate,
-              const F& f) const {
+              const std::vector<T_rate>& rate) const {
     using std::vector;
     using stan::math::to_array_1d;
     using boost::math::tools::promote_args;
@@ -207,7 +209,7 @@ struct Pred1_mix2 {
       x_r[1] = t0_dbl;
 
       vector<vector<scalar> >
-        pred_V = integrator_(ode_rate_var_functor<F>(f),
+        pred_V = integrator_(ode_rate_var_functor<F>(f_),
                              y0_PD, t0_dbl, t_dbl,
                              theta, x_r, idummy);
       size_t nOde = pred_V[0].size();

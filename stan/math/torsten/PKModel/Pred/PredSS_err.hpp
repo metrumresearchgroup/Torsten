@@ -18,8 +18,7 @@ struct PredSS_err {
            typename T_biovar,
            typename T_tlag,
            typename T_amt,
-           typename T_rate,
-           typename F>
+           typename T_rate>
   Eigen::Matrix<typename boost::math::tools::promote_args<T_ii,
     T_parameters>::type, Eigen::Dynamic, 1>
   operator() (const ModelParameters<T_time,
@@ -29,8 +28,7 @@ struct PredSS_err {
               const T_amt& amt,
               const T_rate& rate,
               const T_ii& ii,
-              const int& cmt,
-              const F& f) const {
+              const int& cmt) const {
     stan::math::invalid_argument(function_,
       "This function does not handle the Steady State case!", 
       "", "","");
