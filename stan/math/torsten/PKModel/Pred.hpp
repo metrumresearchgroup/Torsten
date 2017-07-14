@@ -39,7 +39,7 @@
  *                    (2) other
  *                    (3) reset
  *                    (4) reset AND dosing
- * @param[in] cmt compartment number at each event
+ * @param[in] cmt compartment number at each event (starts at 1)
  * @param[in] addl additional dosing at each event
  * @param[in] ss steady state approximation at each event
  * (0: no, 1: yes)

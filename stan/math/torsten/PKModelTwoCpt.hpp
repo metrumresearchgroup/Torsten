@@ -70,7 +70,6 @@ PKModelTwoCpt(const std::vector<T0>& time,
     check_positive_finite(function, "PK parameter Q", pMatrix[i][1]);
     check_positive_finite(function, "PK parameter V2", pMatrix[i][2]);
     check_positive_finite(function, "PK parameter V3", pMatrix[i][3]);
-    check_positive_finite(function, "PK parameter ka", pMatrix[i][4]);
   }
   std::string message4 = ", but must equal the number of parameters in the model: " // NOLINT
     + boost::lexical_cast<std::string>(nParms) + "!";

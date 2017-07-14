@@ -61,7 +61,6 @@ PKModelOneCpt(const std::vector<T0>& time,
 
   int nCmt = 2;
   int nParm = 3;
-  // pmxModel model(pMatrix[0].size(), nPK, "OneCptModel");
 
   // Check arguments -- FIX ME: handle the new parameter arguments
   static const char* function("PKModelOneCpt");
@@ -70,7 +69,6 @@ PKModelOneCpt(const std::vector<T0>& time,
   for (size_t i = 0; i < pMatrix.size(); i++) {
     check_positive_finite(function, "PK parameter CL", pMatrix[i][0]);
     check_positive_finite(function, "PK parameter V2", pMatrix[i][1]);
-    check_positive_finite(function, "PK parameter ka", pMatrix[i][2]);
   }
 
   // FIX ME - we want to check every array of pMatrix, not

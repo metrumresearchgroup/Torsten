@@ -145,3 +145,70 @@ xdata
 # 9   1 17.5 1.399341e-03 298.6615
 # 10  1 20.0 6.966908e-05 218.5065
 # 11  1 22.5 3.468619e-06 159.8628
+
+## Input 6: multiple doses IV (not absorption from the GUT)
+## (value of ka should not matter)
+e1 <- ev(amt = 1000, cmt = 2, ii = 12, addl = 14)
+mod %>% ev(e1) %>% mrgsim(end = 250) %>% plot
+
+time <- seq(from = 0, to = 2, by = 0.25)
+time <- c(time, 4.0)
+
+xdata <- mod %>% ev(e1) %>% mrgsim(Req = "GUT, CENT",
+                                   end = -1, add = time,
+                                   rescort = 3) %>% as.data.frame
+xdata
+# ID time GUT      CENT
+# 1   1 0.00   0    0.0000
+# 2   1 0.00   0 1000.0000
+# 3   1 0.25   0  969.2332
+# 4   1 0.50   0  939.4131
+# 5   1 0.75   0  910.5104
+# 6   1 1.00   0  882.4969
+# 7   1 1.25   0  855.3453
+# 8   1 1.50   0  829.0291
+# 9   1 1.75   0  803.5226
+# 10  1 2.00   0  778.8008
+# 11  1 4.00   0  606.5307
+
+
+## Case 7: Model with lag times
+## Simulate for One Compartment Model with lag time
+code <- '
+$PARAM CL = 10, V = 80, KA = 1.2, ALG = 0
+$CMT GUT CENT
+$GLOBAL
+#define CP (CENT/V)
+
+$PKMODEL ncmt = 1, depot = TRUE
+
+$MAIN
+_ALAG(1) = ALG;
+
+$SIGMA 0.01  // variance
+$TABLE
+capture DV = CP * exp(EPS(1));
+$CAPTURE CP
+'
+mod <- mread("acum", tempdir(), code)
+e1 <- ev(amt = 1200, addl = 14, ii = 12, ALG = 5)
+mod %>% ev(e1) %>% mrgsim(end = 50) %>% plot # plot data
+
+time <- seq(from = 0, to = 10, by = 1)
+xdata <- mod %>% ev(e1) %>% mrgsim(Req = "GUT, CENT",
+                                   end = -1, add = time,
+                                   rescort = 3) %>% as.data.frame
+xdata
+# ID time        GUT     CENT
+# 1   1    0   0.000000   0.0000
+# 2   1    0   0.000000   0.0000
+# 3   1    1   0.000000   0.0000
+# 4   1    2   0.000000   0.0000
+# 5   1    3   0.000000   0.0000
+# 6   1    4   0.000000   0.0000
+# 7   1    5   0.000000   0.0000
+# 8   1    6 698.805788 479.1337
+# 9   1    7 210.476259 876.2863
+# 10  1    8  63.394231 909.8972
+# 11  1    9  19.093975 844.1177
+# 12  1   10   5.750995 757.3213
