@@ -320,18 +320,18 @@ void test_linearOdeModel_finite_diff_ddv(
   vector<bool> isDosingCmt(nCmt);
   for (size_t i = 0; i < nEvent; i++)
     if (evid[i] == 1 || evid[i] == 4) isDosingCmt[cmt[i] - 1] = true;
-  
+
   vector<double> grads_eff(nEvent * nCmt);
   for (size_t i = 0; i < nEvent; i++)
     for (int j = 0; j < nCmt; j++) {
       grads_eff.clear();
       ode_res(i, j).grad(parameters, grads_eff);
-      
+
       for (size_t k = 0; k < parmRows; k++)
         for (size_t l = 0; l < parmCols; l++) {
           double tlag = parameters[k * parmCols + l].val();
           bool skip = false;
-          
+
           // When tlag is zero, all the gradients w.r.t to tlag go to
           // 0, because of an if (tlag == 0) statement. This causes an
           // error if the lag time is in a dosing comopartment.
