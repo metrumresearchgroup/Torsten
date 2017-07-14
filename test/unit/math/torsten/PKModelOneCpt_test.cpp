@@ -77,7 +77,7 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses_IV) {
 	pMatrix[0].resize(3);
 	pMatrix[0][0] = 10;  // CL
 	pMatrix[0][1] = 80;  // Vc
-	pMatrix[0][2] = 0;  // ka
+	pMatrix[0][2] = -1;  // ka  // just showing it can be negative...
 
 	int nCmt = 2;
   vector<vector<double> > biovar(1);

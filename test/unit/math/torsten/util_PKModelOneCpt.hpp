@@ -306,7 +306,6 @@ void test_PKModelOneCpt_finite_diff_ddv(
 
       for (size_t k = 0; k < parmRows; k++)
         for (size_t l = 0; l < parmCols; l++) {
-
          double tlag = parameters[k * parmCols + l].val();
          bool skip = false;
 

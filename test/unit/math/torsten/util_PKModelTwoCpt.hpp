@@ -150,7 +150,7 @@ void test_PKModelTwoCpt_finite_diff_vdd(
           EXPECT_NEAR(grads_eff[k * parmCols + l],
                       finite_diff_res[k][l](i, j), diff2)
           << "Gradient of PKModelTwoCpt failed with known"
-          << " time, amt, rate, ii, evid, cmt, addl, ss "
+          << " event data, biovar, and tlag, "
           << " and unknown parameters at event " << i
           << ", in compartment " << j
           << ", and parameter index (" << k << ", " << l << ")";
@@ -226,8 +226,8 @@ void test_PKModelTwoCpt_finite_diff_dvd(
           EXPECT_NEAR(grads_eff[k * parmCols + l],
                       finite_diff_res[k][l](i, j), diff2)
           << "Gradient of generalOdeModel failed with known"
-          << " time, amt, rate, ii, evid, cmt, addl, ss "
-          << " and unknown parameters at event " << i
+          << " event data, parameters, and tlag, "
+          << " and unknown biovar at event " << i
           << ", in compartment " << j
           << ", and biovar index (" << k << ", " << l << ")";
         }
@@ -296,29 +296,49 @@ void test_PKModelTwoCpt_finite_diff_ddv(
   int nCmt = 3;
   vector<bool> isDosingCmt(nCmt);
   for (size_t i = 0; i < nEvent; i++)
-    if (evid[i] == 0 || evid[i] == 4) isDosingCmt[cmt[i] - 1] = true;
-    
+    if (evid[i] == 1 || evid[i] == 4) isDosingCmt[cmt[i] - 1] = true;
+
     vector<double> grads_eff(nEvent * nCmt);
     for (size_t i = 1; i < nEvent; i++)
       for (int j = 0; j < nCmt; j++) {
         grads_eff.clear();
         ode_res(i, j).grad(parameters, grads_eff);
-        
+
         for (size_t k = 0; k < parmRows; k++)
           for (size_t l = 0; l < parmCols; l++) {
-            bool discontinuous = false;
-            for (int m = 0; m < nCmt; m++)
-              if (l == (size_t) m && isDosingCmt[m]) discontinuous = true;
-              
-              if (discontinuous == false) {
-                EXPECT_NEAR(grads_eff[k * parmCols + l],
-                            finite_diff_res[k][l](i, j), diff2)
-                << "Gradient of generalOdeModel failed with known"
-                << " time, amt, rate, ii, evid, cmt, addl, ss "
-                << " and unknown parameters at event " << i
-                << ", in compartment " << j
-                << ", and tlag index (" << k << ", " << l << ")";
+            double tlag = parameters[k * parmCols + l].val();
+            bool skip = false;
+
+            // When tlag is zero, all the gradients w.r.t to tlag go to
+            // 0, because of an if (tlag == 0) statement. This causes an
+            // error if the lag time is in a dosing comopartment.
+            if (tlag == 0)
+              if (isDosingCmt[l]) skip = true;
+
+            // When tlag is non-zero, the gradient will not properly
+            // evaluate at an event which coincides with the time of
+            // the dosing (lag time accounted for), in the dosing
+            // compartment. The following IF cascade identifies such
+            // entries.
+            if (tlag != 0)
+              for (size_t m = 0; m < nEvent; m++) {
+                if ((evid[m] == 1 || evid[m] == 4)
+                      && ((cmt[m] - 1) == (int) l)) {
+                  if ((time[m] + tlag) == time[i]) {
+                    skip = true;
+                  }
+                }
               }
+
+            if (skip == false) {
+              EXPECT_NEAR(grads_eff[k * parmCols + l],
+                          finite_diff_res[k][l](i, j), diff2)
+              << "Gradient of generalOdeModel failed with known"
+              << " event data, parameters, and biovar, "
+              << " and unknown lag times at event " << i
+              << ", in compartment " << j
+              << ", and tlag index (" << k << ", " << l << ")";
+            }
           }
           stan::math::set_zero_all_adjoints();
       }

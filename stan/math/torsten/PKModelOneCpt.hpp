@@ -69,7 +69,6 @@ PKModelOneCpt(const std::vector<T0>& time,
   for (size_t i = 0; i < pMatrix.size(); i++) {
     check_positive_finite(function, "PK parameter CL", pMatrix[i][0]);
     check_positive_finite(function, "PK parameter V2", pMatrix[i][1]);
-    // check_positive_finite(function, "PK parameter ka", pMatrix[i][2]);
   }
 
   // FIX ME - we want to check every array of pMatrix, not
