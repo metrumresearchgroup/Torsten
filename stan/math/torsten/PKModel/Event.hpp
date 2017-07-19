@@ -284,9 +284,9 @@ public:
         ipar = std::min(iEvent, pSize - 1);  // ipar is the index of the ith
                                              // event or 0, if the parameters
                                              // are constant.
-        if (Parameters.GetValueTlag(ipar, cmt) != 0) {
+        if (Parameters.GetValueTlag(ipar, cmt - 1) != 0) {
           newEvent = GetEvent(iEvent);
-          newEvent.time += Parameters.GetValueTlag(ipar, cmt);
+          newEvent.time += Parameters.GetValueTlag(ipar, cmt - 1);
           newEvent.keep = false;
           newEvent.isnew = true;
           // newEvent.evid = 2  // CHECK

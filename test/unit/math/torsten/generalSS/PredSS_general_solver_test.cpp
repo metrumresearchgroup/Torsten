@@ -1,5 +1,6 @@
 #include <stan/math/rev/mat.hpp>  // FIX ME - more specific
-#include <stan/math/torsten/PKModel/Pred/PredSS_general_solver.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_oneCpt.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_general.hpp>
 #include <gtest/gtest.h>
 #include <test/unit/util.hpp>
 
@@ -64,14 +65,13 @@ TEST(Torsten, predSS_general_OneCpt_bolus) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
 
-  Matrix<double, 1, Dynamic>
-    pred = PredSS_general_solver(parms, amt, rate, ii, cmt,
-                                 general_functor<OneCpt_functor>(OneCpt_functor()),
-                                 integrator_structure(rel_tol, abs_tol,
-                                                      max_num_steps, 0,
-                                                      "rk45"), nCmt);
+  typedef general_functor<OneCpt_functor> F0;
+  PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
+                            max_num_steps, 0, "rk45", nCmt);
+  Matrix<double, 1, Dynamic> pred = PredSS(parms, amt, rate, ii, cmt);
 
   // Compare to results obtained with analytical solution
+  PredSS_oneCpt PredSS_one;
   Matrix<double, 1, Dynamic>
     pred_an = PredSS_one(parms, amt, rate, ii, cmt);
 
@@ -113,15 +113,14 @@ TEST(Torsten, predSS_general_OneCpt_truncated_infusion) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
 
-  Matrix<double, 1, Dynamic>
-    pred = PredSS_general_solver(parms, amt, rate, ii, cmt,
-                                 general_functor<OneCpt_functor>(OneCpt_functor()),
-                                 integrator_structure(rel_tol, abs_tol,
-                                                      max_num_steps, 0,
-                                                      "rk45"), nCmt);
+  typedef general_functor<OneCpt_functor> F0;
+  PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
+                            max_num_steps, 0, "rk45", nCmt);
+  Matrix<double, 1, Dynamic> pred = PredSS(parms, amt, rate, ii, cmt);
 
   // Compare to results obtained with analytical solution
   // (note: matrix exponential solution agrees with analytical solution).
+  PredSS_oneCpt PredSS_one;
   Matrix<double, 1, Dynamic>
     pred_an = PredSS_one(parms, amt, rate, ii, cmt);
 
@@ -146,7 +145,6 @@ TEST(Torsten, predSS_general_OneCpt_constant_infusion) {
   int nCmt = 2;
   std::vector<double> biovar(nCmt, 0);
   std::vector<double> tlag(nCmt, 0);
-  // Matrix<double, Dynamic, Dynamic> K(0, 0);
   Matrix<double, Dynamic, Dynamic> K(2, 2);
   K << -parameters[2], 0,
        parameters[2], - parameters[0] / parameters[1];
@@ -164,14 +162,13 @@ TEST(Torsten, predSS_general_OneCpt_constant_infusion) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
   
-  Matrix<double, 1, Dynamic>
-    pred = PredSS_general_solver(parms, amt, rate, ii, cmt,
-                                 general_functor<OneCpt_functor>(OneCpt_functor()),
-                                 integrator_structure(rel_tol, abs_tol,
-                                                      max_num_steps, 0,
-                                                      "rk45"), nCmt);
+  typedef general_functor<OneCpt_functor> F0;
+  PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
+                            max_num_steps, 0, "rk45", nCmt);
+  Matrix<double, 1, Dynamic> pred = PredSS(parms, amt, rate, ii, cmt);
   
   // Compare to results obtained with analytical solution
+  PredSS_oneCpt PredSS_one;
   Matrix<double, 1, Dynamic>
     pred_an = PredSS_one(parms, amt, rate, ii, cmt);
   
@@ -213,15 +210,18 @@ TEST(Torsten, predSS_general_exception) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
 
+  typedef general_functor<OneCpt_functor> F0;
+  PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
+                            max_num_steps, 0, "rk45", nCmt);
+  PredSS_oneCpt PredSS_one;
+  PredSS_linOde PredSS_lin;
+
   std::stringstream err_msg;
   err_msg << "Steady State Event: Infusion time (F * amt / rate) is 16"
           << " but must be smaller than the interdose interval (ii): 12!";
   std::string msg = err_msg.str();
 
-  EXPECT_THROW_MSG(PredSS_general_solver(parms, amt, rate, ii, cmt,
-                     general_functor<OneCpt_functor>(OneCpt_functor()),
-                     integrator_structure(rel_tol, abs_tol,
-                     max_num_steps, 0, "rk45"), nCmt),
+  EXPECT_THROW_MSG(PredSS(parms, amt, rate, ii, cmt),
                    std::invalid_argument,
                    msg);
 
@@ -229,7 +229,7 @@ TEST(Torsten, predSS_general_exception) {
                    std::invalid_argument,
                    msg);
 
-  EXPECT_THROW_MSG(PredSS_linOde(parms, amt, rate, ii, cmt),
+  EXPECT_THROW_MSG(PredSS_lin(parms, amt, rate, ii, cmt),
                    std::invalid_argument,
                    msg);
 }
@@ -278,8 +278,7 @@ TEST(Torsten, predSS_general_OneCpt_truncated_infusion_2) {
                                                       max_num_steps, 0,
                                                       "rk45"));
   std::cout << pred << std::endl;
-  
-  
+
   // Compare to results obtained with analytical solution
   // mrgsolve solution: 62.50420 724.7889
   // Neither PredSS_linOde nor PredSS_one are able to run -- the

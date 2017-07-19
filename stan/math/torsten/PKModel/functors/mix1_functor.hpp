@@ -3,6 +3,7 @@
 
 #include <stan/math/rev/core.hpp>
 #include <stan/math/fwd/core.hpp>
+#include <stan/math/torsten/PKModel/Pred/fOneCpt.hpp>
 #include <vector>
 #include <iostream>
 

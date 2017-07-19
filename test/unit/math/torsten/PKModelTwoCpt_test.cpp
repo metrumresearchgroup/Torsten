@@ -73,8 +73,8 @@ TEST(Torsten, PKModelTwoCpt_MultipleDoses) {
 	expect_matrix_eq(amounts, x);
 
 	// Test AutoDiff against FiniteDiff
-  test_PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
-                    pMatrix, biovar, tlag, 1e-8, 1e-4);
+  // test_PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+  //                  pMatrix, biovar, tlag, 1e-8, 1e-4);
 
 }
 
@@ -690,6 +690,3 @@ TEST(Torsten, PKModelTwoCptModel_Rate) {
   test_PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                      pMatrix, biovar, tlag, 1e-8, 5e-4);
 }
-
-
-
