@@ -31,12 +31,13 @@ private:
 
 public:
   ModelParameters() {
+    // FIX ME - this constructor likely does not work
     time_ = 0;
-    std::vector<T_parameters> theta(1, 0);
+    std::vector<T_parameters> theta(0);
     theta_ = theta;
-    std::vector<T_biovar> biovar(1, 0);
+    std::vector<T_biovar> biovar(0);
     biovar_ = biovar;
-    std::vector<T_tlag> tlag(1, 0);
+    std::vector<T_tlag> tlag(0);
     tlag_ = tlag;
     Eigen::Matrix<T_parameters, Eigen::Dynamic, Eigen::Dynamic> K;
     K_ = K;
@@ -55,22 +56,63 @@ public:
                   const std::vector<T_biovar>& biovar,
                   const std::vector<T_tlag>& tlag)
     : time_(time), theta_(theta), biovar_(biovar), tlag_(tlag) {
-    Eigen::Matrix<T_parameters, Eigen::Dynamic, Eigen::Dynamic> dummy_system;
-    K_ = dummy_system;
+  }
+
+  /**
+   * Returns a model parameter object which only contain
+   * the n first parameters. This is useful for the
+   * mixed solver: when we compute the base analytical
+   * solution, we only want to pass the PK parameters
+   * (as oppose to all the PK/PD parameters).
+   */
+  ModelParameters<T_time, T_parameters, T_biovar, T_tlag>
+  truncate (int n) const {
+    std::vector<T_parameters> tr_theta(n);
+    for (int i = 0; i < n; i++) tr_theta[i] = theta_[i];
+    return ModelParameters(time_, tr_theta, biovar_, tlag_, K_);
+  }
+
+  /**
+   * Adds parameters. Useful for the mixed solver, where
+   * we want to augment the parameters with the intial PK
+   * states when calling the numerical integrator.
+   */
+  template <typename T>
+  ModelParameters<T_time, T, T_biovar, T_tlag>
+  augment (const std::vector<T>& thetaAdd) const {
+    std::vector<T> theta(theta_.size());
+    for (size_t i = 0; i < theta.size(); i++) theta[i] = theta_[i];
+    for (size_t i = 0; i < thetaAdd.size(); i++) theta.push_back(thetaAdd[i]);
+    return
+      ModelParameters<T_time, T, T_biovar, T_tlag>
+        (time_, theta, biovar_, tlag_);
+  }
+
+  template <typename T>
+  ModelParameters<T_time, T, T_biovar, T_tlag>
+  augment (const Eigen::Matrix<T, Eigen::Dynamic, 1>& thetaAdd)
+  const {
+    return augment(stan::math::to_array_1d(thetaAdd));  
+  }
+
+  /**
+   * Edit time stored in parameter object.
+   */
+  void time (double time) {
+    time_ = time;
   }
 
   int CountParameters() const {
-    return theta_.size();  // FIX ME - account for parameters in K,
-                           // biovar, and tlag?
+    return theta_.size();
   }
 
-  void Print() {
+  void Print() const {
     std::cout << time_ << " ";
-    for (int i = 0; i < theta_.size(); i++)
+    for (size_t i = 0; i < theta_.size(); i++)
       std::cout << theta_[i] << " ";
-    for (int i = 0; i < biovar_.size(); i++)
+    for (size_t i = 0; i < biovar_.size(); i++)
       std::cout << biovar_[i] << " ";
-    for (int i = 0; i < tlag_.size(); i++)
+    for (size_t i = 0; i < tlag_.size(); i++)
       std::cout << tlag_[i] << " ";
     if (K_.rows() != 0) std::cout << K_;
     std::cout << std::endl;

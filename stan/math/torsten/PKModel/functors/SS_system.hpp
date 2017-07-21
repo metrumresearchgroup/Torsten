@@ -29,7 +29,7 @@ struct SS_system_dd {
                const double& ii,
                int cmt,
                const integrator_structure& integrator)
-   : f_(f), ii_(ii), cmt_(cmt), integrator_(integrator) { }
+    : f_(f), ii_(ii), cmt_(cmt), integrator_(integrator) { }
 
   /**
    *  dd regime.
@@ -47,30 +47,37 @@ struct SS_system_dd {
              std::ostream* msgs) const {
     using stan::math::to_array_1d;
     using stan::math::to_vector;
-    using std::vector;
     using stan::math::to_vector;
+    using Eigen::Matrix;
+    using Eigen::Dynamic;
+    using std::vector;
 
     typedef typename boost::math::tools::promote_args<T0, T1>::type scalar;
     typedef typename stan::return_type<T0, T1>::type T_deriv;
 
     double t0 = 0;
     vector<double> ts(1);
-    vector<double> rate_v(dat.size() - 1, 0);
-    for (size_t i = 0; i < rate_v.size(); i++) rate_v[i] = dat[i];
+    // vector<double> rate_v = dat;
+    // rate_v.pop_back();
 
     vector<scalar> x0(x.size());
     for (size_t i = 0; i < x0.size(); i++) x0[i] = x(i);
     double amt = dat[dat.size() - 1];
-    double rate = dat[cmt_ - 1];
+    double rate = ((cmt_ - 1) >= 0) ? dat[cmt_ - 1] : 0;
 
-    Eigen::Matrix<scalar, Eigen::Dynamic, 1> result(x.size());
+    // real data, which gets passed to the integrator, shoud not have
+    // amt in it. Important for the mixed solver where the last element
+    // is expected to be the absolute time (in this case, 0).
+    vector<double> dat_ode = dat;
+    dat_ode.pop_back();
+
+    Eigen::Matrix<scalar, Eigen::Dynamic, 1> result(x.size());  
 
     if (rate == 0) {  // bolus dose
-      x0[cmt_ - 1] += amt;
+      if (cmt_ >= 0) x0[cmt_ - 1] += amt;
       ts[0] = ii_;
       vector<scalar> pred = integrator_(f_, x0, t0, ts, to_array_1d(y),
-                                        dat, dat_int)[0];
-
+                                        dat_ode, dat_int)[0];
       for (int i = 0; i < result.size(); i++)
         result(i) = x(i) - pred[i];
 
@@ -83,41 +90,41 @@ struct SS_system_dd {
       vector<scalar> pred;
       ts[0] = delta;  // time at which infusion stops
       x0 = integrator_(f_, to_array_1d(x), t0, ts, to_array_1d(y),
-                       dat, dat_int)[0];
+                       dat_ode, dat_int)[0];
       ts[0] = ii_ - delta;
       vector<double> rate_v(dat.size(), 0);
-      pred = integrator_(f_, x0, t0, ts, to_array_1d(y), rate_v, dat_int)[0];
+      pred = integrator_(f_, x0, t0, ts, to_array_1d(y), dat_ode, dat_int)[0];
 
       // The commented out section of the code corresponds to an implementation
       // of the SS solution for the case where delta > ii_. Might be useful
       // for future releases. Also, still needs to be tested. Still need to
       // figure out what to deal with N, the number of overlapping infusions,
       // which will be a discrete parameters.
-      /*
-        else {
-        int N = trunc(delta / ii_) + 1;  // number of overlapping rates
-        ts[0] = delta - (N - 1) * ii_;  // time at which the oldest infusion dies
-        vector<double> rate_v(dat.size());
-        for (size_t i = 0; i < rate_v.size(); i++)
-          rate_v[i] = N * dat[i];  // compute superposition of rates
+      //   else {
+      //   int N = trunc(delta / ii_) + 1;  // number of overlapping rates
+      //   ts[0] = delta - (N - 1) * ii_;  // time at which the oldest infusion dies
+      //   vector<double> rate_v(dat.size());
+      //   for (size_t i = 0; i < rate_v.size(); i++)
+      //     rate_v[i] = N * dat[i];  // compute superposition of rates
+      // 
+      //   x0 = integrator_(f_, to_array_1d(x), t0, ts, to_array_1d(y),
+      //                    rate_v, dat_int)[0];
+      // 
+      //   ts[0] = ii_ - ts[0];
+      //   for (size_t i = 0; i < rate_v.size(); i++)
+      //     rate_v[i] = (N - 1) * dat[i];
+      // 
+      //   pred = integrator_(f_, to_array_1d(x), t0, ts,
+      //                      to_array_1d(y), rate_v, dat_int)[0];
+      // 
+      // }
 
-        x0 = integrator_(f_, to_array_1d(x), t0, ts, to_array_1d(y),
-                         rate_v, dat_int)[0];
-
-        ts[0] = ii_ - ts[0];
-        for (size_t i = 0; i < rate_v.size(); i++)
-          rate_v[i] = (N - 1) * dat[i];
-
-        pred = integrator_(f_, to_array_1d(x), t0, ts,
-                           to_array_1d(y), rate_v, dat_int)[0];
-
-      } */
       for (int i = 0; i < result.size(); i++)
         result(i) = x(i) - pred[i];
 
     } else {  // constant infusion
       vector<T_deriv> derivative = f_(0, to_array_1d(x), to_array_1d(y),
-                                      rate_v, dat_int, 0);
+                                      dat_ode, dat_int, 0);
       result = to_vector(derivative);
     }
 
@@ -181,14 +188,14 @@ struct SS_system_vd {
     vector<scalar> x0(x.size());
     for (size_t i = 0; i < x0.size(); i++) x0[i] = x(i);
     scalar amt = y(y.size() - 1);
-    double rate = dat[cmt_ - 1];
+    double rate = ((cmt_ - 1) >= 0) ? dat[cmt_ - 1] : 0;
 
     Eigen::Matrix<scalar, Eigen::Dynamic, 1> result(x.size());
     std::vector<scalar> parms(y.size() - 1);
     for (size_t i = 0; i < parms.size(); i++) parms[i] = y(i);
 
     if (rate == 0) {  // bolus dose
-      x0[cmt_ - 1] += amt;
+      if (cmt_ >= 0) x0[cmt_ - 1] += amt;
       ts[0] = ii_;
       vector<scalar> pred = integrator_(f_, x0, t0, ts, parms,
                                         dat, dat_int)[0];

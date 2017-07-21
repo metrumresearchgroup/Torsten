@@ -38,7 +38,7 @@ struct PredSS_general {
    * constant input (if ii = 0). The function is overloaded
    * to address the cases where amt or rate may be fixed or
    * random variables (yielding a total of 4 cases).
-   * 
+   *
    * Case 1 (dd): amt and rate are fixed.
    *
    *	 @tparam T_time type of scalar for time
@@ -138,8 +138,8 @@ struct PredSS_general {
   }
 
   /**
-  * Case 2 (vd): amt is random, rate is fixed.
-  */
+   * Case 2 (vd): amt is random, rate is fixed.
+   */
   template<typename T_time,
            typename T_amt,
            typename T_ii,

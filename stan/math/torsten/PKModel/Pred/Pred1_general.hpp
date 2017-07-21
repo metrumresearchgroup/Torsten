@@ -78,6 +78,7 @@ struct Pred1_general {
     T_time EventTime = parameter.get_time();  // time of current event
     T_time InitTime = EventTime - dt;  // time of previous event
 
+    std::cout << "times: " << EventTime << " " << InitTime << std::endl;
     // Convert time parameters to fixed data for ODE integrator
     // FIX ME - see issue #30
     vector<double> EventTime_d(1, unpromote(EventTime));
@@ -98,7 +99,7 @@ struct Pred1_general {
 
       // Convert vector in row-major vector (eigen Matrix)
       pred.resize(pred_V[0].size());
-      for (size_t i = 0; i < pred_V[0].size(); i++) pred(0, i) = pred_V[0][i];
+      for (size_t i = 0; i < pred_V[0].size(); i++) pred(i) = pred_V[0][i];
     }
     return pred;
   }

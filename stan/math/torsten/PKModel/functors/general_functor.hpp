@@ -39,7 +39,7 @@ struct general_functor {
     std::vector<scalar> dydt = f0_(t, y, theta, x_r, x_i, pstream_);
 
     for (size_t i = 0; i < dydt.size(); i++)
-      dydt[i] += x_r[i];
+     dydt[i] += x_r[i];
 
     return dydt;
   }
