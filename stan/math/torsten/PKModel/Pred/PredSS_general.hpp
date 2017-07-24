@@ -5,6 +5,7 @@
 #include <stan/math/torsten/PKModel/functors/functor.hpp>
 #include <stan/math/torsten/PKModel/functors/SS_system.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_general.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_void.hpp>
 #include <stan/math/rev/mat/functor/algebra_solver.hpp>
 #include <stan/math/rev/mat/functor/algebra_system.hpp>
 #include <stan/math/prim/mat/fun/to_vector.hpp>
@@ -96,8 +97,9 @@ struct PredSS_general {
     long int max_num_steps = 1e3;  // default // NOLINT
 
     // construct algebraic function
-    SS_system_dd<ode_rate_dbl_functor<F> >
-      system(ode_rate_dbl_functor<F>(f_), ii_dbl, cmt, integrator_);
+    SS_system_dd<ode_rate_dbl_functor<F>, Pred1_void>
+      system(ode_rate_dbl_functor<F>(f_), Pred1_void(),
+             ii_dbl, cmt, integrator_);
 
     // Construct Pred1_general functor
     Pred1_general<F> Pred1(f_, integrator_);

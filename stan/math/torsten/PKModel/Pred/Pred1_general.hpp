@@ -78,7 +78,6 @@ struct Pred1_general {
     T_time EventTime = parameter.get_time();  // time of current event
     T_time InitTime = EventTime - dt;  // time of previous event
 
-    std::cout << "times: " << EventTime << " " << InitTime << std::endl;
     // Convert time parameters to fixed data for ODE integrator
     // FIX ME - see issue #30
     vector<double> EventTime_d(1, unpromote(EventTime));

@@ -16,20 +16,33 @@
  * In this structure, both amt and rate are fixed
  * variables.
  */
-template <typename F>
+template <typename F, typename F2>
 struct SS_system_dd {
   F f_;
+  F2 f2_;
   double ii_;
   int cmt_;  // dosing compartment
   integrator_structure integrator_;
+  int nPK_;
 
   SS_system_dd() { }
 
   SS_system_dd(const F& f,
-               const double& ii,
+               const F2& f2,
+               double ii,
                int cmt,
                const integrator_structure& integrator)
-    : f_(f), ii_(ii), cmt_(cmt), integrator_(integrator) { }
+    : f_(f), f2_(f2), ii_(ii), cmt_(cmt), integrator_(integrator), 
+      nPK_(0) { }
+
+  SS_system_dd(const F& f,
+               const F2& f2,
+               double ii,
+               int cmt,
+               const integrator_structure& integrator,
+               int nPK)
+    : f_(f), f2_(f2), ii_(ii), cmt_(cmt), integrator_(integrator),
+      nPK_(nPK) { }
 
   /**
    *  dd regime.
@@ -57,13 +70,11 @@ struct SS_system_dd {
 
     double t0 = 0;
     vector<double> ts(1);
-    // vector<double> rate_v = dat;
-    // rate_v.pop_back();
 
     vector<scalar> x0(x.size());
     for (size_t i = 0; i < x0.size(); i++) x0[i] = x(i);
     double amt = dat[dat.size() - 1];
-    double rate = ((cmt_ - 1) >= 0) ? dat[cmt_ - 1] : 0;
+    double rate = dat[cmt_ - 1];
 
     // real data, which gets passed to the integrator, shoud not have
     // amt in it. Important for the mixed solver where the last element
@@ -74,7 +85,7 @@ struct SS_system_dd {
     Eigen::Matrix<scalar, Eigen::Dynamic, 1> result(x.size());  
 
     if (rate == 0) {  // bolus dose
-      if (cmt_ >= 0) x0[cmt_ - 1] += amt;
+      if ((cmt_ - nPK_) >= 0) x0[cmt_ - nPK_ - 1] += amt;
       ts[0] = ii_;
       vector<scalar> pred = integrator_(f_, x0, t0, ts, to_array_1d(y),
                                         dat_ode, dat_int)[0];
@@ -91,33 +102,28 @@ struct SS_system_dd {
       ts[0] = delta;  // time at which infusion stops
       x0 = integrator_(f_, to_array_1d(x), t0, ts, to_array_1d(y),
                        dat_ode, dat_int)[0];
-      ts[0] = ii_ - delta;
-      vector<double> rate_v(dat.size(), 0);
-      pred = integrator_(f_, x0, t0, ts, to_array_1d(y), dat_ode, dat_int)[0];
 
-      // The commented out section of the code corresponds to an implementation
-      // of the SS solution for the case where delta > ii_. Might be useful
-      // for future releases. Also, still needs to be tested. Still need to
-      // figure out what to deal with N, the number of overlapping infusions,
-      // which will be a discrete parameters.
-      //   else {
-      //   int N = trunc(delta / ii_) + 1;  // number of overlapping rates
-      //   ts[0] = delta - (N - 1) * ii_;  // time at which the oldest infusion dies
-      //   vector<double> rate_v(dat.size());
-      //   for (size_t i = 0; i < rate_v.size(); i++)
-      //     rate_v[i] = N * dat[i];  // compute superposition of rates
-      // 
-      //   x0 = integrator_(f_, to_array_1d(x), t0, ts, to_array_1d(y),
-      //                    rate_v, dat_int)[0];
-      // 
-      //   ts[0] = ii_ - ts[0];
-      //   for (size_t i = 0; i < rate_v.size(); i++)
-      //     rate_v[i] = (N - 1) * dat[i];
-      // 
-      //   pred = integrator_(f_, to_array_1d(x), t0, ts,
-      //                      to_array_1d(y), rate_v, dat_int)[0];
-      // 
-      // }
+      Matrix<scalar, Dynamic, 1> y2(y.size());
+      int nParms = y.size() - nPK_;
+      for (int i = 0; i < nParms; i++) y2(i) = y(i);
+
+      if (nPK_ != 0) {
+        Matrix<T0, 1, Dynamic> x0_pk(nPK_);
+        for (int i = 0; i < nPK_; i++) x0_pk(i) = x(i);
+
+        Matrix<scalar, 1, Dynamic>
+          x_pk = f2_(delta,
+                ModelParameters<double, T1, double, double>
+                  (0, to_array_1d(y), vector<double>(),
+                   vector<double>()),
+                x0_pk, dat_ode);
+
+        for (int i = 0; i < nPK_; i++) y2(nParms + i) = x_pk(i);
+      }
+
+      ts[0] = ii_ - delta;
+      dat_ode[cmt_ - 1] = 0;
+      pred = integrator_(f_, x0, t0, ts, to_array_1d(y2), dat_ode, dat_int)[0];
 
       for (int i = 0; i < result.size(); i++)
         result(i) = x(i) - pred[i];
@@ -140,20 +146,24 @@ struct SS_system_dd {
  * In this structure, amt is a random variable
  * and rate a fixed variable (vd regime).
  */
-template <typename F>
+template <typename F, typename F2>
 struct SS_system_vd {
   F f_;
+  F2 f2_;
   double ii_;
   int cmt_;  // dosing compartment
   integrator_structure integrator_;
+  int nPK_;
 
   SS_system_vd() { }
 
   SS_system_vd(const F& f,
+               const F2& f2,
                const double& ii,
                int cmt,
                const integrator_structure& integrator)
-    : f_(f), ii_(ii), cmt_(cmt), integrator_(integrator) { }
+    : f_(f), f2_(f2), ii_(ii), cmt_(cmt), integrator_(integrator),
+      nPK_(0) { }
 
  /**
   *  Case where the modified amt is a random variable. This

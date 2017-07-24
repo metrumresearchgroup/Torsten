@@ -4,7 +4,7 @@
 #include <stan/math/torsten/PKModel/integrator.hpp>
 #include <stan/math/torsten/PKModel/functors/functor.hpp>
 #include <stan/math/torsten/PKModel/functors/SS_system.hpp>
-#include <stan/math/torsten/PKModel/Pred/Pred1_general.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_oneCpt.hpp>
 #include <stan/math/torsten/PKModel/Pred/PredSS_oneCpt.hpp>
 #include <stan/math/rev/mat/functor/algebra_solver.hpp>
 #include <stan/math/rev/mat/functor/algebra_system.hpp>
@@ -91,17 +91,10 @@ struct PredSS_mix1 {
       PredSS_oneCpt PredSS_one;
       int nParmsPK = 3;
       predPK = PredSS_one(parameter.truncate(nParmsPK),
-                          amt, rate, ii_dbl, cmt);
-      predPK(cmt - 1) += amt;
+                          amt, (cmt <= 2) ? rate : 0, ii_dbl, cmt);
     } else {
       predPK = Matrix<scalar, Dynamic, 1>::Zero(nPK);
     }
-
-    // Construct augmented parameters
-    ModelParameters<T_time, T_parameters, T_biovar, T_tlag>
-      theta = parameter.augment(predPK);
-
-    theta.time(ii_dbl);
 
     // Arguments for ODE integrator (and initial guess)
     Matrix<double, 1, Dynamic> init_dbl
@@ -118,15 +111,21 @@ struct PredSS_mix1 {
     // construct algebraic system functor: note we adjust cmt
     // such that 1 corresponds to the first state we compute
     // numerically.
-    SS_system_dd<ode_rate_dbl_functor<F> >
-      system(ode_rate_dbl_functor<F>(f_), ii_dbl, cmt - nPK, integrator_);
+    SS_system_dd<ode_rate_dbl_functor<F>, Pred1_oneCpt >
+      system(ode_rate_dbl_functor<F>(f_), Pred1_oneCpt(),
+             ii_dbl, cmt, integrator_, nPK);
 
-    Pred1_general<F> Pred1(f_, integrator_);
     Matrix<double, 1, Dynamic> predPD_guess;
     Matrix<scalar, 1, Dynamic> predPD;
 
     if (rate == 0) {  // bolus dose
       if (cmt > 2) init_dbl(cmt - 1) = amt;
+      else predPK(cmt - 1) += amt;
+
+      // Construct augmented parameters
+      ModelParameters<T_time, T_parameters, T_biovar, T_tlag>
+        theta = parameter.augment(predPK);
+      theta.time(ii_dbl);
 
       predPD_guess = to_vector(integrator_(ode_rate_dbl_functor<F>(f_),
                                         to_array_1d(init_dbl),
@@ -140,17 +139,30 @@ struct PredSS_mix1 {
                               x_r, x_i,
                               0, rel_tol, f_tol, max_num_steps);
 
-    } /* else if (ii > 0) {  // multiple truncated infusions
+      // Remove dose input in dosing compartment. Pred will add it
+      // later, so we want to avoid redundancy.
+      if (cmt <= 2) predPK(cmt - 1) -= amt;
+
+    } else if (ii > 0) {  // multiple truncated infusions
       x_r[cmt - 1] = rate;
-      // compute initial guess
-      y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r);
-      x_r.push_back(amt);
-      pred = algebra_solver(system, y,
-                            to_vector(parameter.get_RealParameters()),
+
+      // Construct augmented parameters
+      ModelParameters<T_time, T_parameters, T_biovar, T_tlag>
+        theta = parameter.augment(predPK);
+      theta.time(ii_dbl);
+
+      predPD_guess = to_vector(integrator_(ode_rate_dbl_functor<F>(f_),
+                                         to_array_1d(init_dbl),
+                                         0.0, std::vector<double>(1, ii_dbl),
+                                         unpromote(theta.get_RealParameters()),
+                                         x_r, x_i)[0]);
+
+      x_r.push_back(amt);  // needed?
+      predPD = algebra_solver(system, predPD_guess,
+                            to_vector(theta.get_RealParameters()),
                             x_r, x_i,
-                            0, rel_tol, 1e-3, max_num_steps);  // FIX ME
-                                                               // use ftol
-    } else {  // constant infusion
+                            0, rel_tol, f_tol, max_num_steps);
+    } /* else {  // constant infusion
       x_r[cmt - 1] = rate;
       y = Pred1(100.0, unpromote(parameter), init_dbl, x_r);
 
@@ -165,13 +177,9 @@ struct PredSS_mix1 {
     for (int i = 0; i < nPK; i++) pred(i) = predPK(i);
     for (int i = 0; i < nOde_; i++) pred(nPK + i) = predPD(i);
 
-    // Remove dose input in dosing compartment. Pred will add it
-    // later, so we want to avoid redundancy.
-    pred(cmt - 1) -= amt;
-
     return pred;
   }
-  
+
   /**
    * Case 2 (vd): amt is random, rate is fixed.
    */
@@ -245,7 +253,6 @@ struct PredSS_mix1 {
       parms[i] = theta.get_RealParameters()[i];
     parms[parms.size() - 1] = amt;
 
-    Pred1_general<F> Pred1(f_, integrator_);
     Matrix<double, 1, Dynamic> predPD_guess;
     Matrix<scalar, 1, Dynamic> predPD;
 
