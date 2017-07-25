@@ -30,22 +30,21 @@ struct Pred1_twoCpt {
    *           at the current event.
    */
   template<typename T_time, typename T_rate, typename T_parameters,
-           typename T_biovar, typename T_tlag>
-  Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
-    T_rate, T_parameters>::type, Eigen::Dynamic, 1>
+           typename T_biovar, typename T_tlag, typename T_init>
+  Eigen::Matrix<typename boost::math::tools::promote_args<T_time, T_rate,
+    T_parameters, T_init>::type, Eigen::Dynamic, 1>
   operator() (const T_time& dt,
               const ModelParameters<T_time, T_parameters, T_biovar,
                                     T_tlag>& parameter,
-              const Eigen::Matrix<typename boost::math::tools::promote_args<
-                T_time, T_rate, T_parameters>::type, 1, Eigen::Dynamic>& init,
+              const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& init,
               const std::vector<T_rate>& rate) const {
     using std::vector;
     using Eigen::Matrix;
     using Eigen::Dynamic;
     stan::math::check_finite("Pred1", "initial values", init);
 
-    typedef typename boost::math::tools::promote_args<T_time, T_rate,
-      T_parameters>::type scalar;
+    typedef typename boost::math::tools::promote_args<T_time, T_init,
+      T_rate, T_parameters>::type scalar;
 
     T_parameters CL = parameter.get_RealParameters()[0],
       Q = parameter.get_RealParameters()[1],

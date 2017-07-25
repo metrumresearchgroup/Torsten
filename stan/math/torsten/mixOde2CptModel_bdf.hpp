@@ -5,7 +5,7 @@
 #include <stan/math/torsten/PKModel/PKModel.hpp>
 #include <stan/math/torsten/PKModel/functors/mix2_functor.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_mix2.hpp>
-#include <stan/math/torsten/PKModel/Pred/PredSS_err.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_mix2.hpp>
 #include <boost/math/tools/promotion.hpp>
 #include <vector>
 
@@ -96,11 +96,12 @@ mixOde2CptModel_bdf(const F& f,
 
   typedef mix2_functor<F> F0;
 
- return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-             theta, biovar, tlag, nPK + nOde, dummy_systems,
-             Pred1_mix2<F0>(F0(f), rel_tol, abs_tol, max_num_steps, msgs,
-                            "bdf"),
-             PredSS_err(function));
+  return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
+              theta, biovar, tlag, nPK + nOde, dummy_systems,
+              Pred1_mix2<F0>(F0(f), rel_tol, abs_tol, max_num_steps, msgs,
+                             "bdf"),
+              PredSS_mix2<F0>(F0(f), rel_tol, abs_tol, max_num_steps, msgs,
+                               "bdf", nOde));
 }
 
 /**

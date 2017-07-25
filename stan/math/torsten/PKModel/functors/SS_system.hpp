@@ -87,8 +87,10 @@ struct SS_system_dd {
     if (rate == 0) {  // bolus dose
       if ((cmt_ - nPK_) >= 0) x0[cmt_ - nPK_ - 1] += amt;
       ts[0] = ii_;
+
       vector<scalar> pred = integrator_(f_, x0, t0, ts, to_array_1d(y),
                                         dat_ode, dat_int)[0];
+
       for (int i = 0; i < result.size(); i++)
         result(i) = x(i) - pred[i];
 
@@ -103,23 +105,28 @@ struct SS_system_dd {
       x0 = integrator_(f_, to_array_1d(x), t0, ts, to_array_1d(y),
                        dat_ode, dat_int)[0];
 
-      Matrix<scalar, Dynamic, 1> y2(y.size());
+      Matrix<T1, Dynamic, 1> y2(y.size());
       int nParms = y.size() - nPK_;
       for (int i = 0; i < nParms; i++) y2(i) = y(i);
 
       if (nPK_ != 0) {
-        Matrix<T0, 1, Dynamic> x0_pk(nPK_);
-        for (int i = 0; i < nPK_; i++) x0_pk(i) = x(i);
+        Matrix<T1, 1, Dynamic> x0_pk(nPK_);
+        for (int i = 0; i < nPK_; i++) x0_pk(i) = y(nParms + i);
 
-        Matrix<scalar, 1, Dynamic>
+        Matrix<T1, 1, Dynamic>
           x_pk = f2_(delta,
                 ModelParameters<double, T1, double, double>
                   (0, to_array_1d(y), vector<double>(),
                    vector<double>()),
-                x0_pk, dat_ode);
+                   x0_pk, dat_ode);
 
         for (int i = 0; i < nPK_; i++) y2(nParms + i) = x_pk(i);
       }
+
+      // std::cout << "y1: " << y.transpose() << std::endl;
+      // std::cout << "y2: " << y2.transpose() << std::endl;
+      // std::cout << "x0: " << to_vector(x0).transpose() << std::endl;
+      // std::cout << "delta: " << delta << std::endl;
 
       ts[0] = ii_ - delta;
       dat_ode[cmt_ - 1] = 0;
@@ -127,7 +134,6 @@ struct SS_system_dd {
 
       for (int i = 0; i < result.size(); i++)
         result(i) = x(i) - pred[i];
-
     } else {  // constant infusion
       vector<T_deriv> derivative = f_(0, to_array_1d(x), to_array_1d(y),
                                       dat_ode, dat_int, 0);

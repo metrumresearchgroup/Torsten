@@ -1,11 +1,11 @@
-#ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_MIX1_HPP
-#define STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_MIX1_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_MIX2_HPP
+#define STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_MIX2_HPP
 
 #include <stan/math/torsten/PKModel/integrator.hpp>
 #include <stan/math/torsten/PKModel/functors/functor.hpp>
 #include <stan/math/torsten/PKModel/functors/SS_system.hpp>
-#include <stan/math/torsten/PKModel/Pred/Pred1_oneCpt.hpp>
-#include <stan/math/torsten/PKModel/Pred/PredSS_oneCpt.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_twoCpt.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_twoCpt.hpp>
 #include <stan/math/rev/mat/functor/algebra_solver.hpp>
 #include <stan/math/prim/mat/fun/to_vector.hpp>
 #include <stan/math/prim/mat/fun/to_array_1d.hpp>
@@ -14,12 +14,12 @@
 #include <string>
 
 template <typename F>
-struct PredSS_mix1 {
+struct PredSS_mix2 {
   F f_;
   integrator_structure integrator_;
   int nOde_;  // number of states in the reduced system
 
-  PredSS_mix1(const F& f,
+  PredSS_mix2(const F& f,
               const double& rel_tol,
               const double& abs_tol,
               const long int& max_num_steps,  // NOLINT
@@ -31,7 +31,7 @@ struct PredSS_mix1 {
       nOde_(nOde) { }
 
   /**
-   * Mix1 compartment model using built-in ODE solver, mixed
+   * Mix2 compartment model using built-in ODE solver, mixed
    * solving method, and root-finder.
    * Calculate amount in each compartment at the end of a
    * steady-state dosing interval or during a steady-state
@@ -85,12 +85,12 @@ struct PredSS_mix1 {
 
     // Compute solution for base 1cpt PK
     Matrix<T_parameters, Dynamic, 1> predPK;
-    int nPK = 2;
-    if (cmt <= 2) {  // check dosing occurs in a base state
-      PredSS_oneCpt PredSS_one;
-      int nParmsPK = 3;
-      predPK = PredSS_one(parameter.truncate(nParmsPK),
-                          amt, (cmt <= 2) ? rate : 0, ii_dbl, cmt);
+    int nPK = 3;
+    if (cmt <= nPK) {  // check dosing occurs in a base state
+      PredSS_twoCpt PredSS_two;
+      int nParmsPK = 5;
+      predPK = PredSS_two(parameter.truncate(nParmsPK),
+                          amt, (cmt <= nPK) ? rate : 0, ii_dbl, cmt);
     } else {
       predPK = Matrix<scalar, Dynamic, 1>::Zero(nPK);
     }
@@ -110,15 +110,15 @@ struct PredSS_mix1 {
     // construct algebraic system functor: note we adjust cmt
     // such that 1 corresponds to the first state we compute
     // numerically.
-    SS_system_dd<ode_rate_dbl_functor<F>, Pred1_oneCpt >
-      system(ode_rate_dbl_functor<F>(f_), Pred1_oneCpt(), ii_dbl, cmt,
+    SS_system_dd<ode_rate_dbl_functor<F>, Pred1_twoCpt >
+      system(ode_rate_dbl_functor<F>(f_), Pred1_twoCpt(), ii_dbl, cmt,
              integrator_, nPK);
 
     Matrix<double, 1, Dynamic> predPD_guess;
     Matrix<scalar, 1, Dynamic> predPD;
 
     if (rate == 0) {  // bolus dose
-      if (cmt > 2) init_dbl(cmt - 1) = amt;
+      if (cmt > nPK) init_dbl(cmt - 1) = amt;
       else predPK(cmt - 1) += amt;
 
       // Construct augmented parameters
@@ -140,7 +140,7 @@ struct PredSS_mix1 {
 
       // Remove dose input in dosing compartment. Pred will add it
       // later, so we want to avoid redundancy.
-      if (cmt <= 2) predPK(cmt - 1) -= amt;
+      if (cmt <= nPK) predPK(cmt - 1) -= amt;
 
     } else if (ii > 0) {  // multiple truncated infusions
       x_r[cmt - 1] = rate;
@@ -224,11 +224,11 @@ struct PredSS_mix1 {
 
     // Compute solution for base 1cpt PK
     Matrix<scalar, Dynamic, 1> predPK;
-    int nPK = 2;
-    if (cmt <= 2) {  // check dosing occurs in a base state
-      PredSS_oneCpt PredSS_one;
-      int nParmsPK = 3;
-      predPK = PredSS_one(parameter.truncate(nParmsPK),
+    int nPK = 3;
+    if (cmt <= nPK) {  // check dosing occurs in a base state
+      PredSS_twoCpt PredSS_two;
+      int nParmsPK = 5;
+      predPK = PredSS_two(parameter.truncate(nParmsPK),
                           amt, rate, ii_dbl, cmt);
       predPK(cmt - 1) = predPK(cmt - 1) + amt;
     } else {
@@ -271,7 +271,7 @@ struct PredSS_mix1 {
                               x_r, x_i,
                               0, rel_tol, f_tol, max_num_steps);
 
-      if (cmt <= 2) predPK(cmt - 1) -= amt;
+      if (cmt <= nPK) predPK(cmt - 1) -= amt;
     } else if (ii > 0) {
       invalid_argument("Steady State Event",
                        "Current version does not handle the case of",

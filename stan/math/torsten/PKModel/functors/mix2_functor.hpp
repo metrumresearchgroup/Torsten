@@ -60,6 +60,7 @@ struct mix2_functor {
     init_pk[0] = theta[nTheta - 3];
     init_pk[1] = theta[nTheta - 2];
     init_pk[2] = theta[nTheta - 1];
+
     // Last element of x_r contains the initial time
     T0 dt = t - x_r[x_r.size() - 1];
 
