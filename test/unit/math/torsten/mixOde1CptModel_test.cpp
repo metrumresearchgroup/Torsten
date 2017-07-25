@@ -579,8 +579,6 @@ TEST(Torsten, mixOde1Cpt_SS_infusion) {
                                   0,
                                   rel_tol, abs_tol, max_num_steps);
   
-  // std::cout << x_rk45 << std::endl;
-  
   rel_tol = 1e-10, abs_tol = 1e-10;
   max_num_steps = 1e8;
   Matrix<double, Dynamic, Dynamic>

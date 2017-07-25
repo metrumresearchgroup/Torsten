@@ -66,7 +66,7 @@ public:
    * (as oppose to all the PK/PD parameters).
    */
   ModelParameters<T_time, T_parameters, T_biovar, T_tlag>
-  truncate (int n) const {
+  truncate(int n) const {
     std::vector<T_parameters> tr_theta(n);
     for (int i = 0; i < n; i++) tr_theta[i] = theta_[i];
     return ModelParameters(time_, tr_theta, biovar_, tlag_, K_);
@@ -79,7 +79,7 @@ public:
    */
   template <typename T>
   ModelParameters<T_time, T, T_biovar, T_tlag>
-  augment (const std::vector<T>& thetaAdd) const {
+  augment(const std::vector<T>& thetaAdd) const {
     std::vector<T> theta(theta_.size());
     for (size_t i = 0; i < theta.size(); i++) theta[i] = theta_[i];
     for (size_t i = 0; i < thetaAdd.size(); i++) theta.push_back(thetaAdd[i]);
@@ -90,15 +90,15 @@ public:
 
   template <typename T>
   ModelParameters<T_time, T, T_biovar, T_tlag>
-  augment (const Eigen::Matrix<T, Eigen::Dynamic, 1>& thetaAdd)
+  augment(const Eigen::Matrix<T, Eigen::Dynamic, 1>& thetaAdd)
   const {
-    return augment(stan::math::to_array_1d(thetaAdd));  
+    return augment(stan::math::to_array_1d(thetaAdd));
   }
 
   /**
    * Edit time stored in parameter object.
    */
-  void time (double time) {
+  void time(double time) {
     time_ = time;
   }
 

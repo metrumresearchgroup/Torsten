@@ -32,7 +32,7 @@ struct SS_system_dd {
                double ii,
                int cmt,
                const integrator_structure& integrator)
-    : f_(f), f2_(f2), ii_(ii), cmt_(cmt), integrator_(integrator), 
+    : f_(f), f2_(f2), ii_(ii), cmt_(cmt), integrator_(integrator),
       nPK_(0) { }
 
   SS_system_dd(const F& f,
@@ -82,7 +82,7 @@ struct SS_system_dd {
     vector<double> dat_ode = dat;
     dat_ode.pop_back();
 
-    Eigen::Matrix<scalar, Eigen::Dynamic, 1> result(x.size());  
+    Eigen::Matrix<scalar, Eigen::Dynamic, 1> result(x.size());
 
     if (rate == 0) {  // bolus dose
       if ((cmt_ - nPK_) >= 0) x0[cmt_ - nPK_ - 1] += amt;
@@ -122,11 +122,6 @@ struct SS_system_dd {
 
         for (int i = 0; i < nPK_; i++) y2(nParms + i) = x_pk(i);
       }
-
-      // std::cout << "y1: " << y.transpose() << std::endl;
-      // std::cout << "y2: " << y2.transpose() << std::endl;
-      // std::cout << "x0: " << to_vector(x0).transpose() << std::endl;
-      // std::cout << "delta: " << delta << std::endl;
 
       ts[0] = ii_ - delta;
       dat_ode[cmt_ - 1] = 0;

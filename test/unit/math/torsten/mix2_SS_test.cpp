@@ -252,8 +252,6 @@ TEST(Torsten, mixOde2Cpt_SS_infusion) {
                                   parameters, biovar, tlag,
                                   0,
                                   rel_tol_rk, abs_tol_rk, max_num_steps_rk);
-
-  //std::cout << x_rk45 << std::endl << std::endl;
   
   double rel_tol_bdf = 1e-10, abs_tol_bdf = 1e-10;
   double max_num_steps_bdf = 1e8;

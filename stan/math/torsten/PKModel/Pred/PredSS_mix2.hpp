@@ -119,7 +119,8 @@ struct PredSS_mix2 {
 
     if (rate == 0) {  // bolus dose
       if (cmt > nPK) init_dbl(cmt - 1) = amt;
-      else predPK(cmt - 1) += amt;
+      else
+        predPK(cmt - 1) += amt;
 
       // Construct augmented parameters
       ModelParameters<T_time, T_parameters, T_biovar, T_tlag>
@@ -216,7 +217,7 @@ struct PredSS_mix2 {
     using stan::math::to_vector;
     using stan::math::to_array_1d;
     using stan::math::invalid_argument;
-    
+
     typedef typename boost::math::tools::promote_args<T_ii, T_amt,
       T_parameters>::type scalar;
 
@@ -261,10 +262,10 @@ struct PredSS_mix2 {
 
     if (rate == 0) {  // bolus dose
       predPD_guess = to_vector(integrator_(ode_rate_dbl_functor<F>(f_),
-                                           to_array_1d(init_dbl),
-                                           0.0, std::vector<double>(1, ii_dbl),
-                                           unpromote(theta.get_RealParameters()),
-                                           x_r, x_i)[0]);
+                                        to_array_1d(init_dbl),
+                                        0.0, std::vector<double>(1, ii_dbl),
+                                        unpromote(theta.get_RealParameters()),
+                                        x_r, x_i)[0]);
 
       predPD = algebra_solver(system, predPD_guess,
                               to_vector(theta.get_RealParameters()),
