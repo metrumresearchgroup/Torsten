@@ -230,19 +230,20 @@ TEST(Torsten, mixOde1Cpt_SS_infusion) {
   double rel_err = 1.5e-2;
   expect_near_matrix_eq(amounts, x_rk45, rel_err);
   expect_near_matrix_eq(amounts, x_bdf, rel_err);
-  
+
   // Test AutoDiff against FiniteDiff
-  // diff2 obtained empirically
-  // double diff = 1e-8, diff2 = 6e-2;
-  // test_mixOdeCptModel(feedbackODE(), nPD,
-  //                     time, amt, rate, ii, evid, cmt, addl, ss,
-  //                     parameters, biovar, tlag,
-  //                     rel_tol, abs_tol, max_num_steps, diff, diff2, "1_rk45");
-  // 
-  // test_mixOdeCptModel(feedbackODE(), nPD,
-  //                     time, amt, rate, ii, evid, cmt, addl, ss,
-  //                     parameters, biovar, tlag,
-  //                     rel_tol, abs_tol, max_num_steps, diff, diff2, "1_bdf");
+  // diff2 obtained empirically.
+  // Skip biovar (F) tests, since this returns an exception.
+  double diff = 1e-8, diff2 = 6e-2;
+  test_mixOdeCptModel(feedbackODE(), nPD,
+                      time, amt, rate, ii, evid, cmt, addl, ss,
+                      parameters, biovar, tlag,
+                      rel_tol, abs_tol, max_num_steps, diff, diff2, "1_rk45", 2);
+
+  test_mixOdeCptModel(feedbackODE(), nPD,
+                      time, amt, rate, ii, evid, cmt, addl, ss,
+                      parameters, biovar, tlag,
+                      rel_tol, abs_tol, max_num_steps, diff, diff2, "1_bdf", 2);
 }
 
 struct fullODE {
@@ -257,7 +258,7 @@ struct fullODE {
            std::ostream* pstream_) const {
     typedef typename boost::math::tools::promote_args<T0, T1, T2>::type
     scalar;
-    
+
     scalar
       CL = theta[0],
       VC = theta[1],
@@ -286,58 +287,93 @@ struct fullODE {
   }
 };
 
+TEST(Torsten, mixOde1Cpt_SS_rate) {
+  using std::vector;
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
+  
+  int nEvents = 10;
+  vector<double> time(nEvents);
+  time[0] = 0.0;
+  for (int i = 1; i < nEvents; i++) time[i] = time[i - 1] + 1;
+  vector<double> amt(nEvents, 0);
+  vector<double> rate(nEvents, 0);
+  rate[0] = 150;
+  vector<int> cmt(nEvents, 2);
+  cmt[0] = 1;
+  vector<int> evid(nEvents, 0);
+  evid[0] = 1;
+  vector<double> ii(nEvents, 0);
+  vector<int> addl(nEvents, 0);
+  vector<int> ss(nEvents, 0);
+  ss[0] = 1;
 
-TEST(Torsten, generalOdeCpt_SS_infusion) {
-using std::vector;
-using Eigen::Matrix;
-using Eigen::Dynamic;
+  int nParameters = 7;
+  vector<vector<double> > parameters(1);
+  parameters[0].resize(nParameters);
+  parameters[0][0] = 10;  // CL
+  parameters[0][1] = 35;  // VC
+  parameters[0][2] = 2.0;  // ka
+  parameters[0][3] = 125;  // Mtt
+  parameters[0][4] = 5;  // Circ0
+  parameters[0][5] = 3e-4;  // alpha
+  parameters[0][6] = 0.17;  // gamma
+  
+  int nOde = 5;
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(nOde);
+  for (int i = 0; i < nOde; i++) biovar[0][i] = 1;
 
-int nEvents = 10;
-vector<double> time(nEvents);
-time[0] = 0.0;
-for (int i = 1; i < nEvents; i++) time[i] = time[i - 1] + 1;
-vector<double> amt(nEvents, 0);
-amt[0] = 1200;
-vector<double> rate(nEvents, 0);
-rate[0] = 150;
-vector<int> cmt(nEvents, 2);
-cmt[0] = 1;
-vector<int> evid(nEvents, 0);
-evid[0] = 1;
-vector<double> ii(nEvents, 0);
-ii[0] = 12;
-vector<int> addl(nEvents, 0);
-vector<int> ss(nEvents, 0);
-ss[0] = 1;
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(nOde);
+  for (int i = 0; i < nOde; i++) tlag[0][i] = 0;
 
-int nParameters = 7;
-vector<vector<double> > parameters(1);
-parameters[0].resize(nParameters);
-parameters[0][0] = 10;  // CL
-parameters[0][1] = 35;  // VC
-parameters[0][2] = 2.0;  // ka
-parameters[0][3] = 125;  // Mtt
-parameters[0][4] = 5;  // Circ0
-parameters[0][5] = 3e-4;  // alpha
-parameters[0][6] = 0.17;  // gamma
+  int nPD = 3;
+  double rel_tol_rk = 1e-6, abs_tol_rk = 1e-6;
+  long int max_num_steps_rk = 1e6;
+  Matrix<double, Dynamic, Dynamic>
+    x_rk45 = mixOde1CptModel_rk45(feedbackODE(), nPD,
+                                  time, amt, rate, ii, evid, cmt, addl, ss,
+                                  parameters, biovar, tlag,
+                                  0,
+                                  rel_tol_rk, abs_tol_rk, max_num_steps_rk);
 
-int nOde = 5;
-vector<vector<double> > biovar(1);
-biovar[0].resize(nOde);
-for (int i = 0; i < nOde; i++) biovar[0][i] = 1;
+  double rel_tol_bdf = 1e-10, abs_tol_bdf = 1e-10;
+  long int max_num_steps_bdf = 1e8;
+  Matrix<double, Dynamic, Dynamic>
+    x_bdf = mixOde1CptModel_bdf(feedbackODE(), nPD,
+                                time, amt, rate, ii, evid, cmt, addl, ss,
+                                parameters, biovar, tlag,
+                                0,
+                                rel_tol_bdf, abs_tol_bdf, max_num_steps_bdf);
 
-vector<vector<double> > tlag(1);
-tlag[0].resize(nOde);
-for (int i = 0; i < nOde; i++) tlag[0][i] = 0;
+  // can't do constant rate in mrgsolve. Comparing to result obtained
+  // with generalOdeModel, as a provisional test.
+  Matrix<double, Dynamic, Dynamic>
+    x = generalOdeModel_rk45(fullODE(), nOde,
+                             time, amt, rate, ii, evid, cmt, addl, ss,
+                             parameters, biovar, tlag,
+                             0,
+                             rel_tol_rk, abs_tol_rk, max_num_steps_rk);
 
-double rel_tol = 1e-6, abs_tol = 1e-6;
-long int max_num_steps = 1e6;
-Matrix<double, Dynamic, Dynamic>
-x_rk45 = generalOdeModel_rk45(fullODE(), nOde,
-                              time, amt, rate, ii, evid, cmt, addl, ss,
-parameters, biovar, tlag,
-0,
-rel_tol, abs_tol, max_num_steps);
+  double rel_err_rk = 3.8e-3;
+  expect_near_matrix_eq(x, x_rk45, rel_err_rk);
+  
+  double rel_err_bdf = 5e-3;
+  expect_near_matrix_eq(x, x_bdf, rel_err_bdf);
 
-// std::cout << x_rk45 << std::endl;
+  // Test AutoDiff against FiniteDiff
+  // diff2 obtained empirically.
+  double diff = 1e-8, diff2 = 1e-4;
+  test_mixOdeCptModel(feedbackODE(), nPD,
+                      time, amt, rate, ii, evid, cmt, addl, ss,
+                      parameters, biovar, tlag,
+                      rel_tol_rk, abs_tol_rk, max_num_steps_rk,
+                      diff, diff2, "1_rk45");
+
+  test_mixOdeCptModel(feedbackODE(), nPD,
+                      time, amt, rate, ii, evid, cmt, addl, ss,
+                      parameters, biovar, tlag,
+                      rel_tol_bdf, abs_tol_bdf, max_num_steps_bdf,
+                      diff, diff2, "1_bdf");
 }

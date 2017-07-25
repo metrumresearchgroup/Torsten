@@ -112,8 +112,8 @@ struct PredSS_mix1 {
     // such that 1 corresponds to the first state we compute
     // numerically.
     SS_system_dd<ode_rate_dbl_functor<F>, Pred1_oneCpt >
-      system(ode_rate_dbl_functor<F>(f_), Pred1_oneCpt(),
-             ii_dbl, cmt, integrator_, nPK);
+      system(ode_rate_dbl_functor<F>(f_), Pred1_oneCpt(), ii_dbl, cmt,
+             integrator_, nPK);
 
     Matrix<double, 1, Dynamic> predPD_guess;
     Matrix<scalar, 1, Dynamic> predPD;
@@ -162,16 +162,26 @@ struct PredSS_mix1 {
                             to_vector(theta.get_RealParameters()),
                             x_r, x_i,
                             0, rel_tol, f_tol, max_num_steps);
-    } /* else {  // constant infusion
+    } else {  // constant infusion
       x_r[cmt - 1] = rate;
-      y = Pred1(100.0, unpromote(parameter), init_dbl, x_r);
+
+      // Construct augmented parameters
+      ModelParameters<T_time, T_parameters, T_biovar, T_tlag>
+        theta = parameter.augment(predPK);
+      theta.time(ii_dbl);
+
+      predPD_guess = to_vector(integrator_(ode_rate_dbl_functor<F>(f_),
+                                         to_array_1d(init_dbl),
+                                         0.0, std::vector<double>(1, 100),
+                                         unpromote(theta.get_RealParameters()),
+                                         x_r, x_i)[0]);
 
       x_r.push_back(amt);
-      pred = algebra_solver(system, y,
-                            to_vector(parameter.get_RealParameters()),
-                            x_r, x_i,
-                            0, rel_tol, f_tol, max_num_steps);
-    } */
+      predPD = algebra_solver(system, predPD_guess,
+                              to_vector(theta.get_RealParameters()),
+                              x_r, x_i,
+                              0, rel_tol, f_tol, max_num_steps);
+    }
 
     Matrix<scalar, Dynamic, 1> pred(nPK + nOde_);
     for (int i = 0; i < nPK; i++) pred(i) = predPK(i);
@@ -206,7 +216,8 @@ struct PredSS_mix1 {
     using stan::math::algebra_solver;
     using stan::math::to_vector;
     using stan::math::to_array_1d;
-
+    using stan::math::invalid_argument;
+    
     typedef typename boost::math::tools::promote_args<T_ii, T_amt,
       T_parameters>::type scalar;
 
@@ -228,7 +239,7 @@ struct PredSS_mix1 {
     // Construct augmented parameters
     ModelParameters<T_time, scalar, T_biovar, T_tlag>
       theta = parameter.augment(predPK);
-
+    theta = theta.augment(vector<T_amt>(1, amt));  // add amt
     theta.time(ii_dbl);
 
     // Arguments for ODE integrator (and initial guess)
@@ -243,15 +254,13 @@ struct PredSS_mix1 {
     double f_tol = 1e-4;  // empirical
     long int max_num_steps = 1e3;  // default // NOLINT
 
-    // construct algebraic system functor: note we adjust cmt
-    // such that 1 corresponds to the first state we compute
-    // numerically.
     SS_system_vd<ode_rate_dbl_functor<F> >
-      system(ode_rate_dbl_functor<F>(f_), ii_dbl, cmt - nPK, integrator_);
-    std::vector<scalar> parms(theta.get_RealParameters().size() + 1);
-    for (size_t i = 0; i < parms.size(); i++)
-      parms[i] = theta.get_RealParameters()[i];
-    parms[parms.size() - 1] = amt;
+      system(ode_rate_dbl_functor<F>(f_), ii_dbl, cmt, integrator_, nPK);
+
+    // std::vector<scalar> parms(theta.get_RealParameters().size() + 1);
+    // for (size_t i = 0; i < parms.size(); i++)
+    //  parms[i] = theta.get_RealParameters()[i];
+    // parms[parms.size() - 1] = amt;
 
     Matrix<double, 1, Dynamic> predPD_guess;
     Matrix<scalar, 1, Dynamic> predPD;
@@ -267,12 +276,31 @@ struct PredSS_mix1 {
                               to_vector(theta.get_RealParameters()),
                               x_r, x_i,
                               0, rel_tol, f_tol, max_num_steps);
+
+      if (cmt <= 2) predPK(cmt - 1) -= amt;
+    } else if (ii > 0) {
+      invalid_argument("Steady State Event",
+                       "Current version does not handle the case of",
+                       "", " multiple truncated infusions ",
+                       "(i.e ii > 0 and rate > 0) when F * amt is a parameter.");  // NOLINT
+    } else {
+      x_r[cmt - 1] = rate;
+
+      predPD_guess = to_vector(integrator_(ode_rate_dbl_functor<F>(f_),
+                                         to_array_1d(init_dbl),
+                                         0.0, std::vector<double>(1, 100),
+                                         unpromote(theta.get_RealParameters()),
+                                         x_r, x_i)[0]);
+
+      predPD = algebra_solver(system, predPD_guess,
+                              to_vector(theta.get_RealParameters()),
+                              x_r, x_i,
+                              0, rel_tol, f_tol, max_num_steps);
     }
 
     Matrix<scalar, Dynamic, 1> pred(nPK + nOde_);
     for (int i = 0; i < nPK; i++) pred(i) = predPK(i);
     for (int i = 0; i < nOde_; i++) pred(nPK + i) = predPD(i);
-    pred(cmt - 1) -= amt;
 
     return pred;
   }

@@ -146,10 +146,9 @@ struct SS_system_dd {
  * In this structure, amt is a random variable
  * and rate a fixed variable (vd regime).
  */
-template <typename F, typename F2>
+template <typename F>
 struct SS_system_vd {
   F f_;
-  F2 f2_;
   double ii_;
   int cmt_;  // dosing compartment
   integrator_structure integrator_;
@@ -158,12 +157,19 @@ struct SS_system_vd {
   SS_system_vd() { }
 
   SS_system_vd(const F& f,
-               const F2& f2,
-               const double& ii,
+               double ii,
                int cmt,
                const integrator_structure& integrator)
-    : f_(f), f2_(f2), ii_(ii), cmt_(cmt), integrator_(integrator),
+    : f_(f), ii_(ii), cmt_(cmt), integrator_(integrator),
       nPK_(0) { }
+
+  SS_system_vd(const F& f,
+               double ii,
+               int cmt,
+               const integrator_structure& integrator,
+               int nPK)
+    : f_(f), ii_(ii), cmt_(cmt), integrator_(integrator),
+      nPK_(nPK) { }
 
  /**
   *  Case where the modified amt is a random variable. This
@@ -205,7 +211,7 @@ struct SS_system_vd {
     for (size_t i = 0; i < parms.size(); i++) parms[i] = y(i);
 
     if (rate == 0) {  // bolus dose
-      if (cmt_ >= 0) x0[cmt_ - 1] += amt;
+      if ((cmt_ - nPK_) >= 0) x0[cmt_ - nPK_ - 1] += amt;
       ts[0] = ii_;
       vector<scalar> pred = integrator_(f_, x0, t0, ts, parms,
                                         dat, dat_int)[0];
@@ -214,13 +220,18 @@ struct SS_system_vd {
         result(i) = x(i) - pred[i];
 
     } else if (ii_ > 0) {  // multiple truncated infusions
-      // FIX ME: can actually work out a solution.
       invalid_argument("Steady State Event",
                        "Current version does not handle the case of",
                        "", " multiple truncated infusions ",
                        "(i.e ii > 0 and rate > 0) when F * amt is a parameter.");  // NOLINT
 
     } else {  // constant infusion
+      if (amt != 0)
+        invalid_argument("Steady State Event",
+                         "amt should be 0 when specifying a constant",
+                         "", " infusion (i.e. rate > 0 and ii = 0).",
+                         "");
+
       vector<T_deriv> derivative = f_(0, to_array_1d(x), parms,
                                       dat, dat_int, 0);
       result = to_vector(derivative);
