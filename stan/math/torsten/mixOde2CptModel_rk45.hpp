@@ -5,6 +5,7 @@
 #include <stan/math/torsten/PKModel/PKModel.hpp>
 #include <stan/math/torsten/PKModel/functors/mix2_functor.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_mix2.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_mix2.hpp>
 #include <stan/math/torsten/PKModel/Pred/PredSS_err.hpp>
 #include <boost/math/tools/promotion.hpp>
 #include <vector>
@@ -100,7 +101,9 @@ mixOde2CptModel_rk45(const F& f,
              theta, biovar, tlag, nPK + nOde, dummy_systems,
              Pred1_mix2<F0>(F0(f), rel_tol, abs_tol, max_num_steps, msgs,
                             "rk45"),
-             PredSS_err(function));
+             PredSS_mix2<F0>(F0(f), rel_tol, abs_tol, max_num_steps, msgs,
+                             "rk45", nOde));
+             // PredSS_err(function));
 }
 
 /**

@@ -98,7 +98,7 @@ struct Pred1_general {
 
       // Convert vector in row-major vector (eigen Matrix)
       pred.resize(pred_V[0].size());
-      for (size_t i = 0; i < pred_V[0].size(); i++) pred(0, i) = pred_V[0][i];
+      for (size_t i = 0; i < pred_V[0].size(); i++) pred(i) = pred_V[0][i];
     }
     return pred;
   }

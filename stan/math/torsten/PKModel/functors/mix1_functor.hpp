@@ -21,9 +21,12 @@ struct mix1_functor {
 
   /**
    *  Returns the derivative of the base ODE system. The base 1 PK
-   *  component is calculated analytically. We use the last two
-   *  elements of theta to store the inital PK states (init_PK) and
-   *  the last element of x_r to store the initial time.
+   *  component is calculated analytically.
+   *  
+   *  theta stores the ODE parameters, followed by the two initial
+   *  PK states.
+   *  x_r stores the rates for the FULL system, followed by the initial
+   *  time.
    *
    *  Case 1: rate is fixed data and is passed through x_r.
    */
@@ -57,7 +60,7 @@ struct mix1_functor {
     // The last two components of theta should contain the initial PK states
     init_pk[0] = theta[nTheta - 2];
     init_pk[1] = theta[nTheta - 1];
-    // Last element of x_r contains the initial time
+    // The last element of x_r contains the absolutime
     T0 dt = t - x_r[x_r.size() - 1];
 
     std::vector<T_pk> y_pk = fOneCpt(dt, thetaPK, init_pk, x_r);
@@ -105,7 +108,7 @@ struct mix1_functor {
     thetaPK[1] = theta[1];  // VC
     thetaPK[2] = theta[2];  // ka
 
-    // Next theta contains the rates for the base PK compartments...
+    // Next theta contains the rates for the base PK compartments.
     vector<T2> ratePK(nPK);
     for (size_t i = 0; i < nPK; i++)
       ratePK[i] = theta[nODEparms + i];

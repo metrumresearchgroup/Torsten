@@ -161,7 +161,7 @@ Pred(const std::vector<T_time>& time,
       // the object PredSS returns doesn't always have a scalar type. For
       // instance, PredSS does not depend on tlag, but pred does. So if
       // tlag were a var, the code must promote PredSS to match the type
-      // of pred1. This is done by using multiply predSS by a Scalar.
+      // of pred1. This is done by multiplying predSS by a Scalar.
 
       if (event.get_ss() == 2) init += pred1;  // steady state without reset
       else

@@ -32,8 +32,8 @@ struct Pred1_oneCpt {
    */
   template<typename T_time, typename T_rate, typename T_parameters,
            typename T_biovar, typename T_tlag, typename T_init>
-  Eigen::Matrix<typename boost::math::tools::promote_args<T_time,
-    T_rate, T_parameters>::type, Eigen::Dynamic, 1>
+  Eigen::Matrix<typename boost::math::tools::promote_args<T_time, T_rate,
+    T_parameters, T_init>::type, Eigen::Dynamic, 1>
   operator()(const T_time& dt,
              const ModelParameters<T_time, T_parameters, T_biovar,
                                   T_tlag>& parameter,

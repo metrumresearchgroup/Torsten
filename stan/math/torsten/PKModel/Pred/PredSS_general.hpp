@@ -5,6 +5,7 @@
 #include <stan/math/torsten/PKModel/functors/functor.hpp>
 #include <stan/math/torsten/PKModel/functors/SS_system.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_general.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_void.hpp>
 #include <stan/math/rev/mat/functor/algebra_solver.hpp>
 #include <stan/math/rev/mat/functor/algebra_system.hpp>
 #include <stan/math/prim/mat/fun/to_vector.hpp>
@@ -38,7 +39,7 @@ struct PredSS_general {
    * constant input (if ii = 0). The function is overloaded
    * to address the cases where amt or rate may be fixed or
    * random variables (yielding a total of 4 cases).
-   * 
+   *
    * Case 1 (dd): amt and rate are fixed.
    *
    *	 @tparam T_time type of scalar for time
@@ -96,8 +97,9 @@ struct PredSS_general {
     long int max_num_steps = 1e3;  // default // NOLINT
 
     // construct algebraic function
-    SS_system_dd<ode_rate_dbl_functor<F> >
-      system(ode_rate_dbl_functor<F>(f_), ii_dbl, cmt, integrator_);
+    SS_system_dd<ode_rate_dbl_functor<F>, Pred1_void>
+      system(ode_rate_dbl_functor<F>(f_), Pred1_void(),
+             ii_dbl, cmt, integrator_);
 
     // Construct Pred1_general functor
     Pred1_general<F> Pred1(f_, integrator_);
@@ -138,8 +140,8 @@ struct PredSS_general {
   }
 
   /**
-  * Case 2 (vd): amt is random, rate is fixed.
-  */
+   * Case 2 (vd): amt is random, rate is fixed.
+   */
   template<typename T_time,
            typename T_amt,
            typename T_ii,
