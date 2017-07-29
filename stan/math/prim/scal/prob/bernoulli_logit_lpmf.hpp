@@ -44,8 +44,7 @@ namespace stan {
       using stan::is_constant_struct;
       using std::exp;
 
-      if (!(stan::length(n)
-            && stan::length(theta)))
+      if (!(stan::length(n) && stan::length(theta)))
         return 0.0;
 
       T_partials_return logp(0.0);
