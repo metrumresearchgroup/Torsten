@@ -4,7 +4,8 @@
 #include <Eigen/Dense>
 #include <boost/math/tools/promotion.hpp>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
-#include <stan/math/torsten/PKModel/dummy_ode.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_twoCpt.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_twoCpt.hpp>
 #include <string>
 #include <vector>
 
@@ -57,23 +58,23 @@ PKModelTwoCpt(const std::vector<T0>& time,
   using boost::math::tools::promote_args;
   using stan::math::check_positive_finite;
 
-  PKModel model("TwoCptModel");  // Define class of model
+  int nCmt = 3;
+  int nParms = 5;
   static const char* function("PKModelTwoCpt");
 
   // Check arguments
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
-                pMatrix, biovar, tlag, function, model);
+                pMatrix, biovar, tlag, function);
   for (size_t i = 0; i < pMatrix.size(); i++) {
     check_positive_finite(function, "PK parameter CL", pMatrix[i][0]);
     check_positive_finite(function, "PK parameter Q", pMatrix[i][1]);
     check_positive_finite(function, "PK parameter V2", pMatrix[i][2]);
     check_positive_finite(function, "PK parameter V3", pMatrix[i][3]);
-    check_positive_finite(function, "PK parameter ka", pMatrix[i][4]);
   }
   std::string message4 = ", but must equal the number of parameters in the model: " // NOLINT
-    + boost::lexical_cast<std::string>(model.GetNParameter()) + "!";
+    + boost::lexical_cast<std::string>(nParms) + "!";
   const char* length_error4 = message4.c_str();
-  if (!(pMatrix[0].size() == (size_t) model.GetNParameter()))
+  if (!(pMatrix[0].size() == (size_t) nParms))
     stan::math::invalid_argument(function,
     "The number of parameters per event (length of a vector in the first argument) is", // NOLINT
     pMatrix[0].size(), "", length_error4);
@@ -81,44 +82,35 @@ PKModelTwoCpt(const std::vector<T0>& time,
   // FIX ME - we want to check every array of pMatrix, not
   // just the first one (at index 0)
   std::string message5 = ", but must equal the number of parameters in the model: " // NOLINT
-  + boost::lexical_cast<std::string>(model.GetNParameter()) + "!";
+  + boost::lexical_cast<std::string>(nParms) + "!";
   const char* length_error5 = message5.c_str();
-  if (!(pMatrix[0].size() == (size_t) model.GetNParameter()))
+  if (!(pMatrix[0].size() == (size_t) nParms))
     stan::math::invalid_argument(function,
     "The number of parameters per event (length of a vector in the ninth argument) is", // NOLINT
     pMatrix[0].size(), "", length_error5);
 
   std::string message6 = ", but must equal the number of compartments in the model: " // NOLINT
-  + boost::lexical_cast<std::string>(model.GetNCmt()) + "!";
+  + boost::lexical_cast<std::string>(nCmt) + "!";
   const char* length_error6 = message6.c_str();
-  if (!(biovar[0].size() == (size_t) model.GetNCmt()))
+  if (!(biovar[0].size() == (size_t) nCmt))
     stan::math::invalid_argument(function,
     "The number of biovariability parameters per event (length of a vector in the tenth argument) is", // NOLINT
     biovar[0].size(), "", length_error6);
 
-  if (!(tlag[0].size() == (size_t) model.GetNCmt()))
+  if (!(tlag[0].size() == (size_t) nCmt))
     stan::math::invalid_argument(function,
     "The number of lag times parameters per event (length of a vector in the eleventh argument) is", // NOLINT
     tlag[0].size(), "", length_error5);
 
-  // Construct Pred functions for the model.
-  Pred1_structure new_Pred1("TwoCptModel");
-  PredSS_structure new_PredSS("TwoCptModel");
-  Pred1 = new_Pred1;
-  PredSS = new_PredSS;
-
   // Construct dummy matrix for last argument of pred
-  Matrix<double, Dynamic, Dynamic> dummy_system;
-  vector<Matrix<double, Dynamic, Dynamic> >
+  Matrix<T4, Dynamic, Dynamic> dummy_system;
+  vector<Matrix<T4, Dynamic, Dynamic> >
     dummy_systems(1, dummy_system);
 
-  Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-    typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-    Dynamic, Dynamic> pred;
-  pred = Pred(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix,
-              biovar, tlag, model, dummy_ode(), dummy_systems);
-
-  return pred;
+  return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
+              pMatrix, biovar, tlag,
+              nCmt, dummy_systems,
+              Pred1_twoCpt(), PredSS_twoCpt());
 }
 
 /**

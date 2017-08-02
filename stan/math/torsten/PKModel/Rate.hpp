@@ -11,7 +11,8 @@ template<typename T_time, typename T_rate> class RateHistory;
 
 /**
  * The Rate class defines objects that contain the rate in each compartment
- * at each time of the event schedule (but not nescessarily at each event)
+ * at each time of the event schedule (but not nescessarily at each event,
+ * since two events may happen at the same time).
  */
 template<typename T_time, typename T_rate>
 class Rate {
@@ -32,8 +33,18 @@ public:
   }
 
   // access functions
-  T_time get_time() { return time; }
-  std::vector<T_rate> get_rate() { return rate; }
+  T_time get_time() const { return time; }
+  std::vector<T_rate> get_rate() const { return rate; }
+
+  // Overload = operator
+  // Allows us to construct a rate of var from a rate of double
+  template <typename T0, typename T1>
+  void copy(const Rate<T0, T1>& rate1) {
+    time = rate1.get_time();
+    rate.resize(rate1.get_rate().size());
+    for (size_t i = 0; i < rate.size(); i++)
+      rate[i] = rate1.get_rate()[i];
+  }
 
   void Print() {
     std::cout << time << " ";
@@ -47,10 +58,10 @@ public:
     RateHistory<T_time, T_rate>&);
 
   template <typename T_0, typename T_1, typename T_2, typename T_3,
-    typename T_4, typename T_5, typename T_6, typename F, typename T_7>
+    typename T_4, typename T_5, typename T_6, typename F_1, typename F_2>
   friend
   Eigen::Matrix<typename boost::math::tools::promote_args<T_0, T_1, T_2, T_3,
-    typename boost::math::tools::promote_args<T_4, T_5, T_6, T_7>::type
+    typename boost::math::tools::promote_args<T_4, T_5, T_6>::type
     >::type, Eigen::Dynamic, Eigen::Dynamic>
   Pred(const std::vector<T_0>& time,
        const std::vector<T_1>& amt,
@@ -63,10 +74,11 @@ public:
        const std::vector<std::vector<T_4> >& pMatrix,
        const std::vector<std::vector<T_5> >& biovar,
        const std::vector<std::vector<T_6> >& tlag,
-       PKModel model,
-       const F& f,
-       const std::vector<Eigen::Matrix<T_7, Eigen::Dynamic, Eigen::Dynamic> >&
-         system);
+       const int& nCmt,
+       const std::vector<Eigen::Matrix<T_4, Eigen::Dynamic, Eigen::Dynamic> >&
+         system,
+       const F_1& f1,
+       const F_2& fss);
 };
 
 /**

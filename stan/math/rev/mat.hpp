@@ -4,6 +4,7 @@
 #include <stan/math/rev/core.hpp>
 #include <stan/math/rev/scal/meta/is_var.hpp>
 #include <stan/math/rev/scal/meta/partials_type.hpp>
+#include <stan/math/rev/mat/meta/operands_and_partials.hpp>
 
 #include <stan/math/rev/mat/fun/Eigen_NumTraits.hpp>
 
@@ -51,6 +52,7 @@
 #include <stan/math/rev/mat/fun/trace_quad_form.hpp>
 #include <stan/math/rev/mat/fun/typedefs.hpp>
 #include <stan/math/rev/mat/fun/variance.hpp>
+#include <stan/math/rev/mat/functor/algebra_solver.hpp>
 #include <stan/math/rev/mat/functor/gradient.hpp>
 #include <stan/math/rev/mat/functor/jacobian.hpp>
 #include <stan/math/rev/mat/functor/ode_system.hpp>

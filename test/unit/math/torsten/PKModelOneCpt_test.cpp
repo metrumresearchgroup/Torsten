@@ -9,7 +9,6 @@ using Eigen::Matrix;
 using Eigen::Dynamic;
 
 TEST(Torsten, PKModelOneCpt_MultipleDoses) {
-
 	vector<vector<double> > pMatrix(1);
 	pMatrix[0].resize(3);
 	pMatrix[0][0] = 10;  // CL
@@ -69,8 +68,136 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses) {
 	expect_matrix_eq(amounts, x);
 
   // Test AutoDiff against FiniteDiff
-   test_PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
-                      pMatrix, biovar, tlag, 1e-8, 1e-4);
+  test_PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                     pMatrix, biovar, tlag, 1e-8, 1e-4);
+}
+
+TEST(Torsten, PKModelOneCpt_MultipleDoses_IV) {
+	vector<vector<double> > pMatrix(1);
+	pMatrix[0].resize(3);
+	pMatrix[0][0] = 10;  // CL
+	pMatrix[0][1] = 80;  // Vc
+	pMatrix[0][2] = -1;  // ka  // just showing it can be negative...
+
+	int nCmt = 2;
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(nCmt);
+	biovar[0][0] = 1;  // F1
+	biovar[0][1] = 1;  // F2
+
+	vector<vector<double> > tlag(1);
+	tlag[0].resize(nCmt);
+	tlag[0][0] = 0;  // tlag1
+	tlag[0][1] = 0;  // tlag2
+
+	vector<double> time(10);
+	time[0] = 0;
+	for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
+	time[9] = 4.0;
+
+	vector<double> amt(10, 0);
+	amt[0] = 1000;
+
+	vector<double> rate(10, 0);
+
+	vector<int> cmt(10, 2);
+	cmt[0] = 2;  // IV infusion, not absorption from the gut
+
+	vector<int> evid(10, 0);
+	evid[0] = 1;
+
+	vector<double> ii(10, 0);
+	ii[0] = 12;
+
+	vector<int> addl(10, 0);
+	addl[0] = 14;
+
+	vector<int> ss(10, 0);
+
+	Matrix<double, Dynamic, Dynamic> x;
+	x = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag);
+
+	Matrix<double, Dynamic, Dynamic> amounts(10, 2);
+	amounts << 0, 1000.0000,
+      0,  969.2332,
+      0,  939.4131,
+      0 , 910.5104,
+      0,  882.4969,
+      0,  855.3453,
+      0,  829.0291,
+      0,  803.5226,
+      0,  778.8008,
+      0,  606.5307;
+
+	expect_matrix_eq(amounts, x);
+
+  // Test AutoDiff against FiniteDiff
+  test_PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                     pMatrix, biovar, tlag, 1e-8, 1e-4);
+}
+
+
+TEST(Torsten, PKModelOneCpt_MultipleDoses_lagTime) {
+  vector<vector<double> > pMatrix(1);
+  pMatrix[0].resize(3);
+  pMatrix[0][0] = 10;  // CL
+  pMatrix[0][1] = 80;  // Vc
+  pMatrix[0][2] = 1.2;  // ka
+  
+  int nCmt = 2;
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(nCmt);
+  biovar[0][0] = 1;  // F1
+  biovar[0][1] = 1;  // F2
+  
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(nCmt);
+  tlag[0][0] = 5;  // tlag1
+  tlag[0][1] = 0;  // tlag2
+  
+  vector<double> time(10);
+  time[0] = 0;
+  for(int i = 1; i < 10; i++) time[i] = time[i - 1] + 1;
+
+  vector<double> amt(10, 0);
+  amt[0] = 1200;
+  
+  vector<double> rate(10, 0);
+  
+  vector<int> cmt(10, 2);
+  cmt[0] = 1;
+  
+  vector<int> evid(10, 0);
+  evid[0] = 1;
+  
+  vector<double> ii(10, 0);
+  ii[0] = 12;
+  
+  vector<int> addl(10, 0);
+  addl[0] = 14;
+  
+  vector<int> ss(10, 0);
+  
+  Matrix<double, Dynamic, Dynamic> x;
+  x = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag);
+  
+  Matrix<double, Dynamic, Dynamic> amounts(10, 2);
+  amounts << 0, 0,
+             0, 0,
+             0, 0,
+             0, 0,
+             0, 0,
+             0, 0,
+             361.433054, 778.6752,
+             108.861544, 921.7110,
+             32.788467, 884.0469,
+             9.875696, 801.4449;
+
+  expect_matrix_eq(amounts, x);
+
+  // Test AutoDiff against FiniteDiff
+  test_PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                     pMatrix, biovar, tlag, 1e-8, 1e-4);
 }
 
 TEST(Torsten, PKModelOneCpt_MultipleDoses_overload) {
@@ -104,7 +231,7 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses_overload) {
 
 	vector<int> cmt(10, 2);
 	cmt[0] = 1;
-	
+
 	vector<int> evid(10, 0);
 	evid[0] = 1;
 
@@ -144,7 +271,7 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses_overload) {
 			   122.4564, 760.25988,
 			   90.71795, 768.09246,
 			   8.229747, 667.87079;
-			   
+
 	expect_matrix_eq(amounts, x_122);
 	expect_matrix_eq(amounts, x_112);
 	expect_matrix_eq(amounts, x_111);
@@ -159,13 +286,13 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses_overload) {
 
 TEST(Torsten, PKModelOneCpt_signature_test) {
   using stan::math::var;
-  
+
   vector<vector<double> > pMatrix(1);
   pMatrix[0].resize(3);
   pMatrix[0][0] = 10; // CL
   pMatrix[0][1] = 80; // Vc
   pMatrix[0][2] = 1.2; // ka
-  
+
   vector<vector<double> > biovar(1);
   biovar[0].resize(2);
   biovar[0][0] = 1;  // F1
@@ -196,26 +323,26 @@ TEST(Torsten, PKModelOneCpt_signature_test) {
   time[0] = 0.0;
   for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
   time[9] = 4.0;
-  
+
   vector<double> amt(10, 0);
   amt[0] = 1000;
-  
+
   vector<double> rate(10, 0);
-  
+
   vector<int> cmt(10, 2);
   cmt[0] = 1;
-  
+
   vector<int> evid(10, 0);
   evid[0] = 1;
-  
+
   vector<double> ii(10, 0);
   ii[0] = 12;
-  
+
   vector<int> addl(10, 0);
   addl[0] = 14;
-  
+
   vector<int> ss(10, 0);
-  
+
   Matrix<double, Dynamic, Dynamic> amounts(10, 2);
   amounts << 1000.0, 0.0,
              740.8182, 254.97490,
@@ -227,7 +354,7 @@ TEST(Torsten, PKModelOneCpt_signature_test) {
              122.4564, 760.25988,
              90.71795, 768.09246,
              8.229747, 667.87079;
-  
+
   vector<Matrix<var, Dynamic, Dynamic> > x_122(7);
   x_122[0] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix_v[0], biovar, tlag);
@@ -243,13 +370,13 @@ TEST(Torsten, PKModelOneCpt_signature_test) {
                            pMatrix[0], biovar_v, tlag_v);
   x_122[6] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix[0], biovar, tlag_v);
-  
+
   for (size_t i = 0; i < x_122.size(); i++)
     for (int j = 0; j < x_122[i].rows(); j++)
       for (int k = 0; k < x_122[i].cols(); k++)
         EXPECT_FLOAT_EQ(amounts(j, k), x_122[i](j, k).val());
-  
-  
+
+
   vector<Matrix<var, Dynamic, Dynamic> > x_112(7);
   x_112[0] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix_v[0], biovar[0], tlag);
@@ -265,13 +392,13 @@ TEST(Torsten, PKModelOneCpt_signature_test) {
                            pMatrix[0], biovar_v[0], tlag_v);
   x_112[6] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix[0], biovar[0], tlag_v);
-  
+
   for (size_t i = 0; i < x_112.size(); i++)
     for (int j = 0; j < x_112[i].rows(); j++)
       for (int k = 0; k < x_112[i].cols(); k++)
         EXPECT_FLOAT_EQ(amounts(j, k), x_112[i](j, k).val());
-  
-  
+
+
   vector<Matrix<var, Dynamic, Dynamic> > x_121(7);
   x_121[0] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix_v[0], biovar, tlag[0]);
@@ -287,13 +414,13 @@ TEST(Torsten, PKModelOneCpt_signature_test) {
                            pMatrix[0], biovar_v, tlag_v[0]);
   x_121[6] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix[0], biovar, tlag_v[0]);
-  
+
   for (size_t i = 0; i < x_121.size(); i++)
     for (int j = 0; j < x_121[i].rows(); j++)
       for (int k = 0; k < x_121[i].cols(); k++)
         EXPECT_FLOAT_EQ(amounts(j, k), x_121[i](j, k).val());
-  
-  
+
+
   vector<Matrix<var, Dynamic, Dynamic> > x_111(7);
   x_111[0] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix_v[0], biovar[0], tlag[0]);
@@ -309,13 +436,13 @@ TEST(Torsten, PKModelOneCpt_signature_test) {
                            pMatrix[0], biovar_v[0], tlag_v[0]);
   x_111[6] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix[0], biovar[0], tlag_v[0]);
-  
+
   for (size_t i = 0; i < x_111.size(); i++)
     for (int j = 0; j < x_111[i].rows(); j++)
       for (int k = 0; k < x_111[i].cols(); k++)
         EXPECT_FLOAT_EQ(amounts(j, k), x_111[i](j, k).val());
-  
-  
+
+
   vector<Matrix<var, Dynamic, Dynamic> > x_212(7);
   x_212[0] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix_v, biovar[0], tlag);
@@ -331,13 +458,13 @@ TEST(Torsten, PKModelOneCpt_signature_test) {
                            pMatrix, biovar_v[0], tlag_v);
   x_212[6] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix, biovar[0], tlag_v);
-  
+
   for (size_t i = 0; i < x_212.size(); i++)
     for (int j = 0; j < x_212[i].rows(); j++)
       for (int k = 0; k < x_212[i].cols(); k++)
         EXPECT_FLOAT_EQ(amounts(j, k), x_212[i](j, k).val());
-  
-  
+
+
   vector<Matrix<var, Dynamic, Dynamic> > x_211(7);
   x_211[0] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix_v, biovar[0], tlag[0]);
@@ -353,13 +480,13 @@ TEST(Torsten, PKModelOneCpt_signature_test) {
                            pMatrix, biovar_v[0], tlag_v[0]);
   x_211[6] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix, biovar[0], tlag_v[0]);
-  
+
   for (size_t i = 0; i < x_211.size(); i++)
     for (int j = 0; j < x_211[i].rows(); j++)
       for (int k = 0; k < x_211[i].cols(); k++)
         EXPECT_FLOAT_EQ(amounts(j, k), x_211[i](j, k).val());
-  
-  
+
+
   vector<Matrix<var, Dynamic, Dynamic> > x_221(7);
   x_221[0] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix_v, biovar, tlag[0]);
@@ -375,12 +502,12 @@ TEST(Torsten, PKModelOneCpt_signature_test) {
                            pMatrix, biovar_v, tlag_v[0]);
   x_221[6] = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix, biovar, tlag_v[0]);
-  
+
   for (size_t i = 0; i < x_221.size(); i++)
     for (int j = 0; j < x_221[i].rows(); j++)
       for (int k = 0; k < x_221[i].cols(); k++)
-        EXPECT_FLOAT_EQ(amounts(j, k), x_221[i](j, k).val()); 
-  
+        EXPECT_FLOAT_EQ(amounts(j, k), x_221[i](j, k).val());
+
   // CHECK - do I need an AD test for every function signature ?
 }
 
@@ -461,13 +588,13 @@ TEST(Torsten, PKModelOneCpt_SS_rate) {
   pMatrix[0][0] = 10; // CL
   pMatrix[0][1] = 80; // Vc
   pMatrix[0][2] = 1.2; // ka
-  
+
   int nCmt = 2;
   vector<vector<double> > biovar(1);
   biovar[0].resize(nCmt);
   biovar[0][0] = 1;  // F1
   biovar[0][1] = 1;  // F2
-  
+
   vector<vector<double> > tlag(1);
   tlag[0].resize(nCmt);
   tlag[0][0] = 0;  // tlag1
@@ -587,10 +714,153 @@ TEST(Torsten, PKModelOneCpt_MultipleDoses_timePara) {
 			   6.772877e-02, 16.5774607,
 			   3.372017e-03, 3.4974152,
 			   1.678828e-04, 0.7342228;
-			   
+
 	expect_matrix_eq(amounts, x);
 
 	// Test AutoDiff against FiniteDiff
     test_PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                        pMatrix, biovar, tlag, 1e-8, 1e-4);
 }
+
+TEST(Torsten, PKModelOneCptModel_Rate) {
+  using std::vector;
+
+  vector<vector<double> > pMatrix(1);
+  pMatrix[0].resize(3);
+  pMatrix[0][0] = 10;  // CL
+  pMatrix[0][1] = 80;  // Vc
+  pMatrix[0][2] = 1.2;  // ka
+
+  int nCmt = 2;
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(nCmt);
+  biovar[0][0] = 1;  // F1
+  biovar[0][1] = 1;  // F2
+
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(nCmt);
+  tlag[0][0] = 0;  // tlag1
+  tlag[0][1] = 0;  // tlag2
+
+  vector<double> time(10);
+  time[0] = 0;
+  for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
+  time[9] = 4.0;
+
+  vector<double> amt(10, 0);
+  amt[0] = 1200;
+
+  vector<double> rate(10, 0);
+  rate[0] = 1200;
+
+  vector<int> cmt(10, 2);
+  cmt[0] = 1;
+
+  vector<int> evid(10, 0);
+  evid[0] = 1;
+
+  vector<double> ii(10, 0);
+  ii[0] = 12;
+
+  vector<int> addl(10, 0);
+  addl[0] = 14;
+
+  vector<int> ss(10, 0);
+
+  Matrix<double, Dynamic, Dynamic> x;
+  x = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                    pMatrix, biovar, tlag);
+
+  Matrix<double, Dynamic, Dynamic> amounts(10, 2);
+  amounts << 0.00000,   0.00000,
+             259.18178,  40.38605,
+             451.18836, 145.61440,
+             593.43034, 296.56207,
+             698.80579, 479.13371,
+             517.68806, 642.57025,
+             383.51275, 754.79790,
+             284.11323, 829.36134,
+             210.47626, 876.28631,
+             19.09398, 844.11769;
+
+  expect_matrix_eq(amounts, x);
+
+  // Test AutoDiff against FiniteDiff
+  test_PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                     pMatrix, biovar, tlag, 1e-8, 5e-4);
+}
+
+
+/*
+TEST(Torsten, PKModelOneCptModel_SS_rate_2) {
+  // Test the special case where the infusion rate is longer than
+  // the interdose interval.
+  // THIS TEST FAILS.
+  using std::vector;
+
+  vector<vector<double> > pMatrix(1);
+  pMatrix[0].resize(3);
+  pMatrix[0][0] = 10;  // CL
+  pMatrix[0][1] = 80;  // Vc
+  pMatrix[0][2] = 1.2;  // ka
+
+  int nCmt = 2;
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(nCmt);
+  biovar[0][0] = 1;  // F1
+  biovar[0][1] = 1;  // F2
+
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(nCmt);
+  tlag[0][0] = 0;  // tlag1
+  tlag[0][1] = 0;  // tlag2
+
+  vector<double> time(10);
+  time[0] = 0;
+  for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
+  time[9] = 4.0;
+
+  vector<double> amt(10, 0);
+  amt[0] = 1200;
+
+  vector<double> rate(10, 0);
+  rate[0] = 75;
+
+  vector<int> cmt(10, 2);
+  cmt[0] = 1;
+
+  vector<int> evid(10, 0);
+  evid[0] = 1;
+
+  vector<double> ii(10, 0);
+  ii[0] = 12;
+
+  vector<int> addl(10, 0);
+  addl[0] = 14;
+
+  vector<int> ss(10, 0);
+
+  Matrix<double, Dynamic, Dynamic> x;
+  x = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                    pMatrix, biovar, tlag);
+
+  std::cout << x << std::endl;
+
+  Matrix<double, Dynamic, Dynamic> amounts(10, 2);
+  amounts << 62.50420, 724.7889,
+             78.70197, 723.4747,
+             90.70158, 726.3310,
+             99.59110, 732.1591,
+             106.17663, 740.0744,
+             111.05530, 749.4253,
+             114.66951, 759.7325,
+             117.34699, 770.6441,
+             119.33051, 781.9027,
+             124.48568, 870.0308;
+
+  // expect_matrix_eq(amounts, x);
+
+  // Test AutoDiff against FiniteDiff
+  // test_PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+  //                   pMatrix, biovar, tlag, 1e-8, 5e-4);
+} */

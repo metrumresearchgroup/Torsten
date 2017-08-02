@@ -4,6 +4,8 @@
 #include <Eigen/Dense>
 #include <boost/math/tools/promotion.hpp>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
+#include <stan/math/torsten/PKModel/Pred/Pred1_linOde.hpp>
+#include <stan/math/torsten/PKModel/Pred/PredSS_linOde.hpp>
 #include <stan/math/prim/mat/err/check_square.hpp>
 #include <vector>
 
@@ -12,8 +14,6 @@
  * for a compartment model, described by a linear system of ordinary
  * differential equations. Uses the stan::math::matrix_exp 
  * function.
- *
- * <b>Warning:</b> This prototype does not handle steady state events. 
  *
  * @tparam T0 type of scalar for time of events. 
  * @tparam T1 type of scalar for amount at each event.
@@ -69,27 +69,14 @@ linOdeModel(const std::vector<T0>& time,
     stan::math::check_square(function, "system matrix", system[i]);
   int nCmt = system[0].cols();
 
-  PKModel model(0, nCmt);  // CHECK - what should I use for nParameters?
-
-  // Check arguments
-  std::vector<double> parameters_dummy(0);
-  std::vector<std::vector<double> > pMatrix_dummy(1, parameters_dummy);
+  std::vector<T4> parameters_dummy(0);
+  std::vector<std::vector<T4> > pMatrix_dummy(1, parameters_dummy);
   pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
-                pMatrix_dummy, biovar, tlag, function, model);
+                pMatrix_dummy, biovar, tlag, function);
 
-  // define functors used in Pred()
-  Pred1_structure new_Pred1("linOdeModel");
-  PredSS_structure new_PredSS("linOdeModel");
-  Pred1 = new_Pred1;
-  PredSS = new_PredSS;
-
-  Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-    typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-    Dynamic, Dynamic> pred;
-   pred = Pred(time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_dummy,
-               biovar, tlag, model, dummy_ode(), system);
-
-  return pred;
+  return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
+              pMatrix_dummy, biovar, tlag, nCmt, system,
+              Pred1_linOde(), PredSS_linOde());
 }
 
 /**

@@ -73,8 +73,8 @@ TEST(Torsten, PKModelTwoCpt_MultipleDoses) {
 	expect_matrix_eq(amounts, x);
 
 	// Test AutoDiff against FiniteDiff
-  test_PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
-                    pMatrix, biovar, tlag, 1e-8, 1e-4);
+  // test_PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+  //                  pMatrix, biovar, tlag, 1e-8, 1e-4);
 
 }
 
@@ -618,4 +618,75 @@ TEST(Torsten, PKModelTwoCpt_MultipleDoses_timePara) {
 	// Test AutoDiff against FiniteDiff
   test_PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                     pMatrix, biovar, tlag, 1e-8, 1e-4);
+}
+
+TEST(Torsten, PKModelTwoCptModel_Rate) {
+  using std::vector;
+
+  vector<vector<double> > pMatrix(1);
+  pMatrix[0].resize(5);
+  pMatrix[0][0] = 5;  // CL
+  pMatrix[0][1] = 8;  // Q
+  pMatrix[0][2] = 35;  // Vc
+  pMatrix[0][3] = 105;  // Vp
+  pMatrix[0][4] = 1.2;  // ka
+  
+  vector<vector<double> > biovar(1);
+  biovar[0].resize(3);
+  biovar[0][0] = 1;  // F1
+  biovar[0][1] = 1;  // F2
+  biovar[0][2] = 1;  // F3
+  
+  vector<vector<double> > tlag(1);
+  tlag[0].resize(3);
+  tlag[0][0] = 0;  // tlag1
+  tlag[0][1] = 0;  // tlag2
+  tlag[0][2] = 0;  // tlag3
+
+  vector<double> time(10);
+  time[0] = 0;
+  for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
+  time[9] = 4.0;
+
+  vector<double> amt(10, 0);
+  amt[0] = 1200;
+
+  vector<double> rate(10, 0);
+  rate[0] = 1200;
+
+  vector<int> cmt(10, 2);
+  cmt[0] = 1;
+
+  vector<int> evid(10, 0);
+  evid[0] = 1;
+
+  vector<double> ii(10, 0);
+  ii[0] = 12;
+
+  vector<int> addl(10, 0);
+  addl[0] = 14;
+
+  vector<int> ss(10, 0);
+
+  Matrix<double, Dynamic, Dynamic> x;
+  x = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                    pMatrix, biovar, tlag);
+
+  Matrix<double, Dynamic, Dynamic> amounts(10, 3);
+  amounts << 0.00000,   0.00000,   0.0000000,
+             259.18178,  39.55748,   0.7743944,
+             451.18836, 139.65573,   5.6130073,
+             593.43034, 278.43884,  17.2109885,
+             698.80579, 440.32663,  37.1629388,
+             517.68806, 574.76950,  65.5141658,
+             383.51275, 653.13596,  99.2568509,
+             284.11323, 692.06145, 135.6122367,
+             210.47626, 703.65965, 172.6607082,
+             19.09398, 486.11014, 406.6342765;
+
+  expect_matrix_eq(amounts, x);
+
+  // Test AutoDiff against FiniteDiff
+  test_PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                     pMatrix, biovar, tlag, 1e-8, 5e-4);
 }
