@@ -5,10 +5,9 @@
 #include <stan/math/prim/scal/fun/is_nonpositive_integer.hpp>
 #include <stan/math/prim/scal/fun/value_of_rec.hpp>
 #include <cmath>
-#include <limits>
-#include <sstream>
 #include <stdexcept>
-#include <string>
+#include <sstream>
+#include <limits>
 
 namespace stan {
   namespace math {
