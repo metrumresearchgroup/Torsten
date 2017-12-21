@@ -6,6 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <test/unit/util.hpp>
+#include <vector>
 
 // Every test exists in duplicate to test the case
 // where y (the auxiliary parameters) are passed as

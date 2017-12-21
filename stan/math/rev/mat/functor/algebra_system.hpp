@@ -43,7 +43,7 @@ namespace stan {
                      const std::vector<double>& dat,
                      const std::vector<int>& dat_int,
                      std::ostream* msgs)
-        : f_(), x_(x), y_(y), dat_(dat), dat_int_(dat_int), msgs_(msgs) { }
+        : f_(f), x_(x), y_(y), dat_(dat), dat_int_(dat_int), msgs_(msgs) { }
 
       /**
        * An operator that takes in an independent variable. The
