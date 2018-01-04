@@ -31,20 +31,15 @@ namespace stan {
      * @return Scalar of integral value.
      */
 
-    template <typename F>
-    inline double univariate_integral(F f,	// function to be integrated
-				      const std::vector<double>& theta, // ode params
+    template <typename F, typename T2>
+    inline double univariate_integral(F& f,	// function to be integrated
+				      const std::vector<T2>& theta, // ode params
 				      const double& t0, // interval end: left
-				      const double& t1, // interval end: right
-				      const int& n) { // number of steps
+				      const double& t1) { // interval end: right
       using std::vector;
 
-      std::vector<double> y0 ;
-      y0.push_back(0.0);
-      double h {(t1-t0)/double(n)};
-      std::vector<double> ts;
-      for (int i = 0; i < n; i++) ts.push_back(t0 + h * (i + 1));
-
+      std::vector<double> y0 {0.0} ;
+      std::vector<double> ts { t1 };
       std::vector<double> x;
       std::vector<int> x_int;
 
@@ -52,7 +47,7 @@ namespace stan {
 	= stan::math::integrate_ode_rk45(f, y0, t0,
 					 ts, theta, x, x_int);
 
-      double res {ode_res_vd[n-1][0]};
+      double res {ode_res_vd.back().back()};
 
       return res;
     }
