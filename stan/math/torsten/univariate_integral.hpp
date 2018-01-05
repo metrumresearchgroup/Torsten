@@ -29,15 +29,15 @@ namespace math {
  * @return Scalar of integral value.
  */
 
-template <typename F, typename T2>
+template <typename F>
 inline double univariate_integral(F &f0,  // function to be integrated
-                                  const std::vector<T2> &theta,  // ode params
                                   const double &t0,    // interval end: left
                                   const double &t1) {  // interval end: right
   using std::vector;
 
   std::vector<double> y0{0.0};
   std::vector<double> ts{t1};
+  std::vector<double> theta;
   std::vector<double> x;
   std::vector<int> x_int;
 
