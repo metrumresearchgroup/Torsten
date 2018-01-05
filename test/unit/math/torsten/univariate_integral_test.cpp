@@ -13,9 +13,9 @@ public:
   univar_functor_ord0(double& val) : val_(val) {}
   template <typename T0>
   inline
-  std::vector<typename stan::return_type<T0, double>::type>
+  std::vector<typename stan::return_type<T0>::type>
   operator()(const T0& t_in) const { // init time
-    std::vector<typename stan::return_type<T0, double>::type> res {val_};
+    std::vector<typename stan::return_type<T0>::type> res {val_};
     return res;
   }
 };
@@ -26,9 +26,9 @@ public:
   univar_functor_ord1(double& k) : k_(k) {}
   template <typename T0>
   inline
-  std::vector<typename stan::return_type<T0, double>::type>
+  std::vector<typename stan::return_type<T0>::type>
   operator()(const T0& t_in) const {	// initial time
-    std::vector<typename stan::return_type<T0, double>::type> res {k_*t_in};
+    std::vector<typename stan::return_type<T0>::type> res {k_*t_in};
     return res;
   }
 };
@@ -40,9 +40,9 @@ public:
     a_(a), b_(b), c_(c) {}
   template <typename T0>
   inline
-  std::vector<typename stan::return_type<T0, double>::type>
+  std::vector<typename stan::return_type<T0>::type>
   operator()(const T0& t_in) const {
-    std::vector<typename stan::return_type<T0, double>::type> res;
+    std::vector<typename stan::return_type<T0>::type> res;
     res.push_back(a_ + b_*t_in + c_*t_in*t_in);
     return res;
   }
