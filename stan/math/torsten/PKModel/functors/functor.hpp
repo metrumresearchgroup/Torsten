@@ -7,6 +7,28 @@
 #include <iostream>
 
 /**
+ * Convert a simple univariate function to the signature of
+ * ODE system RHS.
+ */
+template <typename F0>
+struct ode_simple_functor {
+  F0 f0_;
+  ode_simple_functor() {}
+  explicit ode_simple_functor(const F0& f0) : f0_(f0) {}
+  template <typename T0, typename T1, typename T2, typename T3>
+  inline
+  std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
+  operator()(const T0& t,
+             const std::vector<T1>& y,
+             const std::vector<T2>& theta,
+             const std::vector<T3>& x_r,
+             const std::vector<int>& x_i,
+             std::ostream* pstream_) const {
+    return f0_(t, theta);
+  }
+};
+
+/**
  * Functors for the general and the mix solver.
  * Returns the derivative of the ODE system describing
  * the pharmacometrics process, which is given by the
