@@ -7,65 +7,71 @@
 #include <vector>
 #include <test/unit/util.hpp>
 
-struct univar_functor_ord0 {
-  template <typename T0, typename T2>
+class univar_functor_ord0 {
+  double val_;
+public:
+  univar_functor_ord0(double& val) : val_(val) {}
+  template <typename T0>
   inline
-  std::vector<typename stan::return_type<T0,T2>::type>
-  operator()(const T0& t_in,	// initial time
-             const std::vector<T2>& theta) const { // param
-    std::vector<typename stan::return_type<T0,T2>::type> res {theta.front()};
+  std::vector<typename stan::return_type<T0, double>::type>
+  operator()(const T0& t_in) const { // init time
+    std::vector<typename stan::return_type<T0, double>::type> res {val_};
     return res;
   }
 };
 
-struct univar_functor_ord1 {
-  template <typename T0, typename T2>
+class univar_functor_ord1 {
+  double k_;
+public:
+  univar_functor_ord1(double& k) : k_(k) {}
+  template <typename T0>
   inline
-  std::vector<typename stan::return_type<T0,T2>::type>
-  operator()(const T0& t_in,	// initial time
-             const std::vector<T2>& theta) const { // param
-    std::vector<typename stan::return_type<T0,T2>::type> res {theta.front()*t_in};
+  std::vector<typename stan::return_type<T0, double>::type>
+  operator()(const T0& t_in) const {	// initial time
+    std::vector<typename stan::return_type<T0, double>::type> res {k_*t_in};
     return res;
   }
 };
 
-struct univar_functor_ord2 {
-  template <typename T0, typename T2>
+class univar_functor_ord2 {
+  double a_, b_, c_;
+public:
+  univar_functor_ord2(double& a, double& b, double& c) :
+    a_(a), b_(b), c_(c) {}
+  template <typename T0>
   inline
-  std::vector<typename stan::return_type<T0,T2>::type>
-  operator()(const T0& t_in,	// initial time
-             const std::vector<T2>& theta) const { // param
-    std::vector<typename stan::return_type<T0,T2>::type> res;
-    res.push_back(theta.at(0) + theta.at(1)*t_in + theta.at(2)*t_in*t_in);
+  std::vector<typename stan::return_type<T0, double>::type>
+  operator()(const T0& t_in) const {
+    std::vector<typename stan::return_type<T0, double>::type> res;
+    res.push_back(a_ + b_*t_in + c_*t_in*t_in);
     return res;
   }
 };
 
 TEST(univariate_integral, const_example) {
-  univar_functor_ord0 f0;
+  double val {2.0};
+  univar_functor_ord0 f0{val};
   double t0 {0.0};
   double t1 {2.5};
-  std::vector<double> theta {2.0};
 
-  EXPECT_NEAR(5.0, stan::math::univariate_integral(f0, theta, t0, t1), 1e-5);
+  EXPECT_NEAR(5.0, stan::math::univariate_integral(f0, t0, t1), 1e-5);
 }
 
 TEST(univariate_integral, linear_example) {
-
-  univar_functor_ord1 f0;
+  double k {1.2};
+  univar_functor_ord1 f0 {k};
   double t0 {0.0};
   double t1 {2.5};
-  std::vector<double> theta {1.2};
 
-  EXPECT_NEAR(3.75, stan::math::univariate_integral(f0, theta, t0, t1), 1e-5);
+  EXPECT_NEAR(3.75, stan::math::univariate_integral(f0, t0, t1), 1e-5);
 }
 
 TEST(univariate_integral, quad_example) {
-  univar_functor_ord2 f0;
+  double a{2.3}, b{2.0}, c{1.5};
+  univar_functor_ord2 f0(a, b, c);
   double t0 {0.0};
   double t1 {0.4};
-  std::vector<double> theta {2.3, 2.0, 1.5};
 
-  EXPECT_NEAR(1.112, stan::math::univariate_integral(f0, theta, t0, t1), 1e-5);
+  EXPECT_NEAR(1.112, stan::math::univariate_integral(f0, t0, t1), 1e-5);
 }
 
