@@ -24,7 +24,7 @@ struct ode_simple_functor {
              const std::vector<T3>& x_r,
              const std::vector<int>& x_i,
              std::ostream* pstream_) const {
-    return f0_(t);
+    return f0_(t, pstream_);
   }
 };
 
