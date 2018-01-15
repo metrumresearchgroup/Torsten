@@ -32,7 +32,7 @@ namespace stan {
     template <typename F, typename T0, typename T1>
     inline
     typename stan::return_type<T0, T1>::type
-    univariate_integral(F &f0,  // function to be integrated
+    univariate_integral(const F &f0,  // function to be integrated
 			       const T0 &t0,    // interval end: left
 			       const T1 &t1) {  // interval end: right
       using std::vector;
