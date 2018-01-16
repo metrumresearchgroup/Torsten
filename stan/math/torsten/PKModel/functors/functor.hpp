@@ -16,7 +16,7 @@ template <typename F0>
 struct ode_univar_fixed_interval_functor {
   F0 f0_;
   ode_univar_fixed_interval_functor() {}
-  explict ode_univar_fixed_interval_functor(const F0& f0) : f0_(f0) {}
+  explicit ode_univar_fixed_interval_functor(const F0& f0) : f0_(f0) {}
   template <typename T0, typename T1, typename T2, typename T3>
   inline
   std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
