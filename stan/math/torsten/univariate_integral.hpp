@@ -19,39 +19,34 @@ namespace stan {
      * (t0, t1) can be obtained by solving u(t) from
      * dy/dt = f(t) with y(t0) = 0,
      * so that the seeked integral is
-     * y(t1)
+     * y(t1). To bypass the limit that t0 & t1 cannot be
+     * parameters we put them in theta and perform a
+     * change-of-variable over the integrand.
      *
      * @tparam F Type of functor that is to be integrated.
      * @param f function that is to be integrated
-     * @param theta parameters of f
-     * @param t0 integration interval left end
-     * @param t1 integration interval right end
-     * @return Scalar of integral value.
+     * @param theta integral limits as parameters
+     * @return vector of integral value(as integrand is a * vector function).
      */
 
     template <typename F, typename T0, typename T1>
     inline
-    typename stan::return_type<T0, T1>::type
+    std::vector<typename stan::return_type<T0, T1>::type>
     univariate_integral(const F &f0,  // function to be integrated
-			       const T0 &t0,    // interval end: left
-			       const T1 &t1) {  // interval end: right
-      using std::vector;
-
-      std::vector<double> y0{0.0};
-      std::vector<double> ts{t1};
-      std::vector<double> theta;
+                        const std::vector<T0>& y,        // init state
+                        const std::vector<T1>& theta) {  // integral limits
+      double t0{0.0};
+      std::vector<double> ts{1.0};  // integral in [0, 1]
       std::vector<double> x;
       std::vector<int> x_int;
 
-      ode_simple_functor<F> f{f0};
+      ode_univar_fixed_interval_functor<F> f{f0};  // change-of-variable
 
       using scalar = typename stan::return_type<T0, T1>::type;
       std::vector<std::vector<scalar>> ode_res_vd =
-	stan::math::integrate_ode_rk45(f, y0, t0, ts, theta, x, x_int);
+        stan::math::integrate_ode_rk45(f, y, t0, ts, theta, x, x_int);
 
-      double res{ode_res_vd.back().back()};
-
-      return res;
+      return ode_res_vd.back();
     }
   }
 }

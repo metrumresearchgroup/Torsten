@@ -5,6 +5,8 @@
 #include <stan/math/fwd/core.hpp>
 #include <vector>
 #include <iostream>
+#include <functional>
+#include <algorithm>
 
 namespace torsten {
 
@@ -13,10 +15,10 @@ namespace torsten {
  * ODE system RHS.
  */
 template <typename F0>
-struct ode_simple_functor {
+struct ode_univar_fixed_interval_functor {
   F0 f0_;
-  ode_simple_functor() {}
-  explicit ode_simple_functor(const F0& f0) : f0_(f0) {}
+  ode_univar_fixed_interval_functor() {}
+  explict ode_univar_fixed_interval_functor(const F0& f0) : f0_(f0) {}
   template <typename T0, typename T1, typename T2, typename T3>
   inline
   std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
@@ -26,7 +28,15 @@ struct ode_simple_functor {
              const std::vector<T3>& x_r,
              const std::vector<int>& x_i,
              std::ostream* pstream_) const {
-    return f0_(t, pstream_);
+    auto t1 {theta[0]};
+    auto t2 {theta[1]};
+    auto jacobian {t2 - t1};
+    auto res { f0_(t2*t + t1*(1.0-t), pstream_) };
+
+    // scale results with jacobian
+    std::transform(res.begin(), res.end(), res.begin(),
+                   std::bind1st(std::multiplies<T2>(), jacobian) );
+    return res;
   }
 };
 
