@@ -25,6 +25,7 @@ namespace stan {
      *
      * @tparam F Type of functor that is to be integrated.
      * @param f function that is to be integrated
+     * @param y0 init condition of ODE
      * @param theta integral limits as parameters
      * @return vector of integral value(as integrand is a * vector function).
      */
@@ -33,7 +34,7 @@ namespace stan {
     inline
     std::vector<typename stan::return_type<T0, T1>::type>
     univariate_integral(const F &f0,  // function to be integrated
-                        const std::vector<T0>& y,        // init state
+                        const std::vector<T0>& y0,        // init state
                         const std::vector<T1>& theta) {  // integral limits
       double t0{0.0};
       std::vector<double> ts{1.0};  // integral in [0, 1]
@@ -44,7 +45,7 @@ namespace stan {
 
       using scalar = typename stan::return_type<T0, T1>::type;
       std::vector<std::vector<scalar>> ode_res_vd =
-        stan::math::integrate_ode_rk45(f, y, t0, ts, theta, x, x_int);
+        stan::math::integrate_ode_rk45(f, y0, t0, ts, theta, x, x_int);
 
       return ode_res_vd.back();
     }
