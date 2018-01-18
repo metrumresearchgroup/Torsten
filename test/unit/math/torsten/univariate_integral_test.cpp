@@ -76,8 +76,15 @@ TEST(univariate_integral, const_example) {
   std::vector<double> t {0.0, 2.5};
   std::vector<double> y {1.5};
 
-  auto res { stan::math::univariate_integral(f0, y, t) };
-  EXPECT_NEAR(6.5, res[0], 1e-8);
+  {
+    auto res { stan::math::univariate_integral_rk45(f0, y, t) };
+    EXPECT_NEAR(6.5, res[0], 1e-8);
+  }
+
+  {
+    auto res { stan::math::univariate_integral_bdf(f0, y, t) };
+    EXPECT_NEAR(6.5, res[0], 1e-8);
+  }
 }
 
 TEST(univariate_integral, linear_example) {
@@ -86,8 +93,15 @@ TEST(univariate_integral, linear_example) {
   std::vector<double> t {0.0, 2.5};
   std::vector<double> y {0.0};
 
-  auto res { stan::math::univariate_integral(f0, y, t) };
-  EXPECT_NEAR(3.75, res[0], 1e-8);
+  {
+    auto res { stan::math::univariate_integral_rk45(f0, y, t) };
+    EXPECT_NEAR(3.75, res[0], 1e-8);
+  }
+
+  {
+    auto res { stan::math::univariate_integral_bdf(f0, y, t) };
+    EXPECT_NEAR(3.75, res[0], 1e-8);
+  }
 }
 
 TEST(univariate_integral, quad_example) {
@@ -96,8 +110,16 @@ TEST(univariate_integral, quad_example) {
   std::vector<double> t {0.0, 0.4};
   std::vector<double> y {0.0};
 
-  auto res { stan::math::univariate_integral(f0, y, t) };
-  EXPECT_NEAR(1.112, res[0], 1e-8);
+  {
+    auto res { stan::math::univariate_integral_rk45(f0, y, t) };
+    EXPECT_NEAR(1.112, res[0], 1e-8);
+  }
+
+  {
+    auto res { stan::math::univariate_integral_bdf(f0, y, t) };
+    EXPECT_NEAR(1.112, res[0], 1e-8);
+  }
+
 }
 
 TEST(univariate_integral, vector_example) {
@@ -106,7 +128,16 @@ TEST(univariate_integral, vector_example) {
   std::vector<double> t {0.0, 2.5};
   std::vector<double> y {1.5, 0.0, 0.0};
 
-  auto res { stan::math::univariate_integral(f, y, t) };
-  EXPECT_NEAR(6.50, res[0], 1e-8);
-  EXPECT_NEAR(3.75, res[1], 1e-8);
+  {
+    auto res { stan::math::univariate_integral_rk45(f, y, t) };
+    EXPECT_NEAR(6.50, res[0], 1e-8);
+    EXPECT_NEAR(3.75, res[1], 1e-8);
+  }
+
+  {
+    auto res { stan::math::univariate_integral_bdf(f, y, t) };
+    EXPECT_NEAR(6.50, res[0], 1e-8);
+    EXPECT_NEAR(3.75, res[1], 1e-8);
+  }
+
 }
