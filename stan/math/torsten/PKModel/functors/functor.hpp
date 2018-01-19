@@ -6,6 +6,8 @@
 #include <vector>
 #include <iostream>
 
+namespace torsten {
+
 /**
  * Functors for the general and the mix solver.
  * Returns the derivative of the ODE system describing
@@ -69,5 +71,7 @@ struct ode_rate_var_functor {
       return f0_.rate_var(t, y, theta, x_r, x_i, pstream_);
   }
 };
+
+}
 
 #endif

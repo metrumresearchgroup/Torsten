@@ -7,6 +7,8 @@
 #include <vector>
 #include <iostream>
 
+namespace torsten {
+
 /**
  * Functions that converts an autodiff variable into a double.
  * The variable will either be a stan::math::var
@@ -62,6 +64,8 @@ unpromote(const ModelParameters<T0, T1, T2, T3>& parameters) {
      unpromote(parameters.get_RealParameters()),
      unpromote(parameters.get_biovar()),
      unpromote(parameters.get_tlag()));
+}
+
 }
 
 #endif

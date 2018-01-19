@@ -21,7 +21,7 @@ TEST(Torsten, fOneCpt_dbl) {
   std::vector<double> rate(2, 0);  // no rate
 
   std::vector<double> pred;
-  pred = fOneCpt(dt, parameters, init, rate);
+  pred = torsten::fOneCpt(dt, parameters, init, rate);
 
   EXPECT_FLOAT_EQ(740.8182, pred[0]);
   EXPECT_FLOAT_EQ(254.97490, pred[1]);
@@ -44,7 +44,7 @@ TEST(Torsten, fOneCpt_var) {
   std::vector<double> rate(2, 0);  // no rate;
 
   std::vector<var> pred;
-  pred = fOneCpt(dt, parameters, init, rate);
+  pred = torsten::fOneCpt(dt, parameters, init, rate);
 
   EXPECT_FLOAT_EQ(740.8182, pred[0].val());
   EXPECT_FLOAT_EQ(254.97490, pred[1].val());

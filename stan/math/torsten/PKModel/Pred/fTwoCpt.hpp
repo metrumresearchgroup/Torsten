@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 
+namespace torsten {
+
 /**
  *
  * Two compartment model with first order absorption
@@ -106,4 +108,5 @@ fTwoCpt(const T_time& dt,
   return pred;
 }
 
+}
 #endif

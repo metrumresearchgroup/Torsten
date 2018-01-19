@@ -7,6 +7,8 @@
 #include <vector>
 #include <iostream>
 
+namespace torsten {
+
 /**
  *  Functor for mix solver with base
  *  one compartment model.
@@ -156,4 +158,5 @@ struct mix2_functor {
   }
 };
 
+}
 #endif

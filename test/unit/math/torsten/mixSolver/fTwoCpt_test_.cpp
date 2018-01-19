@@ -17,7 +17,7 @@ TEST(Torsten, fTwoCpt) {
   std::vector<double> rate(3, 0);  // no rate
 
   Eigen::VectorXd pred;
-  pred = fTwoCpt(dt, parameters, init, rate);
+  pred = torsten::fTwoCpt(dt, parameters, init, rate);
 
   EXPECT_FLOAT_EQ(740.8182, pred(0));
   EXPECT_FLOAT_EQ(238.3713, pred(1));
@@ -95,7 +95,7 @@ struct feedbackODE_mixed {
       parmsPK(i) = parms[i];
 
 
-    Matrix<scalar, Dynamic, 1> predPK = fTwoCpt(t, parmsPK, initPK, rate);
+    Matrix<scalar, Dynamic, 1> predPK = torsten::fTwoCpt(t, parmsPK, initPK, rate);
 
     scalar conc = predPK(1) / VC;
     scalar Edrug = alpha * conc;

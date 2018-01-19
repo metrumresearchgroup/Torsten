@@ -52,7 +52,7 @@ TEST(Torsten, predSS_general_OneCpt_bolus) {
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> K(0, 0);
 
   // initialize Model Parameters object
-  ModelParameters<double, double, double, double>
+  torsten::ModelParameters<double, double, double, double>
     parms(dt, parameters, biovar, tlag, K);
 
   // bolus dose
@@ -65,13 +65,13 @@ TEST(Torsten, predSS_general_OneCpt_bolus) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
 
-  typedef general_functor<OneCpt_functor> F0;
-  PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
+  typedef torsten::general_functor<OneCpt_functor> F0;
+  torsten::PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
                             max_num_steps, 0, "rk45", nCmt);
   Matrix<double, 1, Dynamic> pred = PredSS(parms, amt, rate, ii, cmt);
 
   // Compare to results obtained with analytical solution
-  PredSS_oneCpt PredSS_one;
+  torsten::PredSS_oneCpt PredSS_one;
   Matrix<double, 1, Dynamic>
     pred_an = PredSS_one(parms, amt, rate, ii, cmt);
 
@@ -100,7 +100,7 @@ TEST(Torsten, predSS_general_OneCpt_truncated_infusion) {
   K << -parameters[2], 0,
        parameters[2], - parameters[0] / parameters[1];
 
-  ModelParameters<double, double, double, double>
+  torsten::ModelParameters<double, double, double, double>
     parms(dt, parameters, biovar, tlag, K);
 
   // multiple truncated infusion
@@ -113,14 +113,14 @@ TEST(Torsten, predSS_general_OneCpt_truncated_infusion) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
 
-  typedef general_functor<OneCpt_functor> F0;
-  PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
+  typedef torsten::general_functor<OneCpt_functor> F0;
+  torsten::PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
                             max_num_steps, 0, "rk45", nCmt);
   Matrix<double, 1, Dynamic> pred = PredSS(parms, amt, rate, ii, cmt);
 
   // Compare to results obtained with analytical solution
   // (note: matrix exponential solution agrees with analytical solution).
-  PredSS_oneCpt PredSS_one;
+  torsten::PredSS_oneCpt PredSS_one;
   Matrix<double, 1, Dynamic>
     pred_an = PredSS_one(parms, amt, rate, ii, cmt);
 
@@ -149,7 +149,7 @@ TEST(Torsten, predSS_general_OneCpt_constant_infusion) {
   K << -parameters[2], 0,
        parameters[2], - parameters[0] / parameters[1];
   
-  ModelParameters<double, double, double, double>
+  torsten::ModelParameters<double, double, double, double>
     parms(dt, parameters, biovar, tlag, K);
   
   // constant infusion
@@ -162,13 +162,13 @@ TEST(Torsten, predSS_general_OneCpt_constant_infusion) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
   
-  typedef general_functor<OneCpt_functor> F0;
-  PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
+  typedef torsten::general_functor<OneCpt_functor> F0;
+  torsten::PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
                             max_num_steps, 0, "rk45", nCmt);
   Matrix<double, 1, Dynamic> pred = PredSS(parms, amt, rate, ii, cmt);
   
   // Compare to results obtained with analytical solution
-  PredSS_oneCpt PredSS_one;
+  torsten::PredSS_oneCpt PredSS_one;
   Matrix<double, 1, Dynamic>
     pred_an = PredSS_one(parms, amt, rate, ii, cmt);
   
@@ -197,7 +197,7 @@ TEST(Torsten, predSS_general_exception) {
   K << -parameters[2], 0,
        parameters[2], - parameters[0] / parameters[1];
 
-  ModelParameters<double, double, double, double>
+  torsten::ModelParameters<double, double, double, double>
     parms(dt, parameters, biovar, tlag, K);
 
   // multiple truncated infusion
@@ -210,11 +210,11 @@ TEST(Torsten, predSS_general_exception) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
 
-  typedef general_functor<OneCpt_functor> F0;
-  PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
+  typedef torsten::general_functor<OneCpt_functor> F0;
+  torsten::PredSS_general<F0> PredSS(F0(OneCpt_functor()), rel_tol, abs_tol, 
                             max_num_steps, 0, "rk45", nCmt);
-  PredSS_oneCpt PredSS_one;
-  PredSS_linOde PredSS_lin;
+  torsten::PredSS_oneCpt PredSS_one;
+  torsten::PredSS_linOde PredSS_lin;
 
   std::stringstream err_msg;
   err_msg << "Steady State Event: Infusion time (F * amt / rate) is 16"

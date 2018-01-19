@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+namespace torsten {
+
 /**
  *  Construct functors that run the ODE integrator. Specify integrator
  *  type, the base ODE system, and the tuning parameters (relative tolerance,
@@ -61,5 +63,7 @@ public:
                                             rel_tol, abs_tol, max_num_steps);
   }
 };
+
+}
 
 #endif

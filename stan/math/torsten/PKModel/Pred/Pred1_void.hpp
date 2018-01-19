@@ -4,6 +4,8 @@
 #include <iostream>
 #include <vector>
 
+namespace torsten {
+
 struct Pred1_void {
   Pred1_void() { }
 
@@ -42,4 +44,5 @@ struct Pred1_void {
   }
 };
 
+}
 #endif

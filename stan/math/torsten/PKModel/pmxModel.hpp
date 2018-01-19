@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 
+namespace torsten {
+
 /**
  *  Use this class to store information about a
  *  compartment model. On top of basic information,
@@ -101,5 +103,7 @@ public:
               << max_num_steps_ << std::endl;
   }
 };
+
+}
 
 #endif

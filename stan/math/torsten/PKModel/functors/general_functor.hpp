@@ -6,6 +6,8 @@
 #include <vector>
 #include <iostream>
 
+namespace torsten {
+
 /**
  *  Functor for general ODE solver.
  */
@@ -73,4 +75,5 @@ struct general_functor {
   }
 };
 
+}
 #endif

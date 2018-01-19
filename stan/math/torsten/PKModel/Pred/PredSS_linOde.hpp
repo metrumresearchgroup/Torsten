@@ -7,6 +7,8 @@
 #include <stan/math/prim/mat/fun/matrix_exp.hpp>
 #include <iostream>
 
+namespace torsten {
+
 struct PredSS_linOde {
   PredSS_linOde() { }
 
@@ -102,5 +104,7 @@ struct PredSS_linOde {
     return pred;
   }
 };
+
+}
 
 #endif

@@ -3,6 +3,8 @@
 
 #include <stan/math/prim/scal/err/invalid_argument.hpp>
 
+namespace torsten {
+
 struct PredSS_err {
   const char* function_;
 
@@ -40,5 +42,7 @@ struct PredSS_err {
     return dummy_matrix;
   }
 };
+
+}
 
 #endif

@@ -13,6 +13,8 @@
 #include <iostream>
 #include <string>
 
+namespace torsten {
+
 template <typename F>
 struct PredSS_mix2 {
   F f_;
@@ -300,5 +302,7 @@ struct PredSS_mix2 {
     return pred;
   }
 };
+
+}
 
 #endif
