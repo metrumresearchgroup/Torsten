@@ -74,9 +74,9 @@ finite_diff_params(const std::vector<double>& time,
 
   Matrix<double, Dynamic, Dynamic> pk_res_ub;
   Matrix<double, Dynamic, Dynamic> pk_res_lb;
-  pk_res_ub = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+  pk_res_ub = torsten::PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                             pMatrix_ub, biovar_ub, tlag_ub);
-  pk_res_lb = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+  pk_res_lb = torsten::PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                             pMatrix_lb, biovar_lb, tlag_lb);
 
   return (pk_res_ub - pk_res_lb) / (2 * diff);
@@ -132,7 +132,7 @@ void test_PKModelOneCpt_finite_diff_vdd(
   }
 
   Matrix<var, Dynamic, Dynamic> ode_res;
-  ode_res = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+  ode_res = torsten::PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                           pMatrix_v, biovar, tlag);
 
   int nCmt = 2;
@@ -208,7 +208,7 @@ void test_PKModelOneCpt_finite_diff_dvd(
   }
 
   Matrix<var, Dynamic, Dynamic> ode_res;
-  ode_res = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+  ode_res = torsten::PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                           pMatrix, biovar_v, tlag);
   
   int nCmt = 2;
@@ -287,7 +287,7 @@ void test_PKModelOneCpt_finite_diff_ddv(
   }
 
   Matrix<var, Dynamic, Dynamic> ode_res;
-  ode_res = PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+  ode_res = torsten::PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                           pMatrix, biovar, tlag_v);
 
   size_t nEvent = time.size();

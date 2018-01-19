@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 
+namespace torsten {
+
 struct Pred1_twoCpt {
   Pred1_twoCpt() { }
 
@@ -104,4 +106,5 @@ struct Pred1_twoCpt {
   }
 };
 
+}
 #endif

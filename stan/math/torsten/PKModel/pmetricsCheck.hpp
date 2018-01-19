@@ -9,6 +9,7 @@
 #include <string>
 #include <iostream>
 
+namespace torsten {
 /**
  * Checks that the arguments the user inputs in the Torsten
  * functions are valid.
@@ -133,5 +134,7 @@ void pmetricsCheck(const std::vector<T0>& time,
       "the number of lagtimes parameters per event is", tlag[0].size(),
       "", " but must be greater than 0!");
 }
+
+}    // torsten namespace
 
 #endif

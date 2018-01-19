@@ -11,6 +11,8 @@
 #include <stan/math/torsten/PKModel/SearchReal.hpp>
 #include <vector>
 
+namespace torsten {
+
 /**
  * Define some simple and handy functions.
  *
@@ -40,6 +42,8 @@ bool find_time(std::vector<T> v, T time) {
                                       // element in v smaller than time.
   if ((k <= size) && (time == v[k-1])) found = true;
   return found;
+}
+
 }
 
 #endif

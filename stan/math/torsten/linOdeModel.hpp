@@ -9,6 +9,8 @@
 #include <stan/math/prim/mat/err/check_square.hpp>
 #include <vector>
 
+namespace torsten {
+
 /**
  * Computes the predicted amounts in each compartment at each event
  * for a compartment model, described by a linear system of ordinary
@@ -71,7 +73,7 @@ linOdeModel(const std::vector<T0>& time,
 
   std::vector<T4> parameters_dummy(0);
   std::vector<std::vector<T4> > pMatrix_dummy(1, parameters_dummy);
-  pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
+  torsten::pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
                 pMatrix_dummy, biovar, tlag, function);
 
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
@@ -275,4 +277,5 @@ linOdeModel(const std::vector<T0>& time,
                      system, biovar, vec_tlag);
 }
 
+}
 #endif

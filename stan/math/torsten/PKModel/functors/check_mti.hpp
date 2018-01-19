@@ -4,6 +4,8 @@
 #include <stan/math/torsten/PKModel/Pred/unpromote.hpp>
 #include <string>
 
+namespace torsten {
+
 /**
  * Checks arguments in a multiple truncated infusion 
  * case (arises when rate != 0 and ii > 0). Checks:
@@ -40,4 +42,5 @@ void check_mti(const T0& amt,
   }
 }
 
+}
 #endif

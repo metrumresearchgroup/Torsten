@@ -14,6 +14,8 @@
 #include <iostream>
 #include <string>
 
+namespace torsten {
+
 template <typename F>
 struct PredSS_general {
   F f_;
@@ -222,5 +224,7 @@ struct PredSS_general {
     return pred;
   }
 };
+
+}
 
 #endif

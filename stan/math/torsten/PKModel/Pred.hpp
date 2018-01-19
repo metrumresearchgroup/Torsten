@@ -4,6 +4,8 @@
 #include <Eigen/Dense>
 #include <vector>
 
+namespace torsten{
+
 /**
  * Every Torsten function calls Pred.
  *
@@ -182,6 +184,8 @@ Pred(const std::vector<T_time>& time,
   }
 
   return pred;
+}
+
 }
 
 #endif

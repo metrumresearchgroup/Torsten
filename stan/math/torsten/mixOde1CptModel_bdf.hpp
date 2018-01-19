@@ -9,6 +9,8 @@
 #include <boost/math/tools/promotion.hpp>
 #include <vector>
 
+namespace torsten {
+
 /**
  * Compute the predicted amounts in each compartment at each event
  * of an ODEs model. The model contains a base 1 Compartment PK
@@ -86,7 +88,7 @@ mixOde1CptModel_bdf(const F& f,
 
   // check arguments
   static const char* function("mixOde1CptModel_bdf");
-  pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
+  torsten::pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
                 theta, biovar, tlag, function);
 
   // Construct dummy array of matrix for last argument of pred
@@ -348,4 +350,5 @@ mixOde1CptModel_bdf(const F& f,
                               msgs, rel_tol, abs_tol, max_num_steps);
 }
 
+}
 #endif

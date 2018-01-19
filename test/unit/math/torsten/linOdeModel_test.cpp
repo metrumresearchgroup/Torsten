@@ -51,7 +51,7 @@ TEST(Torsten, LinCpt_OneSS) {
 	ss[0] = 1;
 
 	Matrix<double, Dynamic, Dynamic> x;
-	x = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                  system_array, biovar, tlag);
 
 	Matrix<double, Dynamic, Dynamic> amounts(10, 2);
@@ -122,19 +122,19 @@ TEST(Torsten, LinCpt_OneSS_overloads) {
 	Matrix<double, Dynamic, Dynamic> x_122, x_112, x_111, x_121, x_212,
 	  x_211, x_221;
 
-	x_122 = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x_122 = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                       system_array[0], biovar, tlag);
-	x_112 = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x_112 = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      system_array[0], biovar[0], tlag);
-	x_111 = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x_111 = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      system_array[0], biovar[0], tlag[0]);
-	x_121 = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x_121 = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      system_array[0], biovar, tlag[0]);
-	x_212 = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x_212 = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      system_array, biovar[0], tlag);
-	x_211 = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x_211 = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      system_array, biovar[0], tlag[0]);
-	x_221 = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x_221 = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                      system_array, biovar, tlag[0]);
 
 	Matrix<double, Dynamic, Dynamic> amounts(10, 2);
@@ -258,19 +258,19 @@ TEST(Torsten, linOdeModel_signature_test) {
              9.875702, 1034.7998;
   
   vector<Matrix<var, Dynamic, Dynamic> > x_122(7);
-  x_122[0] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_122[0] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar, tlag);
-  x_122[1] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_122[1] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar_v, tlag);
-  x_122[2] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_122[2] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar, tlag_v);
-  x_122[3] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_122[3] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar_v, tlag_v);
-  x_122[4] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_122[4] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array[0], biovar_v, tlag);
-  x_122[5] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_122[5] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array[0], biovar_v, tlag_v);
-  x_122[6] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_122[6] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array[0], biovar, tlag_v);
   
   for (size_t i = 0; i < x_122.size(); i++)
@@ -281,19 +281,19 @@ TEST(Torsten, linOdeModel_signature_test) {
   
  
   vector<Matrix<var, Dynamic, Dynamic> > x_112(7);
-  x_112[0] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_112[0] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar[0], tlag);
-  x_112[1] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_112[1] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar_v[0], tlag);
-  x_112[2] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_112[2] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar[0], tlag_v);
-  x_112[3] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_112[3] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar_v[0], tlag_v);
-  x_112[4] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_112[4] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array[0], biovar_v[0], tlag);
-  x_112[5] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_112[5] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array[0], biovar_v[0], tlag_v);
-  x_112[6] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_112[6] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array[0], biovar[0], tlag_v);
   
   for (size_t i = 0; i < x_112.size(); i++)
@@ -304,19 +304,19 @@ TEST(Torsten, linOdeModel_signature_test) {
   
   
   vector<Matrix<var, Dynamic, Dynamic> > x_121(7);
-  x_121[0] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_121[0] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar, tlag[0]);
-  x_121[1] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_121[1] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar_v, tlag[0]);
-  x_121[2] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_121[2] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar, tlag_v[0]);
-  x_121[3] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_121[3] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar_v, tlag_v[0]);
-  x_121[4] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_121[4] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array[0], biovar_v, tlag[0]);
-  x_121[5] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_121[5] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array[0], biovar_v, tlag_v[0]);
-  x_121[6] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_121[6] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array[0], biovar, tlag_v[0]);
   
   for (size_t i = 0; i < x_121.size(); i++)
@@ -327,19 +327,19 @@ TEST(Torsten, linOdeModel_signature_test) {
   
   
   vector<Matrix<var, Dynamic, Dynamic> > x_111(7);
-  x_111[0] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_111[0] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar[0], tlag[0]);
-  x_111[1] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_111[1] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar_v[0], tlag[0]);
-  x_111[2] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_111[2] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar[0], tlag_v[0]);
-  x_111[3] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_111[3] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v[0], biovar_v[0], tlag_v[0]);
-  x_111[4] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_111[4] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array[0], biovar_v[0], tlag[0]);
-  x_111[5] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_111[5] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array[0], biovar_v[0], tlag_v[0]);
-  x_111[6] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_111[6] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array[0], biovar[0], tlag_v[0]);
   
   for (size_t i = 0; i < x_111.size(); i++)
@@ -350,19 +350,19 @@ TEST(Torsten, linOdeModel_signature_test) {
   
   
   vector<Matrix<var, Dynamic, Dynamic> > x_212(7);
-  x_212[0] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_212[0] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v, biovar[0], tlag);
-  x_212[1] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_212[1] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v, biovar_v[0], tlag);
-  x_212[2] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_212[2] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v, biovar[0], tlag_v);
-  x_212[3] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_212[3] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v, biovar_v[0], tlag_v);
-  x_212[4] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_212[4] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array, biovar_v[0], tlag);
-  x_212[5] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_212[5] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array, biovar_v[0], tlag_v);
-  x_212[6] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_212[6] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array, biovar[0], tlag_v);
   
   for (size_t i = 0; i < x_212.size(); i++)
@@ -373,19 +373,19 @@ TEST(Torsten, linOdeModel_signature_test) {
   
   
   vector<Matrix<var, Dynamic, Dynamic> > x_211(7);
-  x_211[0] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_211[0] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v, biovar[0], tlag[0]);
-  x_211[1] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_211[1] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v, biovar_v[0], tlag[0]);
-  x_211[2] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_211[2] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v, biovar[0], tlag_v[0]);
-  x_211[3] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_211[3] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v, biovar_v[0], tlag_v[0]);
-  x_211[4] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_211[4] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array, biovar_v[0], tlag[0]);
-  x_211[5] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_211[5] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array, biovar_v[0], tlag_v[0]);
-  x_211[6] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_211[6] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array, biovar[0], tlag_v[0]);
   
   for (size_t i = 0; i < x_211.size(); i++)
@@ -396,19 +396,19 @@ TEST(Torsten, linOdeModel_signature_test) {
   
   
   vector<Matrix<var, Dynamic, Dynamic> > x_221(7);
-  x_221[0] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_221[0] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v, biovar, tlag[0]);
-  x_221[1] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_221[1] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v, biovar_v, tlag[0]);
-  x_221[2] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_221[2] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v, biovar, tlag_v[0]);
-  x_221[3] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_221[3] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array_v, biovar_v, tlag_v[0]);
-  x_221[4] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_221[4] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array, biovar_v, tlag[0]);
-  x_221[5] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_221[5] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array, biovar_v, tlag_v[0]);
-  x_221[6] = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  x_221[6] = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                            system_array, biovar, tlag_v[0]);
 
   for (size_t i = 0; i < x_221.size(); i++)
@@ -464,7 +464,7 @@ TEST(Torsten, linOdeModel_OneSS_rate) {
 	ss[0] = 1;
 
 	Matrix<double, Dynamic, Dynamic> x;
-	x = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                  system_array, biovar, tlag);
 
 	Matrix<double, Dynamic, Dynamic> amounts(10, 2);
@@ -538,7 +538,7 @@ TEST(Torsten, linOne_MultipleDoses_timePara) {
 	vector<int> ss(nEvent, 0);
 
 	Matrix<double, Dynamic, Dynamic> x;
-	x = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+	x = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                  system_array, biovar, tlag);
 
 	Matrix<double, Dynamic, Dynamic> amounts(nEvent, 2);
@@ -607,7 +607,7 @@ TEST(Torsten, linOde_rate) {
   vector<int> ss(10, 0);
   
   Matrix<double, Dynamic, Dynamic>
-    x = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+    x = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                     system_array, biovar, tlag);
 
   Matrix<double, Dynamic, Dynamic> amounts(10, 2);

@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <vector>
 
+namespace torsten {
+
 template<typename T_time,
          typename T_parameters,
          typename T_biovar,
@@ -272,7 +274,7 @@ public:
    * @return - modified parameters and events.
    */
   template<typename T0, typename T1, typename T2, typename T3>
-  void CompleteParameterHistory(EventHistory<T0, T1, T2, T3>& events) {
+  void CompleteParameterHistory(torsten::EventHistory<T0, T1, T2, T3>& events) {
     int nEvent = events.get_size();
     assert(nEvent > 0);
     int len_Parameters = MPV_.size();  // numbers of events for which parameters
@@ -354,5 +356,7 @@ public:
   template<typename T1, typename T2, typename T3, typename T4>
     friend class Events;
 };
+
+} 
 
 #endif

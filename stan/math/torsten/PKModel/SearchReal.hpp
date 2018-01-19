@@ -5,6 +5,8 @@
 #include <vector>
 #include <algorithm>
 
+namespace torsten {
+
 int min(int a, int b);  // forward declare
 
 /**
@@ -52,6 +54,8 @@ inline int min(int a, int b) {
   if (a < b) return a;
   else
     return b;
+}
+
 }
 
 #endif

@@ -8,6 +8,8 @@
 #include <iostream>
 #include <vector>
 
+namespace torsten {
+
 struct Pred1_linOde {
   Pred1_linOde() { }
 
@@ -82,5 +84,7 @@ struct Pred1_linOde {
     }
   }
 };
+
+}
 
 #endif

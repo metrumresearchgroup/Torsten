@@ -8,6 +8,8 @@
 #include <vector>
 #include <iostream>
 
+namespace torsten {
+
 /**
  * A structure to store the algebraic system
  * which gets solved when computing the steady
@@ -241,5 +243,7 @@ struct SS_system_vd {
     return result;
   }
 };
+
+}
 
 #endif
