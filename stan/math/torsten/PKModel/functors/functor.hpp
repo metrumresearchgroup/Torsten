@@ -38,7 +38,7 @@ struct ode_univar_fixed_interval_functor {
                    std::bind1st(std::multiplies<T2>(), jacobian) );
 
     // convert f0 output type to promoted type
-    for (auto&& i : res_f) res.push_back(i);
+    for (auto& i : res_f) res.push_back(i);
 
     return res;
   }
