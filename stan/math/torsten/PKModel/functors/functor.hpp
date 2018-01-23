@@ -26,14 +26,20 @@ struct ode_univar_fixed_interval_functor {
              const std::vector<T3>& x_r,
              const std::vector<int>& x_i,
              std::ostream* pstream_) const {
-    auto t1 {theta[0]};
-    auto t2 {theta[1]};
-    auto jacobian {t2 - t1};
-    auto res { f0_(t2*t + t1*(1.0-t), pstream_) };
+    T2 t1 {theta[0]};
+    T2 t2 {theta[1]};
+    T2 jacobian {t2 - t1};
+    std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
+      res;
+    auto res_f { f0_(t2*t + t1*(1.0-t), pstream_) };
 
     // scale results with jacobian
-    std::transform(res.begin(), res.end(), res.begin(),
+    std::transform(res_f.begin(), res_f.end(), res_f.begin(),
                    std::bind1st(std::multiplies<T2>(), jacobian) );
+
+    // convert f0 output type to promoted type
+    for (auto&& i : res_f) res.push_back(i);
+
     return res;
   }
 };

@@ -46,7 +46,7 @@ namespace stan {
 
       using scalar = typename stan::return_type<T0, T1>::type;
       std::vector<std::vector<scalar>> ode_res_vd =
-        stan::math::integrate_ode_rk45(f, y0, t0, ts, theta, x, x_int);
+        stan::math::integrate_ode_bdf(f, y0, t0, ts, theta, x, x_int);
 
       return ode_res_vd.back();
     }
