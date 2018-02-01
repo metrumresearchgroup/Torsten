@@ -3,6 +3,7 @@
 // FIX ME: deprecate the print functions.
 // FIX ME: each function should have its own header file
 // FIX ME: using statements should be inside the scope of functions
+// FIX ME: using functor for Marker instead of function with global variable
 
 #ifndef STAN_MATH_TORSTEN_PKMODEL_FUNCTIONS_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_FUNCTIONS_HPP
@@ -22,13 +23,13 @@
  */
 
 ////////// FOR DEVELOPMENT PURPOSES //////////////
-int marker_count = 0;  // define global variable
-inline void Marker() {
-  std::cout << "MARKER "
-            << marker_count
-            << std::endl;
-  marker_count++;
-}
+// int marker_count = 0;  // define global variable
+// inline void Marker() {
+//   std::cout << "MARKER "
+//             << marker_count
+//             << std::endl;
+//   marker_count++;
+// }
 
 ////////// REQUIRED FOR TORSTEN //////////////
 template<typename T>
