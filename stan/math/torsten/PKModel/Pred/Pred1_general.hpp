@@ -9,6 +9,8 @@
 #include <vector>
 #include <string>
 
+namespace torsten{
+
 template <typename F>
 struct Pred1_general {
   F f_;
@@ -170,5 +172,7 @@ struct Pred1_general {
     return pred;
   }
 };
+
+}
 
 #endif

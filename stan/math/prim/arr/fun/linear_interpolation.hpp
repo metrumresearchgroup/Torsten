@@ -40,10 +40,10 @@ namespace stan {
       check_ordered("linear_interpolation", "x", x);
       check_matching_sizes("linear_interpolation", "x", x, "y", y);
 
-      if (xout <= x[0]) {
-        yout = y[0];
-      } else if (xout >= x[nx - 1]) {
-        yout = y[nx - 1];
+      if (xout <= x.front()) {
+        yout = y.front();
+      } else if (xout >= x.back()) {
+        yout = y.back();
       } else {
         int i = SearchReal(x, nx, xout) - 1;
         yout = y[i] + (y[i+1] - y[i]) / (x[i+1] - x[i]) * (xout - x[i]);

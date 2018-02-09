@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <vector>
 
+namespace torsten {
+
 // forward declare
 template <typename T_time, typename T_amt,
   typename T_rate, typename T_ii> class EventHistory;
@@ -308,4 +310,5 @@ public:
     class ModelParameterHistory;
 };
 
+}    // torsten namespace
 #endif

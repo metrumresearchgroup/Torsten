@@ -5,6 +5,8 @@
 #include <iostream>
 #include <vector>
 
+namespace torsten {
+
 /**
  *  One compartment model with first order absorption
  *  Calculates the amount in each compartment at dt time units after the time
@@ -71,6 +73,8 @@ fOneCpt(const T_time& dt,
       PolyExp(dt, 0, rate[1], dt, 0, false, a, alpha, 1);
   }
   return pred;
+}
+
 }
 
 #endif

@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+namespace torsten {
+
 /**
  * Extracts the nth column or row from a matrix and
  * returns it as an std::vector. Indexing starts at 0, meaning the
@@ -43,4 +45,5 @@ std::vector<T> ExtractVector(Eigen::Matrix<T, Eigen::Dynamic, 1>
   return ExtVec;
 }
 
+}
 #endif

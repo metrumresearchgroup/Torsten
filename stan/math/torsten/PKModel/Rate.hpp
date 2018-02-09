@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <vector>
 
+namespace torsten {
+
 // forward declaration
 template<typename T_time, typename T_rate> class RateHistory;
 
@@ -54,7 +56,7 @@ public:
 
   friend class RateHistory<T_time, T_rate>;
   template <typename T_amt, typename T_ii>
-  friend void MakeRates(EventHistory<T_time, T_amt, T_rate, T_ii>&,
+  friend void MakeRates(torsten::EventHistory<T_time, T_amt, T_rate, T_ii>&,
     RateHistory<T_time, T_rate>&);
 
   template <typename T_0, typename T_1, typename T_2, typename T_3,
@@ -156,7 +158,7 @@ public:
   void Sort() { std::sort(Rates.begin(), Rates.end(), by_time()); }
 
   template <typename T_amt, typename T_ii>
-  void MakeRates(EventHistory<T_time, T_amt, T_rate, T_ii>& events, int nCmt) {
+  void MakeRates(torsten::EventHistory<T_time, T_amt, T_rate, T_ii>& events, int nCmt) {
     using std::vector;
 
     if (!events.Check()) events.Sort();
@@ -184,7 +186,7 @@ public:
 
     int i = 0, k, l;
     T_time endTime;
-    Event<T_time, T_amt, T_rate, T_ii> newEvent;
+    torsten::Event<T_time, T_amt, T_rate, T_ii> newEvent;
     while (i < events.get_size()) {
       if ((events.get_evid(i) == 1 || events.get_evid(i) == 4)
         && (events.get_rate(i) > 0 && events.get_amt(i) > 0)) {
@@ -225,8 +227,10 @@ public:
   // declare friends
   friend class Rate<T_time, T_rate>;
   template <typename T_amt, typename T_ii>
-  friend void MakeRates(EventHistory<T_time, T_amt, T_rate, T_ii>&,
+  friend void MakeRates(torsten::EventHistory<T_time, T_amt, T_rate, T_ii>&,
     RateHistory<T_time, T_amt>&);
 };
+
+}
 
 #endif

@@ -62,7 +62,7 @@ TEST(Torsten, pred1_mix) {
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> K(0, 0);
 
   // initialize Model Parameters object
-  ModelParameters<double, double, double, double>
+  torsten::ModelParameters<double, double, double, double>
     parms(dt, parameters, biovar_dummy, tlag_dummy, K);
 
   int nOdes = 6;
@@ -75,8 +75,8 @@ TEST(Torsten, pred1_mix) {
   double rel_tol = 1e-6, abs_tol = 1e-6;
   long int max_num_steps = 1e+6;
 
-  typedef mix2_functor<ODE_functor> F0;
-  Pred1_mix2<F0> Pred1(F0(ODE_functor()), rel_tol, abs_tol, max_num_steps, 0,
+  typedef torsten::mix2_functor<ODE_functor> F0;
+  torsten::Pred1_mix2<F0> Pred1(F0(ODE_functor()), rel_tol, abs_tol, max_num_steps, 0,
                        "rk45");
   Matrix<double, 1, Dynamic> pred = Pred1(dt, parms, init, rate);
 

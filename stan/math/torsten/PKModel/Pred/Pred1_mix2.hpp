@@ -8,6 +8,8 @@
 #include <vector>
 #include<string>
 
+namespace torsten {
+
 template <typename F>
 struct Pred1_mix2 {
   F f_;
@@ -222,5 +224,7 @@ struct Pred1_mix2 {
     return pred;
   }
 };
+
+}
 
 #endif

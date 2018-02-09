@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+namespace torsten {
+
 /**
  * Computes the predicted amounts in each compartment at each event
  * for a two compartment model with first oder absorption.
@@ -63,7 +65,7 @@ PKModelTwoCpt(const std::vector<T0>& time,
   static const char* function("PKModelTwoCpt");
 
   // Check arguments
-  pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
+  torsten::pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
                 pMatrix, biovar, tlag, function);
   for (size_t i = 0; i < pMatrix.size(); i++) {
     check_positive_finite(function, "PK parameter CL", pMatrix[i][0]);
@@ -297,4 +299,5 @@ PKModelTwoCpt(const std::vector<T0>& time,
                        pMatrix, biovar, vec_tlag);
 }
 
+}
 #endif

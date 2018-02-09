@@ -5,6 +5,8 @@
 #include <vector>
 #include <algorithm>
 
+namespace torsten {
+
 int min(int a, int b);  // forward declare
 
 /**
@@ -21,8 +23,8 @@ int min(int a, int b);  // forward declare
  * @return: index of largest value <= srchNum
  *
  */
-template<typename T0, typename T1>
-inline int SearchReal(std::vector<T0> v, int numltm, T1 srchNum) {
+template<typename T>
+inline int SearchReal(std::vector<T> v, int numltm, T srchNum) {
   int first = 0, last, mid, real_limit;
 
   assert(numltm >= 0);
@@ -52,6 +54,8 @@ inline int min(int a, int b) {
   if (a < b) return a;
   else
     return b;
+}
+
 }
 
 #endif

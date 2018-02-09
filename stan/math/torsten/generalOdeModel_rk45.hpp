@@ -9,6 +9,8 @@
 #include <boost/math/tools/promotion.hpp>
 #include <vector>
 
+namespace torsten {
+
 /**
  * Computes the predicted amounts in each compartment at each event
  * for a general compartment model, defined by a system of ordinary
@@ -82,7 +84,7 @@ generalOdeModel_rk45(const F& f,
 
   // check arguments
   static const char* function("generalOdeModel_rk45");
-  pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
+  torsten::pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
     pMatrix, biovar, tlag, function);
 
   // Construct dummy matrix for last argument of pred
@@ -343,4 +345,5 @@ generalOdeModel_rk45(const F& f,
                               msgs, rel_tol, abs_tol, max_num_steps);
 }
 
+}
 #endif

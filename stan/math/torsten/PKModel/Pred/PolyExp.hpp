@@ -6,7 +6,7 @@
 #include <limits>
 #include <vector>
 
-
+namespace torsten {
 // DEV
 // Code is not optimized. Instead of using FOR loops for a and alpha,
 // we coud use matrix operations. On the other hand, seeing most models
@@ -160,6 +160,8 @@ PolyExp(const T_x& x,
   }
 
   return bolusResult + rate * result;
+}
+
 }
 
 #endif

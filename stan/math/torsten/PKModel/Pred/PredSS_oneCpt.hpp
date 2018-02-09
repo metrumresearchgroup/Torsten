@@ -7,6 +7,8 @@
 #include <vector>
 #include <limits>
 
+namespace torsten {
+
 struct PredSS_oneCpt {
   PredSS_oneCpt() { }
 
@@ -106,4 +108,5 @@ struct PredSS_oneCpt {
   }
 };
 
+}
 #endif

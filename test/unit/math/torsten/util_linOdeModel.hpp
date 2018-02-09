@@ -82,9 +82,9 @@ finite_diff_params(const std::vector<double>& time,
 
   Matrix<double, Dynamic, Dynamic> pk_res_ub;
   Matrix<double, Dynamic, Dynamic> pk_res_lb;
-  pk_res_ub = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  pk_res_ub = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                           system_ub, biovar_ub, tlag_ub);
-  pk_res_lb = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  pk_res_lb = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                           system_lb, biovar_lb, tlag_lb);
 
   return (pk_res_ub - pk_res_lb) / (2 * diff);
@@ -151,7 +151,7 @@ void test_linearOdeModel_finite_diff_vdd(
 
   // Compute return of linOdeModel
   Matrix<var, Dynamic, Dynamic> ode_res
-    = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+    = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                   system_v, biovar, tlag);
 
   // Test auto-diff
@@ -229,7 +229,7 @@ void test_linearOdeModel_finite_diff_dvd(
   }
 
   Matrix<var, Dynamic, Dynamic> ode_res;
-  ode_res = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  ode_res = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                         system, biovar_v, tlag);
 
   int nCmt = system[0].cols();
@@ -310,7 +310,7 @@ void test_linearOdeModel_finite_diff_ddv(
   }
   
   Matrix<var, Dynamic, Dynamic> ode_res;
-  ode_res = linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
+  ode_res = torsten::linOdeModel(time, amt, rate, ii, evid, cmt, addl, ss,
                         system, biovar, tlag_v);
   
   int nCmt = system[0].cols();
