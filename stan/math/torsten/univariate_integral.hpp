@@ -31,25 +31,29 @@ namespace stan {
      * @return vector of integral value(as integrand is a * vector function).
      */
 
-    template <typename F, typename T0, typename T1>
+    template <typename F, typename TL, typename TR, typename T0>
     inline
-    std::vector<typename stan::return_type<T0, T1>::type>
+    typename stan::return_type<TL, TR, T0>::type
     univariate_integral_bdf(const F &f0,    // integrand
-                            const std::vector<T0>& y0,
-                            const std::vector<T1>& theta,
+                            TL& t0,         // integral limit
+                            TR& t1,         // integral limit
+                            const std::vector<T0>& theta,
                             const std::vector<double>& x_r,
                             const std::vector<int>& x_i,
-                            std::ostream* msgs = 0) {
-      double t0{0.0};
-      std::vector<double> ts{1.0};  // integral in [0, 1]
+                            std::ostream* msgs = 0,
+                            double relative_tolerance = 1e-10,
+                            double absolute_tolerance = 1e-10,
+                            long int max_num_steps = 1e8) { 
+      static const double t{0.0};
+      static const std::vector<double> ts{1.0};
+      static const std::vector<double> y0{0.0};
+      const normalized_integrand_functor<F,TL,TR> f{f0,t0,t1};
 
-      normalized_integrand_functor<F> f{f0};  // change-of-variable
-
-      using scalar = typename stan::return_type<T0, T1>::type;
+      using scalar = typename stan::return_type<TL, TR, T0>::type;
       std::vector<std::vector<scalar>> ode_res_vd =
-        stan::math::integrate_ode_bdf(f, y0, t0, ts, theta, x_r, x_i);
+        stan::math::integrate_ode_bdf(f, y0, t, ts, theta, x_r, x_i);
 
-      return ode_res_vd.back();
+      return ode_res_vd.back().back();
     }
 
 
@@ -71,26 +75,31 @@ namespace stan {
      * @return vector of integral value(as integrand is a * vector function).
      */
 
-    template <typename F, typename T0, typename T1>
+    template <typename F, typename TL, typename TR, typename T0>
     inline
-    std::vector<typename stan::return_type<T0, T1>::type>
+    typename stan::return_type<TL, TR, T0>::type
     univariate_integral_rk45(const F &f0,    // integrand
-                             const std::vector<T0>& y0,
-                             const std::vector<T1>& theta,
-                             const std::vector<double>& x_r,
-                             const std::vector<int>& x_i,
-                             std::ostream* msgs = 0) {
-      double t0{0.0};
-      std::vector<double> ts{1.0};  // integral in [0, 1]
+                            TL& t0,         // integral limit
+                            TR& t1,         // integral limit
+                            const std::vector<T0>& theta,
+                            const std::vector<double>& x_r,
+                            const std::vector<int>& x_i,
+                            std::ostream* msgs = 0,
+                            double relative_tolerance = 1e-6,
+                            double absolute_tolerance = 1e-6,
+                            int max_num_steps = 1E6) {
+      static const double t{0.0};
+      static const std::vector<double> ts{1.0};
+      static const std::vector<double> y0{0.0};
+      const normalized_integrand_functor<F,TL,TR> f{f0,t0,t1};
 
-      normalized_integrand_functor<F> f{f0};  // change-of-variable
-
-      using scalar = typename stan::return_type<T0, T1>::type;
+      using scalar = typename stan::return_type<TL, TR, T0>::type;
       std::vector<std::vector<scalar>> ode_res_vd =
-        stan::math::integrate_ode_rk45(f, y0, t0, ts, theta, x_r, x_i);
+        stan::math::integrate_ode_rk45(f, y0, t, ts, theta, x_r, x_i);
 
-      return ode_res_vd.back();
+      return ode_res_vd.back().back();
     }
+
   }
 }
 #endif
