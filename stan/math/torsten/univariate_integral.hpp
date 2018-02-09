@@ -34,19 +34,20 @@ namespace stan {
     template <typename F, typename T0, typename T1>
     inline
     std::vector<typename stan::return_type<T0, T1>::type>
-    univariate_integral_bdf(const F &f0,  // function to be integrated
-                        const std::vector<T0>& y0,        // init state
-                        const std::vector<T1>& theta) {  // integral limits
+    univariate_integral_bdf(const F &f0,    // integrand
+                            const std::vector<T0>& y0,
+                            const std::vector<T1>& theta,
+                            const std::vector<double>& x_r,
+                            const std::vector<int>& x_i,
+                            std::ostream* msgs = 0) {
       double t0{0.0};
       std::vector<double> ts{1.0};  // integral in [0, 1]
-      std::vector<double> x;
-      std::vector<int> x_int;
 
-      ode_univar_fixed_interval_functor<F> f{f0};  // change-of-variable
+      normalized_integrand_functor<F> f{f0};  // change-of-variable
 
       using scalar = typename stan::return_type<T0, T1>::type;
       std::vector<std::vector<scalar>> ode_res_vd =
-        stan::math::integrate_ode_bdf(f, y0, t0, ts, theta, x, x_int);
+        stan::math::integrate_ode_bdf(f, y0, t0, ts, theta, x_r, x_i);
 
       return ode_res_vd.back();
     }
@@ -73,19 +74,20 @@ namespace stan {
     template <typename F, typename T0, typename T1>
     inline
     std::vector<typename stan::return_type<T0, T1>::type>
-    univariate_integral_rk45(const F &f0,  // function to be integrated
-                        const std::vector<T0>& y0,        // init state
-                        const std::vector<T1>& theta) {  // integral limits
+    univariate_integral_rk45(const F &f0,    // integrand
+                             const std::vector<T0>& y0,
+                             const std::vector<T1>& theta,
+                             const std::vector<double>& x_r,
+                             const std::vector<int>& x_i,
+                             std::ostream* msgs = 0) {
       double t0{0.0};
       std::vector<double> ts{1.0};  // integral in [0, 1]
-      std::vector<double> x;
-      std::vector<int> x_int;
 
-      ode_univar_fixed_interval_functor<F> f{f0};  // change-of-variable
+      normalized_integrand_functor<F> f{f0};  // change-of-variable
 
       using scalar = typename stan::return_type<T0, T1>::type;
       std::vector<std::vector<scalar>> ode_res_vd =
-        stan::math::integrate_ode_rk45(f, y0, t0, ts, theta, x, x_int);
+        stan::math::integrate_ode_rk45(f, y0, t0, ts, theta, x_r, x_i);
 
       return ode_res_vd.back();
     }

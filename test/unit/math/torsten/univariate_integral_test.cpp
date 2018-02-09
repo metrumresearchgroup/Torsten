@@ -10,13 +10,17 @@
 class univar_functor_ord0 {
   double val_;
 public:
-  univar_functor_ord0(double& val) : val_(val) {}
-  template <typename T0>
+  explicit univar_functor_ord0(double& val) : val_(val) {}
+  template <typename T0, typename T1, typename T2, typename T3>
   inline
-  std::vector<typename stan::return_type<T0>::type>
-  operator()(const T0& t_in,     // init time
+  std::vector<typename stan::return_type<T0,T1,T2,T3>::type>
+  operator()(const T0& t,
+             const std::vector<T1>& y,
+             const std::vector<T2>& theta,
+             const std::vector<T3>& x_r,
+             const std::vector<int>& x_i,
              std::ostream* msgs) const {
-    std::vector<typename stan::return_type<T0>::type> res {val_};
+    std::vector<typename stan::return_type<T0,T1,T2,T3>::type> res {val_};
     return res;
   }
 };
@@ -24,13 +28,17 @@ public:
 class univar_functor_ord1 {
   double k_;
 public:
-  univar_functor_ord1(double& k) : k_(k) {}
-  template <typename T0>
+  explicit univar_functor_ord1(double& k) : k_(k) {}
+  template <typename T0, typename T1, typename T2, typename T3>
   inline
-  std::vector<typename stan::return_type<T0>::type>
-  operator()(const T0& t_in,	// initial time
+  std::vector<typename stan::return_type<T0,T1,T2,T3>::type>
+  operator()(const T0& t,
+             const std::vector<T1>& y,
+             const std::vector<T2>& theta,
+             const std::vector<T3>& x_r,
+             const std::vector<int>& x_i,
              std::ostream* msgs) const {
-    std::vector<typename stan::return_type<T0>::type> res {k_*t_in};
+    std::vector<typename stan::return_type<T0,T1,T2,T3>::type> res {k_*t};
     return res;
   }
 };
@@ -40,13 +48,18 @@ class univar_functor_ord2 {
 public:
   univar_functor_ord2(double& a, double& b, double& c) :
     a_(a), b_(b), c_(c) {}
-  template <typename T0>
+
+  template <typename T0, typename T1, typename T2, typename T3>
   inline
-  std::vector<typename stan::return_type<T0>::type>
-  operator()(const T0& t_in,	// initial time
+  std::vector<typename stan::return_type<T0,T1,T2,T3>::type>
+  operator()(const T0& t,
+             const std::vector<T1>& y,
+             const std::vector<T2>& theta,
+             const std::vector<T3>& x_r,
+             const std::vector<int>& x_i,
              std::ostream* msgs) const {
-    std::vector<typename stan::return_type<T0>::type> res;
-    res.push_back(a_ + b_*t_in + c_*t_in*t_in);
+    std::vector<typename stan::return_type<T0,T1,T2,T3>::type> res;
+    res.push_back(a_ + b_*t + c_*t*t);
     return res;
   }
 };
@@ -59,85 +72,156 @@ public:
   univar_functor_vec(double& val, double& k, double& a, double& b, double& c) :
     f0_(val), f1_(k), f2_(a, b, c)
   {}
-  template <typename T0>
+  template <typename T0, typename T1, typename T2, typename T3>
   inline
-  std::vector<typename stan::return_type<T0>::type>
-  operator()(const T0& t_in,	// initial time
+  std::vector<typename stan::return_type<T0,T1,T2,T3>::type>
+  operator()(const T0& t,
+             const std::vector<T1>& y,
+             const std::vector<T2>& theta,
+             const std::vector<T3>& x_r,
+             const std::vector<int>& x_i,
              std::ostream* msgs) const {
-    std::vector<typename stan::return_type<T0>::type> res {
-      f0_(t_in, msgs)[0], f1_(t_in, msgs)[0], f2_(t_in, msgs)[0] };
+    std::vector<typename stan::return_type<T0,T1,T2,T3>::type> res {
+      f0_(t, y, theta, x_r, x_i, msgs)[0],
+        f1_(t, y, theta, x_r, x_i, msgs)[0],
+        f2_(t, y, theta, x_r, x_i, msgs)[0] };
     return res;
   }
 };
 
+// template <typename F, typename T0, typename T1>
+// const auto rk45<F,T0,T1> = univariate_integral_rk45<F,T0,T1>;
+
+
 TEST(univariate_integral, const_example) {
   double val {2.0};
   univar_functor_ord0 f0{val};
-  std::vector<double> t {0.0, 2.5};
+  std::vector<double> theta {0.0, 2.5};
   std::vector<double> y {1.5};
-
+  std::vector<double> x_r;
+  std::vector<int> x_i;
+  std::vector<stan::math::var> theta_var = stan::math::to_var(theta);
+  using stan::math::univariate_integral_rk45;
+  using stan::math::univariate_integral_bdf;
+  
   {
-    auto res { stan::math::univariate_integral_rk45(f0, y, t) };
+    auto res { univariate_integral_rk45(f0, y, theta, x_r, x_i) };
     EXPECT_NEAR(6.5, res[0], 1e-8);
   }
 
   {
-    auto res { stan::math::univariate_integral_bdf(f0, y, t) };
+    auto res { univariate_integral_rk45(f0, y, theta_var, x_r, x_i) };
+    EXPECT_NEAR(6.5, stan::math::value_of(res[0]), 1e-8);
+  }
+
+  {
+    auto res { univariate_integral_bdf(f0, y, theta, x_r, x_i) };
     EXPECT_NEAR(6.5, res[0], 1e-8);
+  }
+
+  {
+    auto res { univariate_integral_bdf(f0, y, theta_var, x_r, x_i) };
+    EXPECT_NEAR(6.5, stan::math::value_of(res[0]), 1e-8);
   }
 }
 
 TEST(univariate_integral, linear_example) {
   double k {1.2};
   univar_functor_ord1 f0 {k};
-  std::vector<double> t {0.0, 2.5};
+  std::vector<double> theta {0.0, 2.5};
   std::vector<double> y {0.0};
+  std::vector<double> x_r;
+  std::vector<int> x_i;
+  std::vector<stan::math::var> theta_var = stan::math::to_var(theta);  
+  using stan::math::univariate_integral_rk45;
+  using stan::math::univariate_integral_bdf;
 
   {
-    auto res { stan::math::univariate_integral_rk45(f0, y, t) };
+    auto res { univariate_integral_rk45(f0, y, theta, x_r, x_i) };
     EXPECT_NEAR(3.75, res[0], 1e-8);
   }
 
   {
-    auto res { stan::math::univariate_integral_bdf(f0, y, t) };
+    auto res { univariate_integral_rk45(f0, y, theta_var, x_r, x_i) };
+    EXPECT_NEAR(3.75, stan::math::value_of(res[0]), 1e-8);
+  }
+
+  {
+    auto res { univariate_integral_bdf(f0, y, theta, x_r, x_i) };
     EXPECT_NEAR(3.75, res[0], 1e-8);
+  }
+
+  {
+    auto res { univariate_integral_bdf(f0, y, theta_var, x_r, x_i) };
+    EXPECT_NEAR(3.75, stan::math::value_of(res[0]), 1e-8);
   }
 }
 
 TEST(univariate_integral, quad_example) {
   double a{2.3}, b{2.0}, c{1.5};
   univar_functor_ord2 f0(a, b, c);
-  std::vector<double> t {0.0, 0.4};
+  std::vector<double> theta {0.0, 0.4};
   std::vector<double> y {0.0};
+  std::vector<double> x_r;
+  std::vector<int> x_i;
+  std::vector<stan::math::var> theta_var = stan::math::to_var(theta);  
+  using stan::math::univariate_integral_rk45;
+  using stan::math::univariate_integral_bdf;
 
   {
-    auto res { stan::math::univariate_integral_rk45(f0, y, t) };
+    auto res { univariate_integral_rk45(f0, y, theta, x_r, x_i) };
     EXPECT_NEAR(1.112, res[0], 1e-8);
   }
 
   {
-    auto res { stan::math::univariate_integral_bdf(f0, y, t) };
+    auto res { univariate_integral_rk45(f0, y, theta_var, x_r, x_i) };
+    EXPECT_NEAR(1.112, stan::math::value_of(res[0]), 1e-8);
+  }
+
+  {
+    auto res { univariate_integral_bdf(f0, y, theta, x_r, x_i) };
     EXPECT_NEAR(1.112, res[0], 1e-8);
   }
 
+  {
+    auto res { univariate_integral_bdf(f0, y, theta_var, x_r, x_i) };
+    EXPECT_NEAR(1.112, stan::math::value_of(res[0]), 1e-8);
+  }
 }
 
 TEST(univariate_integral, vector_example) {
   double val {2.0}, k {1.2}, a{2.3}, b{2.0}, c{1.5};
   univar_functor_vec f(val, k, a, b, c);
-  std::vector<double> t {0.0, 2.5};
+  std::vector<double> theta {0.0, 2.5};
   std::vector<double> y {1.5, 0.0, 0.0};
+  std::vector<double> x_r;
+  std::vector<int> x_i;
+  std::vector<stan::math::var> theta_var = stan::math::to_var(theta);  
+  using stan::math::univariate_integral_rk45;
+  using stan::math::univariate_integral_bdf;
 
   {
-    auto res { stan::math::univariate_integral_rk45(f, y, t) };
+    auto res { univariate_integral_rk45(f, y, theta, x_r, x_i) };
     EXPECT_NEAR(6.50, res[0], 1e-8);
     EXPECT_NEAR(3.75, res[1], 1e-8);
   }
 
   {
-    auto res { stan::math::univariate_integral_bdf(f, y, t) };
+    auto res { univariate_integral_rk45(f, y, theta_var, x_r, x_i) };
+    EXPECT_NEAR(6.50, stan::math::value_of(res[0]), 1e-8);
+    EXPECT_NEAR(3.75, stan::math::value_of(res[1]), 1e-8);
+  }
+
+  {
+    auto res { univariate_integral_bdf(f, y, theta, x_r, x_i) };
     EXPECT_NEAR(6.50, res[0], 1e-8);
     EXPECT_NEAR(3.75, res[1], 1e-8);
+  }
+
+  {
+    auto res { univariate_integral_bdf(f, y, theta_var, x_r, x_i) };
+    EXPECT_NEAR(6.50, stan::math::value_of(res[0]), 1e-8);
+    EXPECT_NEAR(3.75, stan::math::value_of(res[1]), 1e-8);
   }
 
 }
