@@ -13,10 +13,10 @@
  * ODE system RHS.
  */
 template <typename F0>
-struct ode_univar_fixed_interval_functor {
+struct normalized_integrand_functor {
   F0 f0_;
-  ode_univar_fixed_interval_functor() {}
-  explicit ode_univar_fixed_interval_functor(const F0& f0) : f0_(f0) {}
+  normalized_integrand_functor() {}
+  explicit normalized_integrand_functor(const F0& f0) : f0_(f0) {}
   template <typename T0, typename T1, typename T2, typename T3>
   inline
   std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
@@ -26,19 +26,13 @@ struct ode_univar_fixed_interval_functor {
              const std::vector<T3>& x_r,
              const std::vector<int>& x_i,
              std::ostream* pstream_) const {
-    T2 t1 {theta[0]};
-    T2 t2 {theta[1]};
+    T2 t2 = theta.rbegin()[0];
+    T2 t1 = theta.rbegin()[1];
     T2 jacobian {t2 - t1};
     std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
-      res;
-    auto res_f { f0_(t2*t + t1*(1.0-t), pstream_) };
+      res = f0_(t2*t + t1*(1.0-t), y, theta, x_r, x_i, pstream_);
 
-    // scale results with jacobian
-    std::transform(res_f.begin(), res_f.end(), res_f.begin(),
-                   std::bind1st(std::multiplies<T2>(), jacobian) );
-
-    // convert f0 output type to promoted type
-    for (auto& i : res_f) res.push_back(i);
+    for(size_t i=0; i<res.size(); ++i ) res[i] *= jacobian;
 
     return res;
   }
