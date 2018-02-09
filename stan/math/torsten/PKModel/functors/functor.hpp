@@ -14,27 +14,31 @@ namespace torsten {
  * Convert a simple univariate function to the signature of
  * ODE system RHS.
  */
-template <typename F0>
+template <typename F0, typename TL, typename TR>
 struct normalized_integrand_functor {
-  F0 f0_;
+  const F0& f0_;
+  const TL& t0_;
+  const TR& t1_;
   normalized_integrand_functor() {}
-  explicit normalized_integrand_functor(const F0& f0) : f0_(f0) {}
+  normalized_integrand_functor(const F0& f0, const TL& t0,const TR& t1) : 
+    f0_(f0), t0_(t0), t1_(t1)
+  {}
+
   template <typename T0, typename T1, typename T2, typename T3>
   inline
-  std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
+  std::vector<typename boost::math::tools::promote_args<
+                T0, T1, T2, T3, TL, TR>::type >
   operator()(const T0& t,
              const std::vector<T1>& y,
              const std::vector<T2>& theta,
              const std::vector<T3>& x_r,
              const std::vector<int>& x_i,
              std::ostream* pstream_) const {
-    T2 t2 = theta.rbegin()[0];
-    T2 t1 = theta.rbegin()[1];
-    T2 jacobian {t2 - t1};
-    std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
-      res = f0_(t2*t + t1*(1.0-t), y, theta, x_r, x_i, pstream_);
-
-    for(size_t i=0; i<res.size(); ++i ) res[i] *= jacobian;
+    auto jacobian {t1_ - t0_};
+    using scalar = typename boost::math::tools::promote_args<
+      T0, T1, T2, T3, TL, TR>::type;
+    std::vector<scalar> res{jacobian *
+        f0_(t1_*t + t0_*(1.0-t), y.front(), theta, x_r, x_i, pstream_)};
 
     return res;
   }
