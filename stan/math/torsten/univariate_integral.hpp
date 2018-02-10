@@ -41,21 +41,49 @@ namespace stan {
                             const std::vector<double>& x_r,
                             const std::vector<int>& x_i,
                             std::ostream* msgs = 0,
-                            double relative_tolerance = 1e-10,
+                             double relative_tolerance = 1e-10,
                             double absolute_tolerance = 1e-10,
-                            long int max_num_steps = 1e8) { 
+                            int max_num_steps = 1E8) {
+      using stan::math::to_var;
       static const double t{0.0};
       static const std::vector<double> ts{1.0};
       static const std::vector<double> y0{0.0};
       const normalized_integrand_functor<F,TL,TR> f{f0,t0,t1};
 
       using scalar = typename stan::return_type<TL, TR, T0>::type;
+      std::vector<scalar> par {to_var(theta)};
+      if(stan::is_var<TL>::value) par.push_back(to_var(t0));
+      if(stan::is_var<TR>::value) par.push_back(to_var(t1));
+
       std::vector<std::vector<scalar>> ode_res_vd =
-        stan::math::integrate_ode_bdf(f, y0, t, ts, theta, x_r, x_i);
+        stan::math::integrate_ode_bdf(f, y0, t, ts, par, x_r, x_i);
 
       return ode_res_vd.back().back();
     }
 
+    template <typename F>
+    inline
+    double univariate_integral_bdf(const F &f0,    // integrand
+                            double& t0,         // integral limit
+                            double& t1,         // integral limit
+                            const std::vector<double>& theta,
+                            const std::vector<double>& x_r,
+                            const std::vector<int>& x_i,
+                            std::ostream* msgs = 0,
+                            double relative_tolerance = 1e-6,
+                            double absolute_tolerance = 1e-6,
+                            int max_num_steps = 1E6) {
+      using stan::math::to_var;
+      static const double t{0.0};
+      static const std::vector<double> ts{1.0};
+      static const std::vector<double> y0{0.0};
+      const normalized_integrand_functor<F,double,double> f{f0,t0,t1};
+
+      std::vector<std::vector<double>> ode_res_vd =
+        stan::math::integrate_ode_bdf(f, y0, t, ts, theta, x_r, x_i);
+
+      return ode_res_vd.back().back();
+    }
 
     /**
      * Return the integral of a univariate function (provide
@@ -88,18 +116,47 @@ namespace stan {
                             double relative_tolerance = 1e-6,
                             double absolute_tolerance = 1e-6,
                             int max_num_steps = 1E6) {
+      using stan::math::to_var;
       static const double t{0.0};
       static const std::vector<double> ts{1.0};
       static const std::vector<double> y0{0.0};
       const normalized_integrand_functor<F,TL,TR> f{f0,t0,t1};
 
       using scalar = typename stan::return_type<TL, TR, T0>::type;
+      std::vector<scalar> par {to_var(theta)};
+      if(stan::is_var<TL>::value) par.push_back(to_var(t0));
+      if(stan::is_var<TR>::value) par.push_back(to_var(t1));
+
       std::vector<std::vector<scalar>> ode_res_vd =
+        stan::math::integrate_ode_rk45(f, y0, t, ts, par, x_r, x_i);
+
+      return ode_res_vd.back().back();
+    }
+
+    template <typename F>
+    inline
+    double univariate_integral_rk45(const F &f0,    // integrand
+                            double& t0,         // integral limit
+                            double& t1,         // integral limit
+                            const std::vector<double>& theta,
+                            const std::vector<double>& x_r,
+                            const std::vector<int>& x_i,
+                            std::ostream* msgs = 0,
+                            double relative_tolerance = 1e-6,
+                            double absolute_tolerance = 1e-6,
+                            int max_num_steps = 1E6) {
+      using stan::math::to_var;
+      static const double t{0.0};
+      static const std::vector<double> ts{1.0};
+      static const std::vector<double> y0{0.0};
+      const normalized_integrand_functor<F,double,double> f{f0,t0,t1};
+
+      std::vector<std::vector<double>> ode_res_vd =
         stan::math::integrate_ode_rk45(f, y0, t, ts, theta, x_r, x_i);
 
       return ode_res_vd.back().back();
     }
 
-  }
+}
 }
 #endif
