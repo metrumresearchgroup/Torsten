@@ -161,3 +161,46 @@ TEST(univariate_integral, quad_example) {
     EXPECT_NEAR(1.112, stan::math::value_of(res), 1e-8);
   }
 }
+
+TEST(univariate_integral, quad_example_var) {
+  double a{2.3}, b{2.0}, c{1.5};
+  univar_functor_ord2 f0(a, b, c);
+  double t0 = 0.0;
+  double t1 = 0.4;
+  std::vector<double> theta {999.9};
+  std::vector<double> x_r;
+  std::vector<int> x_i;
+  stan::math::var t0_var = stan::math::to_var(t0);  
+  stan::math::var t1_var = stan::math::to_var(t1);  
+  std::vector<stan::math::var> theta_var = stan::math::to_var(theta);  
+  using stan::math::univariate_integral_rk45;
+  using stan::math::univariate_integral_bdf;
+
+  {
+    auto res { univariate_integral_rk45(f0,
+                                        t0_var, t1_var,
+                                        theta_var, x_r, x_i) };
+    EXPECT_NEAR(1.112, stan::math::value_of(res), 1e-8);
+  }
+
+  {
+    auto res { univariate_integral_rk45(f0,
+                                        t0_var, t1_var,
+                                        theta, x_r, x_i) };
+    EXPECT_NEAR(1.112, stan::math::value_of(res), 1e-8);
+  }
+
+  // {
+  //   auto res { univariate_integral_bdf(f0,
+  //                                      t0_var, t1_var,
+  //                                      theta_var, x_r, x_i) };
+  //   EXPECT_NEAR(1.112, stan::math::value_of(res), 1e-8);
+  // }
+
+  // {
+  //   auto res { univariate_integral_bdf(f0,
+  //                                      t0_var, t1_var,
+  //                                      theta, x_r, x_i) };
+  //   EXPECT_NEAR(1.112, stan::math::value_of(res), 1e-8);
+  // }
+}
