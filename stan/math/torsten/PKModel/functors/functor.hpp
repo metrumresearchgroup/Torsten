@@ -12,29 +12,29 @@
  * Convert a simple univariate function to the signature of
  * ODE system RHS.
  */
-template <typename F0, typename TL, typename TR>
+template <typename F0>
 struct normalized_integrand_functor {
   const F0& f0_;
-  const TL& t0_;
-  const TR& t1_;
   normalized_integrand_functor() {}
-  normalized_integrand_functor(const F0& f0, const TL& t0,const TR& t1) : 
-    f0_(f0), t0_(t0), t1_(t1)
+  normalized_integrand_functor(const F0& f0) : 
+    f0_(f0)
   {}
 
-  template <typename T0, typename T1, typename T2, typename T3>
+  template <typename T0, typename T1, typename T2>
   inline
   std::vector<typename boost::math::tools::promote_args<
-                T0, T1, T2, T3, TL, TR>::type >
+                T0, T1, T2>::type >
   operator()(const T0& t,
              const std::vector<T1>& y,
              const std::vector<T2>& theta,
-             const std::vector<T3>& x_r,
+             const std::vector<double>& x_r,
              const std::vector<int>& x_i,
              std::ostream* pstream_) const {
+    auto t1_{theta.rbegin()[0]};
+    auto t0_{theta.rbegin()[1]};
     auto jacobian {t1_ - t0_};
     using scalar = typename boost::math::tools::promote_args<
-      T0, T1, T2, T3, TL, TR>::type;
+      T0, T1, T2>::type;
     std::vector<scalar> res{jacobian *
         f0_(t1_*t + t0_*(1.0-t), y.front(), theta, x_r, x_i, pstream_)};
 

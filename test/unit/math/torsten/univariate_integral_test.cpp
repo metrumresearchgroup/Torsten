@@ -190,17 +190,24 @@ TEST(univariate_integral, quad_example_var) {
     EXPECT_NEAR(1.112, stan::math::value_of(res), 1e-8);
   }
 
-  // {
-  //   auto res { univariate_integral_bdf(f0,
-  //                                      t0_var, t1_var,
-  //                                      theta_var, x_r, x_i) };
-  //   EXPECT_NEAR(1.112, stan::math::value_of(res), 1e-8);
-  // }
+  {
+    auto res { univariate_integral_bdf(f0,
+                                       t0_var, t1_var,
+                                       theta_var, x_r, x_i) };
+    EXPECT_NEAR(1.112, stan::math::value_of(res), 1e-8);
+  }
 
-  // {
-  //   auto res { univariate_integral_bdf(f0,
-  //                                      t0_var, t1_var,
-  //                                      theta, x_r, x_i) };
-  //   EXPECT_NEAR(1.112, stan::math::value_of(res), 1e-8);
-  // }
+  {
+    auto res { univariate_integral_bdf(f0,
+                                       t0_var, t1_var,
+                                       theta, x_r, x_i) };
+    EXPECT_NEAR(1.112, stan::math::value_of(res), 1e-8);
+  }
+
+  {
+    auto res { univariate_integral_bdf(f0,
+                                       t0, t1_var,
+                                       theta, x_r, x_i) };
+    EXPECT_NEAR(1.112, stan::math::value_of(res), 1e-8);
+  }
 }
