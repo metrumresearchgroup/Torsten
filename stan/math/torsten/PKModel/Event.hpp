@@ -233,7 +233,7 @@ public:
     }
   };
 
-  void Sort() { std::sort(Events.begin(), Events.end(), by_time()); }
+  void Sort() { std::stable_sort(Events.begin(), Events.end(), by_time()); }
 
   // Access functions
   T_time get_time(int i) { return Events[i].time; }
