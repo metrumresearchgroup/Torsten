@@ -57,8 +57,8 @@ namespace stan {
     inline
     typename stan::return_type<Tl, Tr, T0>::type
     univariate_integral_bdf(const F &f0,    // integrand
-                            Tl& t0,         // integral limit
-                            Tr& t1,         // integral limit
+                            const Tl& t0,         // integral limit
+                            const Tr& t1,         // integral limit
                             const std::vector<T0>& theta,
                             const std::vector<double>& x_r,
                             const std::vector<int>& x_i,
@@ -102,8 +102,8 @@ namespace stan {
     inline
     typename stan::return_type<Tl, Tr, T0>::type
     univariate_integral_rk45(const F &f0,    // integrand
-                            Tl& t0,         // integral limit
-                            Tr& t1,         // integral limit
+                            const Tl& t0,         // integral limit
+                            const Tr& t1,         // integral limit
                             const std::vector<T0>& theta,
                             const std::vector<double>& x_r,
                             const std::vector<int>& x_i,
