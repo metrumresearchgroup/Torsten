@@ -11,16 +11,15 @@ class univar_functor_ord0 {
   double val_;
 public:
   explicit univar_functor_ord0(double& val) : val_(val) {}
-  template <typename T0, typename T1, typename T2, typename T3>
+  template <typename T0, typename T2, typename T3>
   inline
-  typename stan::return_type<T0,T1,T2,T3>::type
+  typename stan::return_type<T0, T2, T3>::type
   operator()(const T0& t,
-             const T1& y,
              const std::vector<T2>& theta,
              const std::vector<T3>& x_r,
              const std::vector<int>& x_i,
              std::ostream* msgs) const {
-    typename stan::return_type<T0,T1,T2,T3>::type res {val_};
+    typename stan::return_type<T0, T2, T3>::type res {val_};
     return res;
   }
 };
@@ -29,16 +28,15 @@ class univar_functor_ord1 {
   double k_;
 public:
   explicit univar_functor_ord1(double& k) : k_(k) {}
-  template <typename T0, typename T1, typename T2, typename T3>
+  template <typename T0, typename T2, typename T3>
   inline
-  typename stan::return_type<T0,T1,T2,T3>::type
+  typename stan::return_type<T0, T2, T3>::type
   operator()(const T0& t,
-             const T1& y,
              const std::vector<T2>& theta,
              const std::vector<T3>& x_r,
              const std::vector<int>& x_i,
              std::ostream* msgs) const {
-    typename stan::return_type<T0,T1,T2,T3>::type res {k_*t};
+    typename stan::return_type<T0, T2, T3>::type res {k_*t};
     return res;
   }
 };
@@ -49,16 +47,15 @@ public:
   univar_functor_ord2(double& a, double& b, double& c) :
     a_(a), b_(b), c_(c) {}
 
-  template <typename T0, typename T1, typename T2, typename T3>
+  template <typename T0, typename T2, typename T3>
   inline
-  typename stan::return_type<T0,T1,T2,T3>::type
+  typename stan::return_type<T0, T2, T3>::type
   operator()(const T0& t,
-             const T1& y,
              const std::vector<T2>& theta,
              const std::vector<T3>& x_r,
              const std::vector<int>& x_i,
              std::ostream* msgs) const {
-    typename stan::return_type<T0,T1,T2,T3>::type res {a_ + b_*t + c_*t*t};
+    typename stan::return_type<T0, T2, T3>::type res {a_ + b_*t + c_*t*t};
     return res;
   }
 };

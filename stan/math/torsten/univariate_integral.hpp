@@ -10,11 +10,11 @@
 #include <vector>
 #include <algorithm>
 
-template<typename T0, typename TL, typename TR>
+template<typename T0, typename Tl, typename Tr>
 inline
-std::vector<typename stan::return_type<TL, TR, T0>::type>
+std::vector<typename stan::return_type<Tl, Tr, T0>::type>
 theta_x(const std::vector<T0>& theta,
-          const TL& t0, const TR& t1){
+          const Tl& t0, const Tr& t1){
   auto res{stan::math::to_var(theta)};
   res.push_back(stan::math::to_var(t0));
   res.push_back(stan::math::to_var(t1));
@@ -53,12 +53,12 @@ namespace stan {
      * @return vector of integral value(as integrand is a * vector function).
      */
 
-    template <typename F, typename TL, typename TR, typename T0>
+    template <typename F, typename Tl, typename Tr, typename T0>
     inline
-    typename stan::return_type<TL, TR, T0>::type
+    typename stan::return_type<Tl, Tr, T0>::type
     univariate_integral_bdf(const F &f0,    // integrand
-                            TL& t0,         // integral limit
-                            TR& t1,         // integral limit
+                            Tl& t0,         // integral limit
+                            Tr& t1,         // integral limit
                             const std::vector<T0>& theta,
                             const std::vector<double>& x_r,
                             const std::vector<int>& x_i,
@@ -71,7 +71,7 @@ namespace stan {
       static const std::vector<double> ts{1.0};
       static const std::vector<double> y0{0.0};
       const normalized_integrand_functor<F> f{f0};
-      using scalar = typename stan::return_type<T0,TL,TR>::type;
+      using scalar = typename stan::return_type<T0,Tl,Tr>::type;
       auto par = theta_x(theta, t0, t1);
 
       std::vector<std::vector<scalar>> ode_res_vd =
@@ -98,12 +98,12 @@ namespace stan {
      * @return vector of integral value(as integrand is a * vector function).
      */
 
-    template <typename F, typename TL, typename TR, typename T0>
+    template <typename F, typename Tl, typename Tr, typename T0>
     inline
-    typename stan::return_type<TL, TR, T0>::type
+    typename stan::return_type<Tl, Tr, T0>::type
     univariate_integral_rk45(const F &f0,    // integrand
-                            TL& t0,         // integral limit
-                            TR& t1,         // integral limit
+                            Tl& t0,         // integral limit
+                            Tr& t1,         // integral limit
                             const std::vector<T0>& theta,
                             const std::vector<double>& x_r,
                             const std::vector<int>& x_i,
@@ -116,7 +116,7 @@ namespace stan {
       static const std::vector<double> ts{1.0};
       static const std::vector<double> y0{0.0};
       const normalized_integrand_functor<F> f{f0};
-      using scalar = typename stan::return_type<T0,TL,TR>::type;
+      using scalar = typename stan::return_type<T0,Tl,Tr>::type;
       auto par = theta_x(theta, t0, t1);
 
       std::vector<std::vector<scalar>> ode_res_vd =
