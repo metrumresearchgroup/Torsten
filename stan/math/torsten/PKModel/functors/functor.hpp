@@ -38,7 +38,7 @@ struct normalized_integrand_functor {
     using scalar = typename boost::math::tools::promote_args<
       T0, T1, T2>::type;
     std::vector<scalar> res{jacobian *
-        f0_(t1_*t + t0_*(1.0-t), y.front(), theta, x_r, x_i, pstream_)};
+        f0_(t1_*t + t0_*(1.0-t), theta, x_r, x_i, pstream_)};
 
     return res;
   }
