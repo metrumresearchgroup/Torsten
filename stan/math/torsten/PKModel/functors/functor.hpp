@@ -5,6 +5,42 @@
 #include <stan/math/fwd/core.hpp>
 #include <vector>
 #include <iostream>
+#include <functional>
+#include <algorithm>
+
+/**
+ * Convert a simple univariate function to the signature of
+ * ODE system RHS.
+ */
+template <typename F0>
+struct normalized_integrand_functor {
+  const F0& f0_;
+  normalized_integrand_functor() {}
+  normalized_integrand_functor(const F0& f0) : 
+    f0_(f0)
+  {}
+
+  template <typename T0, typename T1, typename T2>
+  inline
+  std::vector<typename boost::math::tools::promote_args<
+                T0, T1, T2>::type >
+  operator()(const T0& t,
+             const std::vector<T1>& y,
+             const std::vector<T2>& theta,
+             const std::vector<double>& x_r,
+             const std::vector<int>& x_i,
+             std::ostream* pstream_) const {
+    auto t1_{theta.rbegin()[0]};
+    auto t0_{theta.rbegin()[1]};
+    auto jacobian {t1_ - t0_};
+    using scalar = typename boost::math::tools::promote_args<
+      T0, T1, T2>::type;
+    std::vector<scalar> res{jacobian *
+        f0_(t1_*t + t0_*(1.0-t), theta, x_r, x_i, pstream_)};
+
+    return res;
+  }
+};
 
 namespace torsten {
 
