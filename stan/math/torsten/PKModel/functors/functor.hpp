@@ -8,8 +8,6 @@
 #include <functional>
 #include <algorithm>
 
-namespace torsten {
-
 /**
  * Convert a simple univariate function to the signature of
  * ODE system RHS.
@@ -43,6 +41,8 @@ struct normalized_integrand_functor {
     return res;
   }
 };
+
+namespace torsten {
 
 /**
  * Functors for the general and the mix solver.

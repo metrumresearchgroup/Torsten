@@ -7,19 +7,7 @@ help:
 ## Disable implicit rules.
 SUFIXES:
 
-##
-# Users should only need to set these three variables for use.
-# - CC: The compiler to use. Expecting g++ or clang++.
-# - O: Optimization level. Valid values are {0, 1, 2, 3}.
-# - AR: archiver (must specify for cross-compiling)
-# - OS_TYPE: {mac, win, linux}
-# - C++11: Compile with C++11 extensions, Valid values: {true, false}.
-##
-CC = g++
-O = 3
-O_STANC = 0
-AR = ar
-C++11 = false
+include make/default_compiler_options
 
 ##
 # Library locations
