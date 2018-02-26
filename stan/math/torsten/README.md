@@ -1,28 +1,24 @@
-<b> Torsten </b> (math) is a library of C++ functions that supports applications of Stan in Pharmacometrics. The current prototype provides:
-* One and Two Compartment (with first-order absoprtion) Model functions, that solve ordinary differential equations (ODEs) analytically
-* A Linear ODE-based Model function, that solves ODEs using a matrix exponential solution
-* General Compartment Model functions, that solve ODEs numerically using one of two ODE integrators available on stan (rk45 and bdf)
-* A flexible mechanism that handles the event schedule of clinical trials and solves differential equations within that schedule.
+Torsten 0.84
+------------
 
-This prototype is still under development and has been uploaded to facilitate working with the community of Stan developers. We welcome users to try Torsten and will gladly assist them. Please use gitHub to report issues and bugs, and request new features. People who wish to contribute to this project can email charlesm@metrumrg.com or billg@metrumrg.com. The current prototype was written by Charles Margossian, Bill Gillespie, and Metrum Research Group, LLC. This project is and will remain open-source.
+<b> Torsten </b> is a library of C++ functions that support applications of Stan in Pharmacometrics. The current version provides:
+* Analytical solution for the one and two linear compartment model with a first-order absorption
+* Matrix exponential solution for a general linear compartment model
+* Numerical solution for general compartment model using built-in integrators:
+  * Runge-Kutta 4th/5th (rk45) order for non-stiff ODE systems
+  * Backward Differentiation (bdf) for stiff ODE systems
+* Mixed solver for general compartment model with a forcing PK function:
+  * Computes analytical solutions for forcing PK One and Two compartment model with a first-order absorption
+  * Computes numerical solution for the forced compartment model using the rk45 or bdf method
+  
+__This prototype is still under development__ and has been uploaded to
+facilitate working with the community of Stan developers. The current
+version was written by Charles Margossian (@charlesm93), Yi Zhang
+(@yizhang-cae), Bill Gillespie (@billgillespie), and Metrum Research
+Group, LLC (@metrumresearchgroup. We have recieved extensive help from the Stan development team.
 
-Version: 0.82
+See the user manual (`torstenManual.pdf`) for more
+information and guidance on the examples. If you have any
+questions, please raise an issue on GitHub or send us an
+e-mail at billg@metrumrg.com. 
 
-Licensing
----------
-The Torsten library is licensed under the BSD 3-clause license. 
-
-Updates
-------
-01/29/2017 (0.82)
-* Split the parameter argument into three arguments: pMatrix (parameters for the ODEs -- note: for linOdeModel, pMatrix is replaced by the constant rate matrix K), biovar (parameters for the biovariability), and tlag (parameters for the lag time).
-* Allow parameter arguments to be passed as 1D or 2D arrays
-* Increase the numbers of unit tests
-* Unit tests check automatic differentiation against finite differentiation.
-* Fix minor bugs and report issues
-
-09/27/2016 (0.81)
-* Add linCptModel (linear compartmental model) function
-
-09/21/2016 (0.80a)
-* Add check_finite statements in pred_1 and pred_2 to reject metropolis proposal if initial conditions are not finite
