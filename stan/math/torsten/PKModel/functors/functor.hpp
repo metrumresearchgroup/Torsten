@@ -30,9 +30,9 @@ struct normalized_integrand_functor {
              const std::vector<double>& x_r,
              const std::vector<int>& x_i,
              std::ostream* pstream_) const {
-    auto t1_{theta.rbegin()[0]};
-    auto t0_{theta.rbegin()[1]};
-    auto jacobian {t1_ - t0_};
+    const T2& t1_{theta.rbegin()[0]};
+    const T2& t0_{theta.rbegin()[1]};
+    const T2& jacobian {t1_ - t0_};
     using scalar = typename boost::math::tools::promote_args<
       T0, T1, T2>::type;
     std::vector<scalar> res{jacobian *
