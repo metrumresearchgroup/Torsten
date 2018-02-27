@@ -15,7 +15,7 @@ inline
 std::vector<typename stan::return_type<Tl, Tr, T0>::type>
 theta_x(const std::vector<T0>& theta,
           const Tl& t0, const Tr& t1){
-  auto res{stan::math::to_var(theta)};
+  std::vector<stan::math::var> res{stan::math::to_var(theta)};
   res.push_back(stan::math::to_var(t0));
   res.push_back(stan::math::to_var(t1));
   return res;
@@ -26,7 +26,7 @@ std::vector<double> theta_x(const std::vector<double>&
                             theta,
                             const double& t0,
                             const double& t1){
-  auto res{theta};
+  std::vector<double> res{theta};
   res.push_back(t0);
   res.push_back(t1);
   return res;
@@ -72,7 +72,7 @@ namespace stan {
       static const std::vector<double> y0{0.0};
       const normalized_integrand_functor<F> f{f0};
       using scalar = typename stan::return_type<T0,Tl,Tr>::type;
-      auto par = theta_x(theta, t0, t1);
+      std::vector<scalar> par = theta_x(theta, t0, t1);
 
       std::vector<std::vector<scalar>> ode_res_vd =
         stan::math::integrate_ode_bdf(f, y0, t, ts, par, x_r, x_i);
@@ -117,7 +117,7 @@ namespace stan {
       static const std::vector<double> y0{0.0};
       const normalized_integrand_functor<F> f{f0};
       using scalar = typename stan::return_type<T0,Tl,Tr>::type;
-      auto par = theta_x(theta, t0, t1);
+      std::vector<scalar> par = theta_x(theta, t0, t1);
 
       std::vector<std::vector<scalar>> ode_res_vd =
         stan::math::integrate_ode_rk45(f, y0, t, ts, par, x_r, x_i);
