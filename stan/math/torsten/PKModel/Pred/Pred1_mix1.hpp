@@ -65,7 +65,7 @@ struct Pred1_mix1 {
   operator() (const T_time& dt,
               const ModelParameters<T_time, T_parameters, T_biovar,
                                    T_tlag>& parameter,
-              const Eigen::Matrix<T_init, Eigen::Dynamic, 1>& init,
+              const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& init,
               const std::vector<double>& rate) const {
     using std::vector;
     using stan::math::to_array_1d;
