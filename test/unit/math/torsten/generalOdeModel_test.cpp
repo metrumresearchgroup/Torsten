@@ -4,104 +4,122 @@
 #include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
 #include <test/unit/math/torsten/util_generalOdeModel.hpp>
 
-// Developer's note: for the autodiff test, the rk45 agrees
-// more closely with finite diff than bdf by an order of
-// magnitude.
-template <typename T0, typename T1, typename T2, typename T3>
-inline
-std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
-oneCptModelODE(const T0& t,
-               const std::vector<T1>& x,
-	           const std::vector<T2>& parms,
-	           const std::vector<T3>& rate,
-	           const std::vector<int>& dummy, std::ostream* pstream__) {
-  typedef typename boost::math::tools::promote_args<T0, T1, T2, T3>::type scalar;
-
-  scalar CL = parms[0], V1 = parms[1], ka = parms[2], k10 = CL / V1;
-  std::vector<scalar> y(2, 0);
-
-  y[0] = -ka * x[0];
-  y[1] = ka * x[0] - k10 * x[1];
-
-  return y;
-}
-
-struct oneCptModelODE_functor {
+  // Developer's note: for the autodiff test, the rk45 agrees
+  // more closely with finite diff than bdf by an order of
+  // magnitude.
   template <typename T0, typename T1, typename T2, typename T3>
   inline
   std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
-  operator()(const T0& t,
-             const std::vector<T1>& x,
-             const std::vector<T2>& parms,
-             const std::vector<T3>& rate,
-             const std::vector<int>& dummy, std::ostream* pstream__) const {
-        return oneCptModelODE(t, x, parms, rate, dummy, pstream__);
+  oneCptModelODE(const T0& t,
+                 const std::vector<T1>& x,
+                 const std::vector<T2>& parms,
+                 const std::vector<T3>& rate,
+                 const std::vector<int>& dummy, std::ostream* pstream__) {
+    typedef typename boost::math::tools::promote_args<T0, T1, T2, T3>::type scalar;
+
+    scalar CL = parms[0], V1 = parms[1], ka = parms[2], k10 = CL / V1;
+    std::vector<scalar> y(2, 0);
+
+    y[0] = -ka * x[0];
+    y[1] = ka * x[0] - k10 * x[1];
+
+    return y;
+  }
+
+  struct oneCptModelODE_functor {
+    template <typename T0, typename T1, typename T2, typename T3>
+    inline
+    std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
+    operator()(const T0& t,
+               const std::vector<T1>& x,
+               const std::vector<T2>& parms,
+               const std::vector<T3>& rate,
+               const std::vector<int>& dummy, std::ostream* pstream__) const {
+      return oneCptModelODE(t, x, parms, rate, dummy, pstream__);
     }
-};
+  };
 
-TEST(Torsten, genCpt_One_SS) {
-  // Steady state induced by multiple bolus doses (SS = 1, rate = 0)
-  using std::vector;
-  using Eigen::Matrix;
-  using Eigen::Dynamic;
-
-  vector<vector<double> > pMatrix(1);
-  pMatrix[0].resize(3);
-  pMatrix[0][0] = 10; // CL
-  pMatrix[0][1] = 80; // Vc
-  pMatrix[0][2] = 1.2; // ka
-
-  int nCmt = 2;
-  vector<vector<double> > biovar(1);
-  biovar[0].resize(nCmt);
-  biovar[0][0] = 1;  // F1
-  biovar[0][1] = 1;  // F2
-
-  vector<vector<double> > tlag(1);
-  tlag[0].resize(nCmt);
-  tlag[0][0] = 0;  // tlag1
-  tlag[0][1] = 0;  // tlag2
-
-  vector<double> time(10);
-  time[0] = 0.0;
-  time[1] = 0.0;
-  for(int i = 2; i < 10; i++) time[i] = time[i - 1] + 5;
-
-  vector<double> amt(10, 0);
-  amt[0] = 1200;
-
-  vector<double> rate(10, 0);
-
-  vector<int> cmt(10, 2);
-  cmt[0] = 1;
-
-  vector<int> evid(10, 0);
-  evid[0] = 1;
-
-  vector<double> ii(10, 0);
-  ii[0] = 12;
-
-  vector<int> addl(10, 0);
-  addl[0] = 10;
-
-  vector<int> ss(10, 0);
-  ss[0] = 1;
-
+class TorstenPKOneCptODETest : public testing::Test {
+  void SetUp() {
+    // make sure memory's clean before starting each test
+    stan::math::recover_memory();
+  }
+  
+public:
+  TorstenPKOneCptODETest() :
+  pMatrix{ {10, 80, 1.2 } },
+  nCmt(2),
+  biovar{ { 1, 1 } },
+  tlag{ { 0, 0 } },
+  time(10, 0.0),
+  amt(10, 0),
+  rate(10, 0),
+  cmt(10, 2),
+  evid(10, 0),
+  ii(10, 0),
+  addl(10, 0),
+  ss(10, 0)
+  {
+    time[0] = 0.0;
+    time[1] = 0.0;
+    for(int i = 2; i < 10; i++) time[i] = time[i - 1] + 5;
+    cmt[0] = 1;
+    evid[0] = 1;
+  }
+  std::vector<std::vector<double> > pMatrix;  // CL, VC, Ka
+  const int nCmt;  // F1, F2
+  std::vector<std::vector<double> > biovar;
+  std::vector<std::vector<double> > tlag;
+  std::vector<double> time;
+  std::vector<double> amt;
+  std::vector<double> rate;
+  std::vector<int> cmt;
+  std::vector<int> evid;
+  std::vector<double> ii;
+  std::vector<int> addl;
+  std::vector<int> ss;
   double rel_tol = 1e-8, abs_tol = 1e-8;
   long int max_num_steps = 1e8;
-  Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_rk45;
-  x_rk45 = torsten::generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
-                                time, amt, rate, ii, evid, cmt, addl, ss,
-                                pMatrix, biovar, tlag,
-                                0,
-                                rel_tol, abs_tol, max_num_steps);
 
-  Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_bdf;
-  x_bdf = torsten::generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
-                              time, amt, rate, ii, evid, cmt, addl, ss,
-                              pMatrix, biovar, tlag,
-                              0,
-                              rel_tol, abs_tol, max_num_steps);
+  struct oneCptModelODE_functor {
+    template <typename T0, typename T1, typename T2, typename T3>
+    inline
+    std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
+    operator()(const T0& t,
+               const std::vector<T1>& x,
+               const std::vector<T2>& parms,
+               const std::vector<T3>& rate,
+               const std::vector<int>& dummy, std::ostream* pstream__) const {
+      return oneCptModelODE(t, x, parms, rate, dummy, pstream__);
+    }
+  };
+};
+
+TEST_F(TorstenPKOneCptODETest, steady_state_repeated) {
+//  Steady state induced by multiple bolus doses (SS = 1, rate = 0)
+  using Eigen::Matrix;
+  using Eigen::Dynamic;
+  using torsten::generalOdeModel_rk45;
+  using torsten::generalOdeModel_bdf; 
+
+  amt[0] = 1200;    
+  ss[0] = 1;
+  ii[0] = 12;
+  addl[0] = 10;
+
+  Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_rk45{
+    generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
+                         time, amt, rate, ii, evid, cmt, addl, ss,
+                         pMatrix, biovar, tlag,
+                         0,
+                         rel_tol, abs_tol, max_num_steps) };
+  
+  Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_bdf{
+    generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
+                        time, amt, rate, ii, evid, cmt, addl, ss,
+                        pMatrix, biovar, tlag,
+                        0,
+                        rel_tol, abs_tol, max_num_steps) };
 
   Matrix<double, Dynamic, Dynamic> amounts(10, 2);
   amounts << 1200.0, 384.7363,
@@ -134,53 +152,17 @@ TEST(Torsten, genCpt_One_SS) {
                        rel_tol, abs_tol, max_num_steps, diff, diff2, "bdf");
 }
 
-TEST(Torsten, genCpt_One_SS_2) {
+TEST_F(TorstenPKOneCptODETest, steady_state_single_infusion) {
   // Steady state with constant rate infusion (SS = 1, rate != 0, ii = 0)
   using std::vector;
   using Eigen::Matrix;
   using Eigen::Dynamic;
 
-  vector<vector<double> > pMatrix(1);
-  pMatrix[0].resize(3);
-  pMatrix[0][0] = 10; // CL
-  pMatrix[0][1] = 80; // Vc
-  pMatrix[0][2] = 1.2; // ka
-
-  int nCmt = 2;
-  vector<vector<double> > biovar(1);
-  biovar[0].resize(nCmt);
-  biovar[0][0] = 1;  // F1
-  biovar[0][1] = 1;  // F2
-
-  vector<vector<double> > tlag(1);
-  tlag[0].resize(nCmt);
-  tlag[0][0] = 0;  // tlag1
-  tlag[0][1] = 0;  // tlag2
-
-  vector<double> time(10);
   time[0] = 0.0;
   for(int i = 1; i < 10; i++) time[i] = time[i - 1] + 2.5;
-
-  vector<double> amt(10, 0);
-
-  vector<double> rate(10, 0);
   rate[0] = 150;
-
-  vector<int> cmt(10, 2);
-  cmt[0] = 1;
-
-  vector<int> evid(10, 0);
-  evid[0] = 1;
-
-  vector<double> ii(10, 0);
-
-  vector<int> addl(10, 0);
-
-  vector<int> ss(10, 0);
   ss[0] = 1;
 
-  double rel_tol = 1e-8, abs_tol = 1e-8;
-  long int max_num_steps = 1e8;
   Matrix<double, Dynamic, Dynamic> x_rk45;
   x_rk45 = torsten::generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                 time, amt, rate, ii, evid, cmt, addl, ss,
@@ -230,56 +212,21 @@ TEST(Torsten, genCpt_One_SS_2) {
                        rel_tol, abs_tol, max_num_steps, diff, diff2, "bdf");
 }
 
-TEST(Torsten, genCpt_One_SS_3) {
+TEST_F(TorstenPKOneCptODETest, steady_state_multi_infusions) {
+// TEST(Torsten, genCpt_One_SS_3) {
   // Steady state with multiple truncated infusions
   // (SS = 1, rate != 0, ii > 0)
   using std::vector;
   using Eigen::Matrix;
   using Eigen::Dynamic;
 
-  vector<vector<double> > pMatrix(1);
-  pMatrix[0].resize(3);
-  pMatrix[0][0] = 10; // CL
-  pMatrix[0][1] = 80; // Vc
-  pMatrix[0][2] = 1.2; // ka
-
-  int nCmt = 2;
-  vector<vector<double> > biovar(1);
-  biovar[0].resize(nCmt);
-  biovar[0][0] = 1;  // F1
-  biovar[0][1] = 1;  // F2
-
-  vector<vector<double> > tlag(1);
-  tlag[0].resize(nCmt);
-  tlag[0][0] = 0;  // tlag1
-  tlag[0][1] = 0;  // tlag2
-
-  vector<double> time(10);
   time[0] = 0.0;
   for(int i = 1; i < 10; i++) time[i] = time[i - 1] + 2.5;
-
-  vector<double> amt(10, 0);
   amt[0] = 1200;
-
-  vector<double> rate(10, 0);
   rate[0] = 150;
-
-  vector<int> cmt(10, 2);
-  cmt[0] = 1;
-
-  vector<int> evid(10, 0);
-  evid[0] = 1;
-
-  vector<double> ii(10, 0);
   ii[0] = 16;
-
-  vector<int> addl(10, 0);
-
-  vector<int> ss(10, 0);
   ss[0] = 1;
 
-  double rel_tol = 1e-8, abs_tol = 1e-8;
-  long int max_num_steps = 1e8;
   Matrix<double, Dynamic, Dynamic> x_rk45;
   x_rk45 = torsten::generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                 time, amt, rate, ii, evid, cmt, addl, ss,
@@ -333,57 +280,22 @@ TEST(Torsten, genCpt_One_SS_3) {
                        "bdf", 2);
 }
 
-
-TEST(Torsten, genCpt_One_MultipleDose) {
+TEST_F(TorstenPKOneCptODETest, MultipleDose) {
+// TEST(Torsten, genCpt_One_MultipleDose) {
   using std::vector;
   using Eigen::Matrix;
   using Eigen::Dynamic;
 
   double rel_err = 1e-6;
 
-  vector<vector<double> > pMatrix(1);
-  pMatrix[0].resize(3);
-  pMatrix[0][0] = 10;  // CL
-  pMatrix[0][1] = 80;  // Vc
-  pMatrix[0][2] = 1.2;  // ka
-
-  int nCmt = 2;
-  vector<vector<double> > biovar(1);
-  biovar[0].resize(nCmt);
-  biovar[0][0] = 1;  // F1
-  biovar[0][1] = 1;  // F2
-
-  vector<vector<double> > tlag(1);
-  tlag[0].resize(nCmt);
-  tlag[0][0] = 0;  // tlag1
-  tlag[0][1] = 0;  // tlag2
-
-  vector<double> time(10);
   time[0] = 0.0;
   for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
   time[9] = 4.0;
 
-  vector<double> amt(10, 0);
   amt[0] = 1000;
-
-  vector<double> rate(10, 0);
-
-  vector<int> cmt(10, 2);
-  cmt[0] = 1;
-
-  vector<int> evid(10, 0);
-  evid[0] = 1;
-
-  vector<double> ii(10, 0);
   ii[0] = 12;
-
-  vector<int> addl(10, 0);
   addl[0] = 14;
 
-  vector<int> ss(10, 0);
-
-  double rel_tol = 1e-8, abs_tol = 1e-8;
-  long int max_num_steps = 1e8;
   Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_rk45;
   x_rk45 = torsten::generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
                                 time, amt, rate, ii, evid, cmt, addl, ss,
@@ -400,15 +312,15 @@ TEST(Torsten, genCpt_One_MultipleDose) {
 
   Matrix<double, Dynamic, Dynamic> amounts(10, nCmt);
   amounts << 1000.0, 0.0,
-	  	       740.8182, 254.97490,
-			       548.8116, 436.02020,
-		      	 406.5697, 562.53846,
-		      	 301.1942, 648.89603,
-             223.1302, 705.72856,
-			       165.2989, 740.90816,
-			       122.4564, 760.25988,
-			       90.71795, 768.09246,
-			       8.229747, 667.87079;
+    740.8182, 254.97490,
+    548.8116, 436.02020,
+    406.5697, 562.53846,
+    301.1942, 648.89603,
+    223.1302, 705.72856,
+    165.2989, 740.90816,
+    122.4564, 760.25988,
+    90.71795, 768.09246,
+    8.229747, 667.87079;
 
   expect_near_matrix_eq(amounts, x_rk45, rel_err);
   expect_near_matrix_eq(amounts, x_bdf, rel_err);
@@ -425,146 +337,23 @@ TEST(Torsten, genCpt_One_MultipleDose) {
                        rel_tol, abs_tol, max_num_steps, diff, diff2, "bdf");
 }
 
-TEST(Torsten, genCpt_One_MultipleDose_overload) {
+TEST_F(TorstenPKOneCptODETest, MultipleDose_overload) {
   using std::vector;
   using Eigen::Matrix;
   using Eigen::Dynamic;
+  using torsten::generalOdeModel_rk45;
+  using torsten::generalOdeModel_bdf;
+  using F = oneCptModelODE_functor;
 
-  double rel_err = 1e-4;
-
-  vector<vector<double> > pMatrix(1);
-  pMatrix[0].resize(3);
-  pMatrix[0][0] = 10;  // CL
-  pMatrix[0][1] = 80;  // Vc
-  pMatrix[0][2] = 1.2;  // ka
-
-  int nCmt = 2;
-  vector<vector<double> > biovar(1);
-  biovar[0].resize(nCmt);
-  biovar[0][0] = 1;  // F1
-  biovar[0][1] = 1;  // F2
-
-  vector<vector<double> > tlag(1);
-  tlag[0].resize(nCmt);
-  tlag[0][0] = 0;  // tlag1
-  tlag[0][1] = 0;  // tlag2
-
-  vector<double> time(10);
   time[0] = 0.0;
   for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
   time[9] = 4.0;
 
-  vector<double> amt(10, 0);
   amt[0] = 1000;
-
-  vector<double> rate(10, 0);
-
-  vector<int> cmt(10, 2);
-  cmt[0] = 1;
-
-  vector<int> evid(10, 0);
-  evid[0] = 1;
-
-  vector<double> ii(10, 0);
   ii[0] = 12;
-
-  vector<int> addl(10, 0);
   addl[0] = 14;
 
-  vector<int> ss(10, 0);
-
-  double rel_tol = 1e-8, abs_tol = 1e-8;
-  long int max_num_steps = 1e8;
-
-  Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_rk45_122, x_rk45_112,
-    x_rk45_111, x_rk45_121, x_rk45_212, x_rk45_211, x_rk45_221;
-  x_rk45_122 = torsten::generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
-                                time, amt, rate, ii, evid, cmt, addl, ss,
-                                pMatrix[0], biovar, tlag,
-                                0,
-                                rel_tol, abs_tol, max_num_steps);
-
-  x_rk45_112 = torsten::generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
-                                    time, amt, rate, ii, evid, cmt, addl, ss,
-                                    pMatrix[0], biovar[0], tlag,
-                                    0,
-                                    rel_tol, abs_tol, max_num_steps);
-
-  x_rk45_111 = torsten::generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
-                                    time, amt, rate, ii, evid, cmt, addl, ss,
-                                    pMatrix[0], biovar[0], tlag[0],
-                                    0,
-                                    rel_tol, abs_tol, max_num_steps);
-
-  x_rk45_121 = torsten::generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
-                                    time, amt, rate, ii, evid, cmt, addl, ss,
-                                    pMatrix[0], biovar, tlag[0],
-                                    0,
-                                    rel_tol, abs_tol, max_num_steps);
-
-  x_rk45_212 = torsten::generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
-                                    time, amt, rate, ii, evid, cmt, addl, ss,
-                                    pMatrix, biovar[0], tlag,
-                                    0,
-                                    rel_tol, abs_tol, max_num_steps);
-
-  x_rk45_211 = torsten::generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
-                                    time, amt, rate, ii, evid, cmt, addl, ss,
-                                    pMatrix, biovar[0], tlag[0],
-                                    0,
-                                    rel_tol, abs_tol, max_num_steps);
-
-  x_rk45_221 = torsten::generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
-                                    time, amt, rate, ii, evid, cmt, addl, ss,
-                                    pMatrix, biovar, tlag[0],
-                                    0,
-                                    rel_tol, abs_tol, max_num_steps);
-
-
-  Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_bdf_122, x_bdf_112,
-    x_bdf_111, x_bdf_121, x_bdf_212, x_bdf_211, x_bdf_221;
-  x_bdf_122 = torsten::generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
-                                    time, amt, rate, ii, evid, cmt, addl, ss,
-                                    pMatrix[0], biovar, tlag,
-                                    0,
-                                    rel_tol, abs_tol, max_num_steps);
-
-  x_bdf_112 = torsten::generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
-                                    time, amt, rate, ii, evid, cmt, addl, ss,
-                                    pMatrix[0], biovar[0], tlag,
-                                    0,
-                                    rel_tol, abs_tol, max_num_steps);
-
-  x_bdf_111 = torsten::generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
-                                    time, amt, rate, ii, evid, cmt, addl, ss,
-                                    pMatrix[0], biovar[0], tlag[0],
-                                    0,
-                                    rel_tol, abs_tol, max_num_steps);
-
-  x_bdf_121 = torsten::generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
-                                    time, amt, rate, ii, evid, cmt, addl, ss,
-                                    pMatrix[0], biovar, tlag[0],
-                                    0,
-                                    rel_tol, abs_tol, max_num_steps);
-
-  x_bdf_212 = torsten::generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
-                                    time, amt, rate, ii, evid, cmt, addl, ss,
-                                    pMatrix, biovar[0], tlag,
-                                    0,
-                                    rel_tol, abs_tol, max_num_steps);
-
-  x_bdf_211 = torsten::generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
-                                    time, amt, rate, ii, evid, cmt, addl, ss,
-                                    pMatrix, biovar[0], tlag[0],
-                                    0,
-                                    rel_tol, abs_tol, max_num_steps);
-
-  x_bdf_221 = torsten::generalOdeModel_bdf(oneCptModelODE_functor(), nCmt,
-                                    time, amt, rate, ii, evid, cmt, addl, ss,
-                                    pMatrix, biovar, tlag[0],
-                                    0,
-                                    rel_tol, abs_tol, max_num_steps);
-
+  const double rel_err = 1e-4;
   Matrix<double, Dynamic, Dynamic> amounts(10, 2);
   amounts << 1000.0, 0.0,
              740.8182, 254.97490,
@@ -577,47 +366,114 @@ TEST(Torsten, genCpt_One_MultipleDose_overload) {
              90.71795, 768.09246,
              8.229747, 667.87079;
 
-  expect_near_matrix_eq(amounts, x_rk45_122, rel_err);
-  expect_near_matrix_eq(amounts, x_rk45_112, rel_err);
-  expect_near_matrix_eq(amounts, x_rk45_111, rel_err);
-  expect_near_matrix_eq(amounts, x_rk45_121, rel_err);
-  expect_near_matrix_eq(amounts, x_rk45_212, rel_err);
-  expect_near_matrix_eq(amounts, x_rk45_211, rel_err);
-  expect_near_matrix_eq(amounts, x_rk45_221, rel_err);
+  Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x;
+  x = generalOdeModel_rk45(F(), nCmt,
+                           time, amt, rate, ii, evid, cmt, addl, ss,
+                           pMatrix[0], biovar, tlag,
+                           0,
+                           rel_tol, abs_tol, max_num_steps);
+  expect_near_matrix_eq(amounts, x, rel_err);
 
-  expect_near_matrix_eq(amounts, x_bdf_122, rel_err);
-  expect_near_matrix_eq(amounts, x_bdf_112, rel_err);
-  expect_near_matrix_eq(amounts, x_bdf_111, rel_err);
-  expect_near_matrix_eq(amounts, x_bdf_121, rel_err);
-  expect_near_matrix_eq(amounts, x_bdf_212, rel_err);
-  expect_near_matrix_eq(amounts, x_bdf_211, rel_err);
-  expect_near_matrix_eq(amounts, x_bdf_221, rel_err);
+
+  x = generalOdeModel_rk45(F(), nCmt,
+                                    time, amt, rate, ii, evid, cmt, addl, ss,
+                                    pMatrix[0], biovar[0], tlag,
+                                    0,
+                                    rel_tol, abs_tol, max_num_steps);
+  expect_near_matrix_eq(amounts, x, rel_err);
+
+  x = generalOdeModel_rk45(F(), nCmt,
+                                    time, amt, rate, ii, evid, cmt, addl, ss,
+                                    pMatrix[0], biovar[0], tlag[0],
+                                    0,
+                                    rel_tol, abs_tol, max_num_steps);
+  expect_near_matrix_eq(amounts, x, rel_err);
+
+  x = generalOdeModel_rk45(F(), nCmt,
+                                    time, amt, rate, ii, evid, cmt, addl, ss,
+                                    pMatrix[0], biovar, tlag[0],
+                                    0,
+                                    rel_tol, abs_tol, max_num_steps);
+  expect_near_matrix_eq(amounts, x, rel_err);
+
+  x = generalOdeModel_rk45(F(), nCmt,
+                                    time, amt, rate, ii, evid, cmt, addl, ss,
+                                    pMatrix, biovar[0], tlag,
+                                    0,
+                                    rel_tol, abs_tol, max_num_steps);
+  expect_near_matrix_eq(amounts, x, rel_err);
+
+  x = generalOdeModel_rk45(F(), nCmt,
+                                    time, amt, rate, ii, evid, cmt, addl, ss,
+                                    pMatrix, biovar[0], tlag[0],
+                                    0,
+                                    rel_tol, abs_tol, max_num_steps);
+  expect_near_matrix_eq(amounts, x, rel_err);
+
+  x = generalOdeModel_rk45(F(), nCmt,
+                                    time, amt, rate, ii, evid, cmt, addl, ss,
+                                    pMatrix, biovar, tlag[0],
+                                    0,
+                                    rel_tol, abs_tol, max_num_steps);
+  expect_near_matrix_eq(amounts, x, rel_err);
+
+  x = generalOdeModel_bdf(F(), nCmt,
+                                    time, amt, rate, ii, evid, cmt, addl, ss,
+                                    pMatrix[0], biovar, tlag,
+                                    0,
+                                    rel_tol, abs_tol, max_num_steps);
+  expect_near_matrix_eq(amounts, x, rel_err);
+
+  x = generalOdeModel_bdf(F(), nCmt,
+                                    time, amt, rate, ii, evid, cmt, addl, ss,
+                                    pMatrix[0], biovar[0], tlag,
+                                    0,
+                                    rel_tol, abs_tol, max_num_steps);
+  expect_near_matrix_eq(amounts, x, rel_err);
+
+  x = generalOdeModel_bdf(F(), nCmt,
+                                    time, amt, rate, ii, evid, cmt, addl, ss,
+                                    pMatrix[0], biovar[0], tlag[0],
+                                    0,
+                                    rel_tol, abs_tol, max_num_steps);
+  expect_near_matrix_eq(amounts, x, rel_err);
+
+  x = generalOdeModel_bdf(F(), nCmt,
+                                    time, amt, rate, ii, evid, cmt, addl, ss,
+                                    pMatrix[0], biovar, tlag[0],
+                                    0,
+                                    rel_tol, abs_tol, max_num_steps);
+  expect_near_matrix_eq(amounts, x, rel_err);
+
+  x = generalOdeModel_bdf(F(), nCmt,
+                                    time, amt, rate, ii, evid, cmt, addl, ss,
+                                    pMatrix, biovar[0], tlag,
+                                    0,
+                                    rel_tol, abs_tol, max_num_steps);
+  expect_near_matrix_eq(amounts, x, rel_err);
+
+  x = generalOdeModel_bdf(F(), nCmt,
+                                    time, amt, rate, ii, evid, cmt, addl, ss,
+                                    pMatrix, biovar[0], tlag[0],
+                                    0,
+                                    rel_tol, abs_tol, max_num_steps);
+  expect_near_matrix_eq(amounts, x, rel_err);
+
+  x = generalOdeModel_bdf(F(), nCmt,
+                                    time, amt, rate, ii, evid, cmt, addl, ss,
+                                    pMatrix, biovar, tlag[0],
+                                    0,
+                                    rel_tol, abs_tol, max_num_steps);
+  expect_near_matrix_eq(amounts, x, rel_err);
 }
 
-TEST(Torsten, generalOdeModel_signature_test) {
+TEST_F(TorstenPKOneCptODETest, signature) {
   using stan::math::var;
   using std::vector;
   using Eigen::Matrix;
   using Eigen::Dynamic;
 
   double rel_err = 1e-4;
-
-  vector<vector<double> > pMatrix(1);
-  pMatrix[0].resize(3);
-  pMatrix[0][0] = 10;  // CL
-  pMatrix[0][1] = 80;  // Vc
-  pMatrix[0][2] = 1.2;  // ka
-
-  int nCmt = 2;
-  vector<vector<double> > biovar(1);
-  biovar[0].resize(nCmt);
-  biovar[0][0] = 1;  // F1
-  biovar[0][1] = 1;  // F2
-
-  vector<vector<double> > tlag(1);
-  tlag[0].resize(nCmt);
-  tlag[0][0] = 0;  // tlag1
-  tlag[0][1] = 0;  // tlag2
 
   vector<vector<var> > pMatrix_v(1);
   pMatrix_v[0].resize(3);
@@ -635,32 +491,13 @@ TEST(Torsten, generalOdeModel_signature_test) {
   tlag_v[0][0] = 0;  // tlag1
   tlag_v[0][1] = 0;  // tlag2
 
-  vector<double> time(10);
   time[0] = 0.0;
   for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
   time[9] = 4.0;
 
-  vector<double> amt(10, 0);
   amt[0] = 1000;
-
-  vector<double> rate(10, 0);
-
-  vector<int> cmt(10, 2);
-  cmt[0] = 1;
-
-  vector<int> evid(10, 0);
-  evid[0] = 1;
-
-  vector<double> ii(10, 0);
   ii[0] = 12;
-
-  vector<int> addl(10, 0);
   addl[0] = 14;
-
-  vector<int> ss(10, 0);
-
-  double rel_tol = 1e-8, abs_tol = 1e-8;
-  long int max_num_steps = 1e8;
 
   Matrix<double, Dynamic, Dynamic> amounts(10, 2);
   amounts << 1000.0, 0.0,
@@ -1434,56 +1271,24 @@ TEST(Torsten, genCptOne_MultipleDoses_timePara) {
                        rel_tol, abs_tol, max_num_steps, diff, diff2, "bdf");
 }
 
-
-TEST(Torsten, genCptOne_Rate) {
+TEST_F(TorstenPKOneCptODETest, Rate) {
+// TEST(Torsten, genCptOne_Rate) {
   using std::vector;
   using Eigen::Matrix;
   using Eigen::Dynamic;
 
-  vector<vector<double> > pMatrix(1);
-  pMatrix[0].resize(3);
-  pMatrix[0][0] = 10;  // CL
-  pMatrix[0][1] = 80;  // Vc
-  pMatrix[0][2] = 1.2;  // ka
-
-  int nCmt = 2;
-  vector<vector<double> > biovar(1);
-  biovar[0].resize(nCmt);
-  biovar[0][0] = 1;  // F1
-  biovar[0][1] = 1;  // F2
-
-  vector<vector<double> > tlag(1);
-  tlag[0].resize(nCmt);
-  tlag[0][0] = 0;  // tlag1
-  tlag[0][1] = 0;  // tlag2
-
-  vector<double> time(10);
   time[0] = 0;
   for(int i = 1; i < 9; i++) time[i] = time[i - 1] + 0.25;
   time[9] = 4.0;
 
-  vector<double> amt(10, 0);
   amt[0] = 1200;
-
-  vector<double> rate(10, 0);
   rate[0] = 1200;
-
-  vector<int> cmt(10, 2);
-  cmt[0] = 1;
-
-  vector<int> evid(10, 0);
-  evid[0] = 1;
-
-  vector<double> ii(10, 0);
   ii[0] = 12;
-
-  vector<int> addl(10, 0);
   addl[0] = 14;
 
-  vector<int> ss(10, 0);
-
-  double rel_tol = 1e-6, abs_tol = 1e-6;
-  long int max_num_steps = 1e6;
+  rel_tol = 1e-6;
+  abs_tol = 1e-6;
+  max_num_steps = 1e6;
 
   Matrix<double, Dynamic, Dynamic>
     x_rk45 = torsten::generalOdeModel_rk45(oneCptModelODE_functor(), nCmt,
