@@ -64,4 +64,7 @@
 #include <stan/math/rev/mat/functor/integrate_ode_bdf.hpp>
 #include <stan/math/rev/mat/functor/map_rect_reduce.hpp>
 
+// torsten
+#include <stan/math/torsten/torsten.hpp>
+
 #endif
