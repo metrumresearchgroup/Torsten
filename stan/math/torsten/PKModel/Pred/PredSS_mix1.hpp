@@ -116,7 +116,7 @@ struct PredSS_mix1 {
       system(ode_rate_dbl_functor<F>(f_), Pred1_oneCpt(), ii_dbl, cmt,
              integrator_, nPK);
 
-    Matrix<double, 1, Dynamic> predPD_guess;
+    Matrix<double, Dynamic, 1> predPD_guess;
     Matrix<scalar, 1, Dynamic> predPD;
 
     if (rate == 0) {  // bolus dose
@@ -259,7 +259,7 @@ struct PredSS_mix1 {
     SS_system_vd<ode_rate_dbl_functor<F> >
       system(ode_rate_dbl_functor<F>(f_), ii_dbl, cmt, integrator_, nPK);
 
-    Matrix<double, 1, Dynamic> predPD_guess;
+    Matrix<double, Dynamic, 1> predPD_guess;
     Matrix<scalar, 1, Dynamic> predPD;
 
     if (rate == 0) {  // bolus dose

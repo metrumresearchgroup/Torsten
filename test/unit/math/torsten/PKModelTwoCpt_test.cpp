@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <stan/math/rev/mat.hpp>  // FIX ME - include should be more specific
-#include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
+#include <test/unit/math/torsten/expect_matrix_eq.hpp>
 #include <test/unit/math/torsten/util_PKModelTwoCpt.hpp>
 #include <vector>
 

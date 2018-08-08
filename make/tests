@@ -42,6 +42,14 @@ test/unit/multiple_translation_units_test.cpp : test/unit/libmultiple.so
 
 ############################################################
 #
+# torsten tests
+##
+
+TORSTEN_TESTS := $(subst .cpp,$(EXE),$(shell find test -name *Ode*_test.cpp) $(shell find test -name *Cpt*_test.cpp) $(shell find test -name *univariate*_test.cpp) $(shell find test -name *[pP]red*_test.cpp) $(shell find test -name PKModel*_test.cpp))
+$(TORSTEN_TESTS) : $(LIBSUNDIALS)
+
+############################################################
+#
 # CVODES tests
 ##
 
