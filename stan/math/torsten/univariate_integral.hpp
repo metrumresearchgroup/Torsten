@@ -6,30 +6,65 @@
 #include <stan/math/prim/arr/functor/integrate_ode_rk45.hpp>
 #include <stan/math/rev/mat/functor/integrate_ode_bdf.hpp>
 #include <stan/math/torsten/PKModel/SearchReal.hpp>
+#include <stan/math/torsten/PKModel/functors/functor.hpp>
 
 #include <vector>
 #include <algorithm>
 
-template<typename T0, typename Tl, typename Tr>
-inline
-std::vector<typename stan::return_type<Tl, Tr, T0>::type>
-theta_x(const std::vector<T0>& theta,
+namespace torsten {
+  template<typename T0, typename Tl, typename Tr>
+  inline
+  std::vector<typename stan::return_type<Tl, Tr, T0>::type>
+  theta_x(const std::vector<T0>& theta,
           const Tl& t0, const Tr& t1){
-  std::vector<stan::math::var> res{stan::math::to_var(theta)};
-  res.push_back(stan::math::to_var(t0));
-  res.push_back(stan::math::to_var(t1));
-  return res;
-}
+    std::vector<stan::math::var> res{stan::math::to_var(theta)};
+    res.push_back(stan::math::to_var(t0));
+    res.push_back(stan::math::to_var(t1));
+    return res;
+  }
 
-inline
-std::vector<double> theta_x(const std::vector<double>&
-                            theta,
-                            const double& t0,
-                            const double& t1){
-  std::vector<double> res{theta};
-  res.push_back(t0);
-  res.push_back(t1);
-  return res;
+  inline
+  std::vector<double> theta_x(const std::vector<double>&
+                              theta,
+                              const double& t0,
+                              const double& t1){
+    std::vector<double> res{theta};
+    res.push_back(t0);
+    res.push_back(t1);
+    return res;
+  }
+
+  // for rate parameters
+  template <typename F0>
+  struct normalized_integrand_adaptor {
+    const F0& f0_;
+    normalized_integrand_adaptor() {}
+    normalized_integrand_adaptor(const F0& f0) :
+      f0_(f0)
+    {}
+
+    template <typename T0, typename T1, typename T2>
+    inline
+    std::vector<typename boost::math::tools::promote_args<
+                  T0, T1, T2>::type >
+    operator()(const T0& t,
+               const std::vector<T1>& y,
+               const std::vector<T2>& theta,
+               const std::vector<double>& x_r,
+               const std::vector<int>& x_i,
+               std::ostream* pstream_) const {
+      const T2& t1_{theta.rbegin()[0]};
+      const T2& t0_{theta.rbegin()[1]};
+      const T2& jacobian {t1_ - t0_};
+      using scalar = typename boost::math::tools::promote_args<
+        T0, T1, T2>::type;
+      std::vector<scalar> res{f0_(t1_*t + t0_*(1.0-t), y, theta, x_r, x_i, pstream_)};
+      std::transform(res.begin(), res.end(), res.begin(),
+                     [&jacobian](scalar x){return jacobian * x;});
+      return res;
+    }
+  };
+
 }
 
 namespace stan {
@@ -72,7 +107,7 @@ namespace stan {
       static const std::vector<double> y0{0.0};
       const normalized_integrand_functor<F> f{f0};
       using scalar = typename stan::return_type<T0,Tl,Tr>::type;
-      std::vector<scalar> par = theta_x(theta, t0, t1);
+      std::vector<scalar> par = torsten::theta_x(theta, t0, t1);
 
       std::vector<std::vector<scalar>> ode_res_vd =
         stan::math::integrate_ode_bdf(f, y0, t, ts, par, x_r, x_i);
@@ -117,15 +152,13 @@ namespace stan {
       static const std::vector<double> y0{0.0};
       const normalized_integrand_functor<F> f{f0};
       using scalar = typename stan::return_type<T0,Tl,Tr>::type;
-      std::vector<scalar> par = theta_x(theta, t0, t1);
+      std::vector<scalar> par = torsten::theta_x(theta, t0, t1);
 
       std::vector<std::vector<scalar>> ode_res_vd =
         stan::math::integrate_ode_rk45(f, y0, t, ts, par, x_r, x_i);
 
       return ode_res_vd.back().back();
     }
-
-
 }
 }
 #endif

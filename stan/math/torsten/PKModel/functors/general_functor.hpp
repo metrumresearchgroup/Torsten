@@ -65,9 +65,10 @@ struct general_functor {
 
       std::vector<scalar> dydt = f0_(t, y, theta, x_r, x_i, pstream_);
 
+      const size_t n_boundary = 2;    // integral boundary as parameter
       size_t nTheta = theta.size();
       size_t nOde = dydt.size();
-      int indexRate = nTheta - nOde;
+      int indexRate = nTheta - nOde - n_boundary;
       for (size_t i = 0; i < dydt.size(); i++)
         dydt[i] += theta[indexRate + i];
 

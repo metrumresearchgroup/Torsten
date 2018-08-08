@@ -223,6 +223,90 @@ struct PredSS_general {
 
     return pred;
   }
+
+  /**
+   * Case 3 (dv): rate is random, amt is fixed.
+   */
+  template<typename T_time,
+           typename T_amt,
+           typename T_rate,
+           typename T_ii,
+           typename T_parameters,
+           typename T_biovar,
+           typename T_tlag>
+  Eigen::Matrix<typename boost::math::tools::promote_args<T_ii, T_parameters,
+    T_rate>::type, Eigen::Dynamic, 1>
+  operator() (const ModelParameters<T_time,
+                T_parameters,
+                T_biovar,
+                T_tlag>& parameter,
+              const T_amt& amt,
+              const T_rate& rate,
+              const T_ii& ii,
+              const int& cmt) const {
+    using Eigen::Matrix;
+    using Eigen::Dynamic;
+    using Eigen::VectorXd;
+    using std::vector;
+    using stan::math::algebra_solver;
+    using stan::math::to_vector;
+    using stan::math::invalid_argument;
+
+    typedef typename boost::math::tools::promote_args<T_time, T_ii,
+      T_parameters, T_rate>::type scalar;
+
+    Matrix<scalar, Dynamic, 1> pred;
+
+    // Arguments for the ODE integrator
+    double ii_dbl = unpromote(ii);
+    Matrix<double, 1, Dynamic> init_dbl(nCmt_);
+    for (int i = 0; i < nCmt_; i++) init_dbl(i) = 0;
+    vector<double> x_r(nCmt_, 0);
+    vector<int> x_i(0);
+
+    // Arguments for algebraic solver
+    Matrix<double, Dynamic, 1> y;
+    double rel_tol = 1e-10;  // default
+    double f_tol = 5e-4;  // empirical (note: differs from other function)
+    long int max_num_steps = 1e4;  // default  // NOLINT
+
+    // construct algebraic function
+    SS_system_vd<ode_rate_dbl_functor<F> >
+      system(ode_rate_dbl_functor<F>(f_), ii_dbl, cmt, integrator_);
+
+    // Construct Pred1_general functor
+    Pred1_general<F> Pred1(f_, integrator_);
+
+    int nParameters = parameter.get_RealParameters().size();
+    Matrix<scalar, Dynamic, 1> parms(nParameters + 1);
+    for (int i = 0; i < nParameters; i++)
+      parms(i) = parameter.get_RealParameters()[i];
+    parms(nParameters) = amt;
+
+    if (value_of(rate) == 0) {  // bolus dose
+      // compute initial guess
+      init_dbl(cmt - 1) = unpromote(amt);
+      y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r);
+
+      pred = algebra_solver(system, y, parms, x_r, x_i,
+                            0, rel_tol, f_tol, max_num_steps);
+    }  else if (ii > 0) {  // multiple truncated infusions
+      // compute initial guess
+      x_r[cmt - 1] = value_of(rate);
+      y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r);
+
+      pred = algebra_solver(system, y, parms, x_r, x_i,
+                            0, rel_tol, 1e-3, max_num_steps);  // use ftol
+    } else {  // constant infusion
+      x_r[cmt - 1] = value_of(rate);
+      y = Pred1(100.0, unpromote(parameter), init_dbl, x_r);
+
+      pred = algebra_solver(system, y, parms, x_r, x_i,
+                            0, rel_tol, f_tol, max_num_steps);
+    }
+
+    return pred;
+  }
 };
 
 }
