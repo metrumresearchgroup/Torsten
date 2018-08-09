@@ -1,4 +1,5 @@
 
+
 N_TESTS ?= 100 # override this in make/local. If <= 0, N_TESTS + 1 is interpreted as the number of batches to group the tests into
 
 ##
@@ -46,7 +47,7 @@ test/unit/multiple_translation_units_test.cpp : test/unit/libmultiple.so
 # torsten tests
 ##
 
-TORSTEN_TESTS := $(subst .cpp,$(EXE),$(shell find test -name *Ode*_test.cpp) $(shell find test -name *Cpt*_test.cpp) $(shell find test -name *univariate*_test.cpp) $(shell find test -name *[pP]red*_test.cpp) $(shell find test -name PKModel*_test.cpp))
+TORSTEN_TESTS := $(subst .cpp,$(EXE),$(shell find test/unit/math/torsten -name *_test.cpp))
 $(TORSTEN_TESTS) : $(LIBSUNDIALS)
 
 ############################################################
