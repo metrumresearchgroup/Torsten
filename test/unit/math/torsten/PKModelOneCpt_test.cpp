@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <stan/math/rev/mat.hpp>  // FIX ME - include should be more specific
-#include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
+#include <test/unit/math/torsten/expect_matrix_eq.hpp>
 #include <test/unit/math/torsten/util_PKModelOneCpt.hpp>
 #include <vector>
 
@@ -513,6 +513,154 @@ TEST_F(TorstenPKOneCptTest, rate) {
                      pMatrix, biovar, tlag, 1e-8, 5e-4);
 }
 
+TEST_F(TorstenPKOneCptTest, multiple_trunc_rate_var) {
+  using std::vector;
+  using stan::math::var;
+
+  amt[0] = 1200;
+  rate[0] = 1200;
+
+  const double t_cutoff = amt[0]/rate[0];
+
+  std::vector<stan::math::var> rate_v {stan::math::to_var(rate)};
+
+  // grad: test against 2nd-order finite diff
+  const double h = 0.001;
+  Matrix<double, Dynamic, Dynamic> x1, x2;
+  rate[0] += h;
+  x1 = torsten::PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                              pMatrix, biovar, tlag);
+  rate[0] -= 2 * h;
+  x2 = torsten::PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                              pMatrix, biovar, tlag);
+
+  Matrix<double, Dynamic, Dynamic> amounts(10, 2);
+  amounts << 0.00000,   0.00000,
+             259.18178,  40.38605,
+             451.18836, 145.61440,
+             593.43034, 296.56207,
+             698.80579, 479.13371,
+             517.68806, 642.57025,
+             383.51275, 754.79790,
+             284.11323, 829.36134,
+             210.47626, 876.28631,
+             19.09398, 844.11769;
+
+  std::vector<double> g;
+  auto test_it = [&](Matrix<var, Dynamic, Dynamic>& res) {
+    // test val
+    expect_matrix_eq(amounts, stan::math::value_of(res));
+
+    // test adj
+    for (int i = 0; i < res.rows(); ++i) {
+      res(i, 1).grad(rate_v, g);
+      EXPECT_NEAR(g[0], (x1(i, 1) - x2(i, 1))/(2 * h), 1e-6);
+      stan::math::set_zero_all_adjoints();
+
+      // for gut there is a non-smooth point, skip it
+      res(i, 0).grad(rate_v, g);
+      if(time[i] != t_cutoff)
+        EXPECT_NEAR(g[0], (x1(i, 0) - x2(i, 0))/(2 * h), 1e-6);
+      stan::math::set_zero_all_adjoints();
+    }
+  };
+
+  Matrix<var, Dynamic, Dynamic> x;
+  vector<vector<var> > pMatrix_v{ {10, 80, 1.2 } };
+  vector<vector<var> > biovar_v{ { 1, 1 } };
+  vector<vector<var> > tlag_v{ { 0, 0 } };
+
+#ifndef ONECPT_RATE_VAR_TEST
+#define ONECPT_RATE_VAR_TEST(PMAT, BIOVAR, TLAG)                        \
+  x = torsten::PKModelOneCpt(time, amt, rate_v, ii, evid, cmt, addl, ss, \
+                             PMAT, BIOVAR, TLAG);                       \
+  test_it(x);
+
+  ONECPT_RATE_VAR_TEST(pMatrix   , biovar   , tlag);
+  ONECPT_RATE_VAR_TEST(pMatrix_v , biovar   , tlag);
+  ONECPT_RATE_VAR_TEST(pMatrix_v , biovar_v , tlag);
+  ONECPT_RATE_VAR_TEST(pMatrix_v , biovar_v , tlag_v);
+  ONECPT_RATE_VAR_TEST(pMatrix   , biovar_v , tlag);
+  ONECPT_RATE_VAR_TEST(pMatrix   , biovar_v , tlag_v);
+  ONECPT_RATE_VAR_TEST(pMatrix   , biovar   , tlag_v);
+  ONECPT_RATE_VAR_TEST(pMatrix_v , biovar_v , tlag_v);
+
+#undef ONECPT_RATE_VAR_TEST
+#endif
+
+}
+
+TEST_F(TorstenPKOneCptTest, MultipleDoses_IV_rate_var) {
+  using stan::math::var;
+  cmt[0] = 2;  // IV infusion, not absorption from the gut
+
+  rate[0] = 600;
+  std::vector<stan::math::var> rate_v {stan::math::to_var(rate)};
+
+  Matrix<double, Dynamic, Dynamic> amounts(10, 2);
+  amounts <<
+    0,           0,
+    0, 147.6804745,
+    0, 290.8172984,
+    0, 429.5502653,
+    0, 564.0148675,
+    0, 694.3424289,
+    0, 820.6602327,
+    0, 893.3511610,
+    0,  865.865635,
+    0, 674.3368348;
+
+  // grad: test against 2nd-order finite diff
+  const double h = 0.001;
+  Matrix<double, Dynamic, Dynamic> x1, x2;
+  rate[0] += h;
+  x1 = torsten::PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                              pMatrix, biovar, tlag);
+  rate[0] -= 2 * h;
+  x2 = torsten::PKModelOneCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                              pMatrix, biovar, tlag);
+
+  std::vector<double> g;
+  auto test_it = [&](Matrix<var, Dynamic, Dynamic>& res) {
+    // test val
+    expect_matrix_eq(amounts, stan::math::value_of(res));
+
+    // test adj
+    for (int i = 0; i < res.rows(); ++i) {
+      res(i, 1).grad(rate_v, g);
+      EXPECT_NEAR(g[0], (x1(i, 1) - x2(i, 1))/(2 * h), 1e-6);
+      stan::math::set_zero_all_adjoints();
+
+      // for gut there is a non-smooth point, skip it
+      res(i, 0).grad(rate_v, g);
+      EXPECT_NEAR(g[0], (x1(i, 0) - x2(i, 0))/(2 * h), 1e-6);
+      stan::math::set_zero_all_adjoints();
+    }
+  };
+
+  Matrix<var, Dynamic, Dynamic> x;
+  vector<vector<var> > pMatrix_v{ {10, 80, 1.2 } };
+  vector<vector<var> > biovar_v{ { 1, 1 } };
+  vector<vector<var> > tlag_v{ { 0, 0 } };
+
+#ifndef ONECPT_RATE_VAR_TEST
+#define ONECPT_RATE_VAR_TEST(PMAT, BIOVAR, TLAG)                        \
+  x = torsten::PKModelOneCpt(time, amt, rate_v, ii, evid, cmt, addl, ss, \
+                             PMAT, BIOVAR, TLAG);                       \
+  test_it(x);
+
+  ONECPT_RATE_VAR_TEST(pMatrix   , biovar   , tlag);
+  ONECPT_RATE_VAR_TEST(pMatrix_v , biovar   , tlag);
+  ONECPT_RATE_VAR_TEST(pMatrix_v , biovar_v , tlag);
+  ONECPT_RATE_VAR_TEST(pMatrix_v , biovar_v , tlag_v);
+  ONECPT_RATE_VAR_TEST(pMatrix   , biovar_v , tlag);
+  ONECPT_RATE_VAR_TEST(pMatrix   , biovar_v , tlag_v);
+  ONECPT_RATE_VAR_TEST(pMatrix   , biovar   , tlag_v);
+  ONECPT_RATE_VAR_TEST(pMatrix_v , biovar_v , tlag_v);
+
+#undef ONECPT_RATE_VAR_TEST
+#endif
+}
 
 /*
 TEST(Torsten, PKModelOneCptModel_SS_rate_2) {

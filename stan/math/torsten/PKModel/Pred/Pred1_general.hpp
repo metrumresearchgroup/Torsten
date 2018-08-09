@@ -8,6 +8,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <stan/math/torsten/univariate_integral.hpp>
 
 namespace torsten{
 
@@ -144,21 +145,33 @@ struct Pred1_general {
     // Construct theta with ode parameters and rates.
     vector<T_parameters> odeParameters = parameter.get_RealParameters();
     size_t nOdeParm = odeParameters.size();
-    vector<typename promote_args<T_parameters, T_rate>::type>
+    vector<typename promote_args<T_parameters, T_rate, T_time>::type>
       theta(nOdeParm + rate.size());
     for (size_t i = 0; i < nOdeParm; i++) theta[i] = odeParameters[i];
     for (size_t i = 0; i < rate.size(); i++)
       theta[nOdeParm + i] = rate[i];
+    theta.push_back(InitTime);
+    theta.push_back(EventTime);
 
     vector<scalar> init_vector = to_array_1d(init);
     vector<double> x_r;
 
     Eigen::Matrix<scalar, 1, Eigen::Dynamic> pred;
-    if (EventTime_d[0] == InitTime_d) { pred = init;
+    ode_rate_var_functor<F> f0(f_);
+    normalized_integrand_adaptor<ode_rate_var_functor<F>> f1(f0);
+    vector<int> idummy;
+
+    // if (EventTime_d[0] == InitTime_d) { pred = init;
+    if (dt == 0) {
+      std::vector<scalar> rhs {f0(EventTime, init_vector, theta, x_r, idummy, nullptr)};
+      Eigen::Matrix<scalar, 1, Eigen::Dynamic> mat_rhs = stan::math::to_matrix(rhs, 1, rhs.size());
+      pred = init + dt * mat_rhs;
     } else {
-      vector<int> idummy;
+      // using normalized functor
+      InitTime_d = 0.0;
+      EventTime_d[0] = 1.0;
       vector<vector<scalar> >
-        pred_V = integrator_(ode_rate_var_functor<F>(f_),
+        pred_V = integrator_(f1,
                              init_vector, InitTime_d,
                              EventTime_d, theta, x_r,
                              idummy);

@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <stan/math/rev/mat.hpp>  // FIX ME - include should be more specific
-#include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
+#include <test/unit/math/torsten/expect_matrix_eq.hpp>
 #include <test/unit/math/torsten/util_PKModelTwoCpt.hpp>
 #include <vector>
 
@@ -22,7 +22,7 @@ public:
     time(10, 0.0),
     amt(10, 0),
     rate(10, 0),
-    cmt(10, 2),
+    cmt(10, 3),
     evid(10, 0),
     ii(10, 0),
     addl(10, 0),
@@ -491,4 +491,168 @@ TEST_F(TorstenPKTwoCptTest, Rate) {
   // Test AutoDiff against FiniteDiff
   test_PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
                      pMatrix, biovar, tlag, 1e-8, 5e-4);
+}
+
+TEST_F(TorstenPKTwoCptTest, multiple_trunc_rate_var) {
+  using std::vector;
+  using stan::math::var;
+
+  pMatrix[0][2] = 35;  // Vc
+  pMatrix[0][3] = 105;  // Vp
+
+  amt[0] = 1200;
+  rate[0] = 1200;
+
+  const double t_cutoff = amt[0]/rate[0];
+
+  std::vector<stan::math::var> rate_v {stan::math::to_var(rate)};
+
+  // grad: test against 2nd-order finite diff
+  const double h = 0.001;
+  Matrix<double, Dynamic, Dynamic> x1, x2;
+  rate[0] += h;
+  x1 = torsten::PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                              pMatrix, biovar, tlag);
+  rate[0] -= 2 * h;
+  x2 = torsten::PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                              pMatrix, biovar, tlag);
+
+  Matrix<double, Dynamic, Dynamic> amounts(10, 3);
+  amounts << 0.00000,   0.00000,   0.0000000,
+             259.18178,  39.55748,   0.7743944,
+             451.18836, 139.65573,   5.6130073,
+             593.43034, 278.43884,  17.2109885,
+             698.80579, 440.32663,  37.1629388,
+             517.68806, 574.76950,  65.5141658,
+             383.51275, 653.13596,  99.2568509,
+             284.11323, 692.06145, 135.6122367,
+             210.47626, 703.65965, 172.6607082,
+             19.09398, 486.11014, 406.6342765;
+
+  std::vector<double> g;
+  auto test_it = [&](Matrix<var, Dynamic, Dynamic>& res) {
+    // test val
+    expect_matrix_eq(amounts, stan::math::value_of(res));
+
+    // test adj
+    for (int i = 0; i < res.rows(); ++i) {
+      res(i, 1).grad(rate_v, g);
+      EXPECT_NEAR(g[0], (x1(i, 1) - x2(i, 1))/(2 * h), 1e-6);
+      stan::math::set_zero_all_adjoints();
+
+      res(i, 2).grad(rate_v, g);
+      EXPECT_NEAR(g[0], (x1(i, 2) - x2(i, 2))/(2 * h), 1e-6);
+      stan::math::set_zero_all_adjoints();
+
+      // for gut there is a non-smooth point, skip it
+      res(i, 0).grad(rate_v, g);
+      if(time[i] != t_cutoff)
+        EXPECT_NEAR(g[0], (x1(i, 0) - x2(i, 0))/(2 * h), 1e-6);
+      stan::math::set_zero_all_adjoints();
+    }
+  };
+
+  Matrix<var, Dynamic, Dynamic> x;
+  vector<vector<var> > pMatrix_v{ {5, 8, 35, 105, 1.2} };
+  vector<vector<var> > biovar_v{ { 1, 1, 1 } };
+  vector<vector<var> > tlag_v{ { 0, 0, 0 } };
+
+#ifndef TWOCPT_RATE_VAR_TEST
+#define TWOCPT_RATE_VAR_TEST(PMAT, BIOVAR, TLAG)                        \
+  x = torsten::PKModelTwoCpt(time, amt, rate_v, ii, evid, cmt, addl, ss, \
+                             PMAT, BIOVAR, TLAG);                       \
+  test_it(x);
+
+  TWOCPT_RATE_VAR_TEST(pMatrix   , biovar   , tlag);
+  TWOCPT_RATE_VAR_TEST(pMatrix_v , biovar   , tlag);
+  TWOCPT_RATE_VAR_TEST(pMatrix_v , biovar_v , tlag);
+  TWOCPT_RATE_VAR_TEST(pMatrix_v , biovar_v , tlag_v);
+  TWOCPT_RATE_VAR_TEST(pMatrix   , biovar_v , tlag);
+  TWOCPT_RATE_VAR_TEST(pMatrix   , biovar_v , tlag_v);
+  TWOCPT_RATE_VAR_TEST(pMatrix   , biovar   , tlag_v);
+  TWOCPT_RATE_VAR_TEST(pMatrix_v , biovar_v , tlag_v);
+
+#undef TWOCPT_RATE_VAR_TEST
+#endif
+}
+
+TEST_F(TorstenPKTwoCptTest, multiple_iv_rate_var) {
+  using std::vector;
+  using stan::math::var;
+
+  pMatrix[0][2] = 35;  // Vc
+  pMatrix[0][3] = 105;  // Vp
+
+  amt[0] = 1200;
+  rate[0] = 700;
+  cmt[0] = 2;
+
+  std::vector<stan::math::var> rate_v {stan::math::to_var(rate)};
+
+  // grad: test against 2nd-order finite diff
+  const double h = 0.001;
+  Matrix<double, Dynamic, Dynamic> x1, x2;
+  rate[0] += h;
+  x1 = torsten::PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                              pMatrix, biovar, tlag);
+  rate[0] -= 2 * h;
+  x2 = torsten::PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                              pMatrix, biovar, tlag);
+
+  Matrix<double, Dynamic, Dynamic> amounts(10, 3);
+  amounts << 0.00000,   0.00000,   0.0000000,
+    0, 167.150925, 4.81832410,
+    0, 319.651326,  18.583668,
+    0, 458.954120, 40.3399483,
+    0, 586.366896, 69.2271570,
+    0, 703.066462,  104.47175,
+    0, 810.111927, 145.377981,
+    0, 883.621482, 191.218629,
+    0, 809.159915, 235.475039,
+    0, 425.085221, 450.714833;
+
+  std::vector<double> g;
+  auto test_it = [&](Matrix<var, Dynamic, Dynamic>& res) {
+    // test val
+    expect_matrix_eq(amounts, stan::math::value_of(res));
+
+    // test adj
+    for (int i = 0; i < res.rows(); ++i) {
+      res(i, 1).grad(rate_v, g);
+      EXPECT_NEAR(g[0], (x1(i, 1) - x2(i, 1))/(2 * h), 1e-6);
+      stan::math::set_zero_all_adjoints();
+
+      res(i, 2).grad(rate_v, g);
+      EXPECT_NEAR(g[0], (x1(i, 2) - x2(i, 2))/(2 * h), 1e-6);
+      stan::math::set_zero_all_adjoints();
+
+      // for gut there is a non-smooth point, skip it
+      res(i, 0).grad(rate_v, g);
+      EXPECT_NEAR(g[0], (x1(i, 0) - x2(i, 0))/(2 * h), 1e-6);
+      stan::math::set_zero_all_adjoints();
+    }
+  };
+
+  Matrix<var, Dynamic, Dynamic> x;
+  vector<vector<var> > pMatrix_v{ {5, 8, 35, 105, 1.2} };
+  vector<vector<var> > biovar_v{ { 1, 1, 1 } };
+  vector<vector<var> > tlag_v{ { 0, 0, 0 } };
+
+#ifndef TWOCPT_RATE_VAR_TEST
+#define TWOCPT_RATE_VAR_TEST(PMAT, BIOVAR, TLAG)                        \
+  x = torsten::PKModelTwoCpt(time, amt, rate_v, ii, evid, cmt, addl, ss, \
+                             PMAT, BIOVAR, TLAG);                       \
+  test_it(x);
+
+  TWOCPT_RATE_VAR_TEST(pMatrix   , biovar   , tlag);
+  TWOCPT_RATE_VAR_TEST(pMatrix_v , biovar   , tlag);
+  TWOCPT_RATE_VAR_TEST(pMatrix_v , biovar_v , tlag);
+  TWOCPT_RATE_VAR_TEST(pMatrix_v , biovar_v , tlag_v);
+  TWOCPT_RATE_VAR_TEST(pMatrix   , biovar_v , tlag);
+  TWOCPT_RATE_VAR_TEST(pMatrix   , biovar_v , tlag_v);
+  TWOCPT_RATE_VAR_TEST(pMatrix   , biovar   , tlag_v);
+  TWOCPT_RATE_VAR_TEST(pMatrix_v , biovar_v , tlag_v);
+
+#undef TWOCPT_RATE_VAR_TEST
+#endif
 }
