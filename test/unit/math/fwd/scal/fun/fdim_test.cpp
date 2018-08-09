@@ -2,11 +2,11 @@
 #include <gtest/gtest.h>
 #include <test/unit/math/fwd/scal/fun/nan_util.hpp>
 
-TEST(AgradFwdFdim,Fvar) {
-  using stan::math::fvar;
+TEST(AgradFwdFdim, Fvar) {
   using stan::math::fdim;
-  using std::isnan;
+  using stan::math::fvar;
   using std::floor;
+  using std::isnan;
 
   // x > y case, value is (x - y)
   fvar<double> x(2.0, 1.0);
@@ -38,12 +38,11 @@ TEST(AgradFwdFdim,Fvar) {
   fvar<double> f = fdim(z, x);
   EXPECT_FLOAT_EQ(fdim(1.0, 2.0), f.val_);
   EXPECT_FLOAT_EQ(0.0, f.d_);
- }
+}
 
-
-TEST(AgradFwdFdim,FvarFvarDouble) {
-  using stan::math::fvar;
+TEST(AgradFwdFdim, FvarFvarDouble) {
   using stan::math::fdim;
+  using stan::math::fvar;
   using std::floor;
 
   fvar<fvar<double> > x;
@@ -54,9 +53,9 @@ TEST(AgradFwdFdim,FvarFvarDouble) {
   y.val_.val_ = 1.5;
   y.d_.val_ = 1.0;
 
-  fvar<fvar<double> > a = fdim(x,y);
+  fvar<fvar<double> > a = fdim(x, y);
 
-  EXPECT_FLOAT_EQ(fdim(2.5,1.5), a.val_.val_);
+  EXPECT_FLOAT_EQ(fdim(2.5, 1.5), a.val_.val_);
   EXPECT_FLOAT_EQ(1, a.val_.d_);
   EXPECT_FLOAT_EQ(-1, a.d_.val_);
   EXPECT_FLOAT_EQ(0, a.d_.d_);
@@ -64,11 +63,9 @@ TEST(AgradFwdFdim,FvarFvarDouble) {
 
 struct fdim_fun {
   template <typename T0, typename T1>
-  inline 
-  typename boost::math::tools::promote_args<T0,T1>::type
-  operator()(const T0 arg1,
-             const T1 arg2) const {
-    return fdim(arg1,arg2);
+  inline typename boost::math::tools::promote_args<T0, T1>::type operator()(
+      const T0 arg1, const T1 arg2) const {
+    return fdim(arg1, arg2);
   }
 };
 

@@ -2,12 +2,13 @@
 #include <gtest/gtest.h>
 #include <test/unit/math/fwd/scal/fun/nan_util.hpp>
 #include <cmath>
+#include <limits>
 
-TEST(AgradFwdAcosh,Fvar) {
-  using stan::math::fvar;
+TEST(AgradFwdAcosh, Fvar) {
   using stan::math::acosh;
-  using std::sqrt;
+  using stan::math::fvar;
   using std::isnan;
+  using std::sqrt;
 
   fvar<double> x(1.5, 1.0);
 
@@ -17,23 +18,22 @@ TEST(AgradFwdAcosh,Fvar) {
 }
 
 TEST(AgradFwdAcosh, excepts) {
-  using stan::math::fvar;
   using stan::math::acosh;
+  using stan::math::fvar;
   EXPECT_THROW(acosh(fvar<double>(0.5)), std::domain_error);
 }
 
 TEST(MathFunctions, acosh_inf_return) {
-  using stan::math::fvar;
   using stan::math::acosh;
-  EXPECT_EQ(std::numeric_limits<double>::infinity(),
-            stan::math::acosh(fvar<double>(std::numeric_limits<double>
-                                           ::infinity())));
+  using stan::math::fvar;
+  EXPECT_EQ(
+      std::numeric_limits<double>::infinity(),
+      stan::math::acosh(fvar<double>(std::numeric_limits<double>::infinity())));
 }
 
-
-TEST(AgradFwdAcosh,FvarFvarDouble) {
-  using stan::math::fvar;
+TEST(AgradFwdAcosh, FvarFvarDouble) {
   using stan::math::acosh;
+  using stan::math::fvar;
 
   fvar<fvar<double> > x;
   x.val_.val_ = 1.5;
@@ -65,7 +65,7 @@ struct acosh_fun {
   }
 };
 
-TEST(AgradFwdAcosh,acosh_NaN) {
+TEST(AgradFwdAcosh, acosh_NaN) {
   acosh_fun acosh_;
   test_nan_fwd(acosh_, false);
 }

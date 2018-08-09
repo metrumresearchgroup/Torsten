@@ -30,10 +30,9 @@ TEST(AgradRev, Phi) {
     y = y_values[i];
     phi_y = stan::math::Phi(y);
     x = createAVEC(y);
-    phi_y.grad(x,dy);
+    phi_y.grad(x, dy);
     EXPECT_FLOAT_EQ(stan::math::Phi(y.val()), phi_y.val());
-    EXPECT_FLOAT_EQ(dy_values[i], dy[0])
-      << "y = " << y;
+    EXPECT_FLOAT_EQ(dy_values[i], dy[0]) << "y = " << y;
   }
 }
 
@@ -144,15 +143,14 @@ TEST(AgradRev, PhiTails) {
 
 struct Phi_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return Phi(arg1);
   }
 };
 
-TEST(AgradRev,Phi_NaN) {
+TEST(AgradRev, Phi_NaN) {
   Phi_fun Phi_;
-  test_nan(Phi_,true,false);
+  test_nan(Phi_, true, false);
 }
 
 TEST(AgradRev, check_varis_on_stack) {

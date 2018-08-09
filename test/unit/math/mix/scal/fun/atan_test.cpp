@@ -4,20 +4,15 @@
 #include <test/unit/math/mix/scal/fun/nan_util.hpp>
 
 class AgradFwdAtan : public testing::Test {
-  void SetUp() {
-    stan::math::recover_memory();
-  }
+  void SetUp() { stan::math::recover_memory(); }
 };
 
-
-
-
-TEST_F(AgradFwdAtan,FvarVar_1stDeriv) {
+TEST_F(AgradFwdAtan, FvarVar_1stDeriv) {
   using stan::math::fvar;
   using stan::math::var;
   using std::atan;
 
-  fvar<var> x(1.5,1.3);
+  fvar<var> x(1.5, 1.3);
   fvar<var> a = atan(x);
 
   EXPECT_FLOAT_EQ(atan(1.5), a.val_.val());
@@ -25,16 +20,16 @@ TEST_F(AgradFwdAtan,FvarVar_1stDeriv) {
 
   AVEC y = createAVEC(x.val_);
   VEC g;
-  a.val_.grad(y,g);
+  a.val_.grad(y, g);
   EXPECT_FLOAT_EQ(1.0 / (1.0 + 1.5 * 1.5), g[0]);
 }
 
-TEST_F(AgradFwdAtan,FvarVar_2ndDeriv) {
+TEST_F(AgradFwdAtan, FvarVar_2ndDeriv) {
   using stan::math::fvar;
   using stan::math::var;
   using std::atan;
 
-  fvar<var> x(1.5,1.3);
+  fvar<var> x(1.5, 1.3);
   fvar<var> a = atan(x);
 
   EXPECT_FLOAT_EQ(atan(1.5), a.val_.val());
@@ -42,13 +37,11 @@ TEST_F(AgradFwdAtan,FvarVar_2ndDeriv) {
 
   AVEC y = createAVEC(x.val_);
   VEC g;
-  a.d_.grad(y,g);
+  a.d_.grad(y, g);
   EXPECT_FLOAT_EQ(1.3 * -0.28402368, g[0]);
 }
 
-
-
-TEST_F(AgradFwdAtan,FvarFvarVar_1stDeriv) {
+TEST_F(AgradFwdAtan, FvarFvarVar_1stDeriv) {
   using stan::math::fvar;
   using stan::math::var;
   using std::atan;
@@ -66,7 +59,7 @@ TEST_F(AgradFwdAtan,FvarFvarVar_1stDeriv) {
 
   AVEC p = createAVEC(x.val_.val_);
   VEC g;
-  a.val_.val_.grad(p,g);
+  a.val_.val_.grad(p, g);
 
   stan::math::recover_memory();
   EXPECT_FLOAT_EQ(1.0 / (1.0 + 1.5 * 1.5), g[0]);
@@ -83,11 +76,11 @@ TEST_F(AgradFwdAtan,FvarFvarVar_1stDeriv) {
 
   AVEC q = createAVEC(y.val_.val_);
   VEC r;
-  b.val_.val_.grad(q,r);
+  b.val_.val_.grad(q, r);
   EXPECT_FLOAT_EQ(1.0 / (1.0 + 1.5 * 1.5), r[0]);
 }
 
-TEST_F(AgradFwdAtan,FvarFvarVar_2ndDeriv) {
+TEST_F(AgradFwdAtan, FvarFvarVar_2ndDeriv) {
   using stan::math::fvar;
   using stan::math::var;
   using std::atan;
@@ -100,7 +93,7 @@ TEST_F(AgradFwdAtan,FvarFvarVar_2ndDeriv) {
 
   AVEC p = createAVEC(x.val_.val_);
   VEC g;
-  a.val_.d_.grad(p,g);
+  a.val_.d_.grad(p, g);
   EXPECT_FLOAT_EQ(2.0 * -0.28402368, g[0]);
 
   fvar<fvar<var> > y;
@@ -111,10 +104,10 @@ TEST_F(AgradFwdAtan,FvarFvarVar_2ndDeriv) {
 
   AVEC q = createAVEC(y.val_.val_);
   VEC r;
-  b.d_.val_.grad(q,r);
+  b.d_.val_.grad(q, r);
   EXPECT_FLOAT_EQ(2.0 * -0.28402368, r[0]);
 }
-TEST_F(AgradFwdAtan,FvarFvarVar_3rdDeriv) {
+TEST_F(AgradFwdAtan, FvarFvarVar_3rdDeriv) {
   using stan::math::fvar;
   using stan::math::var;
   using std::atan;
@@ -128,19 +121,18 @@ TEST_F(AgradFwdAtan,FvarFvarVar_3rdDeriv) {
 
   AVEC p = createAVEC(x.val_.val_);
   VEC g;
-  a.d_.d_.grad(p,g);
+  a.d_.d_.grad(p, g);
   EXPECT_FLOAT_EQ(0.335002275830678, g[0]);
 }
 
 struct atan_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return atan(arg1);
   }
 };
 
-TEST_F(AgradFwdAtan,atan_NaN) {
+TEST_F(AgradFwdAtan, atan_NaN) {
   atan_fun atan_;
-  test_nan_mix(atan_,false);
+  test_nan_mix(atan_, false);
 }

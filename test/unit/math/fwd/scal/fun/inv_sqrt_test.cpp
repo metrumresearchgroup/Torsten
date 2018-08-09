@@ -2,12 +2,12 @@
 #include <gtest/gtest.h>
 #include <test/unit/math/fwd/scal/fun/nan_util.hpp>
 
-TEST(AgradFwdInvSqrt,Fvar) {
+TEST(AgradFwdInvSqrt, Fvar) {
   using stan::math::fvar;
   using stan::math::inv_sqrt;
 
   fvar<double> x(0.5);
-  x.d_ = 1.0;   // Derivatives w.r.t. x
+  x.d_ = 1.0;  // Derivatives w.r.t. x
   fvar<double> a = inv_sqrt(x);
 
   EXPECT_FLOAT_EQ(inv_sqrt(0.5), a.val_);
@@ -26,9 +26,9 @@ TEST(AgradFwdInvSqrt,Fvar) {
 
   std::isnan(g.val_);
   std::isnan(g.d_);
-}   
+}
 
-TEST(AgradFwdInvSqrt,FvarFvarDouble) {
+TEST(AgradFwdInvSqrt, FvarFvarDouble) {
   using stan::math::fvar;
   using stan::math::inv_sqrt;
   using std::log;
@@ -47,13 +47,12 @@ TEST(AgradFwdInvSqrt,FvarFvarDouble) {
 
 struct inv_sqrt_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return inv_sqrt(arg1);
   }
 };
 
-TEST(AgradFwdInvSqrt,inv_sqrt_NaN) {
+TEST(AgradFwdInvSqrt, inv_sqrt_NaN) {
   inv_sqrt_fun inv_sqrt_;
-  test_nan_fwd(inv_sqrt_,false);
+  test_nan_fwd(inv_sqrt_, false);
 }

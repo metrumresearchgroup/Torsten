@@ -2,13 +2,14 @@
 #include <gtest/gtest.h>
 #include <test/unit/math/fwd/scal/fun/nan_util.hpp>
 #include <stdexcept>
+#include <limits>
 
-TEST(AgradFwdLog1m,Fvar) {
+TEST(AgradFwdLog1m, Fvar) {
   using stan::math::fvar;
   using stan::math::log1m;
   using std::isnan;
 
-  fvar<double> x(0.5,1.0);
+  fvar<double> x(0.5, 1.0);
 
   fvar<double> a = log1m(x);
   EXPECT_FLOAT_EQ(log1m(0.5), a.val_);
@@ -23,13 +24,11 @@ TEST(AgradFwdLog1m, FvarExcepts) {
 TEST(MathFunctions, log1m_inf_return) {
   using stan::math::fvar;
   using stan::math::log1m;
-  EXPECT_EQ(-std::numeric_limits<double>::infinity(),
-            log1m(fvar<double>(1.0)));
-  EXPECT_EQ(-std::numeric_limits<double>::infinity(),
-            log1m(fvar<double>(1)));
+  EXPECT_EQ(-std::numeric_limits<double>::infinity(), log1m(fvar<double>(1.0)));
+  EXPECT_EQ(-std::numeric_limits<double>::infinity(), log1m(fvar<double>(1)));
 }
 
-TEST(AgradFwdLog1m,FvarFvarDouble) {
+TEST(AgradFwdLog1m, FvarFvarDouble) {
   using stan::math::fvar;
   using stan::math::log1m;
 
@@ -57,13 +56,12 @@ TEST(AgradFwdLog1m,FvarFvarDouble) {
 
 struct log1m_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return log1m(arg1);
   }
 };
 
-TEST(AgradFwdLog1m,log1m_NaN) {
+TEST(AgradFwdLog1m, log1m_NaN) {
   log1m_fun log1m_;
-  test_nan_fwd(log1m_,false);
+  test_nan_fwd(log1m_, false);
 }

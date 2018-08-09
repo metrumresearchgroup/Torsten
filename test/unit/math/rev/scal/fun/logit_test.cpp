@@ -21,7 +21,7 @@ void test_logit(double u) {
   f2.grad(uv2, grad_f2);
   double g2 = grad_f2[0];
 
-  EXPECT_FLOAT_EQ(log(u / (1 - u )), f2.val());
+  EXPECT_FLOAT_EQ(log(u / (1 - u)), f2.val());
   EXPECT_FLOAT_EQ(g1, g2);
 }
 
@@ -30,17 +30,14 @@ TEST(AgradRev, logitDeriv) {
   test_logit(0.5);
 }
 
-
-
 struct logit_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return stan::math::logit(arg1);
   }
 };
 
-TEST(AgradRev,inv_logit_NaN) {
+TEST(AgradRev, inv_logit_NaN) {
   logit_fun logit_;
   test_nan(logit_, false, true);
 }

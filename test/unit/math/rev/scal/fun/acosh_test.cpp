@@ -5,7 +5,7 @@
 #include <cmath>
 #include <limits>
 
-TEST(AgradRev,acosh_val) {
+TEST(AgradRev, acosh_val) {
   using stan::math::acosh;
   using std::sqrt;
   AVAR a = 1.3;
@@ -15,10 +15,10 @@ TEST(AgradRev,acosh_val) {
   AVEC x = createAVEC(a);
   VEC g;
   f.grad(x, g);
-  EXPECT_FLOAT_EQ(1 / sqrt(1.3 * 1.3  - 1.0), g[0]);
+  EXPECT_FLOAT_EQ(1 / sqrt(1.3 * 1.3 - 1.0), g[0]);
 }
 
-TEST(AgradRev,acosh_1) {
+TEST(AgradRev, acosh_1) {
   using stan::math::acosh;
   using std::sqrt;
   AVAR a = 1.0;
@@ -32,8 +32,8 @@ TEST(AgradRev,acosh_1) {
 }
 
 TEST(MathFunctions, acosh_exception) {
-  using stan::math::var;
   using stan::math::acosh;
+  using stan::math::var;
   EXPECT_THROW(acosh(var(0.5)), std::domain_error);
 }
 
@@ -44,7 +44,6 @@ TEST(AgradRevAcosh, overflows) {
             stan::math::acosh(b).val());
 }
 
-
 struct acosh_fun {
   template <typename T0>
   inline T0 operator()(const T0& arg1) const {
@@ -53,7 +52,7 @@ struct acosh_fun {
   }
 };
 
-TEST(AgradRev,acosh_NaN) {
+TEST(AgradRev, acosh_NaN) {
   acosh_fun acosh_;
   test_nan(acosh_, false, true);
 }

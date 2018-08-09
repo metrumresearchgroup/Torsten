@@ -3,21 +3,19 @@
 #include <test/unit/math/fwd/scal/fun/nan_util.hpp>
 
 class AgradFwdTanh : public testing::Test {
-  void SetUp() {
-  }
+  void SetUp() {}
 };
-
 
 TEST_F(AgradFwdTanh, Fvar) {
   using stan::math::fvar;
   using std::tanh;
 
-  fvar<double> x(0.5,1.0);
+  fvar<double> x(0.5, 1.0);
   fvar<double> a = tanh(x);
   EXPECT_FLOAT_EQ(tanh(0.5), a.val_);
   EXPECT_FLOAT_EQ(1 - tanh(0.5) * tanh(0.5), a.d_);
 
-  fvar<double> y(-1.2,1.0);
+  fvar<double> y(-1.2, 1.0);
   fvar<double> b = tanh(y);
   EXPECT_FLOAT_EQ(tanh(-1.2), b.val_);
   EXPECT_FLOAT_EQ(1 - tanh(-1.2) * tanh(-1.2), b.d_);
@@ -55,13 +53,12 @@ TEST_F(AgradFwdTanh, FvarFvarDouble) {
 
 struct tanh_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return tanh(arg1);
   }
 };
 
-TEST_F(AgradFwdTanh,tanh_NaN) {
+TEST_F(AgradFwdTanh, tanh_NaN) {
   tanh_fun tanh_;
-  test_nan_fwd(tanh_,false);
+  test_nan_fwd(tanh_, false);
 }

@@ -3,30 +3,30 @@
 #include <boost/math/special_functions/erf.hpp>
 #include <test/unit/math/fwd/scal/fun/nan_util.hpp>
 
-TEST(AgradFwdErf,Fvar) {
+TEST(AgradFwdErf, Fvar) {
+  using boost::math::erf;
   using stan::math::fvar;
   using std::exp;
   using std::sqrt;
-  using boost::math::erf;
 
-  fvar<double> x(0.5,1.0);
+  fvar<double> x(0.5, 1.0);
 
   fvar<double> a = erf(x);
   EXPECT_FLOAT_EQ(erf(0.5), a.val_);
-  EXPECT_FLOAT_EQ(2 * exp(-0.5 * 0.5) / 
-                  sqrt(boost::math::constants::pi<double>()), a.d_);
+  EXPECT_FLOAT_EQ(
+      2 * exp(-0.5 * 0.5) / sqrt(boost::math::constants::pi<double>()), a.d_);
 
- fvar<double> b = erf(-x);
+  fvar<double> b = erf(-x);
   EXPECT_FLOAT_EQ(erf(-0.5), b.val_);
-  EXPECT_FLOAT_EQ(-2 * exp(-0.5 * 0.5) 
-                  / sqrt(boost::math::constants::pi<double>()), b.d_);
+  EXPECT_FLOAT_EQ(
+      -2 * exp(-0.5 * 0.5) / sqrt(boost::math::constants::pi<double>()), b.d_);
 }
 
-TEST(AgradFwdErf,FvarFvarDouble) {
+TEST(AgradFwdErf, FvarFvarDouble) {
+  using boost::math::erf;
   using stan::math::fvar;
   using std::exp;
   using std::sqrt;
-  using boost::math::erf;
 
   fvar<fvar<double> > x;
   x.val_.val_ = 0.5;
@@ -35,8 +35,9 @@ TEST(AgradFwdErf,FvarFvarDouble) {
   fvar<fvar<double> > a = erf(x);
 
   EXPECT_FLOAT_EQ(erf(0.5), a.val_.val_);
-  EXPECT_FLOAT_EQ(2 * exp(-0.5 * 0.5) / 
-                  sqrt(boost::math::constants::pi<double>()), a.val_.d_);
+  EXPECT_FLOAT_EQ(
+      2 * exp(-0.5 * 0.5) / sqrt(boost::math::constants::pi<double>()),
+      a.val_.d_);
   EXPECT_FLOAT_EQ(0, a.d_.val_);
   EXPECT_FLOAT_EQ(0, a.d_.d_);
 
@@ -47,21 +48,20 @@ TEST(AgradFwdErf,FvarFvarDouble) {
   a = erf(y);
   EXPECT_FLOAT_EQ(erf(0.5), a.val_.val_);
   EXPECT_FLOAT_EQ(0, a.val_.d_);
-  EXPECT_FLOAT_EQ(2 * exp(-0.5 * 0.5) / 
-                  sqrt(boost::math::constants::pi<double>()), a.d_.val_);
+  EXPECT_FLOAT_EQ(
+      2 * exp(-0.5 * 0.5) / sqrt(boost::math::constants::pi<double>()),
+      a.d_.val_);
   EXPECT_FLOAT_EQ(0, a.d_.d_);
 }
 
-
 struct erf_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return erf(arg1);
   }
 };
 
-TEST(AgradFwdErf,erf_NaN) {
+TEST(AgradFwdErf, erf_NaN) {
   erf_fun erf_;
-  test_nan_fwd(erf_,false);
+  test_nan_fwd(erf_, false);
 }

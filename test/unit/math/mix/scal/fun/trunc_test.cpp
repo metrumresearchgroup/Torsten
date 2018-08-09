@@ -5,11 +5,11 @@
 #include <test/unit/math/mix/scal/fun/nan_util.hpp>
 
 TEST(AgradFwdTrunc, FvarVar_1stDeriv) {
+  using boost::math::trunc;
   using stan::math::fvar;
   using stan::math::var;
-  using boost::math::trunc;
 
-  fvar<var> x(1.5,1.3);
+  fvar<var> x(1.5, 1.3);
   fvar<var> a = trunc(x);
 
   EXPECT_FLOAT_EQ(trunc(1.5), a.val_.val());
@@ -17,27 +17,27 @@ TEST(AgradFwdTrunc, FvarVar_1stDeriv) {
 
   AVEC y = createAVEC(x.val_);
   VEC g;
-  a.val_.grad(y,g);
+  a.val_.grad(y, g);
   EXPECT_FLOAT_EQ(0, g[0]);
 }
 TEST(AgradFwdTrunc, FvarVar_2ndDeriv) {
+  using boost::math::trunc;
   using stan::math::fvar;
   using stan::math::var;
-  using boost::math::trunc;
 
-  fvar<var> x(1.5,1.3);
+  fvar<var> x(1.5, 1.3);
   fvar<var> a = trunc(x);
 
   AVEC y = createAVEC(x.val_);
   VEC g;
-  a.d_.grad(y,g);
+  a.d_.grad(y, g);
   EXPECT_FLOAT_EQ(0, g[0]);
 }
 
 TEST(AgradFwdTrunc, FvarFvarVar_1stDeriv) {
+  using boost::math::trunc;
   using stan::math::fvar;
   using stan::math::var;
-  using boost::math::trunc;
 
   fvar<fvar<var> > x;
   x.val_.val_ = 1.5;
@@ -52,7 +52,7 @@ TEST(AgradFwdTrunc, FvarFvarVar_1stDeriv) {
 
   AVEC p = createAVEC(x.val_.val_);
   VEC g;
-  a.val_.val_.grad(p,g);
+  a.val_.val_.grad(p, g);
   EXPECT_FLOAT_EQ(0, g[0]);
 
   fvar<fvar<var> > y;
@@ -67,13 +67,13 @@ TEST(AgradFwdTrunc, FvarFvarVar_1stDeriv) {
 
   AVEC q = createAVEC(y.val_.val_);
   VEC r;
-  b.val_.val_.grad(q,r);
+  b.val_.val_.grad(q, r);
   EXPECT_FLOAT_EQ(0, r[0]);
 }
 TEST(AgradFwdTrunc, FvarFvarVar_2ndDeriv) {
+  using boost::math::trunc;
   using stan::math::fvar;
   using stan::math::var;
-  using boost::math::trunc;
 
   fvar<fvar<var> > x;
   x.val_.val_ = 1.5;
@@ -83,7 +83,7 @@ TEST(AgradFwdTrunc, FvarFvarVar_2ndDeriv) {
 
   AVEC p = createAVEC(x.val_.val_);
   VEC g;
-  a.val_.d_.grad(p,g);
+  a.val_.d_.grad(p, g);
   EXPECT_FLOAT_EQ(0, g[0]);
 
   fvar<fvar<var> > y;
@@ -94,13 +94,13 @@ TEST(AgradFwdTrunc, FvarFvarVar_2ndDeriv) {
 
   AVEC q = createAVEC(y.val_.val_);
   VEC r;
-  b.d_.val_.grad(q,r);
+  b.d_.val_.grad(q, r);
   EXPECT_FLOAT_EQ(0, r[0]);
 }
 TEST(AgradFwdTrunc, FvarFvarVar_3rdDeriv) {
+  using boost::math::trunc;
   using stan::math::fvar;
   using stan::math::var;
-  using boost::math::trunc;
 
   fvar<fvar<var> > x;
   x.val_.val_ = 1.5;
@@ -111,12 +111,12 @@ TEST(AgradFwdTrunc, FvarFvarVar_3rdDeriv) {
 
   AVEC p = createAVEC(x.val_.val_);
   VEC g;
-  a.d_.d_.grad(p,g);
+  a.d_.d_.grad(p, g);
   EXPECT_FLOAT_EQ(0, g[0]);
 }
 TEST(AgradFwdTrunc, FvarFvarDouble) {
-  using stan::math::fvar;
   using boost::math::trunc;
+  using stan::math::fvar;
 
   fvar<fvar<double> > x;
   x.val_.val_ = 1.5;
@@ -142,13 +142,12 @@ TEST(AgradFwdTrunc, FvarFvarDouble) {
 
 struct trunc_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return trunc(arg1);
   }
 };
 
-TEST(AgradFwdTrunc,trunc_NaN) {
+TEST(AgradFwdTrunc, trunc_NaN) {
   trunc_fun trunc_;
-  test_nan_mix(trunc_,false);
+  test_nan_mix(trunc_, false);
 }

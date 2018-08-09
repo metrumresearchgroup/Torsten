@@ -5,10 +5,10 @@
 
 TEST(AgradFwdSquare, FvarVar_1stDeriv) {
   using stan::math::fvar;
-  using stan::math::var;
   using stan::math::square;
+  using stan::math::var;
 
-  fvar<var> x(1.5,1.3);
+  fvar<var> x(1.5, 1.3);
   fvar<var> a = square(x);
 
   EXPECT_FLOAT_EQ(square(1.5), a.val_.val());
@@ -16,27 +16,27 @@ TEST(AgradFwdSquare, FvarVar_1stDeriv) {
 
   AVEC y = createAVEC(x.val_);
   VEC g;
-  a.val_.grad(y,g);
+  a.val_.grad(y, g);
   EXPECT_FLOAT_EQ(2.0 * (1.5), g[0]);
 }
 TEST(AgradFwdSquare, FvarVar_2ndDeriv) {
   using stan::math::fvar;
-  using stan::math::var;
   using stan::math::square;
+  using stan::math::var;
 
-  fvar<var> x(1.5,1.3);
+  fvar<var> x(1.5, 1.3);
   fvar<var> a = square(x);
 
   AVEC y = createAVEC(x.val_);
   VEC g;
-  a.d_.grad(y,g);
+  a.d_.grad(y, g);
   EXPECT_FLOAT_EQ(1.3 * 2.0, g[0]);
 }
 
 TEST(AgradFwdSquare, FvarFvarVar_1stDeriv) {
   using stan::math::fvar;
-  using stan::math::var;
   using stan::math::square;
+  using stan::math::var;
 
   fvar<fvar<var> > x;
   x.val_.val_ = 1.5;
@@ -51,7 +51,7 @@ TEST(AgradFwdSquare, FvarFvarVar_1stDeriv) {
 
   AVEC p = createAVEC(x.val_.val_);
   VEC g;
-  a.val_.val_.grad(p,g);
+  a.val_.val_.grad(p, g);
   EXPECT_FLOAT_EQ(2.0 * 1.5, g[0]);
 
   fvar<fvar<var> > y;
@@ -66,13 +66,13 @@ TEST(AgradFwdSquare, FvarFvarVar_1stDeriv) {
 
   AVEC q = createAVEC(y.val_.val_);
   VEC r;
-  b.val_.val_.grad(q,r);
+  b.val_.val_.grad(q, r);
   EXPECT_FLOAT_EQ(2.0 * 1.5, r[0]);
 }
 TEST(AgradFwdSquare, FvarFvarVar_2ndDeriv) {
   using stan::math::fvar;
-  using stan::math::var;
   using stan::math::square;
+  using stan::math::var;
 
   fvar<fvar<var> > x;
   x.val_.val_ = 1.5;
@@ -82,7 +82,7 @@ TEST(AgradFwdSquare, FvarFvarVar_2ndDeriv) {
 
   AVEC p = createAVEC(x.val_.val_);
   VEC g;
-  a.val_.d_.grad(p,g);
+  a.val_.d_.grad(p, g);
   EXPECT_FLOAT_EQ(2.0 * 2.0, g[0]);
 
   fvar<fvar<var> > y;
@@ -93,13 +93,13 @@ TEST(AgradFwdSquare, FvarFvarVar_2ndDeriv) {
 
   AVEC q = createAVEC(y.val_.val_);
   VEC r;
-  b.d_.val_.grad(q,r);
+  b.d_.val_.grad(q, r);
   EXPECT_FLOAT_EQ(2.0 * 2.0, r[0]);
 }
 TEST(AgradFwdSquare, FvarFvarVar_3rdDeriv) {
   using stan::math::fvar;
-  using stan::math::var;
   using stan::math::square;
+  using stan::math::var;
 
   fvar<fvar<var> > x;
   x.val_.val_ = 1.5;
@@ -110,19 +110,18 @@ TEST(AgradFwdSquare, FvarFvarVar_3rdDeriv) {
 
   AVEC p = createAVEC(x.val_.val_);
   VEC g;
-  a.d_.d_.grad(p,g);
+  a.d_.d_.grad(p, g);
   EXPECT_FLOAT_EQ(0, g[0]);
 }
 
 struct square_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return square(arg1);
   }
 };
 
-TEST(AgradFwdSquare,square_NaN) {
+TEST(AgradFwdSquare, square_NaN) {
   square_fun square_;
-  test_nan_mix(square_,false);
+  test_nan_mix(square_, false);
 }

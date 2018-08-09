@@ -13,12 +13,11 @@
  * testing framework).
  */
 struct log10_test {
-
   /**
    * Redefinition of function brought in from stan::math.  The reason
    * to do this is that it wraps it up in this static template class.
    *
-   * This is the version that's being tested.  
+   * This is the version that's being tested.
    *
    * WARNING:  assumes that the scalar values for all instantiations
    * (prim, rev, fwd, mix) ***have already been tested***.
@@ -41,13 +40,11 @@ struct log10_test {
    * Redundant definition of function from stan::math to apply to an
    * integer and return a double.
    *
-   * This function delegates to apply(), defined above, directly.  
+   * This function delegates to apply(), defined above, directly.
    *
    * WARNING:  this is *not an independent test*.
    */
-  static double apply_base(int x) {
-    return apply<double>(x);
-  }
+  static double apply_base(int x) { return apply<double>(x); }
 
   /**
    * This is the generic version of the integer version defined
@@ -66,30 +63,36 @@ struct log10_test {
    */
   static std::vector<double> valid_inputs() {
     return test::math::vector_builder<double>()
-      .add(1.3).add(-2.6).add(0).add(10.2).add(10.0).build();
+        .add(1.3)
+        .add(-2.6)
+        .add(0)
+        .add(10.2)
+        .add(10.0)
+        .build();
   }
 
   /**
    * Return sequence of invalid double-valued inputs.
    */
-  static std::vector<double> invalid_inputs() {
-    return std::vector<double>();
-  }
+  static std::vector<double> invalid_inputs() { return std::vector<double>(); }
 
   /**
    * Return sequence of valid integer inputs.
    */
   static std::vector<int> int_valid_inputs() {
     return test::math::vector_builder<int>()
-      .add(10).add(-2).add(0).add(3).add(15).build();
+        .add(10)
+        .add(-2)
+        .add(0)
+        .add(3)
+        .add(15)
+        .build();
   }
 
   /**
    * Return sequence of invalid integer inputs.
    */
-  static std::vector<int> int_invalid_inputs() {
-    return std::vector<int>();
-  }
+  static std::vector<int> int_invalid_inputs() { return std::vector<int>(); }
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(, prim_scalar_unary_test, log10_test);

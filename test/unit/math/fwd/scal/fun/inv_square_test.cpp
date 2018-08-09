@@ -2,12 +2,12 @@
 #include <gtest/gtest.h>
 #include <test/unit/math/fwd/scal/fun/nan_util.hpp>
 
-TEST(AgradFwdInvSquare,Fvar) {
+TEST(AgradFwdInvSquare, Fvar) {
   using stan::math::fvar;
   using stan::math::inv_square;
 
   fvar<double> x(0.5);
-  x.d_ = 1.0;   // Derivatives w.r.t. x
+  x.d_ = 1.0;  // Derivatives w.r.t. x
   fvar<double> a = inv_square(x);
 
   EXPECT_FLOAT_EQ(inv_square(0.5), a.val_);
@@ -18,9 +18,9 @@ TEST(AgradFwdInvSquare,Fvar) {
   fvar<double> g = inv_square(z);
   EXPECT_FLOAT_EQ(stan::math::positive_infinity(), g.val_);
   EXPECT_FLOAT_EQ(stan::math::negative_infinity(), g.d_);
-}   
+}
 
-TEST(AgradFwdInvSquare,FvarFvarDouble) {
+TEST(AgradFwdInvSquare, FvarFvarDouble) {
   using stan::math::fvar;
   using stan::math::inv_square;
   using std::log;
@@ -39,13 +39,12 @@ TEST(AgradFwdInvSquare,FvarFvarDouble) {
 
 struct inv_square_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return inv_square(arg1);
   }
 };
 
-TEST(AgradFwdInvSquare,inv_square_NaN) {
+TEST(AgradFwdInvSquare, inv_square_NaN) {
   inv_square_fun inv_square_;
-  test_nan_fwd(inv_square_,false);
+  test_nan_fwd(inv_square_, false);
 }
