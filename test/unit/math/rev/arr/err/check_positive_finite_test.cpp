@@ -9,7 +9,7 @@ using stan::math::var;
 TEST(AgradRevErrorHandlingScalar, CheckPositiveFinite_Vector) {
   const char* function = "check_positive_finite";
   std::vector<var> x;
-  
+
   x.clear();
   x.push_back(1.5);
   x.push_back(0.1);

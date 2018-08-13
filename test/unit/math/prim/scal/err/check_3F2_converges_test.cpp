@@ -45,12 +45,12 @@ TEST(passesOnConvergentArgs, Check3F2Converges) {
   EXPECT_THROW(check_3F2_converges(function, a1, a2, a3, b1, b2, z),
                std::domain_error);
 
-  a1 = 5.0; 
+  a1 = 5.0;
   a2 = 0.0;
   a3 = 1.0;
-  b1 = 10.0;  
-  b2 = 10.0;  
-  z = 1.0; 
+  b1 = 10.0;
+  b2 = 10.0;
+  z = 1.0;
   EXPECT_NO_THROW(check_3F2_converges(function, a1, a2, a3, b1, b2, z));
 
   a1 = 1.0;
@@ -116,5 +116,3 @@ TEST(passesOnConvergentArgs, Check3F2Converges) {
   EXPECT_NO_THROW(check_3F2_converges(function, a1, a2, a3, b1, b2, z));
   EXPECT_NO_THROW(check_3F2_converges(function, a1, a2, a3, b1, b2, z));
 }
-
- 

@@ -66,6 +66,6 @@ class ErrorHandlingScalar_invalid_argument_vec : public ::testing::Test {
 TEST_F(ErrorHandlingScalar_invalid_argument_vec, vvar) {
   std::vector<stan::math::var> y;
   y.push_back(10);
-  
+
   test_throw<std::vector<stan::math::var> >(y);
 }

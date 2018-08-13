@@ -104,7 +104,7 @@ TEST(ErrorHandlingScalar, CheckPositiveFinite_nan) {
   x_mat << 1, 2, 3;
   for (int i = 0; i < x_mat.size(); i++) {
     x_mat(i) = nan;
-    EXPECT_THROW(check_positive_finite(function, "x", x_mat), 
+    EXPECT_THROW(check_positive_finite(function, "x", x_mat),
                  std::domain_error);
     x_mat(i) = i;
   }

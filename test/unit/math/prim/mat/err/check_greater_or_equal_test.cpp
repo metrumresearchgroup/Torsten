@@ -216,4 +216,3 @@ TEST(ErrorHandlingScalar, CheckGreaterOrEqual_nan) {
     }
   }
 }
- 

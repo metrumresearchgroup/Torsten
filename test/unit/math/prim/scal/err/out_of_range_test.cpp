@@ -42,7 +42,7 @@ class ErrorHandlingScalar_out_of_range : public ::testing::Test {
   template <class T>
   void test_throw(T y, size_t i) {
     using stan::math::out_of_range;
-    
+
     EXPECT_THROW_MSG(out_of_range(function_, y.size(), i, msg1_, msg2_),
                      std::out_of_range, expected_message_with_2_messages(y, i));
 
@@ -56,7 +56,7 @@ class ErrorHandlingScalar_out_of_range : public ::testing::Test {
 
 TEST_F(ErrorHandlingScalar_out_of_range, double) {
   std::vector<double> y(4);
-  
+
   test_throw(y, 0);
   test_throw(y, 5);
 }

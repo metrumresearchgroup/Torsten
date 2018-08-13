@@ -9,7 +9,7 @@ TEST(AgradRevErrorHandlingScalar, CheckLessOrEqual) {
   const char* function = "check_less_or_equal";
   var x = -10.0;
   var lb = 0.0;
- 
+
   EXPECT_NO_THROW(check_less_or_equal(function, "x", x, lb))
       << "check_less_or_equal should be true with x < lb";
 
@@ -67,4 +67,3 @@ TEST(AgradRevErrorHandlingScalar, CheckLessOrEqualVarCheckUnivariate) {
 
   stan::math::recover_memory();
 }
-

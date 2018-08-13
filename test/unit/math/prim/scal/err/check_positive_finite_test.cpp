@@ -7,7 +7,7 @@ using stan::math::check_positive_finite;
 TEST(ErrorHandlingScalar, CheckPositiveFinite) {
   const char* function = "check_positive_finite";
   double x = 1;
- 
+
   EXPECT_NO_THROW(check_positive_finite(function, "x", x))
       << "check_positive_finite should be true with finite x: " << x;
   x = -1;

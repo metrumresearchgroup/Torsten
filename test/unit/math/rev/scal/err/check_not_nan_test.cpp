@@ -9,7 +9,7 @@ TEST(AgradRevErrorHandlingScalar, CheckNotNan) {
 
   var x = 0;
   double x_d = 0;
- 
+
   EXPECT_NO_THROW(check_not_nan(function, "x", x))
       << "check_not_nan should be true with finite x: " << x;
   EXPECT_NO_THROW(check_not_nan(function, "x", x_d))
@@ -75,4 +75,3 @@ TEST(ErrorHandlingScalar, CheckNotNanVarCheckUnivariate) {
 
   stan::math::recover_memory();
 }
-

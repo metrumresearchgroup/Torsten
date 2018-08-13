@@ -8,7 +8,7 @@ TEST(ErrorHandlingScalar, CheckLessOrEqual) {
   const char* function = "check_less_or_equal";
   double x = -10.0;
   double lb = 0.0;
- 
+
   EXPECT_NO_THROW(check_less_or_equal(function, "x", x, lb))
       << "check_less_or_equal should be true with x < lb";
 
@@ -46,4 +46,3 @@ TEST(ErrorHandlingScalar, CheckLessOrEqual_nan) {
   EXPECT_THROW(check_less_or_equal(function, "x", x, nan), std::domain_error);
   EXPECT_THROW(check_less_or_equal(function, "x", nan, nan), std::domain_error);
 }
-  

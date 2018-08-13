@@ -55,6 +55,6 @@ class ErrorHandlingScalar_domain_error : public ::testing::Test {
 
 TEST_F(ErrorHandlingScalar_domain_error, double) {
   double y = 10;
-  
+
   test_throw<double>(y);
 }

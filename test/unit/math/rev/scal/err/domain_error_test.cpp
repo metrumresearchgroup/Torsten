@@ -54,6 +54,6 @@ class ErrorHandlingScalar_domain_error : public ::testing::Test {
 
 TEST_F(ErrorHandlingScalar_domain_error, var) {
   stan::math::var y = 10;
-  
+
   test_throw<stan::math::var>(y);
 }

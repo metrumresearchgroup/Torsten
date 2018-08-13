@@ -9,7 +9,7 @@ using stan::math::check_finite;
 TEST(ErrorHandlingScalar, CheckFinite_Vector) {
   const char* function = "check_finite";
   std::vector<double> x;
-  
+
   x.clear();
   x.push_back(-1);
   x.push_back(0);

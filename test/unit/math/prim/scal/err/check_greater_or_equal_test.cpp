@@ -49,4 +49,3 @@ TEST(ErrorHandlingScalar, CheckGreaterOrEqual_nan) {
   EXPECT_THROW(check_greater_or_equal(function, "x", nan, nan),
                std::domain_error);
 }
- 

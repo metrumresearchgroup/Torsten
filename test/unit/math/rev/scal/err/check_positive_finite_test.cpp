@@ -8,7 +8,7 @@ using stan::math::var;
 TEST(AgradRevErrorHandlingScalar, CheckPositiveFinite) {
   const char* function = "check_positive_finite";
   var x = 1;
- 
+
   EXPECT_NO_THROW(check_positive_finite(function, "x", x))
       << "check_positive_finite should be true with finite x: " << x;
   x = -1;

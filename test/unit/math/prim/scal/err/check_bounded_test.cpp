@@ -10,7 +10,7 @@ TEST(ErrorHandlingScalar, CheckBounded_x) {
   double x = 0;
   double low = -1;
   double high = 1;
- 
+
   EXPECT_NO_THROW(check_bounded(function, name, x, low, high))
       << "check_bounded should be TRUE with x: " << x << " and bounds: " << low
       << ", " << high;
@@ -56,7 +56,7 @@ TEST(ErrorHandlingScalar, CheckBounded_Low) {
   double x = 0;
   double low = -1;
   double high = 1;
- 
+
   EXPECT_NO_THROW(check_bounded(function, name, x, low, high))
       << "check_bounded should be true x: " << x << " and bounds: " << low
       << ", " << high;
@@ -82,7 +82,7 @@ TEST(ErrorHandlingScalar, CheckBounded_High) {
   double x = 0;
   double low = -1;
   double high = 1;
- 
+
   EXPECT_NO_THROW(check_bounded(function, name, x, low, high))
       << "check_bounded should be true x: " << x << " and bounds: " << low
       << ", " << high;

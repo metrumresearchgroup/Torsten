@@ -45,4 +45,3 @@ TEST(ErrorHandlingScalar, CheckGreater_nan) {
   EXPECT_THROW(check_greater(function, "x", x, nan), std::domain_error);
   EXPECT_THROW(check_greater(function, "x", nan, nan), std::domain_error);
 }
- 

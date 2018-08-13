@@ -65,14 +65,14 @@ class ErrorHandlingScalar_invalid_argument_vec : public ::testing::Test {
 TEST_F(ErrorHandlingScalar_invalid_argument_vec, vdouble) {
   std::vector<double> y;
   y.push_back(10);
-  
+
   test_throw<std::vector<double> >(y);
 }
 
 TEST_F(ErrorHandlingScalar_invalid_argument_vec, vint) {
   std::vector<int> y;
   y.push_back(10);
-  
+
   test_throw<std::vector<int> >(y);
 }
 

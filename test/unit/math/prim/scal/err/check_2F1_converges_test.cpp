@@ -71,7 +71,7 @@ TEST(passesOnConvergentArgs, Check2F1Converges) {
   z = -1.0 * std::numeric_limits<double>::infinity();
   EXPECT_THROW(check_2F1_converges(function, a1, a2, b1, z), std::domain_error);
   EXPECT_THROW(check_2F1_converges(function, a1, a2, b1, z), std::domain_error);
-   
+
   a1 = 1.0;
   a2 = 1.0;
   // should be ok, underflow to zero (?)
@@ -80,5 +80,3 @@ TEST(passesOnConvergentArgs, Check2F1Converges) {
   EXPECT_NO_THROW(check_2F1_converges(function, a1, a2, b1, z));
   EXPECT_NO_THROW(check_2F1_converges(function, a1, a2, b1, z));
 }
-
- 

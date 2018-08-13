@@ -58,6 +58,6 @@ class ErrorHandlingScalar_invalid_argument : public ::testing::Test {
 
 TEST_F(ErrorHandlingScalar_invalid_argument, var) {
   stan::math::var y = 10;
-  
+
   test_throw<stan::math::var>(y);
 }
