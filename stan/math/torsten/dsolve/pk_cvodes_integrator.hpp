@@ -138,6 +138,9 @@ class pk_cvodes_integrator {
       CHECK_SUNDIALS_CALL(CVodeSetUserData(mem, ode.to_user_data()));
       CHECK_SUNDIALS_CALL(CVodeSetMaxNumSteps(mem, max_num_steps_));
 
+      /** if y0 is parameter, the first n sensitivity vector
+       * are regarding y0, thus they form a unit matrix.
+       **/
       if (Ode::need_sens) {
         if (Ode::is_var_y0)
           for (size_t i = 0; i < n; ++i) NV_Ith_S(ys[i], i) = 1.0;

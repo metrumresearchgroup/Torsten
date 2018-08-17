@@ -149,6 +149,40 @@ TEST_F(TorstenOdeTest_chem, fwd_sensitivity_y0) {
   test_cvodes_fwd_sens(y0_var, y_b, y2, 1.E-8, 1.E-5);
 }
 
+TEST_F(TorstenOdeTest_chem, fwd_sensitivity_theta_y0) {
+  using torsten::dsolve::pk_cvodes_system;
+  using torsten::dsolve::pk_cvodes_fwd_system;
+  using torsten::dsolve::pk_cvodes_integrator;
+  using torsten::dsolve::cvodes_service;
+
+  using stan::math::var;
+
+  pk_cvodes_integrator solver(rtol, atol, 1e8);
+  std::vector<var> theta_var = stan::math::to_var(theta);
+  std::vector<var> y0_var = stan::math::to_var(y0);
+
+  std::vector<std::vector<var> > y_a, y_b, y1, y2;
+  using Ode1 = pk_cvodes_fwd_system<F, double, var, var, CV_ADAMS>;
+  using Ode2 = pk_cvodes_fwd_system<F, double, var, var, CV_BDF>;
+  auto f1 = Ode1::rhs();
+  auto f2 = Ode2::rhs();
+  cvodes_service<typename Ode1::Ode> s1(3, 3, f1);
+  cvodes_service<typename Ode2::Ode> s2(3, 3, f2);
+  Ode1 ode1(s1, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
+  Ode2 ode2(s2, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
+
+  y_a = solver.integrate(ode1);
+  y_b = solver.integrate(ode2);
+
+  y1 = stan::math::integrate_ode_adams(f, y0_var, t0, ts, theta_var, x_r, x_i);
+  y2 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta_var, x_r, x_i);
+
+  test_cvodes_fwd_sens(y0_var, y_a, y1, 1.E-8, 1.E-5);
+  test_cvodes_fwd_sens(y0_var, y_b, y2, 1.E-8, 1.E-5);
+  test_cvodes_fwd_sens(theta_var, y_a, y1, 1.E-8, 1.E-5);
+  test_cvodes_fwd_sens(theta_var, y_b, y2, 1.E-8, 1.E-5);
+}
+
 TEST_F(TorstenOdeTest_sho, fwd_sensitivity_theta) {
   using torsten::dsolve::pk_cvodes_system;
   using torsten::dsolve::pk_cvodes_fwd_system;
@@ -209,6 +243,40 @@ TEST_F(TorstenOdeTest_sho, fwd_sensitivity_y0) {
 
   test_cvodes_fwd_sens(y0_var, y_a, y1, 1.E-8, 1.E-5);
   test_cvodes_fwd_sens(y0_var, y_b, y2, 1.E-8, 1.E-5);
+}
+
+TEST_F(TorstenOdeTest_sho, fwd_sensitivity_theta_y0) {
+  using torsten::dsolve::pk_cvodes_system;
+  using torsten::dsolve::pk_cvodes_fwd_system;
+  using torsten::dsolve::pk_cvodes_integrator;
+  using torsten::dsolve::cvodes_service;
+
+  using stan::math::var;
+
+  pk_cvodes_integrator solver(rtol, atol, 1e8);
+  std::vector<var> theta_var = stan::math::to_var(theta);
+  std::vector<var> y0_var = stan::math::to_var(y0);
+
+  std::vector<std::vector<var> > y_a, y_b, y1, y2;
+  using Ode1 = pk_cvodes_fwd_system<F, double, var, var, CV_ADAMS>;
+  using Ode2 = pk_cvodes_fwd_system<F, double, var, var, CV_BDF>;
+  auto f1 = Ode1::rhs();
+  auto f2 = Ode2::rhs();
+  cvodes_service<typename Ode1::Ode> s1(2, 1, f1);
+  cvodes_service<typename Ode2::Ode> s2(2, 1, f2);
+  Ode1 ode1(s1, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
+  Ode2 ode2(s2, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
+
+  y_a = solver.integrate(ode1);
+  y_b = solver.integrate(ode2);
+
+  y1 = stan::math::integrate_ode_adams(f, y0_var, t0, ts, theta_var, x_r, x_i);
+  y2 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta_var, x_r, x_i);
+
+  test_cvodes_fwd_sens(y0_var, y_a, y1, 1.E-8, 1.E-5);
+  test_cvodes_fwd_sens(y0_var, y_b, y2, 1.E-8, 1.E-5);
+  test_cvodes_fwd_sens(theta_var, y_a, y1, 1.E-8, 1.E-5);
+  test_cvodes_fwd_sens(theta_var, y_b, y2, 1.E-8, 1.E-5);
 }
 
 TEST_F(TorstenOdeTest_lorenz, fwd_sens_theta_performance_adams) {
@@ -289,6 +357,37 @@ TEST_F(TorstenOdeTest_chem, fwd_sens_theta_performance_repeated) {
   start = std::chrono::system_clock::now();
   for (int i = 0; i < 1000; ++i) {
     y2 = stan::math::integrate_ode_bdf(f, y0, t0, ts, theta_var, x_r, x_i);
+  }
+  end = std::chrono::system_clock::now();
+  y2_elapsed = end - start;
+  std::cout << "stan    solver elapsed time: " << y2_elapsed.count() << "s\n";
+
+  test_cvodes_fwd_sens(theta_var, y1, y2, 1.E-6, 4.E-5);  
+}
+
+TEST_F(TorstenOdeTest_chem, fwd_sens_y0_theta_performance_repeated) {
+  using torsten::dsolve::pk_integrate_ode_adams;
+  using torsten::dsolve::pk_integrate_ode_bdf;
+  using stan::math::var;
+
+  std::vector<var> y0_var = stan::math::to_var(y0);
+  std::vector<var> theta_var = stan::math::to_var(theta);
+  std::vector<std::vector<var> > y1, y2;
+
+  std::chrono::time_point<std::chrono::system_clock> start, end;
+  std::chrono::duration<double> y1_elapsed, y2_elapsed;
+ 
+  start = std::chrono::system_clock::now();
+  for (int i = 0; i < 1000; ++i) {
+    y1 = pk_integrate_ode_bdf(f, y0_var, t0, ts, theta_var, x_r, x_i);
+  }
+  end = std::chrono::system_clock::now();
+  y1_elapsed = end - start;
+  std::cout << "torsten solver elapsed time: " << y1_elapsed.count() << "s\n";
+
+  start = std::chrono::system_clock::now();
+  for (int i = 0; i < 1000; ++i) {
+    y2 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta_var, x_r, x_i);
   }
   end = std::chrono::system_clock::now();
   y2_elapsed = end - start;

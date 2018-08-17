@@ -101,16 +101,18 @@ namespace torsten {
 
           /* if y0 is the only parameter, use tangent linear
            * model(TLM). Otherwise use full forward sensitivity model.
+           * Note that when both y0 and theta are
+           * parameters, the first n vector of ys are for y0 sensitivity.
            */
-          if (B::is_var_y0) {
+          if (B::is_var_y0 && i < n) {
             fval_cplx_ =
               B::f_(t, yy_cplx_, B::theta_dbl_, B::x_r_, B::x_i_, B::msgs_);
-          } else if (B::is_var_par) {
+          } else {
             std::transform(B::theta_dbl_.begin(),
                            B::theta_dbl_.end(),
                            theta_cplx_.begin(),
                            [](double r) -> cplx {return cplx(r, 0.0); });
-            theta_cplx_[i] += cplx(0.0, h);
+            theta_cplx_.at(i - B::is_var_y0 * n) += cplx(0.0, h);
             fval_cplx_ =
               B::f_(t, yy_cplx_, theta_cplx_, B::x_r_, B::x_i_, B::msgs_);
           }

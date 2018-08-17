@@ -26,9 +26,8 @@ namespace dsolve {
     using torsten::dsolve::pk_cvodes_fwd_system;
     using torsten::dsolve::pk_cvodes_integrator;
     using Ode = pk_cvodes_fwd_system<F, Tt, T_initial, T_param, CV_ADAMS>;
-    const int k = theta.size();
     const int n = y0.size();
-    const int m = k;
+    const int m = theta.size();
 
     static auto frhs = Ode::rhs();
     static cvodes_service<typename Ode::Ode> serv(n, m, frhs);
