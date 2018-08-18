@@ -57,8 +57,8 @@ namespace torsten {
       const size_t M_;
       const size_t ns_;  // nb. of sensi params
       N_Vector& nv_y_;
-      std::vector<double> y_vec_;
-      std::vector<double> fval_;
+      std::vector<double>& y_vec_;
+      std::vector<double>& fval_;
       void* mem_;
       SUNMatrix& A_;
       SUNLinearSolver& LS_;
@@ -113,8 +113,8 @@ namespace torsten {
           M_(theta.size()),
           ns_((is_var_y0 ? N_ : 0) + (is_var_par ? M_ : 0)),
           nv_y_(serv_.nv_y),
-          y_vec_(N_),
-          fval_(N_),
+          y_vec_(serv_.y),
+          fval_(serv_.fval),
           mem_(serv_.mem),
           A_(serv_.A),
           LS_(serv.LS),
