@@ -245,6 +245,76 @@ TEST_F(TorstenOdeTest_sho, fwd_sensitivity_y0) {
   test_cvodes_fwd_sens(y0_var, y_b, y2, 1.E-8, 1.E-5);
 }
 
+TEST_F(TorstenOdeTest_sho, fwd_sensitivity_ts) {
+  using torsten::dsolve::pk_cvodes_system;
+  using torsten::dsolve::pk_cvodes_fwd_system;
+  using torsten::dsolve::pk_cvodes_integrator;
+  using torsten::dsolve::cvodes_service;
+  using stan::math::value_of;
+
+  using stan::math::var;
+
+  pk_cvodes_integrator solver(rtol, atol, 1e8);
+  std::vector<var> ts_var = stan::math::to_var(ts);
+
+  std::vector<std::vector<var> > y, y1, y2;
+  using Ode = pk_cvodes_fwd_system<F, var, double, double, CV_ADAMS>;
+  cvodes_service<typename Ode::Ode> s(2, 1, Ode::rhs());
+  Ode ode(s, f, t0, ts_var, y0, theta, x_r, x_i, msgs);
+  y = solver.integrate(ode);
+
+  std::vector<double> g(ts.size()), fval(y0.size());
+  for (size_t i = 0; i < ts.size(); ++i) {
+    fval = f(value_of(ts[i]), value_of(y[i]), theta, x_r, x_i, msgs);
+    for (size_t j = 0; j < y0.size(); ++j) {
+      stan::math::set_zero_all_adjoints();
+      y[i][j].grad(ts_var, g);
+      for (size_t k = 0; k < ts.size(); ++k) {
+        if (k == i) {
+          EXPECT_FLOAT_EQ(g[k], fval[j]);
+        } else {
+          EXPECT_FLOAT_EQ(g[k], 0.0);
+        }
+      }
+    }
+  }
+}
+
+TEST_F(TorstenOdeTest_lorenz, fwd_sensitivity_ts) {
+  using torsten::dsolve::pk_cvodes_system;
+  using torsten::dsolve::pk_cvodes_fwd_system;
+  using torsten::dsolve::pk_cvodes_integrator;
+  using torsten::dsolve::cvodes_service;
+  using stan::math::value_of;
+
+  using stan::math::var;
+
+  pk_cvodes_integrator solver(rtol, atol, 1e8);
+  std::vector<var> ts_var = stan::math::to_var(ts);
+
+  std::vector<std::vector<var> > y, y1, y2;
+  using Ode = pk_cvodes_fwd_system<F, var, double, double, CV_BDF>;
+  cvodes_service<typename Ode::Ode> s(3, 3, Ode::rhs());
+  Ode ode(s, f, t0, ts_var, y0, theta, x_r, x_i, msgs);
+  y = solver.integrate(ode);
+
+  std::vector<double> g(ts.size()), fval(y0.size());
+  for (size_t i = 0; i < ts.size(); ++i) {
+    fval = f(value_of(ts[i]), value_of(y[i]), theta, x_r, x_i, msgs);
+    for (size_t j = 0; j < y0.size(); ++j) {
+      stan::math::set_zero_all_adjoints();
+      y[i][j].grad(ts_var, g);
+      for (size_t k = 0; k < ts.size(); ++k) {
+        if (k == i) {
+          EXPECT_FLOAT_EQ(g[k], fval[j]);
+        } else {
+          EXPECT_FLOAT_EQ(g[k], 0.0);
+        }
+      }
+    }
+  }
+}
+
 TEST_F(TorstenOdeTest_sho, fwd_sensitivity_theta_y0) {
   using torsten::dsolve::pk_cvodes_system;
   using torsten::dsolve::pk_cvodes_fwd_system;
@@ -277,6 +347,206 @@ TEST_F(TorstenOdeTest_sho, fwd_sensitivity_theta_y0) {
   test_cvodes_fwd_sens(y0_var, y_b, y2, 1.E-8, 1.E-5);
   test_cvodes_fwd_sens(theta_var, y_a, y1, 1.E-8, 1.E-5);
   test_cvodes_fwd_sens(theta_var, y_b, y2, 1.E-8, 1.E-5);
+}
+
+TEST_F(TorstenOdeTest_lorenz, fwd_sensitivity_theta_y0_ts) {
+  using torsten::dsolve::pk_cvodes_system;
+  using torsten::dsolve::pk_cvodes_fwd_system;
+  using torsten::dsolve::pk_cvodes_integrator;
+  using torsten::dsolve::cvodes_service;
+  using stan::math::value_of;
+  using stan::math::var;
+
+  pk_cvodes_integrator solver(rtol, atol, 1e8);
+  std::vector<var> theta_var = stan::math::to_var(theta);
+  std::vector<var> y0_var = stan::math::to_var(y0);
+  std::vector<var> ts_var = stan::math::to_var(ts);
+
+  std::vector<std::vector<var> > y, y1, y2;
+  using Ode = pk_cvodes_fwd_system<F, var, var, var, CV_ADAMS>;
+  cvodes_service<typename Ode::Ode> s(3, 3, Ode::rhs());
+  Ode ode(s, f, t0, ts_var, y0_var, theta_var, x_r, x_i, msgs);
+  y = solver.integrate(ode);
+
+  y1 = stan::math::integrate_ode_adams(f, y0_var, t0, ts, theta_var, x_r, x_i);
+
+  test_cvodes_fwd_sens(y0_var, y, y1, 1.E-6, 1.E-5);
+  test_cvodes_fwd_sens(theta_var, y, y1, 1.E-6, 1.E-4);
+
+  std::vector<double> g(ts.size()), fval(y0.size());
+  for (size_t i = 0; i < ts.size(); ++i) {
+    fval = f(value_of(ts[i]), value_of(y[i]), theta, x_r, x_i, msgs);
+    for (size_t j = 0; j < y0.size(); ++j) {
+      stan::math::set_zero_all_adjoints();
+      y[i][j].grad(ts_var, g);
+      for (size_t k = 0; k < ts.size(); ++k) {
+        if (k == i) {
+          EXPECT_FLOAT_EQ(g[k], fval[j]);
+        } else {
+          EXPECT_FLOAT_EQ(g[k], 0.0);
+        }
+      }
+    }
+  }
+}
+
+
+TEST_F(TorstenOdeTest_chem, fwd_sensitivity_theta_y0_ts) {
+  using torsten::dsolve::pk_cvodes_system;
+  using torsten::dsolve::pk_cvodes_fwd_system;
+  using torsten::dsolve::pk_cvodes_integrator;
+  using torsten::dsolve::cvodes_service;
+  using stan::math::value_of;
+  using stan::math::var;
+
+  pk_cvodes_integrator solver(rtol, atol, 1e8);
+  std::vector<var> theta_var = stan::math::to_var(theta);
+  std::vector<var> y0_var = stan::math::to_var(y0);
+  std::vector<var> ts_var = stan::math::to_var(ts);
+
+  std::vector<std::vector<var> > y, y1, y2;
+  using Ode = pk_cvodes_fwd_system<F, var, var, var, CV_BDF>;
+  cvodes_service<typename Ode::Ode> s(3, 3, Ode::rhs());
+  Ode ode(s, f, t0, ts_var, y0_var, theta_var, x_r, x_i, msgs);
+  y = solver.integrate(ode);
+
+  y1 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta_var, x_r, x_i);
+
+  test_cvodes_fwd_sens(y0_var, y, y1, 1.E-6, 1.E-5);
+  test_cvodes_fwd_sens(theta_var, y, y1, 1.E-6, 1.E-4);
+
+  std::vector<double> g(ts.size()), fval(y0.size());
+  for (size_t i = 0; i < ts.size(); ++i) {
+    fval = f(value_of(ts[i]), value_of(y[i]), theta, x_r, x_i, msgs);
+    for (size_t j = 0; j < y0.size(); ++j) {
+      stan::math::set_zero_all_adjoints();
+      y[i][j].grad(ts_var, g);
+      for (size_t k = 0; k < ts.size(); ++k) {
+        if (k == i) {
+          EXPECT_FLOAT_EQ(g[k], fval[j]);
+        } else {
+          EXPECT_FLOAT_EQ(g[k], 0.0);
+        }
+      }
+    }
+  }
+}
+
+TEST_F(TorstenOdeTest_chem, fwd_sensitivity_y0_ts) {
+  using torsten::dsolve::pk_cvodes_system;
+  using torsten::dsolve::pk_cvodes_fwd_system;
+  using torsten::dsolve::pk_cvodes_integrator;
+  using torsten::dsolve::cvodes_service;
+  using stan::math::value_of;
+  using stan::math::var;
+
+  pk_cvodes_integrator solver(rtol, atol, 1e8);
+  std::vector<var> y0_var = stan::math::to_var(y0);
+  std::vector<var> ts_var = stan::math::to_var(ts);
+
+  std::vector<std::vector<var> > y, y1, y2;
+  using Ode = pk_cvodes_fwd_system<F, var, var, double, CV_BDF>;
+  cvodes_service<typename Ode::Ode> s(3, 3, Ode::rhs());
+  Ode ode(s, f, t0, ts_var, y0_var, theta, x_r, x_i, msgs);
+  y = solver.integrate(ode);
+
+  y1 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta, x_r, x_i);
+
+  test_cvodes_fwd_sens(y0_var, y, y1, 1.E-6, 1.E-5);
+
+  std::vector<double> g(ts.size()), fval(y0.size());
+  for (size_t i = 0; i < ts.size(); ++i) {
+    fval = f(value_of(ts[i]), value_of(y[i]), theta, x_r, x_i, msgs);
+    for (size_t j = 0; j < y0.size(); ++j) {
+      stan::math::set_zero_all_adjoints();
+      y[i][j].grad(ts_var, g);
+      for (size_t k = 0; k < ts.size(); ++k) {
+        if (k == i) {
+          EXPECT_FLOAT_EQ(g[k], fval[j]);
+        } else {
+          EXPECT_FLOAT_EQ(g[k], 0.0);
+        }
+      }
+    }
+  }
+}
+
+TEST_F(TorstenOdeTest_chem, fwd_sensitivity_theta_ts) {
+  using torsten::dsolve::pk_cvodes_system;
+  using torsten::dsolve::pk_cvodes_fwd_system;
+  using torsten::dsolve::pk_cvodes_integrator;
+  using torsten::dsolve::cvodes_service;
+  using stan::math::value_of;
+  using stan::math::var;
+
+  pk_cvodes_integrator solver(rtol, atol, 1e8);
+  std::vector<var> theta_var = stan::math::to_var(theta);
+  std::vector<var> ts_var = stan::math::to_var(ts);
+
+  std::vector<std::vector<var> > y, y1, y2;
+  using Ode = pk_cvodes_fwd_system<F, var, double, var, CV_BDF>;
+  cvodes_service<typename Ode::Ode> s(3, 3, Ode::rhs());
+  Ode ode(s, f, t0, ts_var, y0, theta_var, x_r, x_i, msgs);
+  y = solver.integrate(ode);
+
+  y1 = stan::math::integrate_ode_bdf(f, y0, t0, ts, theta_var, x_r, x_i);
+
+  test_cvodes_fwd_sens(theta_var, y, y1, 1.E-6, 1.E-5);
+
+  std::vector<double> g(ts.size()), fval(y0.size());
+  for (size_t i = 0; i < ts.size(); ++i) {
+    fval = f(value_of(ts[i]), value_of(y[i]), theta, x_r, x_i, msgs);
+    for (size_t j = 0; j < y0.size(); ++j) {
+      stan::math::set_zero_all_adjoints();
+      y[i][j].grad(ts_var, g);
+      for (size_t k = 0; k < ts.size(); ++k) {
+        if (k == i) {
+          EXPECT_FLOAT_EQ(g[k], fval[j]);
+        } else {
+          EXPECT_FLOAT_EQ(g[k], 0.0);
+        }
+      }
+    }
+  }
+}
+
+TEST_F(TorstenOdeTest_sho, fwd_sensitivity_theta_ts) {
+  using torsten::dsolve::pk_cvodes_system;
+  using torsten::dsolve::pk_cvodes_fwd_system;
+  using torsten::dsolve::pk_cvodes_integrator;
+  using torsten::dsolve::cvodes_service;
+  using stan::math::value_of;
+  using stan::math::var;
+
+  pk_cvodes_integrator solver(rtol, atol, 1e8);
+  std::vector<var> theta_var = stan::math::to_var(theta);
+  std::vector<var> ts_var = stan::math::to_var(ts);
+
+  std::vector<std::vector<var> > y, y1, y2;
+  using Ode = pk_cvodes_fwd_system<F, var, double, var, CV_BDF>;
+  cvodes_service<typename Ode::Ode> s(2, 1, Ode::rhs());
+  Ode ode(s, f, t0, ts_var, y0, theta_var, x_r, x_i, msgs);
+  y = solver.integrate(ode);
+
+  y1 = stan::math::integrate_ode_bdf(f, y0, t0, ts, theta_var, x_r, x_i);
+
+  test_cvodes_fwd_sens(theta_var, y, y1, 1.E-6, 1.E-5);
+
+  std::vector<double> g(ts.size()), fval(y0.size());
+  for (size_t i = 0; i < ts.size(); ++i) {
+    fval = f(value_of(ts[i]), value_of(y[i]), theta, x_r, x_i, msgs);
+    for (size_t j = 0; j < y0.size(); ++j) {
+      stan::math::set_zero_all_adjoints();
+      y[i][j].grad(ts_var, g);
+      for (size_t k = 0; k < ts.size(); ++k) {
+        if (k == i) {
+          EXPECT_FLOAT_EQ(g[k], fval[j]);
+        } else {
+          EXPECT_FLOAT_EQ(g[k], 0.0);
+        }
+      }
+    }
+  }
 }
 
 TEST_F(TorstenOdeTest_lorenz, fwd_sens_theta_performance_adams) {
@@ -394,6 +664,106 @@ TEST_F(TorstenOdeTest_chem, fwd_sens_y0_theta_performance_repeated) {
   std::cout << "stan    solver elapsed time: " << y2_elapsed.count() << "s\n";
 
   test_cvodes_fwd_sens(theta_var, y1, y2, 1.E-6, 4.E-5);  
+}
+
+TEST_F(TorstenOdeTest_sho, integrate_ode_adams_theta_ts) {
+  using torsten::dsolve::pk_integrate_ode_adams;
+  using torsten::dsolve::pk_integrate_ode_bdf;
+  using stan::math::value_of;
+  using stan::math::var;
+
+  std::vector<var> theta_var = stan::math::to_var(theta);
+  std::vector<var> ts_var = stan::math::to_var(ts);
+
+  std::vector<std::vector<var> > y, y1, y2;
+  for (int i = 0; i < 10; ++i) {
+    y = pk_integrate_ode_adams(f, y0, t0, ts_var, theta_var, x_r, x_i);
+  }
+  y1 = stan::math::integrate_ode_adams(f, y0, t0, ts, theta_var, x_r, x_i);
+
+  test_cvodes_fwd_sens(theta_var, y, y1, 1.E-6, 1.E-5);
+
+  std::vector<double> g(ts.size()), fval(y0.size());
+  for (size_t i = 0; i < ts.size(); ++i) {
+    fval = f(value_of(ts[i]), value_of(y[i]), theta, x_r, x_i, msgs);
+    for (size_t j = 0; j < y0.size(); ++j) {
+      stan::math::set_zero_all_adjoints();
+      y[i][j].grad(ts_var, g);
+      for (size_t k = 0; k < ts.size(); ++k) {
+        if (k == i) {
+          EXPECT_FLOAT_EQ(g[k], fval[j]);
+        } else {
+          EXPECT_FLOAT_EQ(g[k], 0.0);
+        }
+      }
+    }
+  }
+}
+
+TEST_F(TorstenOdeTest_lorenz, integrate_ode_bdf_y0_ts) {
+  using torsten::dsolve::pk_integrate_ode_bdf;
+  using stan::math::value_of;
+  using stan::math::var;
+
+  std::vector<var> y0_var = stan::math::to_var(y0);
+  std::vector<var> ts_var = stan::math::to_var(ts);
+
+  std::vector<std::vector<var> > y, y1, y2;
+  for (int i = 0; i < 10; ++i) {
+    y = pk_integrate_ode_bdf(f, y0_var, t0, ts_var, theta, x_r, x_i);
+  }
+  y1 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta, x_r, x_i);
+
+  test_cvodes_fwd_sens(y0_var, y, y1, 1.E-6, 1.E-5);
+
+  std::vector<double> g(ts.size()), fval(y0.size());
+  for (size_t i = 0; i < ts.size(); ++i) {
+    fval = f(value_of(ts[i]), value_of(y1[i]), theta, x_r, x_i, msgs);
+    for (size_t j = 0; j < y0.size(); ++j) {
+      stan::math::set_zero_all_adjoints();
+      y[i][j].grad(ts_var, g);
+      for (size_t k = 0; k < ts.size(); ++k) {
+        if (k == i) {
+          EXPECT_FLOAT_EQ(g[k], fval[j]);
+        } else {
+          EXPECT_FLOAT_EQ(g[k], 0.0);
+        }
+      }
+    }
+  }
+}
+
+TEST_F(TorstenOdeTest_lorenz, integrate_ode_bdf_theta_ts) {
+  using torsten::dsolve::pk_integrate_ode_bdf;
+  using stan::math::value_of;
+  using stan::math::var;
+
+  std::vector<var> theta_var = stan::math::to_var(theta);
+  std::vector<var> ts_var = stan::math::to_var(ts);
+
+  std::vector<std::vector<var> > y, y1, y2;
+  for (int i = 0; i < 10; ++i) {
+    y = pk_integrate_ode_bdf(f, y0, t0, ts_var, theta_var, x_r, x_i);
+  }
+  y1 = stan::math::integrate_ode_bdf(f, y0, t0, ts, theta_var, x_r, x_i);
+
+  test_cvodes_fwd_sens(theta_var, y, y1, 1.E-6, 1.E-5);
+
+  std::vector<double> g(ts.size()), fval(y0.size());
+  for (size_t i = 0; i < ts.size(); ++i) {
+    fval = f(value_of(ts[i]), value_of(y1[i]), theta, x_r, x_i, msgs);
+    for (size_t j = 0; j < y0.size(); ++j) {
+      stan::math::set_zero_all_adjoints();
+      y[i][j].grad(ts_var, g);
+      for (size_t k = 0; k < ts.size(); ++k) {
+        if (k == i) {
+          EXPECT_FLOAT_EQ(g[k], fval[j]);
+        } else {
+          EXPECT_FLOAT_EQ(g[k], 0.0);
+        }
+      }
+    }
+  }
 }
 
 // TEST_F(CVODESIntegratorTest, error_handling) {

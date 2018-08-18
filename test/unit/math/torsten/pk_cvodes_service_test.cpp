@@ -41,10 +41,10 @@ struct Sho {
     return torsten::dsolve::cvodes_rhs<Sho>();
   }
 
-  static constexpr int lmm_type    = CV_ADAMS;
-  static constexpr bool is_var_y0  = false;
-  static constexpr bool is_var_par = false;
-  static constexpr bool need_sens  = false;
+  static constexpr int lmm_type       = CV_ADAMS;
+  static constexpr bool is_var_y0     = false;
+  static constexpr bool is_var_par    = false;
+  static constexpr bool need_fwd_sens = false;
 };
 
 TEST_F(TorstenOdeTest_sho, service) {

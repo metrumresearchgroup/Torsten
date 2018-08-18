@@ -90,6 +90,9 @@ struct TorstenOdeTest : public testing::Test {
                             std::vector<stan::math::var>>& stan_y,
                             double fval_eps,
                             double sens_eps) {
+    EXPECT_EQ(pk_y.size(), stan_y.size());
+    EXPECT_EQ(pk_y[0].size(), stan_y[0].size());
+
     for (size_t i = 0; i < pk_y.size(); ++i) {
       for (size_t j = 0; j < pk_y[0].size(); ++j) {
         EXPECT_NEAR(pk_y[i][j].val(), stan_y[i][j].val(), fval_eps);

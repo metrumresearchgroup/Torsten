@@ -63,7 +63,7 @@ namespace torsten {
         /*
          * allocate sensitivity array if need fwd sens calculation
          */ 
-        if (Ode::need_sens) {
+        if (Ode::need_fwd_sens) {
           nv_ys = N_VCloneVectorArray(ns, nv_y);
           for (size_t i = 0; i < ns; ++i) N_VConst(RCONST(0.0), nv_ys[i]);
         }

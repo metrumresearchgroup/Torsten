@@ -67,10 +67,17 @@ namespace torsten {
     public:
       static constexpr bool is_var_y0 = stan::is_var<Ty0>::value;
       static constexpr bool is_var_par = stan::is_var<Tpar>::value;
-      static constexpr bool need_sens = is_var_y0 || is_var_par;
+      static constexpr bool need_fwd_sens = is_var_y0 || is_var_par;
       static constexpr int lmm_type = Lmm;
 
-      using scalar_type = typename stan::return_type<Ty0, Tpar>::type;
+      // when ts is param, we don't have to do fwd
+      // sensitivity by solving extra ODEs, because in this
+      // case the sensitivity regarding ts is just the RHS
+      // of ODE. We can append this type of sensitivity
+      // results after CVODES solutions.
+      static constexpr bool is_var_ts = stan::is_var<Tts>::value;
+
+      using scalar_type = typename stan::return_type<Tts, Ty0, Tpar>::type;
       using return_type = std::vector<std::vector<scalar_type> >;
 
       /**
@@ -169,7 +176,7 @@ namespace torsten {
        *
        * @return reference to time steps
        */
-      const std::vector<Tts> & ts() { return ts_; }
+      const std::vector<Tts> & ts() const { return ts_; }
 
       /**
        * return reference to current N_Vector of unknown variable
@@ -179,7 +186,17 @@ namespace torsten {
       N_Vector& nv_y() { return nv_y_; }
 
       /**
-       * evaluate RHS function using current state
+       * evaluate RHS function using current state, store
+       * the result in internal @c fval_
+       */
+      void eval_rhs(double t, N_Vector& y) {
+        for (size_t i = 0; i < N_; ++i) y_vec_[i] = NV_Ith_S(y, i);
+        fval_ = f_(t, y_vec_, theta_dbl_, x_r_, x_i_, msgs_);
+      }
+
+      /**
+       * evaluate RHS function using current state, store
+       * the result in @c N_Vector.
        */
       void eval_rhs(double t, N_Vector& y, N_Vector& ydot) {
         for (size_t i = 0; i < N_; ++i) y_vec_[i] = NV_Ith_S(y, i);
@@ -217,8 +234,21 @@ namespace torsten {
         if (is_var_par) {
           res.insert(res.end(), theta().begin(), theta().end());
         }
+        if (is_var_ts) {
+          res.insert(res.end(), ts().begin(), ts().end());
+        }
         return res;
       }
+
+      /**
+       * return current @c y_vec(). We also use it for workspace.
+       */
+      std::vector<double>& y_vec() { return y_vec_; }
+
+      /**
+       * return current RHS evaluation.
+       */
+      const std::vector<double>& fval() { return fval_; }
 
       /**
        * return number of unknown variables
