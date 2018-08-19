@@ -29,8 +29,7 @@ namespace dsolve {
     const int m = theta.size();
     const int n = y0.size();
 
-    static auto frhs = Ode::rhs();
-    static cvodes_service<typename Ode::Ode> serv(n, m, frhs);
+    static cvodes_service<typename Ode::Ode> serv(n, m);
 
     Ode ode{serv, f, t0, ts, y0, theta, x_r, x_i, msgs};
     pk_cvodes_integrator solver(rtol, atol, max_num_step);

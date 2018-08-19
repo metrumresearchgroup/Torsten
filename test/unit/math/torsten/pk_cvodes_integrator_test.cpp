@@ -29,8 +29,8 @@ TEST_F(TorstenOdeTest_sho, cvodes_ivp_system) {
   pk_cvodes_integrator solver(rtol, atol, 1000);
 
   using Ode1 = pk_cvodes_fwd_system<F, double, double, double, CV_BDF>;
-  auto f1 = Ode1::rhs();
-  cvodes_service<typename Ode1::Ode> s1(2, 1, f1);
+  
+  cvodes_service<typename Ode1::Ode> s1(2, 1);
   Ode1 ode{s1, f, t0, ts, y0, theta, x_r, x_i, msgs};
   std::vector<std::vector<double> > y = solver.integrate(ode);
   std::vector<std::vector<double> > y1 =
@@ -42,8 +42,8 @@ TEST_F(TorstenOdeTest_sho, cvodes_ivp_system) {
   }
 
   using Ode2 = pk_cvodes_fwd_system<F, double, double, double, CV_ADAMS>;
-  auto f2 = Ode2::rhs();
-  cvodes_service<typename Ode2::Ode> s2(2, 1, f2);
+  
+  cvodes_service<typename Ode2::Ode> s2(2, 1);
   Ode2 ode2{s2, f, t0, ts, y0, theta, x_r, x_i, msgs};
   y = solver.integrate(ode2);
   y1 = stan::math::integrate_ode_adams(f, y0, t0, ts, theta , x_r, x_i);
@@ -62,8 +62,8 @@ TEST_F(TorstenOdeTest_lorenz, cvodes_ivp_system) {
   pk_cvodes_integrator solver(rtol, atol, max_num_steps);
 
   using Ode1 = pk_cvodes_fwd_system<F, double, double, double, CV_BDF>;
-  auto f1 = Ode1::rhs();
-  cvodes_service<typename Ode1::Ode> s1(3, 3, f1);
+  
+  cvodes_service<typename Ode1::Ode> s1(3, 3);
   Ode1 ode{s1, f, t0, ts, y0, theta, x_r, x_i, msgs};
   std::vector<std::vector<double> > y = solver.integrate(ode);
   std::vector<std::vector<double> > y1 =
@@ -75,8 +75,8 @@ TEST_F(TorstenOdeTest_lorenz, cvodes_ivp_system) {
   }
 
   using Ode2 = pk_cvodes_fwd_system<F, double, double, double, CV_ADAMS>;
-  auto f2 = Ode2::rhs();
-  cvodes_service<typename Ode2::Ode> s2(3, 3, f2);
+  
+  cvodes_service<typename Ode2::Ode> s2(3, 3);
   Ode2 ode2{s2, f, t0, ts, y0, theta, x_r, x_i, msgs};
   y = solver.integrate(ode2);
   y1 = stan::math::integrate_ode_adams(f, y0, t0, ts, theta , x_r, x_i);
@@ -101,10 +101,10 @@ TEST_F(TorstenOdeTest_chem, fwd_sensitivity_theta) {
   std::vector<std::vector<var> > y_a, y_b, y1, y2;
   using Ode1 = pk_cvodes_fwd_system<F, double, double, var, CV_ADAMS>;
   using Ode2 = pk_cvodes_fwd_system<F, double, double, var, CV_BDF>;
-  auto f1 = Ode1::rhs();
-  auto f2 = Ode2::rhs();
-  cvodes_service<typename Ode1::Ode> s1(3, 3, f1);
-  cvodes_service<typename Ode2::Ode> s2(3, 3, f2);
+  
+  
+  cvodes_service<typename Ode1::Ode> s1(3, 3);
+  cvodes_service<typename Ode2::Ode> s2(3, 3);
   Ode1 ode1(s1, f, t0, ts, y0, theta_var, x_r, x_i, msgs);
   Ode2 ode2(s2, f, t0, ts, y0, theta_var, x_r, x_i, msgs);
 
@@ -132,10 +132,10 @@ TEST_F(TorstenOdeTest_chem, fwd_sensitivity_y0) {
   std::vector<std::vector<var> > y_a, y_b, y1, y2;
   using Ode1 = pk_cvodes_fwd_system<F, double, var, double, CV_ADAMS>;
   using Ode2 = pk_cvodes_fwd_system<F, double, var, double, CV_BDF>;
-  auto f1 = Ode1::rhs();
-  auto f2 = Ode2::rhs();
-  cvodes_service<typename Ode1::Ode> s1(3, 3, f1);
-  cvodes_service<typename Ode2::Ode> s2(3, 3, f2);
+  
+  
+  cvodes_service<typename Ode1::Ode> s1(3, 3);
+  cvodes_service<typename Ode2::Ode> s2(3, 3);
   Ode1 ode1(s1, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
   Ode2 ode2(s2, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
 
@@ -164,10 +164,10 @@ TEST_F(TorstenOdeTest_chem, fwd_sensitivity_theta_y0) {
   std::vector<std::vector<var> > y_a, y_b, y1, y2;
   using Ode1 = pk_cvodes_fwd_system<F, double, var, var, CV_ADAMS>;
   using Ode2 = pk_cvodes_fwd_system<F, double, var, var, CV_BDF>;
-  auto f1 = Ode1::rhs();
-  auto f2 = Ode2::rhs();
-  cvodes_service<typename Ode1::Ode> s1(3, 3, f1);
-  cvodes_service<typename Ode2::Ode> s2(3, 3, f2);
+  
+  
+  cvodes_service<typename Ode1::Ode> s1(3, 3);
+  cvodes_service<typename Ode2::Ode> s2(3, 3);
   Ode1 ode1(s1, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
   Ode2 ode2(s2, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
 
@@ -197,10 +197,10 @@ TEST_F(TorstenOdeTest_sho, fwd_sensitivity_theta) {
   std::vector<std::vector<var> > y_a, y_b, y1, y2;
   using Ode1 = pk_cvodes_fwd_system<F, double, double, var, CV_ADAMS>;
   using Ode2 = pk_cvodes_fwd_system<F, double, double, var, CV_BDF>;
-  auto f1 = Ode1::rhs();
-  auto f2 = Ode2::rhs();
-  cvodes_service<typename Ode1::Ode> s1(2, 1, f1);
-  cvodes_service<typename Ode2::Ode> s2(2, 1, f2);
+  
+  
+  cvodes_service<typename Ode1::Ode> s1(2, 1);
+  cvodes_service<typename Ode2::Ode> s2(2, 1);
   Ode1 ode1(s1, f, t0, ts, y0, theta_var, x_r, x_i, msgs);
   Ode2 ode2(s2, f, t0, ts, y0, theta_var, x_r, x_i, msgs);
 
@@ -228,10 +228,10 @@ TEST_F(TorstenOdeTest_sho, fwd_sensitivity_y0) {
   std::vector<std::vector<var> > y_a, y_b, y1, y2;
   using Ode1 = pk_cvodes_fwd_system<F, double, var, double, CV_ADAMS>;
   using Ode2 = pk_cvodes_fwd_system<F, double, var, double, CV_BDF>;
-  auto f1 = Ode1::rhs();
-  auto f2 = Ode2::rhs();
-  cvodes_service<typename Ode1::Ode> s1(2, 1, f1);
-  cvodes_service<typename Ode2::Ode> s2(2, 1, f2);
+  
+  
+  cvodes_service<typename Ode1::Ode> s1(2, 1);
+  cvodes_service<typename Ode2::Ode> s2(2, 1);
   Ode1 ode1(s1, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
   Ode2 ode2(s2, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
 
@@ -259,7 +259,7 @@ TEST_F(TorstenOdeTest_sho, fwd_sensitivity_ts) {
 
   std::vector<std::vector<var> > y, y1, y2;
   using Ode = pk_cvodes_fwd_system<F, var, double, double, CV_ADAMS>;
-  cvodes_service<typename Ode::Ode> s(2, 1, Ode::rhs());
+  cvodes_service<typename Ode::Ode> s(2, 1);
   Ode ode(s, f, t0, ts_var, y0, theta, x_r, x_i, msgs);
   y = solver.integrate(ode);
 
@@ -294,7 +294,7 @@ TEST_F(TorstenOdeTest_lorenz, fwd_sensitivity_ts) {
 
   std::vector<std::vector<var> > y, y1, y2;
   using Ode = pk_cvodes_fwd_system<F, var, double, double, CV_BDF>;
-  cvodes_service<typename Ode::Ode> s(3, 3, Ode::rhs());
+  cvodes_service<typename Ode::Ode> s(3, 3);
   Ode ode(s, f, t0, ts_var, y0, theta, x_r, x_i, msgs);
   y = solver.integrate(ode);
 
@@ -330,10 +330,9 @@ TEST_F(TorstenOdeTest_sho, fwd_sensitivity_theta_y0) {
   std::vector<std::vector<var> > y_a, y_b, y1, y2;
   using Ode1 = pk_cvodes_fwd_system<F, double, var, var, CV_ADAMS>;
   using Ode2 = pk_cvodes_fwd_system<F, double, var, var, CV_BDF>;
-  auto f1 = Ode1::rhs();
-  auto f2 = Ode2::rhs();
-  cvodes_service<typename Ode1::Ode> s1(2, 1, f1);
-  cvodes_service<typename Ode2::Ode> s2(2, 1, f2);
+  
+  cvodes_service<typename Ode1::Ode> s1(2, 1);
+  cvodes_service<typename Ode2::Ode> s2(2, 1);
   Ode1 ode1(s1, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
   Ode2 ode2(s2, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
 
@@ -364,7 +363,7 @@ TEST_F(TorstenOdeTest_lorenz, fwd_sensitivity_theta_y0_ts) {
 
   std::vector<std::vector<var> > y, y1, y2;
   using Ode = pk_cvodes_fwd_system<F, var, var, var, CV_ADAMS>;
-  cvodes_service<typename Ode::Ode> s(3, 3, Ode::rhs());
+  cvodes_service<typename Ode::Ode> s(3, 3);
   Ode ode(s, f, t0, ts_var, y0_var, theta_var, x_r, x_i, msgs);
   y = solver.integrate(ode);
 
@@ -406,7 +405,7 @@ TEST_F(TorstenOdeTest_chem, fwd_sensitivity_theta_y0_ts) {
 
   std::vector<std::vector<var> > y, y1, y2;
   using Ode = pk_cvodes_fwd_system<F, var, var, var, CV_BDF>;
-  cvodes_service<typename Ode::Ode> s(3, 3, Ode::rhs());
+  cvodes_service<typename Ode::Ode> s(3, 3);
   Ode ode(s, f, t0, ts_var, y0_var, theta_var, x_r, x_i, msgs);
   y = solver.integrate(ode);
 
@@ -446,7 +445,7 @@ TEST_F(TorstenOdeTest_chem, fwd_sensitivity_y0_ts) {
 
   std::vector<std::vector<var> > y, y1, y2;
   using Ode = pk_cvodes_fwd_system<F, var, var, double, CV_BDF>;
-  cvodes_service<typename Ode::Ode> s(3, 3, Ode::rhs());
+  cvodes_service<typename Ode::Ode> s(3, 3);
   Ode ode(s, f, t0, ts_var, y0_var, theta, x_r, x_i, msgs);
   y = solver.integrate(ode);
 
@@ -485,7 +484,7 @@ TEST_F(TorstenOdeTest_chem, fwd_sensitivity_theta_ts) {
 
   std::vector<std::vector<var> > y, y1, y2;
   using Ode = pk_cvodes_fwd_system<F, var, double, var, CV_BDF>;
-  cvodes_service<typename Ode::Ode> s(3, 3, Ode::rhs());
+  cvodes_service<typename Ode::Ode> s(3, 3);
   Ode ode(s, f, t0, ts_var, y0, theta_var, x_r, x_i, msgs);
   y = solver.integrate(ode);
 
@@ -524,7 +523,7 @@ TEST_F(TorstenOdeTest_sho, fwd_sensitivity_theta_ts) {
 
   std::vector<std::vector<var> > y, y1, y2;
   using Ode = pk_cvodes_fwd_system<F, var, double, var, CV_BDF>;
-  cvodes_service<typename Ode::Ode> s(2, 1, Ode::rhs());
+  cvodes_service<typename Ode::Ode> s(2, 1);
   Ode ode(s, f, t0, ts_var, y0, theta_var, x_r, x_i, msgs);
   y = solver.integrate(ode);
 

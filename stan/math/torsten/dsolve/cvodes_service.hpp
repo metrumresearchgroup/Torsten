@@ -44,7 +44,7 @@ namespace torsten {
        * @param[in] m length of parameter theta
        * @param[in] f ODE RHS function
        */
-      cvodes_service(int n, int m, CVRhsFn f) :
+      cvodes_service(int n, int m) :
         N(n),
         M(m),
         ns((Ode::is_var_y0 ? n : 0) + (Ode::is_var_par ? m : 0)),
