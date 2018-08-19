@@ -48,10 +48,10 @@ struct Sho {
 };
 
 TEST_F(TorstenOdeTest_sho, service) {
-  using torsten::dsolve::pk_cvodes_integrator;
-  using torsten::dsolve::cvodes_service;
+  using torsten::dsolve::PKCvodesIntegrator;
+  using torsten::dsolve::PKCvodesService;
 
-  cvodes_service<Sho> serv(2, 1);
+  PKCvodesService<Sho> serv(2, 1);
 
   size_t n = 2;
   N_Vector& y = serv.nv_y;

@@ -13,8 +13,8 @@
 #include <vector>
 #include <string>
 
-using torsten::dsolve::pk_cvodes_system;
-using torsten::dsolve::pk_cvodes_fwd_system;
+using torsten::dsolve::PKCvodesSystem;
+using torsten::dsolve::PKCvodesFwdSystem;
 
 /* 
  * The problem is from chemical kinetics, from CVODES examples

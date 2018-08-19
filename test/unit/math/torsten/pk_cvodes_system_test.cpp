@@ -16,93 +16,93 @@
 #include <vector>
 #include <limits>
 
-TEST_F(TorstenOdeTest_sho, pk_cvodes_system) {
-  using torsten::dsolve::pk_cvodes_system;
-  using torsten::dsolve::pk_cvodes_fwd_system;
-  using torsten::dsolve::cvodes_service;
+TEST_F(TorstenOdeTest_sho, PKCvodesSystem) {
+  using torsten::dsolve::PKCvodesSystem;
+  using torsten::dsolve::PKCvodesFwdSystem;
+  using torsten::dsolve::PKCvodesService;
   using stan::math::var;
   using stan::math::to_var;
 
   std::vector<stan::math::var> theta_var{to_var(theta)};
   std::vector<stan::math::var> y0_var{to_var(y0)};
 
-  using Ode1 = pk_cvodes_fwd_system<F, double, double, double, CV_ADAMS>;
+  using Ode1 = PKCvodesFwdSystem<F, double, double, double, CV_ADAMS>;
   
-  cvodes_service<typename Ode1::Ode> s1(2, 1);
+  PKCvodesService<typename Ode1::Ode> s1(2, 1);
   Ode1 ode1(s1, f, t0, ts, y0, theta, x_r, x_i, msgs);
   test_cvodes_system(ode1, y0, theta, ts);
 
-  using Ode2 = pk_cvodes_fwd_system<F, double, var, double, CV_BDF>;
+  using Ode2 = PKCvodesFwdSystem<F, double, var, double, CV_BDF>;
   
-  cvodes_service<typename Ode2::Ode> s2(2, 1);
+  PKCvodesService<typename Ode2::Ode> s2(2, 1);
   Ode2 ode2(s2, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
   test_cvodes_system(ode2, y0, theta, ts);
 
-  using Ode3 = pk_cvodes_fwd_system<F, double, var, var, CV_BDF>;
-  cvodes_service<typename Ode3::Ode> s3(2, 1);
+  using Ode3 = PKCvodesFwdSystem<F, double, var, var, CV_BDF>;
+  PKCvodesService<typename Ode3::Ode> s3(2, 1);
   Ode3 ode3(s3, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
   Ode3 ode4(s3, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
   test_cvodes_system(ode3, y0, theta, ts);
   test_cvodes_system(ode4, y0, theta, ts);
 }
 
-TEST_F(TorstenOdeTest_chem, pk_cvodes_system) {
-  using torsten::dsolve::pk_cvodes_system;
-  using torsten::dsolve::pk_cvodes_fwd_system;
-  using torsten::dsolve::cvodes_service;
+TEST_F(TorstenOdeTest_chem, PKCvodesSystem) {
+  using torsten::dsolve::PKCvodesSystem;
+  using torsten::dsolve::PKCvodesFwdSystem;
+  using torsten::dsolve::PKCvodesService;
   using stan::math::var;
   using stan::math::to_var;
 
   std::vector<stan::math::var> theta_var{to_var(theta)};
   std::vector<stan::math::var> y0_var{to_var(y0)};
 
-  using Ode1 = pk_cvodes_fwd_system<F, double, double, double, CV_ADAMS>;
+  using Ode1 = PKCvodesFwdSystem<F, double, double, double, CV_ADAMS>;
   
-  cvodes_service<typename Ode1::Ode> s1(3, 3);
+  PKCvodesService<typename Ode1::Ode> s1(3, 3);
   Ode1 ode1(s1, f, t0, ts, y0, theta, x_r, x_i, msgs);
   test_cvodes_system(ode1, y0, theta, ts);
 
-  using Ode2 = pk_cvodes_fwd_system<F, double, var, double, CV_BDF>;
+  using Ode2 = PKCvodesFwdSystem<F, double, var, double, CV_BDF>;
   
-  cvodes_service<typename Ode2::Ode> s2(3, 3);
+  PKCvodesService<typename Ode2::Ode> s2(3, 3);
   Ode2 ode2(s2, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
   test_cvodes_system(ode2, y0, theta, ts);
 }
 
-TEST_F(TorstenOdeTest_lorenz, pk_cvodes_system) {
-  using torsten::dsolve::pk_cvodes_system;
-  using torsten::dsolve::pk_cvodes_fwd_system;
-  using torsten::dsolve::cvodes_service;
+TEST_F(TorstenOdeTest_lorenz, PKCvodesSystem) {
+  using torsten::dsolve::PKCvodesSystem;
+  using torsten::dsolve::PKCvodesFwdSystem;
+  using torsten::dsolve::PKCvodesService;
   using stan::math::var;
   using stan::math::to_var;
 
   std::vector<stan::math::var> theta_var{to_var(theta)};
   std::vector<stan::math::var> y0_var{to_var(y0)};
 
-  using Ode1 = pk_cvodes_fwd_system<F, double, double, double, CV_ADAMS>;
+  using Ode1 = PKCvodesFwdSystem<F, double, double, double, CV_ADAMS>;
   
-  cvodes_service<typename Ode1::Ode> s1(3, 3);
+  PKCvodesService<typename Ode1::Ode> s1(3, 3);
   Ode1 ode1(s1, f, t0, ts, y0, theta, x_r, x_i, msgs);
   test_cvodes_system(ode1, y0, theta, ts);
 
-  using Ode2 = pk_cvodes_fwd_system<F, double, var, double, CV_BDF>;
+  using Ode2 = PKCvodesFwdSystem<F, double, var, double, CV_BDF>;
   
-  cvodes_service<typename Ode2::Ode> s2(3, 3);
+  PKCvodesService<typename Ode2::Ode> s2(3, 3);
   Ode2 ode2(s2, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
   test_cvodes_system(ode2, y0, theta, ts);
 }
 
 TEST_F(TorstenOdeTest_sho, cvodes_constructor_errors) {
-  using torsten::dsolve::pk_cvodes_fwd_system;
-  using torsten::dsolve::cvodes_service;
+  using torsten::dsolve::PKCvodesFwdSystem;
+  using torsten::dsolve::PKCvodesService;
   using stan::math::var;
   using stan::math::to_var;
 
-  using Ode1 = pk_cvodes_fwd_system<F, double, double, double, CV_ADAMS>;
-  using Ode2 = pk_cvodes_fwd_system<F, double, var, var, CV_ADAMS>;
+  using Ode1 = PKCvodesFwdSystem<F, double, double, double, CV_ADAMS>;
+  using Ode2 = PKCvodesFwdSystem<F, double, var, var, CV_ADAMS>;
   
-  cvodes_service<typename Ode1::Ode> s1(2, 1);
-  cvodes_service<typename Ode2::Ode> s2(2, 1);
+  PKCvodesService<typename Ode1::Ode> s1(2, 1);
+  PKCvodesService<typename Ode2::Ode> s2(2, 1);
 
   std::vector<double> bad_dbl{y0};
   bad_dbl[0] = std::numeric_limits<double>::infinity();

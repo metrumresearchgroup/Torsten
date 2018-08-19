@@ -38,12 +38,12 @@ namespace torsten {
      */
     template <typename F, typename Tts,
               typename Ty0, typename Tpar, int Lmm>
-    class pk_cvodes_system {
+    class PKCvodesSystem {
     public:
-      using Ode = pk_cvodes_system<F, Tts, Ty0, Tpar, Lmm>;
+      using Ode = PKCvodesSystem<F, Tts, Ty0, Tpar, Lmm>;
 
     protected:
-      cvodes_service<Ode>& serv_;
+      PKCvodesService<Ode>& serv_;
       const F& f_;
       const double t0_;
       const std::vector<Tts>& ts_;
@@ -90,7 +90,7 @@ namespace torsten {
        * @param[in] x_i integer data vector for the ODE.
        * @param[in] msgs stream to which messages are printed.
        */
-      pk_cvodes_system(cvodes_service<Ode>& serv,
+      PKCvodesSystem(PKCvodesService<Ode>& serv,
                        const F& f,
                        double t0,
                        const std::vector<Tts>& ts,
@@ -130,7 +130,7 @@ namespace torsten {
         auto t0_data = stan::math::value_of(t0);
         auto ts_data = stan::math::value_of(ts);
         
-        static const char* caller = "pk_cvodes_system";
+        static const char* caller = "PKCvodesSystem";
         stan::math::check_finite(caller, "initial time", t0_data);
         stan::math::check_finite(caller, "times", ts_data);
         stan::math::check_ordered(caller, "times", ts_data);
@@ -159,9 +159,9 @@ namespace torsten {
 
       /**
        * destructor is empty as all CVODES resources are
-       * handled by @c cvodes_service
+       * handled by @c PKCvodesService
        */
-      ~pk_cvodes_system() {
+      ~PKCvodesSystem() {
       }
 
       /**
@@ -283,7 +283,7 @@ namespace torsten {
        * return a closure for CVODES residual callback using a non-capture lambda
        */
       static CVRhsFn rhs() {
-        return cvodes_rhs<pk_cvodes_system<F, Tts, Ty0, Tpar, Lmm>>();
+        return cvodes_rhs<PKCvodesSystem<F, Tts, Ty0, Tpar, Lmm>>();
       }
     };
 

@@ -18,7 +18,7 @@ namespace dsolve {
 /**
  * CVODES ODE integrator.
  */
-  class pk_cvodes_integrator {
+  class PKCvodesIntegrator {
     const double rtol_;
     const double atol_;
     const int64_t max_num_steps_;
@@ -37,22 +37,22 @@ namespace dsolve {
     // }
 
     template <typename F, int Lmm>
-    void solve(pk_cvodes_fwd_system<F, double, double, double, Lmm>& ode,
+    void solve(PKCvodesFwdSystem<F, double, double, double, Lmm>& ode,
                std::vector<std::vector<double> >& res_y);
 
     template <typename F, int Lmm>
-    void solve(pk_cvodes_fwd_system<F, stan::math::var,
+    void solve(PKCvodesFwdSystem<F, stan::math::var,
                double, double, Lmm>& ode,
                std::vector<std::vector<stan::math::var> >& res_y);
 
     template <typename F, typename Ty0, typename Tpar, int Lmm>
-    void solve(pk_cvodes_fwd_system<F,
+    void solve(PKCvodesFwdSystem<F,
                double, Ty0, Tpar, Lmm>& ode,
                std::vector<
                std::vector<stan::math::var> >& res_y);
 
     template <typename F, typename Ty0, typename Tpar, int Lmm>
-    void solve(pk_cvodes_fwd_system<F, stan::math::var,
+    void solve(PKCvodesFwdSystem<F, stan::math::var,
                Ty0, Tpar, Lmm>& ode,
                std::vector<
                std::vector<stan::math::var> >& res_y);
@@ -68,7 +68,7 @@ namespace dsolve {
      * @param[in] atol absolute tolerance
      * @param[in] max_num_steps max nb. of times steps
      */
-    pk_cvodes_integrator(const double rtol, const double atol,
+    PKCvodesIntegrator(const double rtol, const double atol,
                          const int64_t max_num_steps = CVODES_MAX_STEPS)
       : rtol_(rtol), atol_(atol), max_num_steps_(max_num_steps) {
       using stan::math::invalid_argument;
@@ -168,7 +168,7 @@ namespace dsolve {
    * @param[out] res_y ODE solutions
    */
   template <typename F, int Lmm>
-  void pk_cvodes_integrator::solve(pk_cvodes_fwd_system<F, double,
+  void PKCvodesIntegrator::solve(PKCvodesFwdSystem<F, double,
                                    double, double, Lmm>& ode,
                                    std::vector<std::vector<double> >& res_y) {
     double t1 = ode.t0();
@@ -196,7 +196,7 @@ namespace dsolve {
    * @param[out] res_y ODE solutions
    */
   template <typename F, int Lmm>
-  void pk_cvodes_integrator::solve(pk_cvodes_fwd_system<F,
+  void PKCvodesIntegrator::solve(PKCvodesFwdSystem<F,
                                    stan::math::var, double, double, Lmm>& ode,
                                    std::vector<
                                    std::vector<stan::math::var> >& res_y) {
@@ -237,7 +237,7 @@ namespace dsolve {
    * @param[out] res_y ODE solutions
    */
   template <typename F, typename Ty0, typename Tpar, int Lmm>
-  void pk_cvodes_integrator::solve(pk_cvodes_fwd_system<F,
+  void PKCvodesIntegrator::solve(PKCvodesFwdSystem<F,
                                    double, Ty0, Tpar, Lmm>& ode,
                                    std::vector<
                                    std::vector<stan::math::var> >& res_y) {
@@ -277,7 +277,7 @@ namespace dsolve {
    * @param[out] res_y ODE solutions
    */
   template <typename F, typename Ty0, typename Tpar, int Lmm>
-  void pk_cvodes_integrator::solve(pk_cvodes_fwd_system<F,
+  void PKCvodesIntegrator::solve(PKCvodesFwdSystem<F,
                                    stan::math::var,
                                    Ty0, Tpar, Lmm>& ode,
                                    std::vector<

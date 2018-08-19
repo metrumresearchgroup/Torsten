@@ -23,16 +23,16 @@ namespace dsolve {
                          double rtol = 1e-10,
                          double atol = 1e-10,
                          long int max_num_step = 1e6) {  // NOLINT(runtime/int)
-    using torsten::dsolve::pk_cvodes_fwd_system;
-    using torsten::dsolve::pk_cvodes_integrator;
-    using Ode = pk_cvodes_fwd_system<F, Tt, T_initial, T_param, CV_ADAMS>;
+    using torsten::dsolve::PKCvodesFwdSystem;
+    using torsten::dsolve::PKCvodesIntegrator;
+    using Ode = PKCvodesFwdSystem<F, Tt, T_initial, T_param, CV_ADAMS>;
     const int n = y0.size();
     const int m = theta.size();
 
-    static cvodes_service<typename Ode::Ode> serv(n, m);
+    static PKCvodesService<typename Ode::Ode> serv(n, m);
 
     Ode ode{serv, f, t0, ts, y0, theta, x_r, x_i, msgs};
-    pk_cvodes_integrator solver(rtol, atol, max_num_step);
+    PKCvodesIntegrator solver(rtol, atol, max_num_step);
     return solver.integrate(ode);
 }
 

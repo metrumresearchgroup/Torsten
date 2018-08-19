@@ -25,10 +25,10 @@ namespace torsten {
      * @tparam Tpar type of parameters.
      */
     template <typename F, typename Tts, typename Ty0, typename Tpar, int Lmm>
-    class pk_cvodes_fwd_system :
-      public pk_cvodes_system<F, Tts, Ty0, Tpar, Lmm> {
+    class PKCvodesFwdSystem :
+      public PKCvodesSystem<F, Tts, Ty0, Tpar, Lmm> {
     public:
-      using Ode = pk_cvodes_system<F, Tts, Ty0, Tpar, Lmm>;
+      using Ode = PKCvodesSystem<F, Tts, Ty0, Tpar, Lmm>;
     private:
       N_Vector* nv_ys_;
       std::vector<std::complex<double> >& yy_cplx_;
@@ -45,7 +45,7 @@ namespace torsten {
        * @param[in] x_i integer data vector for the ODE
        * @param[in] msgs stream to which messages are printed
        */
-      pk_cvodes_fwd_system(cvodes_service<Ode>& serv,
+      PKCvodesFwdSystem(PKCvodesService<Ode>& serv,
                            const F& f,
                            double t0,
                            const std::vector<Tts>& ts,
@@ -63,9 +63,9 @@ namespace torsten {
 
       /**
        * Dummy destructor. Deallocation of CVODES memory is done
-       * in @c cvodes_service.
+       * in @c PKCvodesService.
        */
-      ~pk_cvodes_fwd_system() {
+      ~PKCvodesFwdSystem() {
       }
 
       /**
@@ -82,7 +82,7 @@ namespace torsten {
 
       /**
        * Calculate sensitivity rhs using CVODES vectors. The
-       * internal workspace is allocated by @c cvodes_service.
+       * internal workspace is allocated by @c PKCvodesService.
        * We use CSDA to compute senstivity, so we need to
        * generate complex version of parameters.
        */
@@ -91,7 +91,7 @@ namespace torsten {
                          N_Vector temp1, N_Vector temp2) {
         using std::complex;
         using cplx = complex<double>;
-        using B = pk_cvodes_system<F, Tts, Ty0, Tpar, Lmm>;
+        using B = PKCvodesSystem<F, Tts, Ty0, Tpar, Lmm>;
         const int n = B::N_;
         const double h = 1.E-20;
         for (int i = 0; i < ns; ++i) {
@@ -133,7 +133,7 @@ namespace torsten {
        * forward sensitivity, this is already assumed to be true.
        */
       static CVSensRhsFn sens_rhs() {
-        return cvodes_sens_rhs<pk_cvodes_fwd_system<F, Tts, Ty0, Tpar, Lmm> >();
+        return cvodes_sens_rhs<PKCvodesFwdSystem<F, Tts, Ty0, Tpar, Lmm> >();
       }
     };
 

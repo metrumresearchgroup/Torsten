@@ -22,7 +22,7 @@ namespace torsten {
      * service by injection.
      */
     template <typename Ode>
-    struct cvodes_service {
+    struct PKCvodesService {
       const size_t N;
       const size_t M;
       const size_t ns;
@@ -44,7 +44,7 @@ namespace torsten {
        * @param[in] m length of parameter theta
        * @param[in] f ODE RHS function
        */
-      cvodes_service(int n, int m) :
+      PKCvodesService(int n, int m) :
         N(n),
         M(m),
         ns((Ode::is_var_y0 ? n : 0) + (Ode::is_var_par ? m : 0)),
@@ -77,7 +77,7 @@ namespace torsten {
         CHECK_SUNDIALS_CALL(CVDlsSetLinearSolver(mem, LS, A));
       }
 
-      ~cvodes_service() {
+      ~PKCvodesService() {
         SUNLinSolFree(LS);
         SUNMatDestroy(A);
         N_VDestroy(nv_y);
