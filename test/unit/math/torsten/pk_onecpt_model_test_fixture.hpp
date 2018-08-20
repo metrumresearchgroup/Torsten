@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 #include <boost/numeric/odeint.hpp>
 #include <stan/math/torsten/pk_onecpt_model.hpp>
+#include <stan/math/torsten/pk_onecpt_solver.hpp>
 #include <stan/math/torsten/pk_ode_model.hpp>
 #include <stan/math/torsten/pk_rate_adaptor.hpp>
 #include <iostream>
@@ -13,8 +14,8 @@
 #include <string>
 
 struct TorstenOneCptModelTest : public testing::Test {
-  const double t0;
-  const std::vector<double> ts;
+  double t0;
+  std::vector<double> ts;
   Eigen::Matrix<double, 1, Eigen::Dynamic> y0;
   std::vector<double> rate;
   double CL;
