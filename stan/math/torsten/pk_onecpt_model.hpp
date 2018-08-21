@@ -25,14 +25,14 @@ namespace refactor {
    */
     template <typename T0, typename T1, typename T2, typename T3>
     inline
-    std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
+    std::vector<typename stan::return_type<T0, T1, T2, T3>::type>
     operator()(const T0& t,
                const std::vector<T1>& x,
                const std::vector<T2>& parms,
                const std::vector<T3>& rate,
                const std::vector<int>& dummy,
                std::ostream* pstream__) const {
-      typedef typename boost::math::tools::promote_args<T0, T1, T2, T3>::type scalar;
+      typedef typename stan::return_type<T0, T1, T2, T3>::type scalar;
 
       scalar CL = parms[0], V1 = parms[1], ka = parms[2], k10 = CL / V1;
       std::vector<scalar> y(2, 0);

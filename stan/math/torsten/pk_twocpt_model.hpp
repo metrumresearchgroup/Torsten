@@ -25,13 +25,13 @@ namespace refactor {
    */
     template <typename T0, typename T1, typename T2, typename T3>
     inline
-    std::vector<typename boost::math::tools::promote_args<T0, T1, T2, T3>::type>
+    std::vector<typename stan::return_type<T0, T1, T2, T3>::type>
     operator()(const T0& t,
                const std::vector<T1>& x,
                const std::vector<T2>& parms,
                const std::vector<T3>& rate,
                const std::vector<int>& dummy, std::ostream* pstream__) const {
-      typedef typename boost::math::tools::promote_args<T0, T1, T2, T3>::type scalar;
+      typedef typename stan::return_type<T0, T1, T2, T3>::type scalar;
 
       scalar
         CL = parms[0],
@@ -81,7 +81,7 @@ namespace refactor {
   public:
     static constexpr int Ncmt = 3;
     static constexpr int Npar = 5;
-    static constexpr PKTwoCptODE f_ = PKTwoCptODE();    // can be solved by gen ode solver
+    static constexpr PKTwoCptODE f_ = PKTwoCptODE();
 
     using scalar_type = typename promote_args<T_time, T_rate, T_par, T_init>::type;
     using aug_par_type = typename promote_args<T_rate, T_par, T_init>::type;
@@ -104,7 +104,8 @@ namespace refactor {
    * @param V3 peri cpt vol
    * @param ka absorption
    */
-    PKTwoCptModel(const T_time& t0, const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& y0,
+    PKTwoCptModel(const T_time& t0,
+                  const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& y0,
                   const std::vector<T_rate> &rate,
                   const T_par& CL,
                   const T_par& Q,
