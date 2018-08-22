@@ -2,6 +2,8 @@
 #define STAN_MATH_TORSTEN_TWOCPT_MODEL_HPP
 
 #include <stan/math/torsten/torsten_def.hpp>
+#include <stan/math/prim/scal/err/check_positive.hpp>
+#include <stan/math/prim/scal/err/check_finite.hpp>
 
 namespace refactor {
 
@@ -34,19 +36,19 @@ namespace refactor {
       typedef typename stan::return_type<T0, T1, T2, T3>::type scalar;
 
       scalar
-        CL = parms[0],
-        Q = parms[1],
-        V1 = parms[2],
-        V2 = parms[3],
-        ka = parms[4],
+        CL = parms.at(0),
+        Q = parms.at(1),
+        V1 = parms.at(2),
+        V2 = parms.at(3),
+        ka = parms.at(4),
         k10 = CL / V1,
         k12 = Q / V1,
         k21 = Q / V2;
 
       std::vector<scalar> y(3, 0);
-      y[0] = -ka * x[0];
-      y[1] = ka * x[0] - (k10 + k12) * x[1] + k21 * x[2];
-      y[2] = k12 * x[1] - k21 * x[2];
+      y.at(0) = -ka * x.at(0);
+      y.at(1) = ka * x.at(0) - (k10 + k12) * x.at(1) + k21 * x.at(2);
+      y.at(2) = k12 * x.at(1) - k21 * x.at(2);
 
       return y;
     }
@@ -77,6 +79,7 @@ namespace refactor {
     const T_par k21_;
     const T_par ksum_;
     const std::vector<T_par> alpha_;
+    const std::vector<T_par> par_;
 
   public:
     static constexpr int Ncmt = 3;
@@ -126,8 +129,17 @@ namespace refactor {
       ksum_(k10_ + k12_ + k21_),
       alpha_{0.5 * (ksum_ + sqrt(ksum_ * ksum_ - 4 * k10_ * k21_)),
         0.5 * (ksum_ - sqrt(ksum_ * ksum_ - 4 * k10_ * k21_)),
-        ka_}
-    {}
+        ka_},
+      par_{CL_, Q_, V2_, V3_, ka_}
+    {
+      using stan::math::check_positive;
+      const char* fun = "PKTwoCptModel";
+      check_positive(fun, "CL", CL_);
+      check_positive(fun, "Q", Q_);
+      check_positive(fun, "V2", V2_);
+      check_positive(fun, "V3", V3_);
+      check_positive(fun, "ka", ka_);
+    }
 
   /**
    * two-Compartment PK model constructor
@@ -179,7 +191,7 @@ namespace refactor {
     const T_par               & k10()     const { return k10_;   }
     const T_par               & k12()     const { return k12_;   }
     const T_par               & k21()     const { return k21_;   }
-    const std::vector<T_par>    par()     const { return {CL_, Q_, V2_, V3_, ka_}; }
+    const std::vector<T_par>  & par()     const { return par_;   }
     const std::vector<T_par>  & alpha()   const { return alpha_; }
     const PKTwoCptODE         & f()       const { return f_;     }
     const int                 & ncmt ()   const { return Ncmt;   }

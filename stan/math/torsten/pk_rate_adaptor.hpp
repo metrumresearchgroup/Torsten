@@ -12,16 +12,16 @@ namespace refactor {
   using refactor::PKODEModel;
 
   template<typename F, typename T_rate, typename T_par>
-  struct PKODEFunctorRateAdaptor;
+  struct PKOdeFunctorRateAdaptor;
 
   /*
    * Adaptor for ODE functor when rate is data. In this
    * case rate should be passed in by @c x_r.
    */
   template<typename F, typename T_par>  
-  struct PKODEFunctorRateAdaptor<F, double, T_par> {
+  struct PKOdeFunctorRateAdaptor<F, double, T_par> {
     const F& f;
-    PKODEFunctorRateAdaptor(const F& f0) : f(f0) {}
+    PKOdeFunctorRateAdaptor(const F& f0) : f(f0) {}
 
     template <typename T0, typename T1, typename T2>
     inline std::vector<typename stan::return_type<T1, T2>::type>
@@ -47,10 +47,10 @@ namespace refactor {
    * theta is always a @c var vector.
    */
   template<typename F>  
-  struct PKODEFunctorRateAdaptor<F, stan::math::var, stan::math::var> {
+  struct PKOdeFunctorRateAdaptor<F, stan::math::var, stan::math::var> {
     const F& f;
     const int index_rate;
-    PKODEFunctorRateAdaptor(const F& f0, int i) : f(f0), index_rate(i) {}
+    PKOdeFunctorRateAdaptor(const F& f0, int i) : f(f0), index_rate(i) {}
 
     template <typename T0, typename T1, typename T2>
     inline std::vector<typename stan::return_type<T1, T2>::type>
@@ -73,18 +73,18 @@ namespace refactor {
   template<typename T_model>
   class PKODERateAdaptor {
   public:
-    using T_time = typename T_model::time_type;
-    using T_init = typename T_model::init_type;
-    using T_rate = typename T_model::rate_type;
-    using T_par  = typename T_model::par_type;
-    using F      = typename T_model::f_type;
+    using time_type   = typename T_model::time_type;
+    using init_type   = typename T_model::init_type;
+    using rate_type   = typename T_model::rate_type;
+    using par_type    = typename T_model::par_type;
+    using scalar_type = typename T_model::scalar_type;
+    using f_type      = typename T_model::f_type;
 
   private:
-    const std::vector<double> x_r_;
-    const PKODEFunctorRateAdaptor<F, T_rate, T_par> f_;
-    std::vector<typename stan::return_type<T_rate, T_par>::type> theta_;
-    const PKODEModel<T_time, T_init, double, T_par,
-                     PKODEFunctorRateAdaptor<F, T_rate, T_par>, int> model_;
+    const PKOdeFunctorRateAdaptor<f_type, rate_type, par_type> f_;
+    std::vector<typename stan::return_type<rate_type, par_type>::type> theta_;
+    const PKODEModel<time_type, init_type, rate_type, par_type,
+                     PKOdeFunctorRateAdaptor<f_type, rate_type, par_type>, int> model_;
 
 
   public:
@@ -106,7 +106,7 @@ namespace refactor {
       theta_(pkmodel.par().size() + pkmodel.rate().size()),
       model_(pkmodel.t0(),
              pkmodel.y0(),
-             x_r_,
+             pkmodel.rate(),
              theta_, f_,
              pkmodel.ncmt())
     {
@@ -116,10 +116,16 @@ namespace refactor {
       for (size_t i = 0; i < rate.size(); ++i) theta_[i + par.size()] = rate[i];
     }
 
-    const auto& model() {
-      return model_;
-    }
-  };
+    /* a rate adaptor can be used as an ODE model, as long
+     * as it has the following methods.
+     */
+    const time_type             & t0()       const { return model_.t0(); }
+    const PKRec<init_type>      & y0()       const { return model_.y0(); }
+    const auto                  & rate()     const { return model_.rate(); }
+    const std::vector<par_type> & par()      const { return model_.par(); }
+    const auto                  & f ()       const { return model_.f(); }
+    const int                   & ncmt ()    const { return model_.ncmt(); }
+   };
 
   // /*
   //  * Adaptor for a model that has @c var type rate
@@ -130,20 +136,20 @@ namespace refactor {
   // class PKODERateAdaptor {
   //   using T_time = typename T_model::time_type;
   //   using T_init = typename T_model::init_type;
-  //   using T_rate = typename T_model::rate_type;
-  //   using T_par  = typename T_model::par_type;
-  //   using F      = typename T_model::f_type;
-  //   using par_type = typename promote_args<T_par, T_rate>::type;
-  //   using FA = torsten::ode_rate_var_functor<torsten::general_functor<F> >;
+  //   using rate_type = typename T_model::rate_type;
+  //   using par_type  = typename T_model::par_type;
+  //   using f_type      = typename T_model::f_type;
+  //   using par_type = typename promote_args<par_type, rate_type>::type;
+  //   using FA = torsten::ode_rate_var_functor<torsten::general_functor<f_type> >;
 
   //   const std::vector<double> dummy_;
   //   const FA f_;
   //   const std::vector<par_type> theta_;
-  //   const PKODEModel<T_time, T_init, double, par_type, FA, int> model_;
+  //   const PKODEModel<T_time, T_init, double, par_type, f_typeA, int> model_;
     
   //   std::vector<par_type>
-  //   concat_par_rate(const std::vector<T_par> & par,
-  //                   const std::vector<T_rate> & rate) {
+  //   concat_par_rate(const std::vector<par_type> & par,
+  //                   const std::vector<rate_type> & rate) {
   //     const size_t n = par.size();
   //     std::vector<par_type> theta(n + rate.size());
   //     for (size_t i = 0; i < n; i++) theta[i] = par[i];
@@ -169,14 +175,14 @@ namespace refactor {
   //   }
   // };
       
-  // template<typename T_time, typename T_init, typename T_par, typename F>
-  // class PKODERateAdaptor<PKODEModel<T_time, T_init, double, T_par, F, int>> {
+  // template<typename T_time, typename T_init, typename par_type, typename F>
+  // class PKODERateAdaptor<PKODEModel<T_time, T_init, double, par_type, F, int>> {
   //   using FA = torsten::ode_rate_dbl_functor<torsten::general_functor<F> >;
   //   const torsten::ode_rate_dbl_functor<torsten::general_functor<F> > f_;
-  //   const PKODEModel<T_time, T_init, double, T_par, FA, int> model_;
+  //   const PKODEModel<T_time, T_init, double, par_type, FA, int> model_;
   // public:
   //   PKODERateAdaptor(const PKODEModel<T_time,
-  //                    T_init, double, T_par, F, int> & pkmodel) :
+  //                    T_init, double, par_type, F, int> & pkmodel) :
   //     f_(torsten::general_functor<F>(pkmodel.rhs_fun())),
   //     model_(pkmodel.t0(),
   //            pkmodel.y0(),
@@ -185,7 +191,7 @@ namespace refactor {
   //            pkmodel.ncmt())
   //   {}
 
-  //   const PKODEModel<T_time, T_init, double, T_par, FA, int>& model() {
+  //   const PKODEModel<T_time, T_init, double, par_type, FA, int>& model() {
   //     return model_;
   //   }
   // };

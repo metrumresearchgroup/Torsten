@@ -34,11 +34,11 @@ namespace refactor {
                std::ostream* pstream__) const {
       typedef typename stan::return_type<T0, T1, T2, T3>::type scalar;
 
-      scalar CL = parms[0], V1 = parms[1], ka = parms[2], k10 = CL / V1;
+      scalar CL = parms.at(0), V1 = parms.at(1), ka = parms.at(2), k10 = CL / V1;
       std::vector<scalar> y(2, 0);
 
-      y[0] = -ka * x[0];
-      y[1] = ka * x[0] - k10 * x[1];
+      y.at(0) = -ka * x.at(0);
+      y.at(1) = ka * x.at(0) - k10 * x.at(1);
 
       return y;
     }
@@ -64,6 +64,7 @@ namespace refactor {
     const T_par &ka_;
     const T_par k10_;
     const std::vector<T_par> alpha_;
+    const std::vector<T_par> par_;
 
   public:
     static constexpr int Ncmt = 2;
@@ -102,7 +103,8 @@ namespace refactor {
       V2_(V2),
       ka_(ka),
       k10_(CL / V2),
-      alpha_{k10_, ka_}
+      alpha_{k10_, ka_},
+      par_{CL_, V2_, ka_}
     {}
 
   /**
@@ -123,7 +125,7 @@ namespace refactor {
                   const std::vector<T_rate> &rate,
                   const std::vector<T_par> & par,
                   const T_mp<Ts...> &parameter) :
-      PKOneCptModel(t0, y0, rate, par[0], par[1], par[2])
+      PKOneCptModel(t0, y0, rate, par.at(0), par.at(1), par.at(2))
     {}
 
   /**
@@ -138,7 +140,7 @@ namespace refactor {
                   const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& y0,
                   const std::vector<T_rate> &rate,
                   const std::vector<T_par> & par) :
-      PKOneCptModel(t0, y0, rate, par[0], par[1], par[2])
+      PKOneCptModel(t0, y0, rate, par.at(0), par.at(1), par.at(2))
     {}
 
   /**
@@ -152,7 +154,7 @@ namespace refactor {
     const T_par               & ka()      const { return ka_;    }
     const T_par               & k10()     const { return k10_;   }
     const std::vector<T_par>  & alpha()   const { return alpha_; }
-    const std::vector<T_par>    par()     const { return {CL_, V2_, ka_}; }
+    const std::vector<T_par>  & par()     const { return par_;   }
     const PKOneCptODE         & f()       const { return f_;     }
     const int                 & ncmt ()   const { return Ncmt;   }
 

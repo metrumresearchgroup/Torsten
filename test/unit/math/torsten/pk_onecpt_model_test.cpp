@@ -21,7 +21,7 @@ TEST_F(TorstenOneCptModelTest, rate_dbl) {
   PKODERateAdaptor<model_t> rate_adaptor(model);
 
   std::vector<double> y =
-    rate_adaptor.model().f()(t0, yvec, model.par(), rate, x_i, msgs);
+    rate_adaptor.f()(t0, yvec, model.par(), rate, x_i, msgs);
   EXPECT_FLOAT_EQ(y[0], rate[0]);
   EXPECT_FLOAT_EQ(y[1], rate[1]);
 }
@@ -44,8 +44,8 @@ TEST_F(TorstenOneCptModelTest, rate_dbl_y0) {
   PKODERateAdaptor<model_t> rate_adaptor(model);
 
   std::vector<double> y =
-    rate_adaptor.model().f()(t0, yvec, model.par(),
-                             rate_adaptor.model().rate(), x_i, msgs);
+    rate_adaptor.f()(t0, yvec, model.par(),
+                             rate_adaptor.rate(), x_i, msgs);
   EXPECT_FLOAT_EQ(y[0], -ka * y0[0] + rate[0]);
   EXPECT_FLOAT_EQ(y[1], ka * y0[0] - model.k10() * y0[1] + rate[1]);
 }
@@ -69,10 +69,10 @@ TEST_F(TorstenOneCptModelTest, rate_var) {
   std::vector<double> yvec(y0.data(), y0.data() + y0.size());
   PKODERateAdaptor<model_t> rate_adaptor(model);
 
-  EXPECT_EQ(rate_adaptor.model().par().size(),
+  EXPECT_EQ(rate_adaptor.par().size(),
             model.par().size() + model.rate().size());
   std::vector<var> y =
-    rate_adaptor.model().f()(t0, yvec, rate_adaptor.model().par(),
+    rate_adaptor.f()(t0, yvec, rate_adaptor.par(),
                              x_r, x_i, msgs);
   EXPECT_FLOAT_EQ(y[0].val(), rate[0]);
   EXPECT_FLOAT_EQ(y[1].val(), rate[1]);
@@ -100,7 +100,7 @@ TEST_F(TorstenOneCptModelTest, rate_var_y0) {
   PKODERateAdaptor<model_t> rate_adaptor(model);
 
   std::vector<var> y =
-    rate_adaptor.model().f()(t0, yvec, rate_adaptor.model().par(),
+    rate_adaptor.f()(t0, yvec, rate_adaptor.par(),
                              x_r, x_i, msgs);
   EXPECT_FLOAT_EQ(y[0].val(), -ka * y0[0] + rate[0]);
   EXPECT_FLOAT_EQ(y[1].val(), ka * y0[0] - model.k10().val() * y0[1] + rate[1]);
@@ -131,9 +131,9 @@ TEST_F(TorstenOneCptModelTest, onecpt_solver) {
   std::vector<double> yvec(y0.data(), y0.data() + y0.size());
   PKODERateAdaptor<model_t> rate_adaptor(model);
 
-  auto y1 = pk_integrate_ode_bdf(rate_adaptor.model().f(),
+  auto y1 = pk_integrate_ode_bdf(rate_adaptor.f(),
                                  yvec, t0, ts,
-                                 rate_adaptor.model().par(),
+                                 rate_adaptor.par(),
                                  x_r, x_i, msgs);
   auto y2 = PKOneCptModelSolver::solve(model, ts[0]);
   EXPECT_FLOAT_EQ(y1[0][0].val(), y2(0).val());
