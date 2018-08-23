@@ -64,13 +64,6 @@ namespace refactor {
     const std::vector<T_par> & par_;
 
   public:
-    using scalar_type = typename promote_args<T_time, T_rate, T_par, T_init>::type;
-    using init_type   = T_init;
-    using time_type   = T_time;
-    using par_type    = T_par;
-    using rate_type   = T_rate;
-    using f_type      = PKLinODE;
-
     static constexpr PKLinODE f_ = PKLinODE();
 
   /**

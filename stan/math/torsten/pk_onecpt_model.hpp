@@ -71,14 +71,6 @@ namespace refactor {
     static constexpr int Npar = 3;
     static constexpr PKOneCptODE f_ = PKOneCptODE();
 
-    using scalar_type = typename promote_args<T_time, T_rate, T_par, T_init>::type;
-    using aug_par_type = typename promote_args<T_rate, T_par, T_init>::type;
-    using init_type   = T_init;
-    using time_type   = T_time;
-    using par_type    = T_par;
-    using rate_type   = T_rate;
-    using f_type      = PKOneCptODE;
-
   /**
    * One-compartment PK model constructor
    *
@@ -170,49 +162,49 @@ namespace refactor {
   constexpr PKOneCptODE PKOneCptModel<T_time, T_init, T_rate, T_par>::f_;
 
 
-  /**
-   * Barebone definition of a one-cpt model requires only a
-   * vector of parameters. Sometimes this is enough.
-   *
-   * @tparam T_par parameter type
-   */
-  template<typename T_par>
-  class PKOneCptModelParameters {
-    const T_par &CL_;
-    const T_par &V2_;
-    const T_par &ka_;
-    const T_par k10_;
-    const std::vector<T_par> alpha_;    
-  public:
-    static constexpr int Ncmt = 2;
-    static constexpr int Npar = 3;
-    using scalar_type = T_par;
-    using par_type    = T_par;
-  /**
-   * Constructor
-   * @tparam par parameter vector of size three.
-   */
-    PKOneCptModelParameters(const std::vector<T_par> & par) :
-      CL_(par[0]),
-      V2_(par[1]),
-      ka_(par[2]),
-      k10_(CL_ / V2_),
-      alpha_{k10_, ka_}
-    {}
-  /**
-   * Get methods
-   */
-    const T_par               & CL()      const { return CL_;    }
-    const T_par               & V2()      const { return V2_;    }
-    const T_par               & ka()      const { return ka_;    }
-    const T_par               & k10()     const { return k10_;   }
-    const std::vector<T_par>  & alpha()   const { return alpha_; }
-    const int                 & ncmt ()   const { return Ncmt;   }
-  }; 
-  template<typename T_par>
-  constexpr int PKOneCptModelParameters<T_par>::Ncmt;
-  template<typename T_par>
-  constexpr int PKOneCptModelParameters<T_par>::Npar;
+//   /**
+//    * Barebone definition of a one-cpt model requires only a
+//    * vector of parameters. Sometimes this is enough.
+//    *
+//    * @tparam T_par parameter type
+//    */
+//   template<typename T_par>
+//   class PKOneCptModelParameters {
+//     const T_par &CL_;
+//     const T_par &V2_;
+//     const T_par &ka_;
+//     const T_par k10_;
+//     const std::vector<T_par> alpha_;    
+//   public:
+//     static constexpr int Ncmt = 2;
+//     static constexpr int Npar = 3;
+//     using scalar_type = T_par;
+//     using par_type    = T_par;
+//   /**
+//    * Constructor
+//    * @tparam par parameter vector of size three.
+//    */
+//     PKOneCptModelParameters(const std::vector<T_par> & par) :
+//       CL_(par[0]),
+//       V2_(par[1]),
+//       ka_(par[2]),
+//       k10_(CL_ / V2_),
+//       alpha_{k10_, ka_}
+//     {}
+//   /**
+//    * Get methods
+//    */
+//     const T_par               & CL()      const { return CL_;    }
+//     const T_par               & V2()      const { return V2_;    }
+//     const T_par               & ka()      const { return ka_;    }
+//     const T_par               & k10()     const { return k10_;   }
+//     const std::vector<T_par>  & alpha()   const { return alpha_; }
+//     const int                 & ncmt ()   const { return Ncmt;   }
+//   }; 
+//   template<typename T_par>
+//   constexpr int PKOneCptModelParameters<T_par>::Ncmt;
+//   template<typename T_par>
+//   constexpr int PKOneCptModelParameters<T_par>::Npar;
 
 }
 

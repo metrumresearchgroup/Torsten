@@ -40,16 +40,14 @@ namespace refactor {
    * @tparam T_model ODE model type
    * @tparam Ts_par type of parameters
    */
-    template<typename T_time,
-             template <class, class... > class T_model,
-             class... Ts_par>
+    template<typename T_time, typename T_model>
     static
-    Eigen::Matrix<typename T_model<Ts_par...>::scalar_type, Eigen::Dynamic, 1> 
-    solve(const T_model<Ts_par...> &pkmodel, const T_time& dt) {
+    Eigen::Matrix<torsten::scalar_t<T_model>, Eigen::Dynamic, 1> 
+    solve(const T_model& pkmodel, const T_time& dt) {
       using Eigen::Matrix;
       using Eigen::Dynamic;
       using std::vector;
-      using scalar_type = typename T_model<Ts_par...>::scalar_type;
+      using scalar_type = torsten::scalar_t<T_model>;
 
       auto init = pkmodel.y0()   ;
       auto rate = pkmodel.rate() ;

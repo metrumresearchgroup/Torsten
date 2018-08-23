@@ -51,10 +51,10 @@ namespace refactor {
    * @return col vector of ODE solution
    */
     template<typename T_time, typename T_model,
-             typename std::enable_if_t<!stan::is_var<typename T_model::rate_type>::value>* = nullptr> // NOLINT
-    Eigen::Matrix<typename T_model::scalar_type, Eigen::Dynamic, 1> 
+             typename std::enable_if_t<!torsten::has_var_rate<T_model>::value>* = nullptr> // NOLINT
+    Eigen::Matrix<torsten::scalar_t<T_model>, Eigen::Dynamic, 1> 
     solve(const T_model &pkmodel, const T_time& dt) const {
-      using T_scalar = typename T_model::scalar_type;
+      using T_scalar = torsten::scalar_t<T_model>;
       Eigen::Matrix<T_scalar, Eigen::Dynamic, 1> res;
       auto t0 = pkmodel.t0();
       std::vector<T_time> ts{t0 + dt};
@@ -74,10 +74,10 @@ namespace refactor {
     }
 
     template<typename T_time, typename T_model,
-             typename std::enable_if_t<stan::is_var<typename T_model::rate_type>::value>* = nullptr> // NOLINT
-    Eigen::Matrix<typename T_model::scalar_type, Eigen::Dynamic, 1> 
+             typename std::enable_if_t<torsten::has_var_rate<T_model>::value>* = nullptr> // NOLINT
+    Eigen::Matrix<torsten::scalar_t<T_model>, Eigen::Dynamic, 1> 
     solve(const T_model &pkmodel, const T_time& dt) const {
-      using T_scalar = typename T_model::scalar_type;
+      using T_scalar = torsten::scalar_t<T_model>;
       Eigen::Matrix<T_scalar, Eigen::Dynamic, 1> res;
       auto t0 = pkmodel.t0();
       std::vector<T_time> ts{t0 + dt};

@@ -72,24 +72,24 @@ namespace refactor {
    */
   template<typename T_model>
   class PKODERateAdaptor {
-  public:
-    using time_type   = typename T_model::time_type;
-    using init_type   = typename T_model::init_type;
-    using rate_type   = typename T_model::rate_type;
-    using par_type    = typename T_model::par_type;
-    using scalar_type = typename T_model::scalar_type;
-    using f_type      = typename T_model::f_type;
-
   private:
-    const PKOdeFunctorRateAdaptor<f_type, rate_type, par_type> f_;
-    std::vector<typename stan::return_type<rate_type, par_type>::type> theta_;
-    const PKODEModel<time_type, init_type, rate_type, par_type,
-                     PKOdeFunctorRateAdaptor<f_type, rate_type, par_type>, int> model_;
+    const PKOdeFunctorRateAdaptor<torsten::f_t<T_model>,
+                                  torsten::rate_t<T_model>,
+                                  torsten::par_t<T_model> > f_;
+    std::vector<typename stan::return_type<
+                  torsten::rate_t<T_model>, torsten::par_t<T_model>>::type> theta_;
+    const PKODEModel<torsten::time_t<T_model>,
+                     torsten::init_t<T_model>,
+                     torsten::rate_t<T_model>,
+                     torsten::par_t<T_model>,
+                     PKOdeFunctorRateAdaptor<torsten::f_t<T_model>,
+                                             torsten::rate_t<T_model>,
+                                             torsten::par_t<T_model>>, int> model_;
 
 
   public:
     template<typename T, typename std::enable_if_t<
-                  !stan::is_var<typename T::rate_type>::value>* = nullptr>
+                           !torsten::has_var_rate<T>::value>* = nullptr>
     PKODERateAdaptor(const T & pkmodel) :
       f_(pkmodel.f()),
       model_(pkmodel.t0(),
@@ -100,7 +100,7 @@ namespace refactor {
     {}
 
     template<typename T, typename std::enable_if_t<
-                  stan::is_var<typename T::rate_type>::value>* = nullptr>
+                           torsten::has_var_rate<T>::value>* = nullptr>
     PKODERateAdaptor(const T & pkmodel) :
       f_(pkmodel.f(), pkmodel.par().size()),
       theta_(pkmodel.par().size() + pkmodel.rate().size()),
@@ -119,12 +119,12 @@ namespace refactor {
     /* a rate adaptor can be used as an ODE model, as long
      * as it has the following methods.
      */
-    const time_type             & t0()       const { return model_.t0(); }
-    const PKRec<init_type>      & y0()       const { return model_.y0(); }
-    const auto                  & rate()     const { return model_.rate(); }
-    const std::vector<par_type> & par()      const { return model_.par(); }
-    const auto                  & f ()       const { return model_.f(); }
-    const int                   & ncmt ()    const { return model_.ncmt(); }
+    const auto  & t0()       const { return model_.t0(); }
+    const auto  & y0()       const { return model_.y0(); }
+    const auto  & rate()     const { return model_.rate(); }
+    const auto  & par()      const { return model_.par(); }
+    const auto  & f ()       const { return model_.f(); }
+    const int   & ncmt ()    const { return model_.ncmt(); }
    };
 
   // /*
@@ -134,18 +134,18 @@ namespace refactor {
   //          typename std::enable_if_t<
   //            stan::math::is_var<typename T_model::rate_type>::value>* = nullptr>
   // class PKODERateAdaptor {
-  //   using T_time = typename T_model::time_type;
+  //   using T_time = typename T_model::torsten::time_t<T_model>;
   //   using T_init = typename T_model::init_type;
   //   using rate_type = typename T_model::rate_type;
   //   using par_type  = typename T_model::par_type;
-  //   using f_type      = typename T_model::f_type;
+  //   using torsten::f_t<T_model>      = typename T_model::torsten::f_t<T_model>;
   //   using par_type = typename promote_args<par_type, rate_type>::type;
-  //   using FA = torsten::ode_rate_var_functor<torsten::general_functor<f_type> >;
+  //   using FA = torsten::ode_rate_var_functor<torsten::general_functor<torsten::f_t<T_model>> >;
 
   //   const std::vector<double> dummy_;
   //   const FA f_;
   //   const std::vector<par_type> theta_;
-  //   const PKODEModel<T_time, T_init, double, par_type, f_typeA, int> model_;
+  //   const PKODEModel<T_time, T_init, double, par_type, torsten::f_t<T_model>A, int> model_;
     
   //   std::vector<par_type>
   //   concat_par_rate(const std::vector<par_type> & par,

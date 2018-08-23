@@ -24,6 +24,8 @@ TEST_F(TorstenOneCptModelTest, rate_dbl) {
     rate_adaptor.f()(t0, yvec, model.par(), rate, x_i, msgs);
   EXPECT_FLOAT_EQ(y[0], rate[0]);
   EXPECT_FLOAT_EQ(y[1], rate[1]);
+
+  EXPECT_FALSE(torsten::has_var_rate<model_t>::value);
 }
 
 TEST_F(TorstenOneCptModelTest, rate_dbl_y0) {
@@ -76,6 +78,8 @@ TEST_F(TorstenOneCptModelTest, rate_var) {
                              x_r, x_i, msgs);
   EXPECT_FLOAT_EQ(y[0].val(), rate[0]);
   EXPECT_FLOAT_EQ(y[1].val(), rate[1]);
+
+  EXPECT_TRUE(torsten::has_var_rate<model_t>::value);
 }
 
 TEST_F(TorstenOneCptModelTest, rate_var_y0) {
@@ -104,6 +108,11 @@ TEST_F(TorstenOneCptModelTest, rate_var_y0) {
                              x_r, x_i, msgs);
   EXPECT_FLOAT_EQ(y[0].val(), -ka * y0[0] + rate[0]);
   EXPECT_FLOAT_EQ(y[1].val(), ka * y0[0] - model.k10().val() * y0[1] + rate[1]);
+
+  EXPECT_TRUE(torsten::has_var_rate<model_t>::value);
+  EXPECT_FALSE(torsten::has_var_init<model_t>::value);
+  EXPECT_TRUE(torsten::has_var_par<model_t>::value);
+  EXPECT_TRUE((std::is_same<torsten::f_t<model_t>, refactor::PKOneCptODE>::value));
 }
 
 TEST_F(TorstenOneCptModelTest, onecpt_solver) {

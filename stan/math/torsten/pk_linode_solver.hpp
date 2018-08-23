@@ -26,7 +26,7 @@ namespace refactor {
    */
     template<typename T_time, typename T_model>
     static
-    Eigen::Matrix<typename T_model::scalar_type, Eigen::Dynamic, 1> 
+    Eigen::Matrix<torsten::scalar_t<T_model>, Eigen::Dynamic, 1> 
     solve(const T_model &pkmodel, const T_time& dt) {
       using Eigen::Matrix;
       using Eigen::Dynamic;
@@ -35,8 +35,7 @@ namespace refactor {
       using stan::math::mdivide_left;
       using stan::math::multiply;
       using stan::math::scale_matrix_exp_multiply;
-      using scalar_type = typename T_model::scalar_type;
-      using T_rate = typename T_model::rate_type;
+      using scalar_type = torsten::scalar_t<T_model>;
 
       auto init = pkmodel.y0()   ;
       auto rate = pkmodel.rate() ;
@@ -45,8 +44,8 @@ namespace refactor {
       Matrix<scalar_type, Dynamic, 1> y0t(nCmt);
       for (int i = 0; i < nCmt; ++i) y0t(i) = init(i);
 
-      if (std::any_of(rate.begin(), rate.end(), [](T_rate r){return r != 0;})) {
-
+      if (std::any_of(rate.begin(), rate.end(),
+                      [](torsten::rate_t<T_model> r){return r != 0;})) {
         Matrix<scalar_type, Dynamic, 1> rate_vec(rate.size()), x(nCmt), x2(nCmt);
         for (size_t i = 0; i < rate.size(); i++) rate_vec(i) = rate[i];
         x = mdivide_left(system, rate_vec);

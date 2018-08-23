@@ -25,7 +25,7 @@ TEST_F(TorstenCptOdeModelTest, general_ode_solver) {
   std::vector<double> yvec(y0.data(), y0.data() + y0.size());
   PKODERateAdaptor<model_t> adaptor(model);
 
-  Eigen::Matrix<typename model_t::scalar_type, Eigen::Dynamic, 1> y;
+  Eigen::Matrix<torsten::scalar_t<model_t>, Eigen::Dynamic, 1> y;
   std::vector<std::vector<double> > y1;
   ts[0] = 20.0;
   ts.resize(1);
@@ -75,7 +75,7 @@ TEST_F(TorstenCptOdeModelTest, general_ode_solver_y0) {
   std::vector<double> yvec(y0.data(), y0.data() + y0.size());
   PKODERateAdaptor<model_t> adaptor(model);
 
-  Eigen::Matrix<typename model_t::scalar_type, Eigen::Dynamic, 1> y;
+  Eigen::Matrix<torsten::scalar_t<model_t>, Eigen::Dynamic, 1> y;
   std::vector<std::vector<double> > y1;
   ts[0] = 20.0;
   ts.resize(1);
@@ -126,8 +126,8 @@ TEST_F(TorstenCptOdeModelTest, general_ode_solver_par_sens) {
   std::vector<double> yvec(y0.data(), y0.data() + y0.size());
   PKODERateAdaptor<model_t> adaptor(model);
 
-  Eigen::Matrix<typename model_t::scalar_type, Eigen::Dynamic, 1> y;
-  std::vector<std::vector<typename model_t::scalar_type> > y1;
+  Eigen::Matrix<torsten::scalar_t<model_t>, Eigen::Dynamic, 1> y;
+  std::vector<std::vector<torsten::scalar_t<model_t>> > y1;
   std::vector<double> g, g1;
   ts[0] = 20.0;
   ts.resize(1);
@@ -191,8 +191,8 @@ TEST_F(TorstenCptOdeModelTest, general_ode_solver_par_rate_sens) {
   std::vector<double> yvec(y0.data(), y0.data() + y0.size());
   PKODERateAdaptor<model_t> adaptor(model);
 
-  Eigen::Matrix<typename model_t::scalar_type, Eigen::Dynamic, 1> y;
-  std::vector<std::vector<typename model_t::scalar_type> > y1;
+  Eigen::Matrix<torsten::scalar_t<model_t>, Eigen::Dynamic, 1> y;
+  std::vector<std::vector<torsten::scalar_t<model_t>> > y1;
   std::vector<double> g, g1;
   ts[0] = 20.0;
   ts.resize(1);

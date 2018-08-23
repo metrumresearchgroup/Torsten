@@ -38,11 +38,11 @@ namespace refactor {
    */
     template<typename T_time, typename T_model>
     static
-    Eigen::Matrix<typename T_model::scalar_type, Eigen::Dynamic, 1>
+    Eigen::Matrix<torsten::scalar_t<T_model>, Eigen::Dynamic, 1>
     solve(const T_model &pkmodel, const T_time& dt) {
       using Eigen::Matrix;
       using Eigen::Dynamic;
-      using scalar_type = typename T_model::scalar_type;
+      using scalar_type = torsten::scalar_t<T_model>;
 
       auto init = pkmodel.y0()   ;
       auto rate = pkmodel.rate() ;
