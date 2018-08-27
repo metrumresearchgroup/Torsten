@@ -16,13 +16,13 @@ namespace refactor {
 namespace torsten {
 
   template <class T>
-  using rate_t = typename std::decay<decltype(std::declval<T>().rate().front())>::type; // NOLINT
+  using rate_t = typename std::decay<decltype(std::declval<T>().rate())>::type::value_type; // NOLINT
 
   template <class T>
-  using init_t = typename std::decay<decltype(std::declval<T>().y0()(0))>::type; // NOLINT
+  using init_t = typename std::decay<decltype(std::declval<T>().y0())>::type::value_type; // NOLINT
 
   template <class T>
-  using par_t = typename std::decay<decltype(std::declval<T>().par().front())>::type; // NOLINT
+  using par_t = typename std::decay<decltype(std::declval<T>().par())>::type::value_type; // NOLINT
 
   template <class T>
   using time_t = typename std::decay<decltype(std::declval<T>().t0())>::type; // NOLINT
