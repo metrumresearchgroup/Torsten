@@ -5,7 +5,6 @@
 #include <gtest/gtest.h>
 #include <boost/numeric/odeint.hpp>
 #include <stan/math/torsten/pk_onecpt_model.hpp>
-#include <stan/math/torsten/pk_onecpt_solver.hpp>
 #include <stan/math/torsten/pk_twocpt_model.hpp>
 #include <stan/math/torsten/pk_twocpt_solver.hpp>
 #include <stan/math/torsten/pk_linode_model.hpp>

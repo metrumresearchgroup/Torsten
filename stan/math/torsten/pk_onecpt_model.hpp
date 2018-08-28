@@ -71,6 +71,8 @@ namespace refactor {
     static constexpr int Npar = 3;
     static constexpr PKOneCptODE f_ = PKOneCptODE();
 
+    using scalar_type = typename
+      stan::return_type<T_time, T_init, T_rate, T_par>::type;
   /**
    * One-compartment PK model constructor
    *
@@ -141,14 +143,109 @@ namespace refactor {
     const T_time              & t0()      const { return t0_;    }
     const PKRec<T_init>       & y0()      const { return y0_;    }
     const std::vector<T_rate> & rate()    const { return rate_;  }
-    const T_par               & CL()      const { return CL_;    }
-    const T_par               & V2()      const { return V2_;    }
-    const T_par               & ka()      const { return ka_;    }
-    const T_par               & k10()     const { return k10_;   }
     const std::vector<T_par>  & alpha()   const { return alpha_; }
     const std::vector<T_par>  & par()     const { return par_;   }
     const PKOneCptODE         & f()       const { return f_;     }
     const int                 & ncmt ()   const { return Ncmt;   }
+
+    /**
+     * Solve one-cpt model using analytical solution.
+     *
+     * @tparam T_time time type
+     * @tparam T_model ODE model type
+     */
+    Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
+    solve(const T_time& dt) {
+      using Eigen::Matrix;
+      using Eigen::Dynamic;
+
+      std::vector<scalar_type> a(Ncmt, 0);
+      Matrix<scalar_type, 1, Dynamic> pred = PKRec<scalar_type>::Zero(Ncmt);
+
+      if ((y0_[0] != 0) || (rate_[0] != 0)) {
+        pred(0, 0) = y0_[0] * exp(-ka_ * dt) + rate_[0] * (1 - exp(-ka_ * dt)) / ka_;
+        a[0] = ka_ / (ka_ - alpha_[0]);
+        a[1] = -a[0];
+        pred(0, 1) += torsten::PolyExp(dt, y0_[0], 0, 0, 0, false, a, alpha_, 2) +
+          torsten::PolyExp(dt, 0, rate_[0], dt, 0, false, a, alpha_, 2);
+      }
+
+      if ((y0_[1] != 0) || (rate_[1] != 0)) {
+        a[0] = 1;
+        pred(0, 1) += torsten::PolyExp(dt, y0_[1], 0, 0, 0, false, a, alpha_, 1) +
+          torsten::PolyExp(dt, 0, rate_[1], dt, 0, false, a, alpha_, 1);
+      }
+      return pred;
+    }
+
+  /**
+   * Solve one-cpt model: steady state solution
+   *
+   * @tparam T_time dosing interval time type
+   * @tparam T_model ODE model type
+   * @tparam T_amt dosing amount type
+   */
+    template<typename T_amt>
+    Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
+    solve(const T_amt& amt,
+          const T_time& ii,
+          const int& cmt) {
+      using Eigen::Matrix;
+      using Eigen::Dynamic;
+      using std::vector;
+
+      const double inf = std::numeric_limits<double>::max();  // "infinity"
+
+      stan::math::check_positive("steady state one-cpt solver", "cmt", cmt);
+      stan::math::check_less("steady state one-cpt solver", "cmt", cmt, 3);
+
+      const auto rate = rate_.at(cmt - 1);
+
+      std::vector<scalar_type> a(2, 0);
+      Matrix<scalar_type, 1, Dynamic> pred = Matrix<scalar_type, 1, Dynamic>::Zero(2);
+      if (stan::math::value_of(rate) == 0) {  // bolus dose
+        if (cmt == 1) {
+          a[0] = 0;
+          a[1] = 1;
+          pred(0) = torsten::PolyExp(ii, amt, 0, 0, ii, true, a, alpha_, 2);
+          a[0] = ka_ / (ka_ - alpha_[0]);
+          a[1] = -a[0];
+          pred(1) = torsten::PolyExp(ii, amt, 0, 0, ii, true, a, alpha_, 2);
+        } else {  // cmt=2
+          a[0] = 1;
+          pred(1) = torsten::PolyExp(ii, amt, 0, 0, ii, true, a, alpha_, 1);
+        }
+      } else if (ii > 0) {  // multiple truncated infusions
+        double delta = torsten::unpromote(amt / rate);
+        static const char* function("Steady State Event");
+        torsten::check_mti(amt, delta, ii, function);
+
+        if (cmt == 1) {
+          a[0] = 0;
+          a[1] = 1;
+          pred(0) = torsten::PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha_, 2);
+          a[0] = ka_ / (ka_ - alpha_[0]);
+          a[1] = -a[0];
+          pred(1) = torsten::PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha_, 2);
+        } else {  // cmt = 2
+          a[0] = 1;
+          pred(1) = torsten::PolyExp(ii, 0, rate, amt / rate, ii, true, a, alpha_, 1);
+        }
+      } else {  // constant infusion
+        if (cmt == 1) {
+          a[0] = 0;
+          a[1] = 1;
+          pred(0) = torsten::PolyExp(0, 0, rate, inf, 0, true, a, alpha_, 2);
+          a[0] = ka_ / (ka_ - alpha_[0]);
+          a[1] = -a[0];
+          pred(1) = torsten::PolyExp(0, 0, rate, inf, 0, true, a, alpha_, 2);
+        } else {  // cmt = 2
+          a[0] = 1;
+          pred(1) = torsten::PolyExp(0, 0, rate, inf, 0, true, a, alpha_, 1);
+        }
+      }
+      return pred;
+    }
 
   };
 
@@ -162,49 +259,6 @@ namespace refactor {
   constexpr PKOneCptODE PKOneCptModel<T_time, T_init, T_rate, T_par>::f_;
 
 
-//   /**
-//    * Barebone definition of a one-cpt model requires only a
-//    * vector of parameters. Sometimes this is enough.
-//    *
-//    * @tparam T_par parameter type
-//    */
-//   template<typename T_par>
-//   class PKOneCptModelParameters {
-//     const T_par &CL_;
-//     const T_par &V2_;
-//     const T_par &ka_;
-//     const T_par k10_;
-//     const std::vector<T_par> alpha_;    
-//   public:
-//     static constexpr int Ncmt = 2;
-//     static constexpr int Npar = 3;
-//     using scalar_type = T_par;
-//     using par_type    = T_par;
-//   /**
-//    * Constructor
-//    * @tparam par parameter vector of size three.
-//    */
-//     PKOneCptModelParameters(const std::vector<T_par> & par) :
-//       CL_(par[0]),
-//       V2_(par[1]),
-//       ka_(par[2]),
-//       k10_(CL_ / V2_),
-//       alpha_{k10_, ka_}
-//     {}
-//   /**
-//    * Get methods
-//    */
-//     const T_par               & CL()      const { return CL_;    }
-//     const T_par               & V2()      const { return V2_;    }
-//     const T_par               & ka()      const { return ka_;    }
-//     const T_par               & k10()     const { return k10_;   }
-//     const std::vector<T_par>  & alpha()   const { return alpha_; }
-//     const int                 & ncmt ()   const { return Ncmt;   }
-//   }; 
-//   template<typename T_par>
-//   constexpr int PKOneCptModelParameters<T_par>::Ncmt;
-//   template<typename T_par>
-//   constexpr int PKOneCptModelParameters<T_par>::Npar;
 
 }
 
