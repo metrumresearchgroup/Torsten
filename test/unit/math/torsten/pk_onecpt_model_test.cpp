@@ -169,3 +169,232 @@ TEST_F(TorstenOneCptModelTest, onecpt_solver) {
     }
   }
 }
+
+TEST_F(TorstenOneCptModelTest, ss_solver_bolus_) {
+  using stan::math::var;
+  using stan::math::to_var;
+  using refactor::PKOneCptModel;
+  using refactor::PKOneCptModelSolver;
+  using refactor::PKODERateAdaptor;
+  using stan::math::integrate_ode_bdf;
+  using torsten::dsolve::pk_integrate_ode_bdf;
+
+  rate[0] = 0;
+  rate[1] = 0;
+  y0[0] = 150;
+  y0[1] = 50;
+  ts[0] = 10.0;
+  ts.resize(1);
+  var CLv = to_var(CL);
+  var V2v = to_var(V2);
+  var kav = to_var(ka);
+  std::vector<var> theta{CLv, V2v, kav};
+  std::vector<stan::math::var> rate_var{to_var(rate)};
+  using model_t = PKOneCptModel<double, double, var, var>;
+  model_t model(t0, y0, rate_var, CLv, V2v, kav);
+
+  std::cout.precision(12);
+
+  double amt = 1800;
+  int cmt = 1;
+  double ii = 12.0;
+  
+  auto y1 = refactor::PKOneCptModelSolver::solve(model, amt, ii, cmt);
+  EXPECT_FLOAT_EQ(y1(0).val(), 1.00330322392E-3);
+  EXPECT_FLOAT_EQ(y1(1).val(), 2.07672937446E+0);
+  // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << "\n";
+//  auto // y2 = refactor::PKOneCptModelSolverSS::solve(model, amt, model.rate()[cmt-1],ii, cmt);
+  // std::cout << "taki test: " << y1(0).val() << " " << y2(1).val() << "\n";
+
+  std::vector<double> g1, g2;
+  stan::math::set_zero_all_adjoints();
+  y1(0).grad(theta, g1);
+  EXPECT_FLOAT_EQ(g1[0], 0.0);
+  EXPECT_FLOAT_EQ(g1[1], 0.0);
+  EXPECT_FLOAT_EQ(g1[2], -0.0120396453978);
+  stan::math::set_zero_all_adjoints();
+  y1(1).grad(theta, g1);
+  EXPECT_FLOAT_EQ(g1[0], -0.266849753086);
+  EXPECT_FLOAT_EQ(g1[1], 0.166781095679);
+  EXPECT_FLOAT_EQ(g1[2], -1.8559692314);
+
+  cmt = 2;
+  y1 = refactor::PKOneCptModelSolver::solve(model, amt, ii, cmt);
+  EXPECT_FLOAT_EQ(y1(0).val(), 0);
+  EXPECT_FLOAT_EQ(y1(1).val(), 0.996102795153);
+  // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << "\n";
+  // y2 = refactor::PKOneCptModelSolverSS::solve(model, amt, model.rate()[cmt-1],ii, cmt);
+  // std::cout << "taki test: " << y1(0).val() << " " << y2(1).val() << "\n";
+
+  stan::math::set_zero_all_adjoints();
+  y1(0).grad(theta, g1);
+  EXPECT_FLOAT_EQ(g1[0], 0.0);
+  EXPECT_FLOAT_EQ(g1[1], 0.0);
+  EXPECT_FLOAT_EQ(g1[2], 0.0);
+  stan::math::set_zero_all_adjoints();
+  y1(1).grad(theta, g1);
+  EXPECT_FLOAT_EQ(g1[0], -0.149498104338);
+  EXPECT_FLOAT_EQ(g1[1], 0.0934363152112);
+  EXPECT_FLOAT_EQ(g1[2], 0.0);
+
+}
+
+TEST_F(TorstenOneCptModelTest, ss_solver_multi_truncated_infusion) {
+  using stan::math::var;
+  using stan::math::to_var;
+  using refactor::PKOneCptModel;
+  using refactor::PKOneCptModelSolver;
+  using refactor::PKODERateAdaptor;
+  using stan::math::integrate_ode_bdf;
+  using torsten::dsolve::pk_integrate_ode_bdf;
+
+  rate[0] = 1100;
+  rate[1] = 770;
+  y0[0] = 150;
+  y0[1] = 50;
+  ts[0] = 10.0;
+  ts.resize(1);
+  var CLv = to_var(CL);
+  var V2v = to_var(V2);
+  var kav = to_var(ka);
+  std::vector<var> theta{CLv, V2v, kav};
+  std::vector<stan::math::var> rate_var{to_var(rate)};
+  using model_t = PKOneCptModel<double, double, var, var>;
+  model_t model(t0, y0, rate_var, CLv, V2v, kav);
+
+  std::cout.precision(12);
+
+  double amt = 1800;
+  int cmt = 1;
+  double ii = 12.0;
+  
+  auto y1 = refactor::PKOneCptModelSolver::solve(model, amt, ii, cmt);
+  EXPECT_FLOAT_EQ(y1(0).val(), 0.00312961339574);
+  EXPECT_FLOAT_EQ(y1(1).val(), 3.61310672484);
+  // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << "\n";
+//  auto // y2 = refactor::PKOneCptModelSolverSS::solve(model, amt, model.rate()[cmt-1],ii, cmt);
+  // std::cout << "taki test: " << y1(0).val() << " " << y2(1).val() << "\n";
+
+  std::vector<double> g1, g2;
+  stan::math::set_zero_all_adjoints();
+  y1(0).grad(theta, g1);
+  EXPECT_FLOAT_EQ(g1[0], 0.0);
+  EXPECT_FLOAT_EQ(g1[1], 0.0);
+  EXPECT_FLOAT_EQ(g1[2], -0.0342061212685);
+  stan::math::set_zero_all_adjoints();
+  y1(1).grad(theta, g1);
+  EXPECT_FLOAT_EQ(g1[0], -0.421478621857);
+  EXPECT_FLOAT_EQ(g1[1], 0.26342413866);
+  EXPECT_FLOAT_EQ(g1[2], -3.20135491073);
+
+  cmt = 2;
+  y1 = refactor::PKOneCptModelSolver::solve(model, amt, ii, cmt);
+  EXPECT_FLOAT_EQ(y1(0).val(), 0.0);
+  EXPECT_FLOAT_EQ(y1(1).val(), 2.25697891686);
+  // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << "\n";
+  // y2 = refactor::PKOneCptModelSolverSS::solve(model, amt, model.rate()[cmt-1],ii, cmt);
+  // std::cout << "taki test: " << y1(0).val() << " " << y2(1).val() << "\n";
+
+  stan::math::set_zero_all_adjoints();
+  y1(0).grad(theta, g1);
+  EXPECT_FLOAT_EQ(g1[0], 0.0);
+  EXPECT_FLOAT_EQ(g1[1], 0.0);
+  EXPECT_FLOAT_EQ(g1[2], 0.0);
+  stan::math::set_zero_all_adjoints();
+  y1(1).grad(theta, g1);
+  EXPECT_FLOAT_EQ(g1[0], -0.298001025911);
+  EXPECT_FLOAT_EQ(g1[1], 0.186250641194);
+  EXPECT_FLOAT_EQ(g1[2], 0.0);
+
+  // for (int i = 0; i < y1.size(); ++i) {
+  //   stan::math::set_zero_all_adjoints();
+  //   y1(i).grad(theta, g1);
+  //   stan::math::set_zero_all_adjoints();    
+  //   y2(i).grad(theta, g2);
+  //   for (size_t j = 0; j < theta.size(); ++j) {
+  //      std::cout << "taki test: " << g1[j] << " " << g2[j] << "\n";
+  //     EXPECT_FLOAT_EQ(g1[j], g2[j]);
+  //   }
+  // }
+
+}
+
+TEST_F(TorstenOneCptModelTest, ss_solver_const_infusion) {
+  using stan::math::var;
+  using stan::math::to_var;
+  using refactor::PKOneCptModel;
+  using refactor::PKOneCptModelSolver;
+  using refactor::PKODERateAdaptor;
+  using stan::math::integrate_ode_bdf;
+  using torsten::dsolve::pk_integrate_ode_bdf;
+
+  rate[0] = 1100;
+  rate[1] = 770;
+  y0[0] = 150;
+  y0[1] = 50;
+  ts[0] = 10.0;
+  ts.resize(1);
+  var CLv = to_var(CL);
+  var V2v = to_var(V2);
+  var kav = to_var(ka);
+  std::vector<var> theta{CLv, V2v, kav};
+  std::vector<stan::math::var> rate_var{to_var(rate)};
+  using model_t = PKOneCptModel<double, double, var, var>;
+  model_t model(t0, y0, rate_var, CLv, V2v, kav);
+
+  std::cout.precision(12);
+
+  double amt = 1800;
+  int cmt = 1;
+  double ii = 0.0;
+  
+  auto y1 = refactor::PKOneCptModelSolver::solve(model, amt, ii, cmt);
+  EXPECT_FLOAT_EQ(y1(0).val(), 916.666666667);
+  EXPECT_FLOAT_EQ(y1(1).val(), 1760);
+  // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << "\n";
+//  auto // y2 = refactor::PKOneCptModelSolverSS::solve(model, amt, model.rate()[cmt-1],ii, cmt);
+  // std::cout << "taki test: " << y1(0).val() << " " << y2(1).val() << "\n";
+
+  std::vector<double> g1, g2;
+  stan::math::set_zero_all_adjoints();
+  y1(0).grad(theta, g1);
+  EXPECT_FLOAT_EQ(g1[0], 0.0);
+  EXPECT_FLOAT_EQ(g1[1], 0.0);
+  EXPECT_FLOAT_EQ(g1[2], -763.888888889);
+  stan::math::set_zero_all_adjoints();
+  y1(1).grad(theta, g1);
+  EXPECT_FLOAT_EQ(g1[0], -35.2);
+  EXPECT_FLOAT_EQ(g1[1], 22);
+  EXPECT_FLOAT_EQ(g1[2], 0.0);
+
+  cmt = 2;
+  y1 = refactor::PKOneCptModelSolver::solve(model, amt, ii, cmt);
+  EXPECT_FLOAT_EQ(y1(0).val(), 0.0);
+  EXPECT_FLOAT_EQ(y1(1).val(), 1232);
+  // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << "\n";
+  // y2 = refactor::PKOneCptModelSolverSS::solve(model, amt, model.rate()[cmt-1],ii, cmt);
+  // std::cout << "taki test: " << y1(0).val() << " " << y2(1).val() << "\n";
+
+  stan::math::set_zero_all_adjoints();
+  y1(0).grad(theta, g1);
+  EXPECT_FLOAT_EQ(g1[0], 0.0);
+  EXPECT_FLOAT_EQ(g1[1], 0.0);
+  EXPECT_FLOAT_EQ(g1[2], 0.0);
+  stan::math::set_zero_all_adjoints();
+  y1(1).grad(theta, g1);
+  EXPECT_FLOAT_EQ(g1[0], -24.64);
+  EXPECT_FLOAT_EQ(g1[1], 15.4);
+  EXPECT_FLOAT_EQ(g1[2], 0.0);
+
+  // for (int i = 0; i < y1.size(); ++i) {
+  //   stan::math::set_zero_all_adjoints();
+  //   y1(i).grad(theta, g1);
+  //   stan::math::set_zero_all_adjoints();    
+  //   y2(i).grad(theta, g2);
+  //   for (size_t j = 0; j < theta.size(); ++j) {
+  //      std::cout << "taki test: " << g1[j] << " " << g2[j] << "\n";
+  //     EXPECT_FLOAT_EQ(g1[j], g2[j]);
+  //   }
+  // }
+
+}
