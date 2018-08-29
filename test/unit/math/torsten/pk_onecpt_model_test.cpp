@@ -146,7 +146,7 @@ TEST_F(TorstenOneCptModelTest, onecpt_solver) {
   }
 }
 
-TEST_F(TorstenOneCptModelTest, ss_solver_bolus_) {
+TEST_F(TorstenOneCptModelTest, ss_solver_bolus) {
   using stan::math::var;
   using stan::math::to_var;
   using refactor::PKOneCptModel;
@@ -236,8 +236,6 @@ TEST_F(TorstenOneCptModelTest, ss_solver_multi_truncated_infusion) {
   std::vector<stan::math::var> rate_var{to_var(rate)};
   using model_t = PKOneCptModel<double, double, var, var>;
   model_t model(t0, y0, rate_var, CLv, V2v, kav);
-
-  std::cout.precision(12);
 
   double amt = 1800;
   int cmt = 1;
