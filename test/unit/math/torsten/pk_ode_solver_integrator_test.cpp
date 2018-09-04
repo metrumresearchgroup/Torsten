@@ -223,23 +223,23 @@ TEST_F(TorstenCptOdeModelTest, general_ode_solver_par_rate_sens) {
     }
   };
 
-  y = PKODEModelSolver<StanRk45>(rtol, atol, max_num_steps, msgs).solve(adaptor, ts[0]); // NOLINT
+  y = model.to_ode_model().solve<StanRk45>(ts[0], rtol, atol, max_num_steps, msgs);
   y1 = stan::math::integrate_ode_rk45(adaptor.f(), yvec, t0, ts, adaptor.par(), x_r, x_i, msgs); // NOLINT
   test_it();
 
-  y = PKODEModelSolver<StanAdams>(rtol, atol, max_num_steps, msgs).solve(adaptor, ts[0]); // NOLINT
+  y = model.to_ode_model().solve<StanAdams>(ts[0], rtol, atol, max_num_steps, msgs);
   y1 = torsten::dsolve::pk_integrate_ode_adams(adaptor.f(), yvec, t0, ts, adaptor.par(), x_r, x_i, msgs); // NOLINT
   test_it();
 
-  y = PKODEModelSolver<StanBdf>(rtol, atol, max_num_steps, msgs).solve(adaptor, ts[0]); // NOLINT
+  y = model.to_ode_model().solve<StanBdf>(ts[0], rtol, atol, max_num_steps, msgs);
   y1 = torsten::dsolve::pk_integrate_ode_bdf(adaptor.f(), yvec, t0, ts, adaptor.par(), x_r, x_i, msgs); // NOLINT
   test_it();
 
-  y = PKODEModelSolver<PkAdams>(rtol, atol, max_num_steps, msgs).solve(adaptor, ts[0]); // NOLINT
+  y = model.to_ode_model().solve<PkAdams>(ts[0], rtol, atol, max_num_steps, msgs);
   y1 = torsten::dsolve::pk_integrate_ode_adams(adaptor.f(), yvec, t0, ts, adaptor.par(), x_r, x_i, msgs); // NOLINT
   test_it();
 
-  y = PKODEModelSolver<PkBdf>(rtol, atol, max_num_steps, msgs).solve(adaptor, ts[0]); // NOLINT
+  y = model.to_ode_model().solve<PkBdf>(ts[0], rtol, atol, max_num_steps, msgs);
   y1 = torsten::dsolve::pk_integrate_ode_bdf(adaptor.f(), yvec, t0, ts, adaptor.par(), x_r, x_i, msgs); // NOLINT
   test_it();
 }

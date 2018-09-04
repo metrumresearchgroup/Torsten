@@ -2,12 +2,70 @@
 #define STAN_MATH_TORSTEN_REFACTOR_ODE_MODEL_HPP
 
 #include <stan/math/torsten/torsten_def.hpp>
+#include <stan/math/torsten/pk_ode_integrator.hpp>
 
 namespace refactor {
 
   using boost::math::tools::promote_args;
   using Eigen::Matrix;
   using Eigen::Dynamic;
+
+  template<typename F, typename T_rate, typename T_par>
+  struct PKOdeFunctorRateAdaptor;
+
+  /*
+   * Adaptor for ODE functor when rate is data. In this
+   * case rate should be passed in by @c x_r.
+   */
+  template<typename F, typename T_par>
+  struct PKOdeFunctorRateAdaptor<F, double, T_par> {
+    const F& f;
+    explicit PKOdeFunctorRateAdaptor(const F& f0) : f(f0) {}
+
+    template <typename T0, typename T1, typename T2>
+    inline std::vector<typename stan::return_type<T1, T2>::type>
+    operator()(const T0& t,
+               const std::vector<T1>& y,
+               const std::vector<T2>& theta,
+               const std::vector<double>& x_r,
+               const std::vector<int>& x_i,
+               std::ostream* msgs) const {
+      std::vector<typename stan::return_type<T1, T2>::type> res;
+      res = f(t, y, theta, x_r, x_i, msgs);
+      for (size_t i = 0; i < y.size(); i++) res.at(i) += x_r.at(i);
+      return res;
+    }
+  };
+
+  /*
+   * Adaptor for ODE functor when rate is @c var. In this
+   * case rate should be passed in by @c theta. When
+   * constructed, this type stores an index @c index_rate of @c rate
+   * within @c theta. Note that we only allow @c T_rate to
+   * be @c var when @c T_par is @c var, so in this case @c
+   * theta is always a @c var vector.
+   */
+  template<typename F>
+  struct PKOdeFunctorRateAdaptor<F, stan::math::var, stan::math::var> {
+    const F& f;
+    const int index_rate;
+    PKOdeFunctorRateAdaptor(const F& f0, int i) : f(f0), index_rate(i) {}
+
+    template <typename T0, typename T1, typename T2>
+    inline std::vector<typename stan::return_type<T1, T2>::type>
+    operator()(const T0& t,
+               const std::vector<T1>& y,
+               const std::vector<T2>& theta,
+               const std::vector<double>& x_r,
+               const std::vector<int>& x_i,
+               std::ostream* msgs) const {
+      std::vector<typename stan::return_type<T1, T2>::type> res;
+      res = f(t, y, theta, x_r, x_i, msgs);
+      for (size_t i = 0; i < y.size(); i++) res.at(i) += theta.at(i + index_rate);
+      return res;
+    }
+  };
+
 
   /**
    * ODE-based PKPD models.
@@ -147,6 +205,96 @@ namespace refactor {
      * @return ODE size
      */
     const int                 & ncmt ()    const { return ncmt_; }
+
+  private:
+    /*
+     * We overload @c integrate so that we can pass @c rate
+     * with different types, due to limit of c++ of partial
+     * spec of member functions.
+     */
+    template<PkOdeIntegratorId It>
+    Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
+    integrate(const std::vector<double> &rate,
+             const T_time& dt,
+             const double rtol,
+             const double atol,
+             const int max_num_steps,
+             std::ostream* msgs) {
+      std::vector<T_time> ts{t0_ + dt};
+      Eigen::Matrix<scalar_type, Eigen::Dynamic, 1> res;
+      if (ts[0] == t0_) {
+        res = y0_;
+      } else {
+        auto y = stan::math::to_array_1d(y0_);
+        PKOdeFunctorRateAdaptor<F, double, T_par> f(f_);
+        std::vector<int> x_i;
+        std::vector<std::vector<scalar_type> > res_v =
+          PkOdeIntegrator<It>()(f, y, t0_, ts, par_,
+                                rate, x_i, msgs, rtol, atol, max_num_steps);
+        res = stan::math::to_vector(res_v[0]);
+      }
+      return res;
+    }
+
+    /*
+     * We overload @c integrate so that we can pass @c rate
+     * with different types, due to limit of c++ of partial
+     * spec of member functions.
+     */
+    template<PkOdeIntegratorId It>
+    Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
+    integrate(const std::vector<stan::math::var> &rate,
+             const T_time& dt,
+             const double rtol,
+             const double atol,
+             const int max_num_steps,
+             std::ostream* msgs) {
+      using stan::math::var;
+
+      std::vector<T_time> ts{t0_ + dt};
+      Eigen::Matrix<scalar_type, Eigen::Dynamic, 1> res;
+      if (ts[0] == t0_) {
+        res = y0_;
+      } else {
+        auto y = stan::math::to_array_1d(y0_);
+        PKOdeFunctorRateAdaptor<F, var, T_par> f(f_, par_.size());
+        std::vector<double> x_r;
+        std::vector<int> x_i;
+        std::vector<stan::math::var> theta(par_.size() + rate.size());
+        for (size_t i = 0; i < par_.size(); ++i) theta[i] = par_[i];
+        for (size_t i = 0; i < rate.size(); ++i) theta[i + par_.size()] = rate[i];
+        std::vector<std::vector<scalar_type> > res_v =
+          PkOdeIntegrator<It>()(f, y, t0_, ts, theta,
+                                x_r, x_i, msgs, rtol, atol, max_num_steps);
+        res = stan::math::to_vector(res_v[0]);
+      }
+      return res;
+    }
+
+  public:
+    /*
+     * solve ODE system. The different cases when @c rate is
+     * @c var or data are handled by private methods @c integrate.
+     *
+     * @parm[in] dt next time point when result is to be *
+     *           solved. The actual time point will be @c t0+dt
+     * @parm[in] rtol relative tolerance for ODE solver
+     * @parm[in] atol absolute tolerance for ODE solver
+     * @parm[in] max_num_steps max number of steps between @c t0 and @c t0+dt.
+     * @parm[in] msgs output stream.
+     * @return an Eigen matrix with each row being the
+     *         solution at certain time step. Hence the returned
+     *         matrix is of dim (numer of time steps) x (siez of ODE system).
+     */
+    template<PkOdeIntegratorId It>
+    Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
+    solve(const T_time& dt,
+             const double rtol,
+             const double atol,
+             const int max_num_steps,
+             std::ostream* msgs) {
+      return integrate<It>(rate_, dt, rtol, atol, max_num_steps, msgs);
+    }
   };
 
 }

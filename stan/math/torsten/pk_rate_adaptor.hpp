@@ -15,59 +15,6 @@ namespace refactor {
   struct PKOdeFunctorRateAdaptor;
 
   /*
-   * Adaptor for ODE functor when rate is data. In this
-   * case rate should be passed in by @c x_r.
-   */
-  template<typename F, typename T_par>  
-  struct PKOdeFunctorRateAdaptor<F, double, T_par> {
-    const F& f;
-    PKOdeFunctorRateAdaptor(const F& f0) : f(f0) {}
-
-    template <typename T0, typename T1, typename T2>
-    inline std::vector<typename stan::return_type<T1, T2>::type>
-    operator()(const T0& t,
-               const std::vector<T1>& y,
-               const std::vector<T2>& theta,
-               const std::vector<double>& x_r,
-               const std::vector<int>& x_i,
-               std::ostream* msgs) const {
-      std::vector<typename stan::return_type<T1, T2>::type> res;
-      res = f(t, y, theta, x_r, x_i, msgs);
-      for (size_t i = 0; i < y.size(); i++) res.at(i) += x_r.at(i);
-      return res;
-    }
-  };
-  
-  /*
-   * Adaptor for ODE functor when rate is @c var. In this
-   * case rate should be passed in by @c theta. When
-   * constructed, this type stores an index @c index_rate of @c rate
-   * within @c theta. Note that we only allow @c T_rate to
-   * be @c var when @c T_par is @c var, so in this case @c
-   * theta is always a @c var vector.
-   */
-  template<typename F>  
-  struct PKOdeFunctorRateAdaptor<F, stan::math::var, stan::math::var> {
-    const F& f;
-    const int index_rate;
-    PKOdeFunctorRateAdaptor(const F& f0, int i) : f(f0), index_rate(i) {}
-
-    template <typename T0, typename T1, typename T2>
-    inline std::vector<typename stan::return_type<T1, T2>::type>
-    operator()(const T0& t,
-               const std::vector<T1>& y,
-               const std::vector<T2>& theta,
-               const std::vector<double>& x_r,
-               const std::vector<int>& x_i,
-               std::ostream* msgs) const {
-      std::vector<typename stan::return_type<T1, T2>::type> res;
-      res = f(t, y, theta, x_r, x_i, msgs);
-      for (size_t i = 0; i < y.size(); i++) res.at(i) += theta.at(i + index_rate);
-      return res;
-    }
-  };
-
-  /*
    * Adaptor for a model in which @c rate is data.
    */
   template<typename T_model>

@@ -2,6 +2,7 @@
 #define STAN_MATH_TORSTEN_TWOCPT_MODEL_HPP
 
 #include <stan/math/torsten/torsten_def.hpp>
+#include <stan/math/torsten/pk_ode_model.hpp>
 #include <stan/math/prim/scal/err/check_positive.hpp>
 #include <stan/math/prim/scal/err/check_finite.hpp>
 
@@ -364,6 +365,12 @@ namespace refactor {
         }
       }
       return pred;
+    }
+
+    PKODEModel<T_time, T_init, T_rate, T_par, PKTwoCptODE, int>
+    to_ode_model() {
+      return PKODEModel<T_time, T_init, T_rate, T_par,
+                        PKTwoCptODE, int>(t0_, y0_, rate_, par_, f_, Ncmt);
     }
 
   };
