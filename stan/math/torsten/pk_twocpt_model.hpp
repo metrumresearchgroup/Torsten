@@ -192,6 +192,7 @@ namespace refactor {
     const std::vector<T_par>  & alpha()   const { return alpha_; }
     const PKTwoCptODE         & f()       const { return f_;     }
     const int                 & ncmt ()   const { return Ncmt;   }
+    const int                 & npar ()   const { return Npar;   }
 
   /**
    * Solve two-cpt model: analytical solution
