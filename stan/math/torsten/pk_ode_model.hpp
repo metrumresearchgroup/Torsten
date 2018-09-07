@@ -9,6 +9,8 @@ namespace refactor {
   using boost::math::tools::promote_args;
   using Eigen::Matrix;
   using Eigen::Dynamic;
+  using torsten::PkOdeIntegrator;
+  using torsten::PkOdeIntegratorId;
 
   template<typename F, typename T_rate, typename T_par>
   struct PKOdeFunctorRateAdaptor;

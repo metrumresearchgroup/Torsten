@@ -71,6 +71,16 @@ namespace refactor {
     static constexpr int Npar = 3;
     static constexpr PKOneCptODE f_ = PKOneCptODE();
 
+    /*
+     * FIX ME: we need to get rid of @c ModelParameters in
+     * @c Pred2
+     */
+    template<typename T0, typename T1, typename T2, typename T3>
+    static std::vector<T1> 
+    get_param(const torsten::ModelParameters<T0, T1, T2, T3>& p) {
+      return p.get_RealParameters();
+    }
+
     using scalar_type = typename
       stan::return_type<T_time, T_init, T_rate, T_par>::type;
   /**
@@ -185,9 +195,10 @@ namespace refactor {
    * @tparam T_model ODE model type
    * @tparam T_amt dosing amount type
    */
-    template<typename T_amt>
+    template<typename T_amt, typename T_r>
     Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
     solve(const T_amt& amt,
+          const T_r& rate,
           const T_time& ii,
           const int& cmt) {
       using Eigen::Matrix;
@@ -198,8 +209,6 @@ namespace refactor {
 
       stan::math::check_positive("steady state one-cpt solver", "cmt", cmt);
       stan::math::check_less("steady state one-cpt solver", "cmt", cmt, 3);
-
-      const auto rate = rate_.at(cmt - 1);
 
       std::vector<scalar_type> a(2, 0);
       Matrix<scalar_type, 1, Dynamic> pred = Matrix<scalar_type, 1, Dynamic>::Zero(2);

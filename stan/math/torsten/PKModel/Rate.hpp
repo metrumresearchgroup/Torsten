@@ -20,9 +20,9 @@ template<typename T_time, typename T_rate>
 class Rate {
 private:
   T_time time;
+public:
   std::vector<T_rate> rate;  // rate for each compartment
 
-public:
   Rate() {
     std::vector<T_rate> v(1, 0);
     time = 0;

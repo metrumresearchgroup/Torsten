@@ -1,11 +1,15 @@
-#ifndef STAN_MATH_TORSTEN_PKMODELTWOCPT_HPP
-#define STAN_MATH_TORSTEN_PKMODELTWOCPT_HPP
+#ifndef STAN_MATH_TORSTEN_PKMODELTWOCPT2_HPP
+#define STAN_MATH_TORSTEN_PKMODELTWOCPT2_HPP
 
 #include <Eigen/Dense>
 #include <boost/math/tools/promotion.hpp>
+#include <stan/math/torsten/Pred2.hpp>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_twoCpt.hpp>
 #include <stan/math/torsten/PKModel/Pred/PredSS_twoCpt.hpp>
+#include <stan/math/torsten/pk_twocpt_model.hpp>
+// #include <stan/math/torsten/pk_twocpt_solver.hpp>
+// #include <stan/math/torsten/pk_twocpt_solver_ss.hpp>
 #include <string>
 #include <vector>
 
@@ -109,10 +113,19 @@ PKModelTwoCpt(const std::vector<T0>& time,
   vector<Matrix<T4, Dynamic, Dynamic> >
     dummy_systems(1, dummy_system);
 
+  PredWrapper<refactor::PKTwoCptModel> pr;
+
+#ifdef OLD_TORSTEN
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
               pMatrix, biovar, tlag,
               nCmt, dummy_systems,
               Pred1_twoCpt(), PredSS_twoCpt());
+#else
+  return pr.Pred2(time, amt, rate, ii, evid, cmt, addl, ss,
+                  pMatrix, biovar, tlag,
+                  nCmt, dummy_systems,
+                  Pred1_twoCpt(), PredSS_twoCpt());
+#endif
 }
 
 /**

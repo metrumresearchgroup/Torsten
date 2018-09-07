@@ -91,6 +91,17 @@ namespace refactor {
 
     using scalar_type = typename
       stan::return_type<T_time, T_init, T_rate, T_par>::type;
+
+    /*
+     * FIX ME: we need to get rid of @c ModelParameters in
+     * @c Pred2
+     */
+    template<typename T0, typename T1, typename T2, typename T3>
+    static std::vector<T1> 
+    get_param(const torsten::ModelParameters<T0, T1, T2, T3>& p) {
+      return p.get_RealParameters();
+    }
+    
   /**
    * Two-compartment PK model constructor
    *
@@ -257,9 +268,9 @@ namespace refactor {
    * @param ii dosing interval
    * @param cmt dosing compartment
    */
-    template<typename T_amt>
+    template<typename T_amt, typename T_r>
     Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
-    solve(const T_amt& amt, const T_time& ii, const int& cmt) {
+    solve(const T_amt& amt, const T_r& rate, const T_time& ii, const int& cmt) {
       using Eigen::Matrix;
       using Eigen::Dynamic;
       using std::vector;
@@ -268,8 +279,6 @@ namespace refactor {
 
       stan::math::check_positive("steady state two-cpt solver", "cmt", cmt);
       stan::math::check_less("steady state two-cpt solver", "cmt", cmt, 4);
-
-      const auto rate = rate_.at(cmt - 1);
 
       std::vector<scalar_type> a(3, 0);
       Matrix<scalar_type, 1, Dynamic> pred = Matrix<scalar_type, 1, Dynamic>::Zero(3);

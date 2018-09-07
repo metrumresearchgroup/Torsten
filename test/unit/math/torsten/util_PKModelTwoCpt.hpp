@@ -1,5 +1,5 @@
-#ifndef TEST_UNIT_MATH_TORSTEN_UTIL_PKMODELTWOCPT_HPP
-#define TEST_UNIT_MATH_TORSTEN_UTIL_PKMODELTWOCPT_HPP
+#ifndef TEST_UNIT_MATH_TORSTEN_UTIL_REFACTOR_PKMODELTWOCPT_HPP
+#define TEST_UNIT_MATH_TORSTEN_UTIL_REFACTOR_PKMODELTWOCPT_HPP
 
 #include <stan/math/rev/mat.hpp>
 #include <gtest/gtest.h>
@@ -7,7 +7,7 @@
 #include <test/unit/util.hpp>
 
 /**
- * Calculates finite difference for PKModelTwoCpt with varying parameters.
+ * Calculates finite difference for PKModelTwoCpt2 with varying parameters.
  * Parameters are stored in pMatrix, biovar, and tlag.
  */
 Eigen::Matrix <double, Eigen::Dynamic, Eigen::Dynamic>

@@ -152,7 +152,7 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_bolus) {
   int cmt = 1;
   double ii = 12.5;
   
-  auto y1 = model.solve(amt, ii, cmt);
+  auto y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   EXPECT_FLOAT_EQ(y1(0).val(), 0.0); // TODO: check solver implementation, why @c y1(0) is always zero
   EXPECT_FLOAT_EQ(y1(1).val(), 738.870108248);
   EXPECT_FLOAT_EQ(y1(2).val(), 763.661542764);
@@ -205,7 +205,7 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_bolus) {
   // EXPECT_FLOAT_EQ(g1[2], 0.0);
 
   cmt = 2;
-  y1 = model.solve(amt, ii, cmt);
+  y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   
   // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << " " << y1(2).val() << "\n";
   // std::cout << "taki test: " << y1(0).val() << " " << y2(1).val() << " " << y2(2).val() << "\n";
@@ -236,7 +236,7 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_bolus) {
   EXPECT_FLOAT_EQ(g1[4], -34.1823623977);
 
   cmt = 3;
-  y1 = model.solve(amt, ii, cmt);
+  y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   
   // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << " " << y1(2).val() << "\n";
   // std::cout << "taki test: " << y1(0).val() << " " << y2(1).val() << " " << y2(2).val() << "\n";
@@ -313,7 +313,7 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_multi_trunc_infusion) {
   double ii = 12.5;
   std::vector<double> g1, g2;
 
-  auto y1 = model.solve(amt, ii, cmt);
+  auto y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   EXPECT_FLOAT_EQ(y1(0).val(), 0.00154469934961);
   EXPECT_FLOAT_EQ(y1(1).val(), 774.104413167);
   EXPECT_FLOAT_EQ(y1(2).val(), 799.879747792);
@@ -354,7 +354,7 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_multi_trunc_infusion) {
   // }
 
   cmt = 2;
-  y1 = model.solve(amt, ii, cmt);
+  y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   
   EXPECT_FLOAT_EQ(y1(0).val(), 0.0);
   EXPECT_FLOAT_EQ(y1(1).val(), 737.454228957);
@@ -396,7 +396,7 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_multi_trunc_infusion) {
   // }
 
   cmt = 3;
-  y1 = model.solve(amt, ii, cmt);
+  y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   
   // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << " " << y1(2).val() << "\n";
   // std::cout << "taki test: " << y1(0).val() << " " << y2(1).val() << " " << y2(2).val() << "\n";
@@ -473,7 +473,7 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_const_infusion) {
   double ii = 0.0;
   std::vector<double> g1, g2;
 
-  auto y1 = model.solve(amt, ii, cmt);
+  auto y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   EXPECT_FLOAT_EQ(y1(0).val(), 1000);
   EXPECT_FLOAT_EQ(y1(1).val(), 9600);
   EXPECT_FLOAT_EQ(y1(2).val(), 8400);
@@ -556,7 +556,7 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_const_infusion) {
   // }
 
   cmt = 3;
-  y1 = model.solve(amt, ii, cmt);
+  y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   
   // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << " " << y1(2).val() << "\n";
   // std::cout << "taki test: " << y1(0).val() << " " << y2(1).val() << " " << y2(2).val() << "\n";

@@ -174,7 +174,7 @@ TEST_F(TorstenOneCptModelTest, ss_solver_bolus) {
   int cmt = 1;
   double ii = 12.0;
   
-  auto y1 = model.solve(amt, ii, cmt);
+  auto y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   EXPECT_FLOAT_EQ(y1(0).val(), 1.00330322392E-3);
   EXPECT_FLOAT_EQ(y1(1).val(), 2.07672937446E+0);
   // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << "\n";
@@ -194,7 +194,7 @@ TEST_F(TorstenOneCptModelTest, ss_solver_bolus) {
   EXPECT_FLOAT_EQ(g1[2], -1.8559692314);
 
   cmt = 2;
-  y1 = model.solve(amt, ii, cmt);
+  y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   EXPECT_FLOAT_EQ(y1(0).val(), 0);
   EXPECT_FLOAT_EQ(y1(1).val(), 0.996102795153);
   // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << "\n";
@@ -241,7 +241,7 @@ TEST_F(TorstenOneCptModelTest, ss_solver_multi_truncated_infusion) {
   int cmt = 1;
   double ii = 12.0;
   
-  auto y1 = model.solve(amt, ii, cmt);
+  auto y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   EXPECT_FLOAT_EQ(y1(0).val(), 0.00312961339574);
   EXPECT_FLOAT_EQ(y1(1).val(), 3.61310672484);
   // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << "\n";
@@ -261,7 +261,7 @@ TEST_F(TorstenOneCptModelTest, ss_solver_multi_truncated_infusion) {
   EXPECT_FLOAT_EQ(g1[2], -3.20135491073);
 
   cmt = 2;
-  y1 = model.solve(amt, ii, cmt);
+  y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   EXPECT_FLOAT_EQ(y1(0).val(), 0.0);
   EXPECT_FLOAT_EQ(y1(1).val(), 2.25697891686);
   // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << "\n";
@@ -321,7 +321,7 @@ TEST_F(TorstenOneCptModelTest, ss_solver_const_infusion) {
   int cmt = 1;
   double ii = 0.0;
   
-  auto y1 = model.solve(amt, ii, cmt);
+  auto y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   EXPECT_FLOAT_EQ(y1(0).val(), 916.666666667);
   EXPECT_FLOAT_EQ(y1(1).val(), 1760);
   // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << "\n";
@@ -341,7 +341,7 @@ TEST_F(TorstenOneCptModelTest, ss_solver_const_infusion) {
   EXPECT_FLOAT_EQ(g1[2], 0.0);
 
   cmt = 2;
-  y1 = model.solve(amt, ii, cmt);
+  y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   EXPECT_FLOAT_EQ(y1(0).val(), 0.0);
   EXPECT_FLOAT_EQ(y1(1).val(), 1232);
   // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << "\n";

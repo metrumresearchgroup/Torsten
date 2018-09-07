@@ -60,7 +60,6 @@ TEST_F(TorstenCptOdeModelTest, linode_solver) {
   using stan::math::var;
   using stan::math::to_var;
   using refactor::PKLinODEModel;
-  using refactor::PKLinODEModelSolver;
   using refactor::PKODERateAdaptor;
   using stan::math::integrate_ode_bdf;
   using torsten::dsolve::pk_integrate_ode_bdf;
@@ -87,7 +86,7 @@ TEST_F(TorstenCptOdeModelTest, linode_solver) {
                                  yvec, t0, ts,
                                  rate_adaptor.par(),
                                  rate, x_i, msgs);
-  auto y2 = PKLinODEModelSolver::solve(model, ts[0]);
+  auto y2 = model.solve(ts[0]);
   EXPECT_FLOAT_EQ(y1[0][0].val(), y2(0).val());
   EXPECT_FLOAT_EQ(y1[0][1].val(), y2(1).val());
 
@@ -117,7 +116,6 @@ TEST_F(TorstenCptOdeModelTest, linode_solver_zero_rate) {
   using stan::math::var;
   using stan::math::to_var;
   using refactor::PKLinODEModel;
-  using refactor::PKLinODEModelSolver;
   using refactor::PKODERateAdaptor;
   using stan::math::integrate_ode_bdf;
   using torsten::dsolve::pk_integrate_ode_adams;
@@ -141,7 +139,7 @@ TEST_F(TorstenCptOdeModelTest, linode_solver_zero_rate) {
                                  yvec, t0, ts,
                                  rate_adaptor.par(),
                                  rate, x_i, msgs);
-  auto y2 = PKLinODEModelSolver::solve(model, ts[0]);
+  auto y2 = model.solve(ts[0]);
   EXPECT_NEAR(y1[0][0].val(), y2(0).val(), 1.E-7);
   EXPECT_NEAR(y1[0][1].val(), y2(1).val(), 1.E-7);
   EXPECT_NEAR(y1[0][2].val(), y2(2).val(), 1.E-7);
