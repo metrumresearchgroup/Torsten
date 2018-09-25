@@ -45,7 +45,7 @@ namespace stan {
       } else if (xout >= x.back()) {
         yout = y.back();
       } else {
-        int i = SearchReal(x, nx, xout) - 1;
+        int i = torsten::SearchReal(x, nx, xout) - 1;
         yout = y[i] + (y[i+1] - y[i]) / (x[i+1] - x[i]) * (xout - x[i]);
       }
 
