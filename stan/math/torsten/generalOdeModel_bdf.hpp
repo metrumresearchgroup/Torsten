@@ -1,11 +1,13 @@
-#ifndef STAN_MATH_TORSTEN_GENERALODEMODEL_BDF_HPP
-#define STAN_MATH_TORSTEN_GENERALODEMODEL_BDF_HPP
+#ifndef STAN_MATH_TORSTEN_REFACTOR_GENERALODEMODEL_BDF_HPP
+#define STAN_MATH_TORSTEN_REFACTOR_GENERALODEMODEL_BDF_HPP
 
 #include <Eigen/Dense>
 #include <stan/math/torsten/PKModel/functors/general_functor.hpp>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_general.hpp>
 #include <stan/math/torsten/PKModel/Pred/PredSS_general.hpp>
+#include <stan/math/torsten/pk_ode_model.hpp>
+#include <stan/math/torsten/Pred2.hpp>
 #include <boost/math/tools/promotion.hpp>
 #include <vector>
 
@@ -94,31 +96,24 @@ generalOdeModel_bdf(const F& f,
 
   typedef general_functor<F> F0;
 
+  PredWrapper<refactor::PKODEModel, StanBdf> pr(rel_tol, abs_tol, max_num_steps, msgs);
+
+  const Pred1_general<F0> pred1(F0(f), rel_tol, abs_tol,
+                                max_num_steps, msgs, "bdf");
+  const PredSS_general<F0> predss (F0(f), rel_tol, abs_tol,
+                                   max_num_steps, msgs, "bdf", nCmt);
+
+#ifdef OLD_TORSTEN
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
               pMatrix, biovar, tlag, nCmt, dummy_systems,
-              Pred1_general<F0>(F0(f), rel_tol, abs_tol,
-                                max_num_steps, msgs, "bdf"),
-              PredSS_general<F0>(F0(f), rel_tol, abs_tol,
-                                 max_num_steps, msgs, "bdf", nCmt));
+              pred1, predss);
+#else
+  return pr.Pred2(time, amt, rate, ii, evid, cmt, addl, ss,
+                  pMatrix, biovar, tlag, nCmt, dummy_systems,
+                  pred1, predss,
+                  f, nCmt);
+#endif
 
-  // // check arguments
-  // static const char* function("generalOdeModel_bdf");
-  // pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
-  //               pMatrix, biovar, tlag, function);
-  //
-  // // Construct dummy matrix for last argument of pred
-  // Matrix<T4, Dynamic, Dynamic> dummy_system;
-  // vector<Matrix<T4, Dynamic, Dynamic> >
-  //   dummy_systems(1, dummy_system);
-  //
-  // typedef general_functor<F> F0;
-  //
-  // return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-  //             pMatrix, biovar, tlag, nCmt, dummy_systems,
-  //             Pred1_general<F0>(F0(f), rel_tol, abs_tol,
-  //                               max_num_steps, msgs, "rk45"),
-  //             PredSS_general<F0>(F0(f), rel_tol, abs_tol,
-  //                                max_num_steps, msgs, "bdf", nCmt));
 }
 
 /**

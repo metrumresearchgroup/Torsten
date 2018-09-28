@@ -9,9 +9,10 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_rate_dbl) {
   using stan::math::var;
   using stan::math::to_var;
   using refactor::PKTwoCptModel;
-  using refactor::PKODERateAdaptor;
-  using stan::math::integrate_ode_bdf;
   using torsten::dsolve::pk_integrate_ode_bdf;
+  using stan::math::integrate_ode_bdf;
+  using refactor::PKTwoCptODE;
+  using refactor::PKOdeFunctorRateAdaptor;
 
   rate[0] = 1200;
   rate[1] = 200;
@@ -19,10 +20,9 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_rate_dbl) {
   using model_t = PKTwoCptModel<double, double, double, double>;
   model_t model(t0, y0, rate, CL, Q, V2, V3, ka);
   std::vector<double> yvec(y0.data(), y0.data() + y0.size());
-  PKODERateAdaptor<model_t> rate_adaptor(model);
+  PKOdeFunctorRateAdaptor<PKTwoCptODE, double> f1(model.f());
 
-  std::vector<double> y =
-    rate_adaptor.f()(t0, yvec, model.par(), rate, x_i, msgs);
+  std::vector<double> y = f1(t0, yvec, model.par(), rate, x_i, msgs);
   EXPECT_FLOAT_EQ(y[0], rate[0]);
   EXPECT_FLOAT_EQ(y[1], rate[1]);
   EXPECT_FLOAT_EQ(y[2], rate[2]);
@@ -32,9 +32,10 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_rate_var) {
   using stan::math::var;
   using stan::math::to_var;
   using refactor::PKTwoCptModel;
-  using refactor::PKODERateAdaptor;
-  using stan::math::integrate_ode_bdf;
   using torsten::dsolve::pk_integrate_ode_bdf;
+  using stan::math::integrate_ode_bdf;
+  using refactor::PKTwoCptODE;
+  using refactor::PKOdeFunctorRateAdaptor;
 
   rate[0] = 1200;
   rate[1] = 200;
@@ -47,14 +48,12 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_rate_var) {
   std::vector<stan::math::var> rate_var{to_var(rate)};
   using model_t = PKTwoCptModel<double, double, var, var>;
   model_t model(t0, y0, rate_var, CLv, Qv, V2v, V3v, kav);
+  std::vector<stan::math::var> theta(model.par());
   std::vector<double> yvec(y0.data(), y0.data() + y0.size());
-  PKODERateAdaptor<model_t> rate_adaptor(model);
+  PKOdeFunctorRateAdaptor<PKTwoCptODE, var> f1(model.f(), theta.size());
+  theta.insert(theta.end(), rate_var.begin(), rate_var.end());
 
-  EXPECT_EQ(rate_adaptor.par().size(),
-            model.par().size() + model.rate().size());
-  std::vector<var> y =
-    rate_adaptor.f()(t0, yvec, rate_adaptor.par(),
-                             x_r, x_i, msgs);
+  std::vector<var> y = f1(t0, yvec, theta, x_r, x_i, msgs);
   EXPECT_FLOAT_EQ(y[0].val(), rate[0]);
   EXPECT_FLOAT_EQ(y[1].val(), rate[1]);
   EXPECT_FLOAT_EQ(y[2].val(), rate[2]);
@@ -64,9 +63,10 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_solver) {
   using stan::math::var;
   using stan::math::to_var;
   using refactor::PKTwoCptModel;
-  using refactor::PKODERateAdaptor;
-  using stan::math::integrate_ode_bdf;
   using torsten::dsolve::pk_integrate_ode_bdf;
+  using stan::math::integrate_ode_bdf;
+  using refactor::PKTwoCptODE;
+  using refactor::PKOdeFunctorRateAdaptor;
 
   rate[0] = 1200;
   rate[1] = 200;
@@ -86,12 +86,10 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_solver) {
   using model_t = PKTwoCptModel<double, double, var, var>;
   model_t model(t0, y0, rate_var, CLv, Qv, V2v, V3v, kav);
   std::vector<double> yvec(y0.data(), y0.data() + y0.size());
-  PKODERateAdaptor<model_t> rate_adaptor(model);
+  PKOdeFunctorRateAdaptor<PKTwoCptODE, var> f1(model.f(), theta.size());
+  theta.insert(theta.end(), rate_var.begin(), rate_var.end());
 
-  auto y1 = pk_integrate_ode_bdf(rate_adaptor.f(),
-                                 yvec, t0, ts,
-                                 rate_adaptor.par(),
-                                 x_r, x_i, msgs);
+  auto y1 = pk_integrate_ode_bdf(f1, yvec, t0, ts, theta, x_r, x_i, msgs);
   auto y2 = model.solve(ts[0]);
   EXPECT_FLOAT_EQ(y1[0][0].val(), y2(0).val());
   EXPECT_FLOAT_EQ(y1[0][1].val(), y2(1).val());
@@ -123,9 +121,10 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_bolus) {
   using stan::math::var;
   using stan::math::to_var;
   using refactor::PKTwoCptModel;
-  using refactor::PKODERateAdaptor;
-  using stan::math::integrate_ode_bdf;
   using torsten::dsolve::pk_integrate_ode_bdf;
+  using stan::math::integrate_ode_bdf;
+  using refactor::PKTwoCptODE;
+  using refactor::PKOdeFunctorRateAdaptor;
 
   rate[0] = 0;
   rate[1] = 0;
@@ -140,13 +139,12 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_bolus) {
   var V2v = to_var(V2);
   var V3v = to_var(V3);
   var kav = to_var(ka);
-  std::vector<var> theta{CLv, Qv, V2v, V3v, kav};
   std::vector<stan::math::var> rate_var{to_var(rate)};
   using model_t = PKTwoCptModel<double, double, var, var>;
   model_t model(t0, y0, rate_var, CLv, Qv, V2v, V3v, kav);
-  
+  std::vector<var> theta{model.par()};
 
-  std::cout.precision(12);
+  //  std::cout.precision(12);
 
   double amt = 1800;
   int cmt = 1;
@@ -156,8 +154,6 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_bolus) {
   EXPECT_FLOAT_EQ(y1(0).val(), 0.0); // TODO: check solver implementation, why @c y1(0) is always zero
   EXPECT_FLOAT_EQ(y1(1).val(), 738.870108248);
   EXPECT_FLOAT_EQ(y1(2).val(), 763.661542764);
-  // std::cout << "taki test: " << y1(0).val() << " " << y1(1).val() << " " << y1(2).val() << "\n";
-  // std::cout << "taki test: " << y1(0).val() << " " << y2(1).val() << " " << y2(2).val() << "\n";
 
   std::vector<double> g1, g2;
   stan::math::set_zero_all_adjoints();
@@ -181,28 +177,6 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_bolus) {
   EXPECT_FLOAT_EQ(g1[2], 1.70090555664  );
   EXPECT_FLOAT_EQ(g1[3], 13.0890353445  );
   EXPECT_FLOAT_EQ(g1[4],  -34.1903160204);
-
-  // for (int i = 0; i < y1.size(); ++i) {
-  //   stan::math::set_zero_all_adjoints();
-  //   y1(i).grad(theta, g1);
-  //   stan::math::set_zero_all_adjoints();    
-  //   y2(i).grad(theta, g2);
-  //   for (size_t j = 0; j < theta.size(); ++j) {
-  //      std::cout << "taki test: " << g1[j] << " " << g2[j] << "\n";
-  //     EXPECT_FLOAT_EQ(g1[j], g2[j]);
-  //   }
-  // }
-
-  // stan::math::set_zero_all_adjoints();
-  // y1(0).grad(theta, g1);
-  // EXPECT_FLOAT_EQ(g1[0], 0.0);
-  // EXPECT_FLOAT_EQ(g1[1], 0.0);
-  // EXPECT_FLOAT_EQ(g1[2], 0.0);
-  // stan::math::set_zero_all_adjoints();
-  // y1(1).grad(theta, g1);
-  // EXPECT_FLOAT_EQ(g1[0], -0.149498104338);
-  // EXPECT_FLOAT_EQ(g1[1], 0.0934363152112);
-  // EXPECT_FLOAT_EQ(g1[2], 0.0);
 
   cmt = 2;
   y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
@@ -265,27 +239,16 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_bolus) {
   EXPECT_FLOAT_EQ(g1[2], 1.30023459973 );
   EXPECT_FLOAT_EQ(g1[3], 16.044046744  );
   EXPECT_FLOAT_EQ(g1[4], 0.0);
-  
-  // for (int i = 0; i < y1.size(); ++i) {
-  //   stan::math::set_zero_all_adjoints();
-  //   y1(i).grad(theta, g1);
-  //   stan::math::set_zero_all_adjoints();    
-  //   y2(i).grad(theta, g2);
-  //   for (size_t j = 0; j < theta.size(); ++j) {
-  //      std::cout << "taki test: " << g1[j] << " " << g2[j] << "\n";
-  //     EXPECT_FLOAT_EQ(g1[j], g2[j]);
-  //   }
-  // }
-
 }
 
 TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_multi_trunc_infusion) {
   using stan::math::var;
   using stan::math::to_var;
   using refactor::PKTwoCptModel;
-  using refactor::PKODERateAdaptor;
-  using stan::math::integrate_ode_bdf;
   using torsten::dsolve::pk_integrate_ode_bdf;
+  using stan::math::integrate_ode_bdf;
+  using refactor::PKTwoCptODE;
+  using refactor::PKOdeFunctorRateAdaptor;
 
   rate[0] = 1200;
   rate[1] = 1100;
@@ -300,11 +263,10 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_multi_trunc_infusion) {
   var V2v = to_var(V2);
   var V3v = to_var(V3);
   var kav = to_var(ka);
-  std::vector<var> theta{CLv, Qv, V2v, V3v, kav};
   std::vector<stan::math::var> rate_var{to_var(rate)};
   using model_t = PKTwoCptModel<double, double, var, var>;
   model_t model(t0, y0, rate_var, CLv, Qv, V2v, V3v, kav);
-  
+  std::vector<var> theta(model.par());
 
   std::cout.precision(12);
 
@@ -342,17 +304,6 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_multi_trunc_infusion) {
   EXPECT_FLOAT_EQ(g1[3], 13.4128341054 );
   EXPECT_FLOAT_EQ(g1[4], -35.6693548262);
 
-  // for (int i = 0; i < y1.size(); ++i) {
-  //   stan::math::set_zero_all_adjoints();
-  //   y1(i).grad(theta, g1);
-  //   stan::math::set_zero_all_adjoints();    
-  //   y2(i).grad(theta, g2);
-  //   for (size_t j = 0; j < theta.size(); ++j) {
-  //      std::cout << "taki test: " << g1[j] << " " << g2[j] << "\n";
-  //     EXPECT_FLOAT_EQ(g1[j], g2[j]);
-  //   }
-  // }
-
   cmt = 2;
   y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   
@@ -384,17 +335,6 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_multi_trunc_infusion) {
   EXPECT_FLOAT_EQ(g1[3], 13.0830221449 );
   EXPECT_FLOAT_EQ(g1[4], 0.0);
 
-  // for (int i = 0; i < y1.size(); ++i) {
-  //   stan::math::set_zero_all_adjoints();
-  //   y1(i).grad(theta, g1);
-  //   stan::math::set_zero_all_adjoints();    
-  //   y2(i).grad(theta, g2);
-  //   for (size_t j = 0; j < theta.size(); ++j) {
-  //      std::cout << "taki test: " << g1[j] << " " << g2[j] << "\n";
-  //     EXPECT_FLOAT_EQ(g1[j], g2[j]);
-  //   }
-  // }
-
   cmt = 3;
   y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
   
@@ -425,27 +365,16 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_multi_trunc_infusion) {
   EXPECT_FLOAT_EQ(g1[2], 1.03257281914 );
   EXPECT_FLOAT_EQ(g1[3], 16.69857146   );
   EXPECT_FLOAT_EQ(g1[4], 0.0);
-  
-  // for (int i = 0; i < y1.size(); ++i) {
-  //   stan::math::set_zero_all_adjoints();
-  //   y1(i).grad(theta, g1);
-  //   stan::math::set_zero_all_adjoints();    
-  //   y2(i).grad(theta, g2);
-  //   for (size_t j = 0; j < theta.size(); ++j) {
-  //      std::cout << "taki test: " << g1[j] << " " << g2[j] << "\n";
-  //     EXPECT_FLOAT_EQ(g1[j], g2[j]);
-  //   }
-  // }
-
 }
 
 TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_const_infusion) {
   using stan::math::var;
   using stan::math::to_var;
   using refactor::PKTwoCptModel;
-  using refactor::PKODERateAdaptor;
-  using stan::math::integrate_ode_bdf;
   using torsten::dsolve::pk_integrate_ode_bdf;
+  using stan::math::integrate_ode_bdf;
+  using refactor::PKTwoCptODE;
+  using refactor::PKOdeFunctorRateAdaptor;
 
   rate[0] = 1200;
   rate[1] = 1100;
@@ -460,11 +389,10 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_const_infusion) {
   var V2v = to_var(V2);
   var V3v = to_var(V3);
   var kav = to_var(ka);
-  std::vector<var> theta{CLv, Qv, V2v, V3v, kav};
   std::vector<stan::math::var> rate_var{to_var(rate)};
   using model_t = PKTwoCptModel<double, double, var, var>;
   model_t model(t0, y0, rate_var, CLv, Qv, V2v, V3v, kav);
-  
+  std::vector<var> theta(model.par());
 
   std::cout.precision(12);
 
@@ -502,20 +430,9 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_const_infusion) {
   EXPECT_FLOAT_EQ(g1[3], 120 );
   EXPECT_FLOAT_EQ(g1[4], 1.02318153949e-12);
 
-  // for (int i = 0; i < y1.size(); ++i) {
-  //   stan::math::set_zero_all_adjoints();
-  //   y1(i).grad(theta, g1);
-  //   stan::math::set_zero_all_adjoints();    
-  //   y2(i).grad(theta, g2);
-  //   for (size_t j = 0; j < theta.size(); ++j) {
-  //      std::cout << "taki test: " << g1[j] << " " << g2[j] << "\n";
-  //     EXPECT_FLOAT_EQ(g1[j], g2[j]);
-  //   }
-  // }
-
   // cmt = 2;
-  // y1 = model.solve(amt, ii, cmt);
-  // 
+  // y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
+
   EXPECT_FLOAT_EQ(y1(0).val(), 1000.0);
   EXPECT_FLOAT_EQ(y1(1).val(), 9600);
   EXPECT_FLOAT_EQ(y1(2).val(), 8400);
@@ -543,17 +460,6 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_const_infusion) {
   EXPECT_FLOAT_EQ(g1[2], -7.1054273576e-14);
   EXPECT_FLOAT_EQ(g1[3], 120);
   EXPECT_FLOAT_EQ(g1[4], 1.02318153949e-12);
-
-  // for (int i = 0; i < y1.size(); ++i) {
-  //   stan::math::set_zero_all_adjoints();
-  //   y1(i).grad(theta, g1);
-  //   stan::math::set_zero_all_adjoints();    
-  //   y2(i).grad(theta, g2);
-  //   for (size_t j = 0; j < theta.size(); ++j) {
-  //      std::cout << "taki test: " << g1[j] << " " << g2[j] << "\n";
-  //     EXPECT_FLOAT_EQ(g1[j], g2[j]);
-  //   }
-  // }
 
   cmt = 3;
   y1 = model.solve(amt, rate_var[cmt - 1], ii, cmt);
@@ -585,15 +491,4 @@ TEST_F(TorstenCptOdeModelTest, 2_cpt_ss_solver_const_infusion) {
   EXPECT_FLOAT_EQ(g1[2], 5.68434188608e-14);
   EXPECT_FLOAT_EQ(g1[3], 108.571428571);
   EXPECT_FLOAT_EQ(g1[4], 0.0);
-  
-  // for (int i = 0; i < y1.size(); ++i) {
-  //   stan::math::set_zero_all_adjoints();
-  //   y1(i).grad(theta, g1);
-  //   stan::math::set_zero_all_adjoints();    
-  //   y2(i).grad(theta, g2);
-  //   for (size_t j = 0; j < theta.size(); ++j) {
-  //      std::cout << "taki test: " << g1[j] << " " << g2[j] << "\n";
-  //     EXPECT_FLOAT_EQ(g1[j], g2[j]);
-  //   }
-
 }

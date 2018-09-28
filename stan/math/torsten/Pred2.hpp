@@ -4,14 +4,157 @@
 #include <Eigen/Dense>
 #include <vector>
 #include <stan/math/torsten/pk_twocpt_model.hpp>
-// #include <stan/math/torsten/pk_twocpt_solver.hpp>
-// #include <stan/math/torsten/pk_twocpt_solver_ss.hpp>
+#include <stan/math/torsten/pk_onecpt_model.hpp>
+#include <stan/math/torsten/pk_linode_model.hpp>
+
 
 namespace torsten{
+  namespace internal {
+    /** 
+     * Different model's @c solve functon has different
+     * signature, so we need a helper struct. 
+     */
+    template<PkOdeIntegratorId It>
+    struct SolverDispatcher
+    {
+      const double rtol;
+      const double atol;
+      const int max_num_steps;
+      std::ostream* msgs;
 
-  template<template<typename...> class T_model>
+      SolverDispatcher(const double rtol0,
+                       const double atol0,
+                       const int max_num_steps0,
+                       std::ostream* msgs0) :
+        rtol(rtol0), atol(atol0),
+        max_num_steps(max_num_steps0),
+        msgs(msgs0)
+      {}
+
+      /*
+       * dispatch @c PKODEModel solver
+       */
+      template<typename T0, typename... Ts> //NOLINT
+      Eigen::Matrix<scalar_t<refactor::PKODEModel<Ts...>>, Eigen::Dynamic, 1> //NOLINT
+      solve(const refactor::PKODEModel<Ts...>& model, const T0& dt) { //NOLINT
+        return model.template solve<It>(dt, rtol, atol, max_num_steps, msgs);
+      }
+      
+      /*
+       * dispatch @c PKOneCptmodel solver
+       */
+      template<typename T0, typename... Ts> //NOLINT
+      Eigen::Matrix<scalar_t<refactor::PKOneCptModel<Ts...>>, Eigen::Dynamic, 1> //NOLINT
+      solve(const refactor::PKOneCptModel<Ts...>& model, const T0& dt) { //NOLINT
+        return model.solve(dt);
+      }
+
+      /*
+       * dispatch @c PKTwoptmodel solver
+       */
+      template<typename T0, typename... Ts> //NOLINT
+      Eigen::Matrix<scalar_t<refactor::PKTwoCptModel<Ts...>>, Eigen::Dynamic, 1> //NOLINT
+      solve(const refactor::PKTwoCptModel<Ts...>& model, const T0& dt) { //NOLINT
+        return model.solve(dt);
+      }
+
+      /*
+       * dispatch @c PKLinodemodel solver
+       */
+      template<typename T0, typename... Ts> //NOLINT
+      Eigen::Matrix<scalar_t<refactor::PKLinODEModel<Ts...>>, Eigen::Dynamic, 1> //NOLINT
+      solve(const refactor::PKLinODEModel<Ts...>& model, const T0& dt) { //NOLINT
+        return model.solve(dt);
+      }
+
+      /*
+       * dispatch @c PKOneCptmodel steady-state solver
+       */
+      template<typename T_amt, typename T_r, typename T_ii, typename... Ts> //NOLINT
+      Eigen::Matrix<scalar_t<refactor::PKOneCptModel<Ts...>>, Eigen::Dynamic, 1> //NOLINT
+      solve(const refactor::PKOneCptModel<Ts...>& model,
+            const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt) { //NOLINT
+        return model.solve(amt, rate, ii, cmt);
+      }
+      
+      /*
+       * dispatch @c PKTwoCptmodel steady-state solver
+       */
+      template<typename T_amt, typename T_r, typename T_ii, typename... Ts> //NOLINT
+      Eigen::Matrix<scalar_t<refactor::PKTwoCptModel<Ts...>>, Eigen::Dynamic, 1> //NOLINT
+      solve(const refactor::PKTwoCptModel<Ts...>& model,
+            const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt) { //NOLINT
+        return model.solve(amt, rate, ii, cmt);
+      }
+
+      /*
+       * dispatch @c PKLinODEModel steady-state solver
+       */
+      template<typename T_amt, typename T_r, typename T_ii, typename... Ts> //NOLINT
+      Eigen::Matrix<scalar_t<refactor::PKLinODEModel<Ts...>>, Eigen::Dynamic, 1> //NOLINT
+      solve(const refactor::PKLinODEModel<Ts...>& model,
+            const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt) { //NOLINT
+        return model.solve(amt, rate, ii, cmt);
+      }
+
+      /*
+       * dispatch @c PKODEmodel steady-state solver.
+       *  @c amt and @c rate are data
+       */
+      template<typename T_ii, typename... Ts>
+      Eigen::Matrix<scalar_t<refactor::PKODEModel<Ts...>>, Eigen::Dynamic, 1> //NOLINT
+      solve(const refactor::PKODEModel<Ts...>& model,
+            const double& amt, const double& rate, const T_ii& ii, const int& cmt) { //NOLINT
+        return model.template solve<It, T_ii>(amt, rate, ii, cmt, rtol, atol, max_num_steps, msgs); //NOLINT
+      }
+
+      /*
+       * dispatch @c PKODEmodel steady-state solver.
+       * @c amt is param and @c rate is data
+       */
+      template<typename T_amt, typename T_ii, typename... Ts>
+      Eigen::Matrix<scalar_t<refactor::PKODEModel<Ts...>>, Eigen::Dynamic, 1> //NOLINT
+      solve(const refactor::PKODEModel<Ts...>& model,
+            const T_amt& amt, const double& rate, const T_ii& ii, const int& cmt) { //NOLINT
+        return model.template solve<It, T_amt, T_ii>(amt, rate, ii, cmt, rtol, atol, max_num_steps, msgs); //NOLINT
+      }
+
+      /*
+       * dispatch @c PKODEmodel steady-state solver.
+       * @c amt is param and @c rate is data
+       */
+
+
+    };
+  }
+
+  /*
+   * the wrapper is aware of @c T_model so it build model
+   * accordingly.
+   */
+  template<template<typename...> class T_model, PkOdeIntegratorId It=StanRk45>
   struct PredWrapper{
-    PredWrapper() {}
+    internal::SolverDispatcher<It> sol;
+
+    PredWrapper() : sol(0.0, 0.0, 0, nullptr)
+    {}
+
+    PredWrapper(const double rtol0,
+                const double atol0,
+                const int max_num_steps0,
+                std::ostream* msgs0) :
+      sol(rtol0, atol0, max_num_steps0, msgs0)
+    {}
+    
+    /** 
+     * Different model's @c solve functon has different
+     * signature, so we need a helper function. 
+     */
+
+    /** 
+     * Different model's @c solve functon has different
+     * signature, so we need a helper function. 
+     */
 
     /**
      * Every Torsten function calls Pred.
@@ -165,7 +308,8 @@ namespace torsten{
           // FIX ME: we need a better way to relate model type to parameter type
           std::vector<T_parameters> model_par = model_type::get_param(parameter);
           model_type pkmodel {model_time, init, model_rate, model_par, pars...};
-          pred1 = pkmodel.solve(dt);
+
+          pred1 = sol.solve(pkmodel, dt);
           // pred1 = Pred1(dt, parameter, init, rate2.get_rate());
           init = pred1;
         }
@@ -180,11 +324,11 @@ namespace torsten{
           // FIX ME: we need a better way to relate model type to parameter type
           std::vector<T_parameters> model_par = model_type::get_param(parameter);
           model_type pkmodel {model_time, init, model_rate, model_par, pars...};
-          pred1 = multiply(pkmodel.solve(
-                                         parameters.GetValueBio(i, event.get_cmt() - 1) * event.get_amt(),
-                                         event.get_rate(),
-                                         event.get_ii(),
-                                         event.get_cmt()),
+          pred1 = multiply(sol.solve(pkmodel,
+                                     parameters.GetValueBio(i, event.get_cmt() - 1) * event.get_amt(), //NOLINT
+                                     event.get_rate(),
+                                     event.get_ii(),
+                                     event.get_cmt()),
                            scalar(1.0));
           // pred1 = multiply(PredSS(parameter,
           //                         parameters.GetValueBio(i, event.get_cmt() - 1)
@@ -219,6 +363,8 @@ namespace torsten{
 
       return pred;
     }
+
+
   };
 
 }

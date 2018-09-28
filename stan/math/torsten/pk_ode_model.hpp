@@ -3,6 +3,8 @@
 
 #include <stan/math/torsten/torsten_def.hpp>
 #include <stan/math/torsten/pk_ode_integrator.hpp>
+#include <stan/math/torsten/pk_ss_system.hpp>
+#include <stan/math/torsten/PKModel/Pred/unpromote.hpp>
 
 namespace refactor {
 
@@ -12,15 +14,15 @@ namespace refactor {
   using torsten::PkOdeIntegrator;
   using torsten::PkOdeIntegratorId;
 
-  template<typename F, typename T_rate, typename T_par>
+  template<typename F, typename T_rate>
   struct PKOdeFunctorRateAdaptor;
 
   /*
    * Adaptor for ODE functor when rate is data. In this
    * case rate should be passed in by @c x_r.
    */
-  template<typename F, typename T_par>
-  struct PKOdeFunctorRateAdaptor<F, double, T_par> {
+  template<typename F>
+  struct PKOdeFunctorRateAdaptor<F, double> {
     const F& f;
     explicit PKOdeFunctorRateAdaptor(const F& f0) : f(f0) {}
 
@@ -48,7 +50,7 @@ namespace refactor {
    * theta is always a @c var vector.
    */
   template<typename F>
-  struct PKOdeFunctorRateAdaptor<F, stan::math::var, stan::math::var> {
+  struct PKOdeFunctorRateAdaptor<F, stan::math::var> {
     const F& f;
     const int index_rate;
     PKOdeFunctorRateAdaptor(const F& f0, int i) : f(f0), index_rate(i) {}
@@ -93,14 +95,23 @@ namespace refactor {
     const F &f_;
     const int ncmt_;
   public:
-    using scalar_type = typename promote_args<T_time,
-                                              T_rate, T_par, T_init>::type;
+    using scalar_type = typename promote_args<T_time, T_rate, T_par, T_init>::type; // NOLINT
     using aug_par_type = typename promote_args<T_rate, T_par, T_init>::type;
     using init_type   = T_init;
     using time_type   = T_time;
     using par_type    = T_par;
     using rate_type   = T_rate;
     using f_type      = F;
+
+    /*
+     * FIX ME: we need to get rid of @c ModelParameters in
+     * @c Pred2
+     */
+    template<typename T0, typename T1, typename T2, typename T3>
+    static std::vector<T1>
+    get_param(const torsten::ModelParameters<T0, T1, T2, T3>& p) {
+      return p.get_RealParameters();
+    }
 
   /**
    * Constructor
@@ -212,7 +223,8 @@ namespace refactor {
     /*
      * We overload @c integrate so that we can pass @c rate
      * with different types, due to limit of c++ of partial
-     * spec of member functions.
+     * spec of member functions. The first version is for
+     * rate being data.
      */
     template<PkOdeIntegratorId It>
     Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
@@ -221,27 +233,58 @@ namespace refactor {
              const double rtol,
              const double atol,
              const int max_num_steps,
-             std::ostream* msgs) {
+             std::ostream* msgs) const {
+      using stan::math::value_of;
+
+      const double t0 = value_of(t0_);
       std::vector<T_time> ts{t0_ + dt};
       Eigen::Matrix<scalar_type, Eigen::Dynamic, 1> res;
       if (ts[0] == t0_) {
         res = y0_;
       } else {
         auto y = stan::math::to_array_1d(y0_);
-        PKOdeFunctorRateAdaptor<F, double, T_par> f(f_);
+        PKOdeFunctorRateAdaptor<F, double> f(f_);
         std::vector<int> x_i;
         std::vector<std::vector<scalar_type> > res_v =
-          PkOdeIntegrator<It>()(f, y, t0_, ts, par_,
-                                rate, x_i, msgs, rtol, atol, max_num_steps);
+          PkOdeIntegrator<It>(rtol, atol, max_num_steps, msgs)(f, y, t0, ts, par_, rate, x_i); // NOLINT
         res = stan::math::to_vector(res_v[0]);
       }
       return res;
     }
 
     /*
-     * We overload @c integrate so that we can pass @c rate
-     * with different types, due to limit of c++ of partial
-     * spec of member functions.
+     * For steady-state. Same as the first version but with given @c init.
+     */
+    template<PkOdeIntegratorId It>
+    Eigen::Matrix<double, Eigen::Dynamic, 1>
+    integrate(const std::vector<double> &rate,
+              const Eigen::Matrix<double, 1, Eigen::Dynamic>& y0,
+              const double& dt,
+              const double rtol,
+              const double atol,
+              const int max_num_steps,
+              std::ostream* msgs) const {
+      using stan::math::value_of;
+
+      const double t0 = value_of(t0_) - dt;
+      std::vector<double> ts{value_of(t0_)};
+      Eigen::Matrix<double, Eigen::Dynamic, 1> res;
+      if (ts[0] == t0) {
+        res = y0;
+      } else {
+        auto y = stan::math::to_array_1d(y0);
+        PKOdeFunctorRateAdaptor<F, double> f(f_);
+        std::vector<int> x_i;
+        const std::vector<double> pars{value_of(par_)};
+        std::vector<std::vector<double> > res_v =
+          PkOdeIntegrator<It>(rtol, atol, max_num_steps, msgs)(f, y, t0, ts, pars, rate, x_i); // NOLINT
+        res = stan::math::to_vector(res_v[0]);
+      }
+      return res;
+    }
+
+    /*
+     * When @c rate is a parameter, we append it to @c theta.
      */
     template<PkOdeIntegratorId It>
     Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
@@ -250,24 +293,25 @@ namespace refactor {
              const double rtol,
              const double atol,
              const int max_num_steps,
-             std::ostream* msgs) {
+             std::ostream* msgs) const {
       using stan::math::var;
+      using stan::math::value_of;
 
+      const double t0 = value_of(t0_);
       std::vector<T_time> ts{t0_ + dt};
       Eigen::Matrix<scalar_type, Eigen::Dynamic, 1> res;
       if (ts[0] == t0_) {
         res = y0_;
       } else {
         auto y = stan::math::to_array_1d(y0_);
-        PKOdeFunctorRateAdaptor<F, var, T_par> f(f_, par_.size());
+        PKOdeFunctorRateAdaptor<F, var> f(f_, par_.size());
         std::vector<double> x_r;
         std::vector<int> x_i;
         std::vector<stan::math::var> theta(par_.size() + rate.size());
         for (size_t i = 0; i < par_.size(); ++i) theta[i] = par_[i];
         for (size_t i = 0; i < rate.size(); ++i) theta[i + par_.size()] = rate[i];
         std::vector<std::vector<scalar_type> > res_v =
-          PkOdeIntegrator<It>()(f, y, t0_, ts, theta,
-                                x_r, x_i, msgs, rtol, atol, max_num_steps);
+          PkOdeIntegrator<It>(rtol, atol, max_num_steps, msgs)(f, y, t0, ts, theta, x_r, x_i); // NOLINT
         res = stan::math::to_vector(res_v[0]);
       }
       return res;
@@ -291,12 +335,219 @@ namespace refactor {
     template<PkOdeIntegratorId It>
     Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
     solve(const T_time& dt,
-             const double rtol,
-             const double atol,
-             const int max_num_steps,
-             std::ostream* msgs) {
+          const double rtol,
+          const double atol,
+          const int max_num_steps,
+          std::ostream* msgs) const {
       return integrate<It>(rate_, dt, rtol, atol, max_num_steps, msgs);
     }
+
+    /**
+     * Solve steady state ODE-based PKPD model.
+     *
+     * @tparam T_ii dosing interval type
+     * @tparam T_model ODE model type
+     * @tparam Ts_par type of parameters
+     * @param pkmodel Linear ODE model
+     * @param amt dosing amount
+     * @param rate dosing rate
+     * @param ii dosing interval
+     * @param cmt compartment where the dosing occurs
+     * @return col vector of the steady state ODE solution
+     */
+    template<PkOdeIntegratorId It, typename T_ii>
+    Eigen::Matrix<typename promote_args<T_ii, par_type>::type, Eigen::Dynamic, 1> // NOLINT
+    solve(const double& amt,
+          const double& rate,
+          const T_ii& ii,
+          const int& cmt,
+          const double rtol,
+          const double atol,
+          const int max_num_steps,
+          std::ostream* msgs) const {
+      using Eigen::Matrix;
+      using Eigen::Dynamic;
+      using Eigen::VectorXd;
+      using std::vector;
+      using stan::math::algebra_solver;
+      using stan::math::to_vector;
+      using stan::math::value_of;
+      using refactor::PKRec;
+
+      typedef typename promote_args<T_ii, T_par>::type scalar;
+
+      const F& f = f_;
+      const int& ncmt = ncmt_;
+
+      Matrix<scalar, Dynamic, 1> pred;
+
+      // Arguments for ODE integrator (and initial guess)
+      double ii_dbl = torsten::unpromote(ii);
+      Matrix<double, 1, Dynamic> init_dbl(ncmt);
+      for (int i = 0; i < ncmt; i++) init_dbl(i) = 0;
+      vector<double> x_r(ncmt, 0);
+      vector<int> x_i(0);
+
+      // Arguments for algebraic solver
+      Matrix<double, Dynamic, 1> y;
+      const double alge_rtol = 1e-10;  // default
+      const double f_tol = 1e-4;  // empirical
+      const long int alge_max_steps = 1e3;  // default
+
+      // construct algebraic function
+      torsten::general_functor<F> f1(f);
+      using SS_functor = torsten::ode_rate_dbl_functor<torsten::general_functor<F>>;
+      PkOdeIntegrator<It> integrator(rtol, atol, max_num_steps, msgs);
+      torsten::SteadyStateSys_dd<It, SS_functor, void> system(SS_functor(f1), ii_dbl, cmt, integrator); // NOLINT
+
+      // refactor::PKODEModelSolver sol(integrator_);
+
+      if (rate == 0) {  // bolus dose
+        // compute initial guess
+        init_dbl(cmt - 1) = amt;
+        y = integrate<It>(x_r, init_dbl, ii_dbl, rtol, atol, max_num_steps, msgs); // NOLINT
+    
+          // y = sol.solve(general_functor<F>(f),
+          //               stan::math::value_of(pkmodel.t0()),
+          //               init_dbl,
+          //               ii_dbl,
+          //               stan::math::value_of(pkmodel.par()),
+          //               x_r);
+          x_r.push_back(amt);
+        pred = algebra_solver(system, y,
+                              to_vector(par_),
+                              x_r, x_i,
+                              0, alge_rtol, f_tol, alge_max_steps);
+        // DEV - what tuning parameters should we use for the algebra solver?
+        // DEV - update initial guess or tuning parameters if result not good?
+      }  else if (ii > 0) {  // multiple truncated infusions
+        x_r[cmt - 1] = rate;
+        // compute initial guess
+        y = integrate<It>(x_r, init_dbl, ii_dbl, rtol, atol, max_num_steps, msgs); // NOLINT
+          // y = sol.solve(general_functor<F>(f),
+          //               stan::math::value_of(pkmodel.t0()),
+          //               init_dbl,
+          //               ii_dbl,
+          //               stan::math::value_of(pkmodel.par()),
+          //               x_r);
+          x_r.push_back(amt);
+        pred = algebra_solver(system, y,
+                              to_vector(par_),
+                              x_r, x_i,
+                              0, alge_rtol, 1e-3, alge_max_steps);  // FIX ME
+        // use ftol
+      } else {  // constant infusion
+        x_r[cmt - 1] = rate;
+        y = integrate<It>(x_r, init_dbl, 100.0, rtol, atol, max_num_steps, msgs); // NOLINT
+          // y = sol.solve(general_functor<F>(f),
+          //               stan::math::value_of(pkmodel.t0()),
+          //               init_dbl,
+          //               100.0,
+          //               stan::math::value_of(pkmodel.par()),
+          //               x_r);
+
+          x_r.push_back(amt);
+        pred = algebra_solver(system, y,
+                              to_vector(par_),
+                              x_r, x_i,
+                              0, alge_rtol, f_tol, alge_max_steps);
+      }
+
+      return pred;
+    }
+
+    template<PkOdeIntegratorId It, typename T_amt, typename T_ii>
+    Eigen::Matrix<typename promote_args<T_amt, T_ii, T_par>::type, Eigen::Dynamic, 1> // NOLINT
+    solve(const T_amt& amt,
+          const double& rate,
+          const T_ii& ii,
+          const int& cmt,
+          const double rtol,
+          const double atol,
+          const int max_num_steps,
+          std::ostream* msgs) const {
+      using Eigen::Matrix;
+      using Eigen::Dynamic;
+      using Eigen::VectorXd;
+      using std::vector;
+      using stan::math::algebra_solver;
+      using stan::math::to_vector;
+      using stan::math::invalid_argument;
+
+      typedef typename promote_args<T_ii, T_amt, T_time, T_par>::type scalar;
+
+      const F& f = f_;
+      const int& ncmt = ncmt_;
+      const std::vector<T_par>& pars = par_;
+
+      Matrix<scalar, Dynamic, 1> pred;
+
+      // Arguments for the ODE integrator
+      double ii_dbl = torsten::unpromote(ii);
+      Matrix<double, 1, Dynamic> init_dbl(ncmt);
+      for (int i = 0; i < ncmt; i++) init_dbl(i) = 0;
+      vector<double> x_r(ncmt, 0);
+      vector<int> x_i(0);
+
+      // Arguments for algebraic solver
+      Matrix<double, Dynamic, 1> y;
+      const double alge_rtol = 1e-10;  // default
+      const double f_tol = 5e-4;  // empirical (note: differs from other function)
+      const long int alge_max_steps = 1e4;  // default  // NOLINT
+
+      // construct algebraic function
+      torsten::general_functor<F> f1(f);
+      PkOdeIntegrator<It> integrator(rtol, atol, max_num_steps, msgs);
+      using SS_functor = torsten::ode_rate_dbl_functor<torsten::general_functor<F>>;
+      torsten::SteadyStateSys_vd<It, SS_functor> system(SS_functor(f1), ii_dbl, cmt, integrator); // NOLINT
+
+      int npar = pars.size();
+      Matrix<scalar, Dynamic, 1> parms(npar + 1);
+      for (int i = 0; i < npar; i++) parms(i) = pars[i];
+      parms(npar) = amt;
+
+      if (rate == 0) {  // bolus dose
+        // compute initial guess
+        init_dbl(cmt - 1) = torsten::unpromote(amt);
+        y = integrate<It>(x_r, init_dbl, ii_dbl, rtol, atol, max_num_steps, msgs); // NOLINT
+        // y = sol.solve(general_functor<F>(f),
+        //               stan::math::value_of(pkmodel.t0()),
+        //               init_dbl,
+        //               ii_dbl,
+        //               stan::math::value_of(pkmodel.par()),
+        //               x_r);
+
+        pred = algebra_solver(system, y, parms, x_r, x_i,
+                              0, alge_rtol, f_tol, alge_max_steps);
+      }  else if (ii > 0) {  // multiple truncated infusions
+        // compute initial guess
+        x_r[cmt - 1] = rate;
+        y = integrate<It>(x_r, init_dbl, ii_dbl, rtol, atol, max_num_steps, msgs); // NOLINT
+        // y = sol.solve(general_functor<F>(f),
+        //               stan::math::value_of(pkmodel.t0()),
+        //               init_dbl,
+        //               ii_dbl,
+        //               stan::math::value_of(pkmodel.par()),
+        //               x_r);
+
+        pred = algebra_solver(system, y, parms, x_r, x_i,
+                              0, alge_rtol, 1e-3, alge_max_steps);  // use ftol
+      } else {  // constant infusion
+        x_r[cmt - 1] = rate;
+        y = integrate<It>(x_r, init_dbl, 100.0, rtol, atol, max_num_steps, msgs); // NOLINT
+        // y = sol.solve(general_functor<F>(f),
+        //               stan::math::value_of(pkmodel.t0()),
+        //               init_dbl,
+        //               100.0,
+        //               stan::math::value_of(pkmodel.par()),
+        //               x_r);
+
+        pred = algebra_solver(system, y, parms, x_r, x_i,
+                              0, alge_rtol, f_tol, alge_max_steps);
+      }
+      return pred;
+    }
+
   };
 
 }

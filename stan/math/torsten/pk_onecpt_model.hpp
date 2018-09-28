@@ -165,7 +165,7 @@ namespace refactor {
      * @tparam T_model ODE model type
      */
     Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
-    solve(const T_time& dt) {
+    solve(const T_time& dt) const {
       using Eigen::Matrix;
       using Eigen::Dynamic;
 
@@ -195,12 +195,9 @@ namespace refactor {
    * @tparam T_model ODE model type
    * @tparam T_amt dosing amount type
    */
-    template<typename T_amt, typename T_r>
+    template<typename T_amt, typename T_r, typename T_ii>
     Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
-    solve(const T_amt& amt,
-          const T_r& rate,
-          const T_time& ii,
-          const int& cmt) {
+    solve(const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt) const { //NOLINT
       using Eigen::Matrix;
       using Eigen::Dynamic;
       using std::vector;

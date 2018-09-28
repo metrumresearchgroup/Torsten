@@ -9,7 +9,6 @@
 #include <stan/math/torsten/pk_linode_model.hpp>
 #include <stan/math/torsten/pk_linode_solver.hpp>
 #include <stan/math/torsten/pk_ode_model.hpp>
-#include <stan/math/torsten/pk_rate_adaptor.hpp>
 #include <test/unit/math/torsten/pk_ode_test_fixture.hpp>
 #include <iostream>
 #include <sstream>

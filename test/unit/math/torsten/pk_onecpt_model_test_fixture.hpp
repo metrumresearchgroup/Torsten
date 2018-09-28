@@ -6,7 +6,6 @@
 #include <boost/numeric/odeint.hpp>
 #include <stan/math/torsten/pk_onecpt_model.hpp>
 #include <stan/math/torsten/pk_ode_model.hpp>
-#include <stan/math/torsten/pk_rate_adaptor.hpp>
 #include <iostream>
 #include <sstream>
 #include <vector>

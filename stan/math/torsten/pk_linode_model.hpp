@@ -131,8 +131,8 @@ namespace refactor {
     /*
      * solve linear ODE model using matrix exponential function
      */
-    Eigen::Matrix<scalar_type, Eigen::Dynamic, 1> 
-    solve(const T_time& dt) {
+    Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
+    solve(const T_time& dt) const {
       using Eigen::Matrix;
       using Eigen::Dynamic;
       using stan::math::value_of;
@@ -168,10 +168,10 @@ namespace refactor {
     /*
      * solve the linear ODE: steady state version
      */
-    template<typename T_amt, typename T_r>
+    template<typename T_amt, typename T_r, typename T_ii>
     Eigen::Matrix<scalar_type, Eigen::Dynamic, 1> 
-    solve(const T_amt& amt, const T_r& rate, const T_time& ii,
-          const int& cmt) {
+    solve(const T_amt& amt, const T_r& rate, const T_ii& ii,
+          const int& cmt) const {
       using Eigen::Matrix;
       using Eigen::Dynamic;
       using stan::math::matrix_exp;
@@ -179,9 +179,8 @@ namespace refactor {
       using stan::math::multiply;
       using std::vector;
 
-      typedef typename promote_args<T_time, T_par>::type T0;
-      typedef typename promote_args<T_amt, T_r, T_time,
-                                    T_par>::type scalar;
+      typedef typename promote_args<T_ii, T_par>::type T0;
+      typedef typename promote_args<T_amt, T_r, T_ii, T_par>::type scalar; //NOLINT
 
       Matrix<T_par, Dynamic, Dynamic> system = coef();
       int nCmt = ncmt();
