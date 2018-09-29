@@ -396,9 +396,9 @@ namespace refactor {
 
       // construct algebraic function
       torsten::general_functor<F> f1(f);
-      using SS_functor = torsten::ode_rate_dbl_functor<torsten::general_functor<F>>;
+      using F_ss = torsten::ode_rate_dbl_functor<torsten::general_functor<F>>;
       PkOdeIntegrator<It> integrator(rtol, atol, max_num_steps, msgs);
-      torsten::SteadyStateSys_dd<It, SS_functor, void> system(SS_functor(f1), ii_dbl, cmt, integrator); // NOLINT
+      torsten::SSFunctor<It, double, double, F_ss, void> system(F_ss(f1), ii_dbl, cmt, integrator); // NOLINT
 
       // refactor::PKODEModelSolver sol(integrator_);
 
@@ -498,8 +498,8 @@ namespace refactor {
       // construct algebraic function
       torsten::general_functor<F> f1(f);
       PkOdeIntegrator<It> integrator(rtol, atol, max_num_steps, msgs);
-      using SS_functor = torsten::ode_rate_dbl_functor<torsten::general_functor<F>>;
-      torsten::SteadyStateSys_vd<It, SS_functor> system(SS_functor(f1), ii_dbl, cmt, integrator); // NOLINT
+      using F_ss = torsten::ode_rate_dbl_functor<torsten::general_functor<F>>;
+      torsten::SSFunctor<It, T_amt, double, F_ss, void> system(F_ss(f1), ii_dbl, cmt, integrator); // NOLINT
 
       int npar = pars.size();
       Matrix<scalar, Dynamic, 1> parms(npar + 1);

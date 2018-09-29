@@ -11,6 +11,9 @@
 
 namespace torsten {
 
+  template <PkOdeIntegratorId It, typename T_amt, typename T_rate, typename F, typename F2> // NOLINT
+    struct SSFunctor;
+
 /**
  * A structure to store the algebraic system
  * which gets solved when computing the steady
@@ -20,23 +23,23 @@ namespace torsten {
  * variables.
  */
   template <PkOdeIntegratorId It, typename F, typename F2>
-    struct SteadyStateSys_dd {
+    struct SSFunctor<It, double, double, F, F2> {
     F f_;
     double ii_;
     int cmt_;  // dosing compartment
     const PkOdeIntegrator<It> integrator_;
     int nPK_;
 
-    SteadyStateSys_dd() {}
+    SSFunctor() {}
 
-    SteadyStateSys_dd(const F& f,
+    SSFunctor(const F& f,
                       double ii,
                       int cmt,
                       const PkOdeIntegrator<It>& integrator) :
       f_(f), ii_(ii), cmt_(cmt), integrator_(integrator), nPK_(0)
     {}
 
-    SteadyStateSys_dd(const F& f,
+    SSFunctor(const F& f,
                       double ii,
                       int cmt,
                       const PkOdeIntegrator<It>& integrator,
@@ -47,14 +50,14 @@ namespace torsten {
   template<typename Ty, typename T_pksolve>
   struct AttachPKSol {
     void attach(const double& delta,
-                const SteadyStateSys_dd<It, F, F2>& ss,
+                const int& npk,
                 const std::vector<double> &dat_ode,
                 const Eigen::Matrix<Ty, Eigen::Dynamic, 1>& y,
                 Eigen::Matrix<Ty, Eigen::Dynamic, 1>& y2) {
-      const int nParms = y.size() - ss.nPK_;
-      if (ss.nPK_ != 0) {
-        refactor::PKRec<Ty> x0_pk(ss.nPK_);
-        for (int i = 0; i < ss.nPK_; i++) x0_pk(i) = y(nParms + i);
+      const int nParms = y.size() - npk;
+      if (npk != 0) {
+        refactor::PKRec<Ty> x0_pk(npk);
+        for (int i = 0; i < npk; i++) x0_pk(i) = y(nParms + i);
 
         using T_pkmodel =
           typename T_pksolve::template default_model<double, Ty, double, Ty>;
@@ -62,7 +65,7 @@ namespace torsten {
         auto y_par = stan::math::to_array_1d(y);
         T_pkmodel pkmodel {t00, x0_pk, dat_ode, y_par};
         refactor::PKRec<Ty> x_pk = T_pksolve().solve(pkmodel, delta);
-        for (int i = 0; i < ss.nPK_; i++) y2(nParms + i) = x_pk(i);
+        for (int i = 0; i < npk; i++) y2(nParms + i) = x_pk(i);
       }
     }
   };
@@ -70,7 +73,7 @@ namespace torsten {
   template<typename Ty>
   struct AttachPKSol<Ty, void> {
     void attach(const double& delta,
-                const SteadyStateSys_dd<It, F, F2>& ss,
+                const int& npk,
                 const std::vector<double> &dat_ode,
                 const Eigen::Matrix<Ty, Eigen::Dynamic, 1>& y,
                 Eigen::Matrix<Ty, Eigen::Dynamic, 1>& y2)
@@ -142,7 +145,7 @@ namespace torsten {
       int nParms = y.size() - nPK_;
       for (int i = 0; i < nParms; i++) y2(i) = y(i);
 
-      AttachPKSol<T1, F2>().attach(delta, *this, dat_ode, y, y2);
+      AttachPKSol<T1, F2>().attach(delta, nPK_, dat_ode, y, y2);
 
       ts[0] = ii_ - delta;
       dat_ode[cmt_ - 1] = 0;
@@ -169,23 +172,23 @@ namespace torsten {
  * and rate a fixed variable (vd regime).
  */
   template <PkOdeIntegratorId It, typename F>
-    struct SteadyStateSys_vd {
+    struct SSFunctor<It, stan::math::var, double, F, void> {
     F f_;
     double ii_;
     int cmt_;  // dosing compartment
     const PkOdeIntegrator<It> integrator_;
     int nPK_;
 
-    SteadyStateSys_vd() {}
+    SSFunctor() {}
 
-  SteadyStateSys_vd(const F& f,
+  SSFunctor(const F& f,
                     double ii,
                     int cmt,
                     const PkOdeIntegrator<It>& integrator) :
     f_(f), ii_(ii), cmt_(cmt), integrator_(integrator), nPK_(0)
   {}
 
-  SteadyStateSys_vd(const F& f,
+  SSFunctor(const F& f,
                     double ii,
                     int cmt,
                     const PkOdeIntegrator<It>& integrator,
