@@ -23,8 +23,10 @@ namespace refactor {
    */
   template<typename F>
   struct PKOdeFunctorRateAdaptor<F, double> {
-    const F& f;
-    explicit PKOdeFunctorRateAdaptor(const F& f0) : f(f0) {}
+    const F f;
+    const int dummy;
+    explicit PKOdeFunctorRateAdaptor(const F& f0) : f(f0), dummy(-1) {}
+    PKOdeFunctorRateAdaptor(const F& f0, const int i) : f(f0), dummy(i) {}
 
     template <typename T0, typename T1, typename T2>
     inline std::vector<typename stan::return_type<T1, T2>::type>
@@ -51,7 +53,7 @@ namespace refactor {
    */
   template<typename F>
   struct PKOdeFunctorRateAdaptor<F, stan::math::var> {
-    const F& f;
+    const F f;
     const int index_rate;
     PKOdeFunctorRateAdaptor(const F& f0, int i) : f(f0), index_rate(i) {}
 
@@ -81,18 +83,14 @@ namespace refactor {
    * @tparam F ODE functor
    * @tparam Ti ODE additional parameter type, usually the ODE size
    */
-  template<typename T_time,
-           typename T_init,
-           typename T_rate,
-           typename T_par,
-           typename F,
-           typename Ti>
+  template<typename T_time, typename T_init, typename T_rate, typename T_par, typename F, typename Ti> // NOLINT
   class PKODEModel {
     const T_time &t0_;
     const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& y0_;
     const std::vector<T_rate> &rate_;
     const std::vector<T_par> &par_;
     const F &f_;
+    const PKOdeFunctorRateAdaptor<F, T_rate> f1;
     const int ncmt_;
   public:
     using scalar_type = typename promote_args<T_time, T_rate, T_par, T_init>::type; // NOLINT
@@ -140,6 +138,7 @@ namespace refactor {
       rate_(rate),
       par_(par),
       f_(f),
+      f1(f_, par_.size()),
       ncmt_(ncmt)
     {}
 
@@ -164,6 +163,7 @@ namespace refactor {
       rate_(rate),
       par_(par),
       f_(f),
+      f1(f_, par_.size()),
       ncmt_(ncmt)
     {}
 
@@ -182,6 +182,7 @@ namespace refactor {
       rate_(m.rate()),
       par_(m.par()),
       f_(m.f()),
+      f1(f_, par_.size()),
       ncmt_(m.ncmt())
     {}
     
@@ -243,10 +244,10 @@ namespace refactor {
         res = y0_;
       } else {
         auto y = stan::math::to_array_1d(y0_);
-        PKOdeFunctorRateAdaptor<F, double> f(f_);
+        // PKOdeFunctorRateAdaptor<F, double> f(f_);
         std::vector<int> x_i;
         std::vector<std::vector<scalar_type> > res_v =
-          PkOdeIntegrator<It>(rtol, atol, max_num_steps, msgs)(f, y, t0, ts, par_, rate, x_i); // NOLINT
+          PkOdeIntegrator<It>(rtol, atol, max_num_steps, msgs)(f1, y, t0, ts, par_, rate, x_i); // NOLINT
         res = stan::math::to_vector(res_v[0]);
       }
       return res;
@@ -304,14 +305,13 @@ namespace refactor {
         res = y0_;
       } else {
         auto y = stan::math::to_array_1d(y0_);
-        PKOdeFunctorRateAdaptor<F, var> f(f_, par_.size());
         std::vector<double> x_r;
         std::vector<int> x_i;
         std::vector<stan::math::var> theta(par_.size() + rate.size());
         for (size_t i = 0; i < par_.size(); ++i) theta[i] = par_[i];
         for (size_t i = 0; i < rate.size(); ++i) theta[i + par_.size()] = rate[i];
         std::vector<std::vector<scalar_type> > res_v =
-          PkOdeIntegrator<It>(rtol, atol, max_num_steps, msgs)(f, y, t0, ts, theta, x_r, x_i); // NOLINT
+          PkOdeIntegrator<It>(rtol, atol, max_num_steps, msgs)(f1, y, t0, ts, theta, x_r, x_i); // NOLINT
         res = stan::math::to_vector(res_v[0]);
       }
       return res;
@@ -551,8 +551,5 @@ namespace refactor {
   };
 
 }
-
-
-
 
 #endif
