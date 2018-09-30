@@ -19,15 +19,27 @@ namespace refactor {
 
   /*
    * Adaptor for ODE functor when rate is data. In this
-   * case rate should be passed in by @c x_r.
+   * case rate should be passed in by @c x_r. 
    */
   template<typename F>
   struct PKOdeFunctorRateAdaptor<F, double> {
     const F f;
-    const int dummy;
-    explicit PKOdeFunctorRateAdaptor(const F& f0) : f(f0), dummy(-1) {}
+    const int dummy = -1;
+    explicit PKOdeFunctorRateAdaptor(const F& f0) : f(f0) {}
     PKOdeFunctorRateAdaptor(const F& f0, const int i) : f(f0), dummy(i) {}
 
+    /*
+     * @c algebra_solver requires a default constructor for
+     * the functor type passed as its 1st argument. In this
+     * case the ODE functor @c F has default constructor, so
+     * we add a default value of @c dummy, as it is not
+     * relevant when @c rate is data anyway.
+     */
+    PKOdeFunctorRateAdaptor() {}
+
+    /*
+     * Evaluate ODE functor and add @c rate data afterwards.
+     */
     template <typename T0, typename T1, typename T2>
     inline std::vector<typename stan::return_type<T1, T2>::type>
     operator()(const T0& t,
@@ -54,9 +66,23 @@ namespace refactor {
   template<typename F>
   struct PKOdeFunctorRateAdaptor<F, stan::math::var> {
     const F f;
-    const int index_rate;
+    const int index_rate = -1;
     PKOdeFunctorRateAdaptor(const F& f0, int i) : f(f0), index_rate(i) {}
 
+    /*
+     * @c algebra_solver requires a default constructor. In
+     * this case, the index of @c rate in @c theta is
+     * calculated by assumption that @c theta is laid out as
+     * @c [theta, rate]
+     */
+    PKOdeFunctorRateAdaptor() {}
+
+    /*
+     * Evaluate ODE functor, with @c theta contains original
+     * parameter vector followed by @c rate params. So the
+     * @c theta passed in must be modfified to reflect this
+     * data arrangement.
+     */
     template <typename T0, typename T1, typename T2>
     inline std::vector<typename stan::return_type<T1, T2>::type>
     operator()(const T0& t,
@@ -67,7 +93,12 @@ namespace refactor {
                std::ostream* msgs) const {
       std::vector<typename stan::return_type<T1, T2>::type> res;
       res = f(t, y, theta, x_r, x_i, msgs);
-      for (size_t i = 0; i < y.size(); i++) res.at(i) += theta.at(i + index_rate);
+      if (index_rate == -1) {
+        for (size_t i = 0; i < y.size(); i++) res.at(i) += theta.at(i + theta.size() - res.size()); // NOLINT
+      } else {
+        for (size_t i = 0; i < y.size(); i++) res.at(i) += theta.at(i + index_rate); // NOLINT
+      }
+
       return res;
     }
   };
@@ -111,20 +142,20 @@ namespace refactor {
       return p.get_RealParameters();
     }
 
-  /**
-   * Constructor
-   * FIXME need to remove parameter as this is for linode only.
-   *
-   * @tparam T_mp parameters class
-   * @tparam Ts parameter types
-   * @param t0 initial time
-   * @param y0 initial condition
-   * @param rate dosing rate
-   * @param par model parameters
-   * @param parameter ModelParameter type
-   * @param f ODE functor
-   * @param ncmt the ODE size.
-   */
+    /**
+     * Constructor
+     * FIXME need to remove parameter as this is for linode only.
+     *
+     * @tparam T_mp parameters class
+     * @tparam Ts parameter types
+     * @param t0 initial time
+     * @param y0 initial condition
+     * @param rate dosing rate
+     * @param par model parameters
+     * @param parameter ModelParameter type
+     * @param f ODE functor
+     * @param ncmt the ODE size.
+     */
     template<template<typename...> class T_mp, typename... Ts>
     PKODEModel(const T_time& t0,
                const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& y0,
@@ -133,48 +164,36 @@ namespace refactor {
                const T_mp<Ts...> &parameter,
                const F& f,
                const Ti &ncmt) :
-      t0_(t0),
-      y0_(y0),
-      rate_(rate),
-      par_(par),
-      f_(f),
-      f1(f_, par_.size()),
-      ncmt_(ncmt)
+      t0_(t0), y0_(y0), rate_(rate), par_(par), f_(f), f1(f_, par_.size()), ncmt_(ncmt) // NOLINT
     {}
 
-  /**
-   * Constructor
-   *
-   * @param t0 initial time
-   * @param y0 initial condition
-   * @param rate dosing rate
-   * @param par model parameters
-   * @param f ODE functor
-   * @param ncmt the ODE size.
-   */
+    /**
+     * Constructor
+     *
+     * @param t0 initial time
+     * @param y0 initial condition
+     * @param rate dosing rate
+     * @param par model parameters
+     * @param f ODE functor
+     * @param ncmt the ODE size.
+     */
     PKODEModel(const T_time& t0,
                const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& y0,
                const std::vector<T_rate> &rate,
                const std::vector<T_par> &par,
                const F& f,
                const Ti &ncmt) :
-      t0_(t0),
-      y0_(y0),
-      rate_(rate),
-      par_(par),
-      f_(f),
-      f1(f_, par_.size()),
-      ncmt_(ncmt)
+      t0_(t0), y0_(y0), rate_(rate), par_(par), f_(f), f1(f_, par_.size()), ncmt_(ncmt) // NOLINT
     {}
 
-  /**
-   * Constructor from any other model type as long as it
-   * provides enough information to build an ODE model.
-   *
-   * @tparam T_model model type that can be used as ODE model.
-   * @tparam Ts type parameters for @c T_model
-   * @param m model that provides ODE information.
-   */
+    /**
+     * Constructor from any other model type as long as it
+     * provides enough information to build an ODE model.
+     *
+     * @tparam T_model model type that can be used as ODE model.
+     * @tparam Ts type parameters for @c T_model
+     * @param m model that provides ODE information.
+     */
     template<template<typename...> class T_model, typename... Ts>    
     PKODEModel(const T_model<Ts...>& m) :
       t0_(m.t0()),
@@ -186,15 +205,6 @@ namespace refactor {
       ncmt_(m.ncmt())
     {}
     
-    // // copy constructor
-    // template<typename F1>
-    // PKODEModel<T_time, T_init, T_rate, T_par, F1, Ti>    
-    // with_f(const F1& f_new) const {
-    //   return PKODEModel<T_time, T_init, T_rate, T_par, F1, Ti>
-    //     (this -> t0_, this -> y0_, this -> rate_,
-    //      this -> par_, f_new, this -> ncmt_);
-    // }
-
     /**
      * @return initial time
      */
@@ -230,11 +240,11 @@ namespace refactor {
     template<PkOdeIntegratorId It>
     Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
     integrate(const std::vector<double> &rate,
-             const T_time& dt,
-             const double rtol,
-             const double atol,
-             const int max_num_steps,
-             std::ostream* msgs) const {
+              const T_time& dt,
+              const double rtol,
+              const double atol,
+              const int max_num_steps,
+              std::ostream* msgs) const {
       using stan::math::value_of;
 
       const double t0 = value_of(t0_);
@@ -244,7 +254,6 @@ namespace refactor {
         res = y0_;
       } else {
         auto y = stan::math::to_array_1d(y0_);
-        // PKOdeFunctorRateAdaptor<F, double> f(f_);
         std::vector<int> x_i;
         std::vector<std::vector<scalar_type> > res_v =
           PkOdeIntegrator<It>(rtol, atol, max_num_steps, msgs)(f1, y, t0, ts, par_, rate, x_i); // NOLINT
@@ -290,11 +299,11 @@ namespace refactor {
     template<PkOdeIntegratorId It>
     Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
     integrate(const std::vector<stan::math::var> &rate,
-             const T_time& dt,
-             const double rtol,
-             const double atol,
-             const int max_num_steps,
-             std::ostream* msgs) const {
+              const T_time& dt,
+              const double rtol,
+              const double atol,
+              const int max_num_steps,
+              std::ostream* msgs) const {
       using stan::math::var;
       using stan::math::value_of;
 
@@ -343,16 +352,19 @@ namespace refactor {
     }
 
     /**
-     * Solve steady state ODE-based PKPD model.
+     * Solve steady state ODE-based PKPD model with @c amt
+     * and @c rate both being data.
      *
+     * @tparam It ODE numerical integrator ID.
      * @tparam T_ii dosing interval type
-     * @tparam T_model ODE model type
-     * @tparam Ts_par type of parameters
-     * @param pkmodel Linear ODE model
      * @param amt dosing amount
      * @param rate dosing rate
      * @param ii dosing interval
      * @param cmt compartment where the dosing occurs
+     * @param rtol relative tolerance of ODE integrator.
+     * @param atol absolute tolerance of ODE integrator.
+     * @param max_num_steps max number of steps of ODE integrator.
+     * @param msgs @c ostream output of ODE integrator.
      * @return col vector of the steady state ODE solution
      */
     template<PkOdeIntegratorId It, typename T_ii>
@@ -376,7 +388,6 @@ namespace refactor {
 
       typedef typename promote_args<T_ii, T_par>::type scalar;
 
-      const F& f = f_;
       const int& ncmt = ncmt_;
 
       Matrix<scalar, Dynamic, 1> pred;
@@ -394,26 +405,15 @@ namespace refactor {
       const double f_tol = 1e-4;  // empirical
       const long int alge_max_steps = 1e3;  // default
 
-      // construct algebraic function
-      torsten::general_functor<F> f1(f);
-      using F_ss = torsten::ode_rate_dbl_functor<torsten::general_functor<F>>;
+      using F_ss = PKOdeFunctorRateAdaptor<F, double>;
       PkOdeIntegrator<It> integrator(rtol, atol, max_num_steps, msgs);
-      torsten::SSFunctor<It, double, double, F_ss, void> system(F_ss(f1), ii_dbl, cmt, integrator); // NOLINT
-
-      // refactor::PKODEModelSolver sol(integrator_);
+      torsten::SSFunctor<It, double, double, F_ss, void> system(f1, ii_dbl, cmt, integrator); // NOLINT
 
       if (rate == 0) {  // bolus dose
         // compute initial guess
         init_dbl(cmt - 1) = amt;
         y = integrate<It>(x_r, init_dbl, ii_dbl, rtol, atol, max_num_steps, msgs); // NOLINT
-    
-          // y = sol.solve(general_functor<F>(f),
-          //               stan::math::value_of(pkmodel.t0()),
-          //               init_dbl,
-          //               ii_dbl,
-          //               stan::math::value_of(pkmodel.par()),
-          //               x_r);
-          x_r.push_back(amt);
+        x_r.push_back(amt);
         pred = algebra_solver(system, y,
                               to_vector(par_),
                               x_r, x_i,
@@ -424,13 +424,7 @@ namespace refactor {
         x_r[cmt - 1] = rate;
         // compute initial guess
         y = integrate<It>(x_r, init_dbl, ii_dbl, rtol, atol, max_num_steps, msgs); // NOLINT
-          // y = sol.solve(general_functor<F>(f),
-          //               stan::math::value_of(pkmodel.t0()),
-          //               init_dbl,
-          //               ii_dbl,
-          //               stan::math::value_of(pkmodel.par()),
-          //               x_r);
-          x_r.push_back(amt);
+        x_r.push_back(amt);
         pred = algebra_solver(system, y,
                               to_vector(par_),
                               x_r, x_i,
@@ -439,23 +433,32 @@ namespace refactor {
       } else {  // constant infusion
         x_r[cmt - 1] = rate;
         y = integrate<It>(x_r, init_dbl, 100.0, rtol, atol, max_num_steps, msgs); // NOLINT
-          // y = sol.solve(general_functor<F>(f),
-          //               stan::math::value_of(pkmodel.t0()),
-          //               init_dbl,
-          //               100.0,
-          //               stan::math::value_of(pkmodel.par()),
-          //               x_r);
-
-          x_r.push_back(amt);
+        x_r.push_back(amt);
         pred = algebra_solver(system, y,
                               to_vector(par_),
                               x_r, x_i,
                               0, alge_rtol, f_tol, alge_max_steps);
       }
-
       return pred;
     }
 
+    /**
+     * Solve steady state ODE-based PKPD model with @c amt
+     * being param and @c rate both being data.
+     *
+     * @tparam It ODE numerical integrator ID.
+     * @tparam T_amt dosing amount type.
+     * @tparam T_ii dosing interval type
+     * @param amt dosing amount
+     * @param rate dosing rate
+     * @param ii dosing interval
+     * @param cmt compartment where the dosing occurs
+     * @param rtol relative tolerance of ODE integrator.
+     * @param atol absolute tolerance of ODE integrator.
+     * @param max_num_steps max number of steps of ODE integrator.
+     * @param msgs @c ostream output of ODE integrator.
+     * @return col vector of the steady state ODE solution
+     */
     template<PkOdeIntegratorId It, typename T_amt, typename T_ii>
     Eigen::Matrix<typename promote_args<T_amt, T_ii, T_par>::type, Eigen::Dynamic, 1> // NOLINT
     solve(const T_amt& amt,
@@ -476,7 +479,6 @@ namespace refactor {
 
       typedef typename promote_args<T_ii, T_amt, T_time, T_par>::type scalar;
 
-      const F& f = f_;
       const int& ncmt = ncmt_;
       const std::vector<T_par>& pars = par_;
 
@@ -496,10 +498,10 @@ namespace refactor {
       const long int alge_max_steps = 1e4;  // default  // NOLINT
 
       // construct algebraic function
-      torsten::general_functor<F> f1(f);
+      torsten::general_functor<F> f1(f_);
+      using F_ss = PKOdeFunctorRateAdaptor<F, double>;
       PkOdeIntegrator<It> integrator(rtol, atol, max_num_steps, msgs);
-      using F_ss = torsten::ode_rate_dbl_functor<torsten::general_functor<F>>;
-      torsten::SSFunctor<It, T_amt, double, F_ss, void> system(F_ss(f1), ii_dbl, cmt, integrator); // NOLINT
+      torsten::SSFunctor<It, T_amt, double, F_ss, void> system(F_ss(f_), ii_dbl, cmt, integrator); // NOLINT
 
       int npar = pars.size();
       Matrix<scalar, Dynamic, 1> parms(npar + 1);
@@ -510,46 +512,20 @@ namespace refactor {
         // compute initial guess
         init_dbl(cmt - 1) = torsten::unpromote(amt);
         y = integrate<It>(x_r, init_dbl, ii_dbl, rtol, atol, max_num_steps, msgs); // NOLINT
-        // y = sol.solve(general_functor<F>(f),
-        //               stan::math::value_of(pkmodel.t0()),
-        //               init_dbl,
-        //               ii_dbl,
-        //               stan::math::value_of(pkmodel.par()),
-        //               x_r);
-
-        pred = algebra_solver(system, y, parms, x_r, x_i,
-                              0, alge_rtol, f_tol, alge_max_steps);
+        pred = algebra_solver(system, y, parms, x_r, x_i, 0, alge_rtol, f_tol, alge_max_steps); // NOLINT
       }  else if (ii > 0) {  // multiple truncated infusions
         // compute initial guess
         x_r[cmt - 1] = rate;
         y = integrate<It>(x_r, init_dbl, ii_dbl, rtol, atol, max_num_steps, msgs); // NOLINT
-        // y = sol.solve(general_functor<F>(f),
-        //               stan::math::value_of(pkmodel.t0()),
-        //               init_dbl,
-        //               ii_dbl,
-        //               stan::math::value_of(pkmodel.par()),
-        //               x_r);
-
-        pred = algebra_solver(system, y, parms, x_r, x_i,
-                              0, alge_rtol, 1e-3, alge_max_steps);  // use ftol
+        pred = algebra_solver(system, y, parms, x_r, x_i, 0, alge_rtol, 1e-3, alge_max_steps); // NOLINT
       } else {  // constant infusion
         x_r[cmt - 1] = rate;
         y = integrate<It>(x_r, init_dbl, 100.0, rtol, atol, max_num_steps, msgs); // NOLINT
-        // y = sol.solve(general_functor<F>(f),
-        //               stan::math::value_of(pkmodel.t0()),
-        //               init_dbl,
-        //               100.0,
-        //               stan::math::value_of(pkmodel.par()),
-        //               x_r);
-
-        pred = algebra_solver(system, y, parms, x_r, x_i,
-                              0, alge_rtol, f_tol, alge_max_steps);
+        pred = algebra_solver(system, y, parms, x_r, x_i, 0, alge_rtol, f_tol, alge_max_steps); // NOLINT
       }
       return pred;
     }
-
   };
-
 }
 
 #endif
