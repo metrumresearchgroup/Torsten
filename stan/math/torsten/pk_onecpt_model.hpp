@@ -57,7 +57,7 @@ namespace refactor {
   template<typename T_time, typename T_init, typename T_rate, typename T_par>
   class PKOneCptModel {
     const T_time &t0_;
-    const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& y0_;
+    const refactor::PKRec<T_init>& y0_;
     const std::vector<T_rate> &rate_;
     const T_par &CL_;
     const T_par &V2_;
@@ -95,7 +95,7 @@ namespace refactor {
    * @param ka absorption
    */
     PKOneCptModel(const T_time& t0,
-                  const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& y0,
+                  const refactor::PKRec <T_init>& y0,
                   const std::vector<T_rate> &rate,
                   const T_par& CL,
                   const T_par& V2,
@@ -253,6 +253,22 @@ namespace refactor {
       return pred;
     }
 
+    /*
+     * wrapper to fit @c PrepWrapper's call signature
+     */
+    template<PkOdeIntegratorId It>
+    Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
+    solve(const T_time& dt,
+          const PkOdeIntegrator<It>& integrator) const {
+      return solve(dt);
+    }
+
+    template<PkOdeIntegratorId It, typename T_amt, typename T_r, typename T_ii>
+    Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
+    solve(const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt,
+          const PkOdeIntegrator<It>& integrator) const {
+      return solve(amt, rate, ii, cmt);
+    }
   };
 
   template<typename T_time, typename T_init, typename T_rate, typename T_par>

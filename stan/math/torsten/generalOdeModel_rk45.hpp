@@ -96,7 +96,8 @@ generalOdeModel_rk45(const F& f,
 
   typedef general_functor<F> F0;
 
-  PredWrapper<refactor::PKODEModel, StanRk45> pr(rel_tol, abs_tol, max_num_steps, msgs);
+  PredWrapper<refactor::PKODEModel> pr;
+  PkOdeIntegrator<StanRk45> integrator(rel_tol, abs_tol, max_num_steps, msgs);
 
   const Pred1_general<F0> pred1(F0(f), rel_tol, abs_tol,
                                 max_num_steps, msgs, "rk45");
@@ -112,6 +113,7 @@ generalOdeModel_rk45(const F& f,
   return pr.Pred2(time, amt, rate, ii, evid, cmt, addl, ss,
                   pMatrix, biovar, tlag, nCmt, dummy_systems,
                   pred1, predss,
+                  integrator,
                   f, nCmt);
 #endif
 }

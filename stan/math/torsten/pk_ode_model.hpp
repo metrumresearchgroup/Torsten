@@ -241,10 +241,7 @@ namespace refactor {
     Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
     integrate(const std::vector<double> &rate,
               const T_time& dt,
-              const double rtol,
-              const double atol,
-              const int max_num_steps,
-              std::ostream* msgs) const {
+              const PkOdeIntegrator<It>& integrator) const {
       using stan::math::value_of;
 
       const double t0 = value_of(t0_);
@@ -256,7 +253,7 @@ namespace refactor {
         auto y = stan::math::to_array_1d(y0_);
         std::vector<int> x_i;
         std::vector<std::vector<scalar_type> > res_v =
-          PkOdeIntegrator<It>(rtol, atol, max_num_steps, msgs)(f1, y, t0, ts, par_, rate, x_i); // NOLINT
+          integrator(f1, y, t0, ts, par_, rate, x_i); // NOLINT
         res = stan::math::to_vector(res_v[0]);
       }
       return res;
@@ -270,10 +267,7 @@ namespace refactor {
     integrate(const std::vector<double> &rate,
               const Eigen::Matrix<double, 1, Eigen::Dynamic>& y0,
               const double& dt,
-              const double rtol,
-              const double atol,
-              const int max_num_steps,
-              std::ostream* msgs) const {
+              const PkOdeIntegrator<It>& integrator) const {
       using stan::math::value_of;
 
       const double t0 = value_of(t0_) - dt;
@@ -287,7 +281,7 @@ namespace refactor {
         std::vector<int> x_i;
         const std::vector<double> pars{value_of(par_)};
         std::vector<std::vector<double> > res_v =
-          PkOdeIntegrator<It>(rtol, atol, max_num_steps, msgs)(f, y, t0, ts, pars, rate, x_i); // NOLINT
+          integrator(f, y, t0, ts, pars, rate, x_i); // NOLINT
         res = stan::math::to_vector(res_v[0]);
       }
       return res;
@@ -300,10 +294,7 @@ namespace refactor {
     Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
     integrate(const std::vector<stan::math::var> &rate,
               const T_time& dt,
-              const double rtol,
-              const double atol,
-              const int max_num_steps,
-              std::ostream* msgs) const {
+              const PkOdeIntegrator<It>& integrator) const {
       using stan::math::var;
       using stan::math::value_of;
 
@@ -320,7 +311,7 @@ namespace refactor {
         for (size_t i = 0; i < par_.size(); ++i) theta[i] = par_[i];
         for (size_t i = 0; i < rate.size(); ++i) theta[i + par_.size()] = rate[i];
         std::vector<std::vector<scalar_type> > res_v =
-          PkOdeIntegrator<It>(rtol, atol, max_num_steps, msgs)(f1, y, t0, ts, theta, x_r, x_i); // NOLINT
+          integrator(f1, y, t0, ts, theta, x_r, x_i); // NOLINT
         res = stan::math::to_vector(res_v[0]);
       }
       return res;
@@ -344,11 +335,8 @@ namespace refactor {
     template<PkOdeIntegratorId It>
     Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
     solve(const T_time& dt,
-          const double rtol,
-          const double atol,
-          const int max_num_steps,
-          std::ostream* msgs) const {
-      return integrate<It>(rate_, dt, rtol, atol, max_num_steps, msgs);
+          const PkOdeIntegrator<It>& integrator) const {
+      return integrate(rate_, dt, integrator);
     }
 
     /**
@@ -373,10 +361,7 @@ namespace refactor {
           const double& rate,
           const T_ii& ii,
           const int& cmt,
-          const double rtol,
-          const double atol,
-          const int max_num_steps,
-          std::ostream* msgs) const {
+          const PkOdeIntegrator<It>& integrator) const {
       using Eigen::Matrix;
       using Eigen::Dynamic;
       using Eigen::VectorXd;
@@ -406,13 +391,12 @@ namespace refactor {
       const long int alge_max_steps = 1e3;  // default
 
       using F_ss = PKOdeFunctorRateAdaptor<F, double>;
-      PkOdeIntegrator<It> integrator(rtol, atol, max_num_steps, msgs);
       torsten::SSFunctor<It, double, double, F_ss, void> system(f1, ii_dbl, cmt, integrator); // NOLINT
 
       if (rate == 0) {  // bolus dose
         // compute initial guess
         init_dbl(cmt - 1) = amt;
-        y = integrate<It>(x_r, init_dbl, ii_dbl, rtol, atol, max_num_steps, msgs); // NOLINT
+        y = integrate(x_r, init_dbl, ii_dbl, integrator); // NOLINT
         x_r.push_back(amt);
         pred = algebra_solver(system, y,
                               to_vector(par_),
@@ -423,7 +407,7 @@ namespace refactor {
       }  else if (ii > 0) {  // multiple truncated infusions
         x_r[cmt - 1] = rate;
         // compute initial guess
-        y = integrate<It>(x_r, init_dbl, ii_dbl, rtol, atol, max_num_steps, msgs); // NOLINT
+        y = integrate(x_r, init_dbl, ii_dbl, integrator); // NOLINT
         x_r.push_back(amt);
         pred = algebra_solver(system, y,
                               to_vector(par_),
@@ -432,7 +416,7 @@ namespace refactor {
         // use ftol
       } else {  // constant infusion
         x_r[cmt - 1] = rate;
-        y = integrate<It>(x_r, init_dbl, 100.0, rtol, atol, max_num_steps, msgs); // NOLINT
+        y = integrate(x_r, init_dbl, 100.0, integrator); // NOLINT
         x_r.push_back(amt);
         pred = algebra_solver(system, y,
                               to_vector(par_),
@@ -465,10 +449,7 @@ namespace refactor {
           const double& rate,
           const T_ii& ii,
           const int& cmt,
-          const double rtol,
-          const double atol,
-          const int max_num_steps,
-          std::ostream* msgs) const {
+          const PkOdeIntegrator<It>& integrator) const {
       using Eigen::Matrix;
       using Eigen::Dynamic;
       using Eigen::VectorXd;
@@ -498,9 +479,7 @@ namespace refactor {
       const long int alge_max_steps = 1e4;  // default  // NOLINT
 
       // construct algebraic function
-      torsten::general_functor<F> f1(f_);
       using F_ss = PKOdeFunctorRateAdaptor<F, double>;
-      PkOdeIntegrator<It> integrator(rtol, atol, max_num_steps, msgs);
       torsten::SSFunctor<It, T_amt, double, F_ss, void> system(F_ss(f_), ii_dbl, cmt, integrator); // NOLINT
 
       int npar = pars.size();
@@ -511,16 +490,16 @@ namespace refactor {
       if (rate == 0) {  // bolus dose
         // compute initial guess
         init_dbl(cmt - 1) = torsten::unpromote(amt);
-        y = integrate<It>(x_r, init_dbl, ii_dbl, rtol, atol, max_num_steps, msgs); // NOLINT
+        y = integrate(x_r, init_dbl, ii_dbl, integrator); // NOLINT
         pred = algebra_solver(system, y, parms, x_r, x_i, 0, alge_rtol, f_tol, alge_max_steps); // NOLINT
       }  else if (ii > 0) {  // multiple truncated infusions
         // compute initial guess
         x_r[cmt - 1] = rate;
-        y = integrate<It>(x_r, init_dbl, ii_dbl, rtol, atol, max_num_steps, msgs); // NOLINT
+        y = integrate(x_r, init_dbl, ii_dbl, integrator); // NOLINT
         pred = algebra_solver(system, y, parms, x_r, x_i, 0, alge_rtol, 1e-3, alge_max_steps); // NOLINT
       } else {  // constant infusion
         x_r[cmt - 1] = rate;
-        y = integrate<It>(x_r, init_dbl, 100.0, rtol, atol, max_num_steps, msgs); // NOLINT
+        y = integrate(x_r, init_dbl, 100.0, integrator); // NOLINT
         pred = algebra_solver(system, y, parms, x_r, x_i, 0, alge_rtol, f_tol, alge_max_steps); // NOLINT
       }
       return pred;

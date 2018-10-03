@@ -29,31 +29,36 @@ TEST_F(TorstenCptOdeModelTest, general_ode_solver) {
   ts[0] = 20.0;
   ts.resize(1);
 
-  y = model.solve<StanRk45>(ts[0], rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<StanRk45> integ1(rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ1);
   y1 = stan::math::integrate_ode_rk45(f1, yvec, t0, ts, model.par(), model.rate(), x_i, msgs); // NOLINT
   EXPECT_FLOAT_EQ(y(0), y1[0][0]);
   EXPECT_FLOAT_EQ(y(1), y1[0][1]);
   EXPECT_FLOAT_EQ(y(2), y1[0][2]);
 
-  y = model.solve<StanAdams>(ts[0], rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<StanAdams> integ2(rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ2);
   y1 = stan::math::integrate_ode_adams(f1, yvec, t0, ts, model.par(), model.rate(), x_i, msgs); // NOLINT
   EXPECT_FLOAT_EQ(y(0), y1[0][0]);
   EXPECT_FLOAT_EQ(y(1), y1[0][1]);
   EXPECT_FLOAT_EQ(y(2), y1[0][2]);
 
-  y = model.solve<StanBdf>(ts[0], rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<StanBdf> integ3(rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ3);
   y1 = stan::math::integrate_ode_bdf(f1, yvec, t0, ts, model.par(), model.rate(), x_i, msgs); // NOLINT
   EXPECT_FLOAT_EQ(y(0), y1[0][0]);
   EXPECT_FLOAT_EQ(y(1), y1[0][1]);
   EXPECT_FLOAT_EQ(y(2), y1[0][2]);
 
-  y = model.solve<PkAdams>(ts[0], rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<PkAdams> integ4(rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ4);
   y1 = torsten::dsolve::pk_integrate_ode_adams(f1, yvec, t0, ts, model.par(), model.rate(), x_i, msgs); // NOLINT
   EXPECT_FLOAT_EQ(y(0), y1[0][0]);
   EXPECT_FLOAT_EQ(y(1), y1[0][1]);
   EXPECT_FLOAT_EQ(y(2), y1[0][2]);
 
-  y = model.solve<PkBdf>(ts[0], rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<PkBdf> integ5(rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ5);
   y1 = torsten::dsolve::pk_integrate_ode_bdf(f1, yvec, t0, ts, model.par(), model.rate(), x_i, msgs); // NOLINT
   EXPECT_FLOAT_EQ(y(0), y1[0][0]);
   EXPECT_FLOAT_EQ(y(1), y1[0][1]);
@@ -85,31 +90,36 @@ TEST_F(TorstenCptOdeModelTest, general_ode_solver_y0) {
   ts[0] = 20.0;
   ts.resize(1);
 
-  y = model.solve<StanRk45>(ts[0], rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<StanRk45> integ1(rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ1);
   y1 = stan::math::integrate_ode_rk45(f1, yvec, t0, ts, model.par(), model.rate(), x_i, msgs); // NOLINT
   EXPECT_FLOAT_EQ(y(0), y1[0][0]);
   EXPECT_FLOAT_EQ(y(1), y1[0][1]);
   EXPECT_FLOAT_EQ(y(2), y1[0][2]);
 
-  y = model.solve<StanAdams>(ts[0], rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<StanAdams> integ2(rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ2);
   y1 = stan::math::integrate_ode_adams(f1, yvec, t0, ts, model.par(), model.rate(), x_i, msgs); // NOLINT
   EXPECT_FLOAT_EQ(y(0), y1[0][0]);
   EXPECT_FLOAT_EQ(y(1), y1[0][1]);
   EXPECT_FLOAT_EQ(y(2), y1[0][2]);
 
-  y = model.solve<StanBdf>(ts[0], rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<StanBdf> integ3(rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ3);
   y1 = stan::math::integrate_ode_bdf(f1, yvec, t0, ts, model.par(), model.rate(), x_i, msgs); // NOLINT
   EXPECT_FLOAT_EQ(y(0), y1[0][0]);
   EXPECT_FLOAT_EQ(y(1), y1[0][1]);
   EXPECT_FLOAT_EQ(y(2), y1[0][2]);
 
-  y = model.solve<PkAdams>(ts[0], rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<PkAdams> integ4(rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ4);
   y1 = torsten::dsolve::pk_integrate_ode_adams(f1, yvec, t0, ts, model.par(), model.rate(), x_i, msgs); // NOLINT
   EXPECT_FLOAT_EQ(y(0), y1[0][0]);
   EXPECT_FLOAT_EQ(y(1), y1[0][1]);
   EXPECT_FLOAT_EQ(y(2), y1[0][2]);
 
-  y = model.solve<PkBdf>(ts[0], rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<PkBdf> integ5(rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ5);
   y1 = torsten::dsolve::pk_integrate_ode_bdf(f1, yvec, t0, ts, model.par(), model.rate(), x_i, msgs); // NOLINT
   EXPECT_FLOAT_EQ(y(0), y1[0][0]);
   EXPECT_FLOAT_EQ(y(1), y1[0][1]);
@@ -160,23 +170,29 @@ TEST_F(TorstenCptOdeModelTest, general_ode_solver_par_sens) {
     }
   };
 
-  y = model.solve<StanRk45>(ts[0], rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<StanRk45> integ1(rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<StanAdams> integ2(rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<StanBdf> integ3(rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<PkAdams> integ4(rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<PkBdf> integ5(rtol, atol, max_num_steps, msgs);
+
+  y = model.solve(ts[0], integ1);
   y1 = stan::math::integrate_ode_rk45(f1, yvec, t0, ts, model.par(), model.rate(), x_i, msgs); // NOLINT
   test_it();
 
-  y = model.solve<StanAdams>(ts[0], rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ2);
   y1 = stan::math::integrate_ode_adams(f1, yvec, t0, ts, model.par(), model.rate(), x_i, msgs); // NOLINT
   test_it();
 
-  y = model.solve<StanBdf>(ts[0], rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ3);
   y1 = stan::math::integrate_ode_bdf(f1, yvec, t0, ts, model.par(), model.rate(), x_i, msgs); // NOLINT
   test_it();
 
-  y = model.solve<PkAdams>(ts[0], rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ4);
   y1 = torsten::dsolve::pk_integrate_ode_adams(f1, yvec, t0, ts, model.par(), model.rate(), x_i, msgs); // NOLINT
   test_it();
 
-  y = model.solve<PkBdf>(ts[0], rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ5);
   y1 = torsten::dsolve::pk_integrate_ode_bdf(f1, yvec, t0, ts, model.par(), model.rate(), x_i, msgs); // NOLINT
   test_it();
 }
@@ -241,23 +257,29 @@ TEST_F(TorstenCptOdeModelTest, general_ode_solver_par_rate_sens) {
     }
   };
 
-  y = model.solve<StanRk45>(ts[0], rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<StanRk45> integ1(rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<StanAdams> integ2(rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<StanBdf> integ3(rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<PkAdams> integ4(rtol, atol, max_num_steps, msgs);
+  PkOdeIntegrator<PkBdf> integ5(rtol, atol, max_num_steps, msgs);
+
+  y = model.solve(ts[0], integ1);
   y1 = stan::math::integrate_ode_rk45(f1, yvec, t0, ts, theta, x_r, x_i, msgs); // NOLINT
   test_it();
 
-  y = model.solve<StanAdams>(ts[0], rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ2);
   y1 = stan::math::integrate_ode_adams(f1, yvec, t0, ts, theta, x_r, x_i, msgs); // NOLINT
   test_it();
 
-  y = model.solve<StanBdf>(ts[0], rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ3);
   y1 = stan::math::integrate_ode_bdf(f1, yvec, t0, ts, theta, x_r, x_i, msgs); // NOLINT
   test_it();
 
-  y = model.solve<PkAdams>(ts[0], rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ4);
   y1 = torsten::dsolve::pk_integrate_ode_adams(f1, yvec, t0, ts, theta, x_r, x_i, msgs); // NOLINT
   test_it();
 
-  y = model.solve<PkBdf>(ts[0], rtol, atol, max_num_steps, msgs);
+  y = model.solve(ts[0], integ5);
   y1 = torsten::dsolve::pk_integrate_ode_bdf(f1, yvec, t0, ts, theta, x_r, x_i, msgs); // NOLINT
   test_it();
 }

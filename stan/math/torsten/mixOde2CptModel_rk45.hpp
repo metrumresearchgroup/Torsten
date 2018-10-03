@@ -1,5 +1,5 @@
-#ifndef STAN_MATH_TORSTEN_MIXODE2CPTMODEL_RK45_HPP
-#define STAN_MATH_TORSTEN_MIXODE2CPTMODEL_RK45_HPP
+#ifndef STAN_MATH_TORSTEN_REFACTOR_MIXODE2CPTMODEL_RK45_HPP
+#define STAN_MATH_TORSTEN_REFACTOR_MIXODE2CPTMODEL_RK45_HPP
 
 #include <Eigen/Dense>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
@@ -7,6 +7,10 @@
 #include <stan/math/torsten/PKModel/Pred/Pred1_mix2.hpp>
 #include <stan/math/torsten/PKModel/Pred/PredSS_mix2.hpp>
 #include <stan/math/torsten/PKModel/Pred/PredSS_err.hpp>
+#include <stan/math/torsten/Pred2.hpp>
+#include <stan/math/torsten/pk_coupled_model.hpp>
+#include <stan/math/torsten/pk_twocpt_model.hpp>
+#include <stan/math/torsten/pk_ode_model.hpp>
 #include <boost/math/tools/promotion.hpp>
 #include <vector>
 
@@ -85,8 +89,6 @@ mixOde2CptModel_rk45(const F& f,
   using Eigen::Matrix;
   using boost::math::tools::promote_args;
 
-  int nPK = 3;
-
   // check arguments
   static const char* function("mixOde2CptModel_rk45");
   torsten::pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
@@ -99,13 +101,25 @@ mixOde2CptModel_rk45(const F& f,
 
   typedef mix2_functor<F> F0;
 
+  const int &nPK = refactor::PKTwoCptModel<double, double, double, double>::Ncmt;
+  PredWrapper<refactor::PkTwoCptOdeModel> pr;
+  PkOdeIntegrator<StanRk45> integrator(rel_tol, abs_tol, max_num_steps, msgs);
+
+  Pred1_mix2<F0> pred1(F0(f), rel_tol, abs_tol, max_num_steps, msgs,
+                       "rk45");
+  PredSS_mix2<F0> predss(F0(f), rel_tol, abs_tol, max_num_steps, msgs,
+                         "rk45", nOde);
+#ifdef OLD_TORSTEN
  return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
              theta, biovar, tlag, nPK + nOde, dummy_systems,
-             Pred1_mix2<F0>(F0(f), rel_tol, abs_tol, max_num_steps, msgs,
-                            "rk45"),
-             PredSS_mix2<F0>(F0(f), rel_tol, abs_tol, max_num_steps, msgs,
-                             "rk45", nOde));
-             // PredSS_err(function));
+             pred1, predss);
+#else
+  return pr.Pred2(time, amt, rate, ii, evid, cmt, addl, ss,
+                  theta, biovar, tlag, nPK + nOde, dummy_systems,
+                  pred1, predss,
+                  integrator,
+                  f, nOde);
+#endif
 }
 
 /**

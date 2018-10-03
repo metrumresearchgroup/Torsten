@@ -96,7 +96,8 @@ generalOdeModel_bdf(const F& f,
 
   typedef general_functor<F> F0;
 
-  PredWrapper<refactor::PKODEModel, StanBdf> pr(rel_tol, abs_tol, max_num_steps, msgs);
+  PredWrapper<refactor::PKODEModel> pr;
+  PkOdeIntegrator<StanBdf> integrator(rel_tol, abs_tol, max_num_steps, msgs);
 
   const Pred1_general<F0> pred1(F0(f), rel_tol, abs_tol,
                                 max_num_steps, msgs, "bdf");
@@ -111,6 +112,7 @@ generalOdeModel_bdf(const F& f,
   return pr.Pred2(time, amt, rate, ii, evid, cmt, addl, ss,
                   pMatrix, biovar, tlag, nCmt, dummy_systems,
                   pred1, predss,
+                  integrator,
                   f, nCmt);
 #endif
 
