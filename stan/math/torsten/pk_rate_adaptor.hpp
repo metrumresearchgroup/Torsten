@@ -25,7 +25,7 @@ namespace refactor {
                                   torsten::par_t<T_model> > f_;
     std::vector<typename stan::return_type<
                   torsten::rate_t<T_model>, torsten::par_t<T_model>>::type> theta_;
-    const PKODEModel<torsten::time_t<T_model>,
+    const PKODEModel<torsten::detime_t<T_model>,
                      torsten::init_t<T_model>,
                      torsten::rate_t<T_model>,
                      torsten::par_t<T_model>,
@@ -81,7 +81,7 @@ namespace refactor {
   //          typename std::enable_if_t<
   //            stan::math::is_var<typename T_model::rate_type>::value>* = nullptr>
   // class PKODERateAdaptor {
-  //   using T_time = typename T_model::torsten::time_t<T_model>;
+  //   using T_time = typename T_model::torsten::detime_t<T_model>;
   //   using T_init = typename T_model::init_type;
   //   using rate_type = typename T_model::rate_type;
   //   using par_type  = typename T_model::par_type;
