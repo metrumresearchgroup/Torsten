@@ -1,0 +1,5 @@
+* Link Torsten functions to Stan lang
+Other than the included files in this folder, add torsten
+functions in
+- =term_grammar_def.hpp=
+- =expression.hpp=
