@@ -1,0 +1,728 @@
+#+TITLE: Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan
+#+SUBTITLE: User Manual @@latex:\\@@ @@html:<br>@@ (Torsten Version 0.84, Stan version 2.17.1)
+#+LATEX_CLASS: amsbook
+#+LATEX_CLASS_OPTIONS: [11pt, reqno]
+
+# title page
+#+LATEX_HEADER: \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
+#+LATEX_HEADER: \newcommand\mrgproject{Torsten}
+#+LATEX_HEADER: \newcommand\mrgtitle{Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan}
+#+LATEX_HEADER: \newcommand\mrgsubtitle{\Large{User Manual} \linebreak (Torsten Version 0.84, Stan version 2.17.1)}
+#+LATEX_HEADER: \include{mrgtitlepage}
+
+# make index
+#+LATEX_HEADER: \usepackage{imakeidx}
+#+LATEX_HEADER: \makeindex
+
+#+LATEX_HEADER: \usepackage[letterpaper, width=6.5in, height=9in]{geometry}
+#+LATEX_HEADER: \usepackage{graphicx}
+#+LATEX_HEADER: \usepackage{pdfpages}
+#+LATEX_HEADER: \usepackage{amssymb}
+#+LATEX_HEADER: \usepackage{epstopdf}
+
+# define MRG branding color
+#+LATEX_HEADER: \usepackage{xcolor}
+#+LATEX_HEADER: \definecolor{MRGGreen}{rgb}{0, 0.350, 0.200}
+#+LATEX_HEADER: \usepackage[colorlinks=true, citecolor=MRGGreen, urlcolor=MRGGreen, linkcolor=MRGGreen]{hyperref}
+
+#+LATEX_HEADER: \usepackage{courier}
+#+LATEX_HEADER: \usepackage{listings}
+#+LATEX_HEADER: \usepackage{siunitx}
+#+LATEX_HEADER: \usepackage{booktabs}
+#+LATEX_HEADER: \usepackage[framemethod=TikZ, skipabove=10pt, skipbelow=10pt, backgroundcolor=black!10, roundcorner=10pt, linewidth=1pt]{mdframed}
+#+LATEX_HEADER: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+#+LATEX_HEADER: \AfterEndEnvironment{minted}{\end{mdframed}}
+
+#+LATEX_HEADER: \usepackage{subcaption}
+
+# remove "chapter" in chapter name
+#+LATEX_HEADER: \renewcommand{\chaptername}{}
+#+LATEX_HEADER: \numberwithin{section}{chapter}
+
+#+LATEX_HEADER: \theoremstyle{remark}
+#+LATEX_HEADER: \newtheorem{example}{Example}
+#+LATEX_HEADER: \newtheorem{remark}{Remark}
+
+#+MACRO: torstenversion 0.84
+#+MACRO: stanversion 2.17.1
+#+MACRO: newline @@latex:\\@@ @@html:<br>@@ @@ascii:|@@
+#+MACRO: torsten_path /Users/yiz/Work/Torsten
+
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://www.pirilampo.org/styles/readtheorg/css/htmlize.css"/>
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://www.pirilampo.org/styles/readtheorg/css/readtheorg.css"/>
+
+#+HTML_HEAD: <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+#+HTML_HEAD: <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+#+HTML_HEAD: <script type="text/javascript" src="https://www.pirilampo.org/styles/lib/js/jquery.stickytableheaders.min.js"></script>
+#+HTML_HEAD: <script type="text/javascript" src="https://www.pirilampo.org/styles/readtheorg/js/readtheorg.js"></script>
+
+#+OPTIONS: title:t, num:2
+
+** Development team
+  :PROPERTIES:
+  :UNNUMBERED: t
+  :END:
+*** Bill Gillespie
+    [[mailto:billg@metrumrg.com][~billg@metrumrg.com~]],
+    Metrum Research Group, LLC
+*** Yi Zhang
+    [[mailto:yiz@metrumrg.com][~yiz@metrumrg.com~]], Metrum Research Group, LLC
+*** Charles Margossian
+    [[mailto:charles.margossian@columbia.edu][~charles.margossian@columbia.edu~]], Columbia University, Department of Statistics(formerly Metrum Research Group, LLC)
+
+* Acknowledgements
+  :PROPERTIES:
+  :UNNUMBERED: t
+  :END:
+** Institutions
+We thank Metrum Research Group, Columbia University, and AstraZeneca.
+** Funding
+This work was funded in part by the following organizations:
+*** Office of Naval Research (ONR) contract N00014-16-P-2039
+  provided as part of the Small Business Technology Transfer (STTR)
+  program. The content of the information presented in this document
+  does not necessarily reflect the position or policy of the
+  Government and no official endorsement should be inferred.
+*** Bill & Melinda Gates Foundation.
+** Individuals
+  We thank the Stan Development Team for giving us guidance on how to
+  create new Stan functions and adding features to Stan's core language
+  that facilitate building ODE-based models.
+
+  We also thank Kyle Baron and Hunter Ford for helpful advice on coding
+  in C++ and using GitHub, Curtis Johnston for reviewing the User
+  Manual, and Yaming Su for using Torsten and giving us feedback.
+
+* Introduction
+Stan is an open source probabilistic programing language designed
+primarily to do Bayesian data analysis cite:carpenter17_stan. Several of its
+features make it a powerful tool to specify and fit complex
+models. Notably, its language is extremely flexible and its No U-Turn
+Sampler (NUTS), an adaptative Hamiltonian Monte Carlo algorithm, has
+proven more efficient than commonly used Monte Carlo Markov Chains
+(MCMC) samplers for complex high dimensional problems cite:hoffman_no-u-turn_2011. Our
+goal is to harness these innovative features and make Stan a better
+software for pharmacometrics modeling. Our efforts are twofold:
+1. We contribute to the development of new mathematical tools, such as functions that support differential equations based models, and implement them directly into Stan's core language.
+2. We develop Torsten, an extension with specialized pharmacometrics functions.
+
+Throughout the process, we work very closely with the Stan Development
+Team. We have benefited immensely from their mentorship, advice, and
+feedback. Just like Stan, Torsten is an open source project that
+fosters collaborative work. Interested in contributing? Shoot us an
+e-mail and we will help you help us([[mailto:billg@metrumrg.com][billg@metrumrg.com]])!
+
+Torsten is licensed under the BSD 3-clause license.
+
+# *** *
+#     :PROPERTIES:
+#     :UNNUMBERED: t
+#     :END:
+#+begin_mdframed
+*WARNING:* The current version of Torsten is a /prototype/. It
+is being released for review and comment, and to support limited
+research applications. It has not been rigorously tested and should
+not be used for critical applications without further testing or
+cross-checking by comparison with other methods.
+
+We encourage interested users to try Torsten out and are happy to
+assist. Please report issues, bugs, and feature requests on
+[[https://github.com/metrumresearchgroup/stan][our GitHub page]].
+#+end_mdframed
+
+** Overview
+   :PROPERTIES:
+   :CUSTOM_ID: overview
+   :END:
+Torsten is a collection of Stan functions to facilitate analysis of
+pharmacometric data using Stan. The current version
+includes:
+- Specific linear compartment models:
+  + One compartment model with first order absorption.
+  + Two compartment model with elimination from and first order absorption into central compartment
+- General linear compartment model described by a system of first-order \underline{linear} Ordinary Differential Equations (ODEs).
+- General compartment model described by a system of first order ODEs.
+- Mix compartment model with PK forcing function described by a linear one or two compartment model.
+
+The models and data format are based on
+NONMEM\textregistered{}[fn::NONMEM\textregistered{} is licensed and distributed by ICON Development Solutions.]/NMTRAN/PREDPP
+conventions including:
+- Recursive calculation of model predictions
+  + This permits piecewise constant covariate values
+- Bolus or constant rate inputs into any compartment
+- Handles single dose and multiple dose histories
+- Handles steady state dosing histories
+  + Note: The infusion time must be shorter than the inter-dose interval.
+- Implemented NMTRAN data items include: TIME, EVID, CMT, AMT, RATE, ADDL, II, SS
+
+In general, all real variables may be passed as Stan parameters. A
+few exceptions apply /to functions which use a numerical
+integrator/(i.e. the general and the mix compartment
+models). The below listed cases present technical difficulties, which we expect to
+overcome in Torsten's next release:
+- The RATE and TIME arguments must be fixed
+- In the case of a multiple truncated infusion rate dosing regimen:
+  + The bioavailability (F) and the amount (AMT) must be fixed.
+
+This library provides Stan language functions that calculate amounts
+in each compartment, given an event schedule and an ODE system.
+
+** Installation
+   :PROPERTIES:
+   :CUSTOM_ID: installation
+   :END:
+Installation files are available on GitHub
+
+- https://github.com/metrumresearchgroup/Torsten
+
+We are working with Stan development team to create a
+system to add and share Stan packages. In the mean time,
+the current repo contains forked version of Stan with
+Torsten. The latest version of Torsten (v0.84) is
+compatible with Stan v2.17.1. Torsten is agnostic to which
+Stan interface you use. Here we provide command line and R
+interfaces.
+
+First, download the project. The root path of the project is
+your ~torsten_path~. Set the envionment variable
+src_sh[:exports code]{TORSTEN_PATH}
+to ~torsten_path~. In bash this is 
+
+#+BEGIN_SRC sh
+export TORSTEN_PATH=torsten_path
+#+END_SRC
+
+*** Command line version
+   There is no need to install command line version. To
+   build a Stan model with ~model_name~ in ~model_path~
+   using command line, in ~torsten_path/cmdstan~, do
+#+BEGIN_SRC sh
+make model_path/model_name
+#+END_SRC
+
+*** R version
+   The R version is based on [[https://cran.r-project.org/web/packages/rstan/index.html][rstan]], the Stan's interface for
+   R. To install R version of Torsten, at ~torsten_path~, in R
+#+BEGIN_SRC R
+  source('install.R')
+#+END_SRC    
+
+Please ensure the R toolchain includes a C++ compiler with
+C++11 support. In particular, R 3.3.0 and later is
+recommended as it contains toolchain based on gcc 4.9.3. On
+Windows platform, such a toolchain can be found in Rtools33 and later.
+
+Please ensure CXXFLAGS in .R/Makevars constains flag
+-std=c++11. 
+
+For more information of installation troubleshooting,
+please consult [[https://github.com/stan-dev/rstan/wiki][rstan wiki]].
+
+*** Testing
+To test after installation, run
+#+BEGIN_SRC sh
+  ./test-torsten.sh --unit --signature --model
+#+END_SRC
+** Implementation details
+    :PROPERTIES:
+    :CUSTOM_ID: imp_details
+    :END:
+- Stan version {{{stanversion}}}
+- All functions are programmed in C++ and are compatible
+  with the Stan math automatic differentiation library cite:carpenter15_stan_math_librar
+- One and two compartment models: hand-coded analytical solutions
+- General linear compartment models with semi-analytical solutions using the built-in matrix exponential function
+- General compartment models with numerical solutions using built-in ODE integrators in Stan. The tuning parameters of the solver are adjustable. The steady state solution is calculated using a numerical algebraic solver.
+- Mix compartment model: the PK forcing function is solved
+  analytically and the forced ODE system is solved
+  numerically.
+
+** Development plans
+    :PROPERTIES:
+    :CUSTOM_ID: dev_plans
+    :END:
+
+Our current plans for future development of Torsten include the
+following:
+- Build a system to easily share packages of Stan functions
+  (written in C++ or in the Stan language)
+- Allow numerical methods to handle RATE, AMT, TIME, and the
+  bioavailability fraction (F) as parameters in all cases.
+- Optimize Matrix exponential functions
+  + Function for the action of Matrix Exponential on a vector
+  + Hand-coded gradients
+  + Special algorithm for matrices with special properties
+- Fix issue that arises when computing the adjoint of the lag time
+  parameter (in a dosing compartment) evaluated at $t_{\text{lag}} = 0$.
+- Extend formal tests
+  + We want more C++ Google unit tests to address cases users may
+    encounter
+  + Comparison with simulations from the R package
+    /mrgsolve/ and the software NONMEM\textregistered{}
+  + Recruit non-developer users to conduct beta testing
+
+** Changelog
+:PROPERTIES:
+:CUSTOM_ID: changelog
+:END:
+*** 0.85 <2018-10-20>
+**** Added
+     :PROPERTIES:
+     :CUSTOM_ID: 0-85-added
+     :END:
+  - Dosing rate as parameter
+**** Changed
+     :PROPERTIES:
+     :CUSTOM_ID: 0-85-changed
+     :END:
+  - Update with Stan version 2.18.0.
+
+*** 0.84 <2018-02-24>
+**** Added
+     :PROPERTIES:
+     :CUSTOM_ID: 0-84-added
+     :END:
+  - Piecewise linear interpolation function.
+  - Univariate integral functions.
+
+**** Changed
+     :PROPERTIES:
+     :CUSTOM_ID: 0-84-changed
+     :END:
+  - Update with Stan version 2.17.1.
+  - Minor revisions to User Manual.
+  - Bugfixes.
+
+*** 0.83 <2017-08-02>
+**** Added
+     :PROPERTIES:
+     :CUSTOM_ID: 0-83-added
+     :END:
+  - Work with TorstenHeaders
+  - Each chain has a different initial estimate
+
+**** Changed
+     :PROPERTIES:
+     :CUSTOM_ID: 0-83-changed
+     :END:
+  - User manual
+  - Fix misspecification in ODE system for TwoCpt example.
+  - Other bugfixes
+
+
+*** 0.82 <2017-01-29>
+    :PROPERTIES:
+    :CUSTOM_ID: 0-82-added
+    :END:
+**** Added
+  - Allow parameter arguments to be passed as 1D or 2D arrays
+  - More unit tests
+  - Unit tests check automatic differentiation against finite differentiation.
+
+**** Changed
+     :PROPERTIES:
+     :CUSTOM_ID: 0-82-changed
+     :END:
+  - Split the parameter argument into three arguments: pMatrix
+    (parameters for the ODEs -- note: for linOdeModel, pMatrix
+    is replaced by the constant rate matrix K), biovar
+    (parameters for the biovariability), and tlag (parameters
+    for the lag time).
+  - bugfixes
+
+*** 0.81 <2016-09-27>
+**** Added
+     :PROPERTIES:
+     :CUSTOM_ID: 0-81-added
+     :END:
+  linCptModel (linear compartmental model) function
+
+*** 0.80a <2016-09-21 Wed>
+**** Added
+     :PROPERTIES:
+     :CUSTOM_ID: 0-80a-added
+     :END:
+  check_finite statements in pred_1 and pred_2 to reject metropolis proposal if initial conditions are not finite
+
+
+
+
+* Using Torsten
+The reader should have a basic understanding of how Stan works before
+reading this chapter. There are excellent resources online to get
+started with Stan
+
+- [[http://mc-stan.org/documentation][http://mc-stan.org/documentation]]
+
+
+In this section we go through the different functions Torsten adds to
+Stan. It will be helpful to apply these functions to a simple
+example. We have uploaded code and data on
+
+- [[https://github.com/metrumresearchgroup/example-models][https://github.com/metrumresearchgroup/example-models]]
+
+We use the following example to demonstrate use of several functions in the Torsten library.
+*** Two compartment model
+:PROPERTIES:
+:CUSTOM_ID: 2cptmodel
+:UNNUMBERED: t
+:END:
+  We model drug absorption in a single patient and simulate plasma drug concentrations:
+
+  - Multiple Doses: 1250 mg, every 12 hours, for a total of 15 doses
+  - PK: plasma concentrations of parent drug ($c$)
+  - PK measured at 0.083, 0.167, 0.25, 0.5, 0.75, 1, 1.5, 2, 4, 6,
+    8, 10 and 12 hours after 1st, 2nd, and 15th dose. In addition, the
+    PK is measured every 12 hours throughout the trial.
+
+  The plasma concentration ($c$) are simulated according to the following equations:
+  \begin{eqnarray*}
+    \log\left(c\right) &\sim& N\left(\log\left(\widehat{c}\right),\sigma^2\right) \\
+    \widehat{c} &=& f_{2cpt}\left(t, CL, Q, V_2, V_3, k_a\right) \\
+    \left(CL, Q, V_2, V_3, ka\right) &=& 
+                                         \left(5\ {\rm L/h}, 8\  {\rm L/h}, 20\  {\rm L},  70\ {\rm L}, 1.2\ {\rm h^{-1}} \right) \\
+    \sigma^2 &=& 0.01
+  \end{eqnarray*}
+  and the drug concentration is given by $c = y_2/V_2$.
+
+  where the mass of drug in the central compartment ($y_2$) is obtained
+  by solving the system of ordinary differential equations (ODEs):
+  \begin{align*}
+    y_1' &= -k_a y_1 \\
+    y_2' &= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2 +  \frac{Q}{V_3}  y_3  \\ 
+    y_3' &= \frac{Q}{V_2} y_2 - \frac{Q}{V_3} y_3
+  \end{align*}
+
+The data are generated using the R package ~mrgsolve~ cite:Baron000. 
+
+
+** One Compartment Model
+#+LABEL: sec:OneCpt
+#+INDEX: One Compartment Model
+#+BEGIN_SRC stan
+  real[] = PKModelOneCpt(real[] time, real[] amt, real[] ate,
+                         real[] ii, int[] evid, int[] cmt,
+                         real[] addl, int[] ss, real[] theta,
+                         real[] biovar, real[] tlag)
+#+END_SRC
+
+Parameters in ~theta~ : $CL$, $V_2$, $k_a$.
+
+The event arguments. ~time~, ~amt~, ~rate~, ~ii~, ~evid~, ~cmt~, ~addl~, and
+~ss~, describe the event schedule of the clinical
+trial. All arrays have the same length, which
+corresponds to the number of events.
+
+The model arguments, ~theta~ contains the ODE
+parameters, ~biovar~ the bioavailability fraction in each
+compartment, and ~tlag~ the
+lag time in each compartment. The model arguments may be either one
+or two dimensional arrays. If they are one dimensional arrays, the
+parameters are constant for all events. If they are two dimensional
+arrays then each row contains the parameters for the interval
+~[ time[i-1], time[i] ]~. The number of rows should equal the
+number of events.
+
+Setting $ka$ to 0 eliminates the first-order absorption.
+
+#+CAPTION: One and two compartment models with first order absorption implemented in Torsten.
+#+NAME: one_two_cpt_models
+#+ATTR_LATEX: :width 2.0in
+[[file:./graphics/cptModels.png]]
+
+** Two Compartment Model
+#+INDEX: Two Compartment Model
+#+BEGIN_SRC stan
+  real[] = PKModelTwoCpt(real[] time, real[] amt, real[] ate,
+                         real[] ii, int[] evid, int[] cmt,
+                         real[] addl, int[] ss, real[] theta,
+                         real[] biovar, real[] tlag)
+#+END_SRC
+
+Parameters in ~theta~ : $CL$, $Q$, $V_2$, $V_3$, $k_a$
+
+See section [[sec:OneCpt]] for function description.
+
+Code example below shows Stan example of using
+~TwoCptModel~ to fit [[#2cptmodel]]. Three MCMC chains of 2000 iterations were simulated. The first
+1000 iteration of each chain were discarded. Thus 1000 MCMC samples
+per chain were used for the subsequent analyses.
+
+#+include: "../example-models/TwoCptModel/TwoCptModel.stan" :lines "5-74" src stan
+
+#+BEGIN_SRC R :results output silent :exports none
+  setwd("~/Work/Torsten_debug/example-models/R")
+  source("TwoCpt.R")                      #
+#+END_SRC
+
+The MCMC history plots(Figure [[twocpt_mcmc_history]])
+suggest that the 3 chains have converged to common distributions for
+all of the key model parameters. The fit to the plasma concentration
+data (Figure [[twocpt_mcmc_predict]]) are in close agreement with the
+data, which is not surprising since the fitted model is identical to
+the one used to simulate the data. Similarly the parameter estimates
+summarized in Table [[tab:twocpt_summary]] and Figure [[twocpt_mcmc_posterior]]
+are consistent with the values used for simulation.
+
+#+CAPTION: Summary of the MCMC simulations of the marginal posterior distribu- tions of the model parameters
+#+NAME: tab:twocpt_summary
+|-------+--------+---------+-------+--------+--------+--------+--------+--------+----------+------|
+|       |   mean | se_mean |    sd |   2.5% |    25% |    50% |    75% |  97.5% |    n_eff | Rhat |
+|-------+--------+---------+-------+--------+--------+--------+--------+--------+----------+------|
+| CL    |  4.823 |   0.002 | 0.092 |  4.647 |  4.762 |  4.823 |  4.883 |  5.012 | 2392.155 | 1.00 |
+| Q     |  7.596 |   0.013 | 0.586 |  6.479 |  7.201 |  7.594 |  7.977 |  8.785 | 1923.939 | 1.00 |
+| V1    | 21.073 |   0.069 | 2.573 | 16.017 | 19.352 | 21.046 | 22.817 | 26.097 | 1385.883 | 1.00 |
+| V2    | 76.365 |   0.105 | 5.611 | 65.805 | 72.623 | 76.172 | 79.916 | 87.971 | 2862.184 | 1.00 |
+| ka    |  1.231 |   0.004 | 0.177 |  0.907 |  1.107 |  1.221 |  1.344 |  1.599 | 1581.825 | 1.00 |
+| sigma |  0.109 |   0.000 | 0.012 |  0.089 |  0.100 |  0.108 |  0.116 |  0.134 | 2560.112 | 1.00 |
+|-------+--------+---------+-------+--------+--------+--------+--------+--------+----------+------|
+#+TBLFM: $2=$0;%0.3f::$3=$0;%0.3f::$4=$0;%0.3f::$5=$0;%0.3f::$6=$0;%0.3f::$7=$0;%0.3f::$8=$0;%0.3f::$9=$0;%0.3f::$10=$0;%0.3f::$11=$0;%0.3f
+
+
+#+CAPTION: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
+#+NAME: twocpt_mcmc_history
+#+ATTR_LATEX: :width 0.6\linewidth
+[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots001.pdf]]
+
+#+CAPTION: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
+#+NAME: twocpt_mcmc_history
+#+ATTR_LATEX: :width 0.6\linewidth
+[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots002.pdf]]
+
+#+CAPTION: Posterior Marginal Densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
+#+NAME: twocpt_mcmc_posterior
+#+ATTR_LATEX: :width 0.6\linewidth
+[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots003.pdf]]
+
+#+CAPTION: Predicted (posterior median and 90% credible intervals) and observed plasma drug concentrations of a two compartment model with first order absorption
+#+NAME: twocpt_mcmc_predict
+#+ATTR_LATEX: :width 0.6\linewidth
+[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots006.pdf]]
+
+
+** General Linear ODE Model Function
+#+INDEX: General linear model 
+#+BEGIN_SRC stan
+  real[] = linOdeModel(real[] time, real[] amt, real[] rate,
+                       real[] ii, int[] evid, int[] cmt,
+                       real[] addl, int[] ss,
+                       matrix K, real[] biovar, real[] tlag)
+#+END_SRC
+A general linear ODE model refers to a model that may be described in
+terms of a system of first order linear differential equations with
+(piecewise) constant coefficients, i.e., a differential equation of
+the form:
+\begin{equation}
+y^\prime\left(t\right) = Ky\left(t\right)
+\end{equation}
+where $K$ is a matrix. For example $K$ for a two compartment model
+(equation \eqref{eq:TwoCpt}) with first order absorption is:
+\begin{equation}
+  K = \left[\begin{array}{ccc}
+              -k_a & 0 & 0 \\
+              k_a & -\left(k_{10} + k_{12}\right) & k_{21} \\
+              0 & k_{12} & -k_{21}
+            \end{array}\right]
+\end{equation}
+where $k_{10}=CL/V_2$, $k_{12}=Q/V_2$, and $k_{21}=Q/V_3$.
+
+System parameters is in ~K~, with ~K~ being the constant rate
+matrix is the same for all events or an array of constant rate matrices. The length of the array is
+the number of events and each element corresponds to the matrix at
+the interval ~[ time[i-1], time[i] ]~.
+Note that ~K~ contains all the ODE parameters, so we no
+longer need ~theta~.
+
+The following Stan example illustrate
+the use of General linear model for fitting a two compartment model
+with first order absorption.
+
+#+include: "../example-models/LinTwoCptModel/LinTwoCptModel.stan" :lines "1-68" src stan
+
+** General ODE Model Function
+#+INDEX: General ODE Model
+#+BEGIN_SRC stan
+  real[] model_name(ODE_system, int nCmt,
+                    real[] time, real[] amt, real[] rate, real[] ii,
+                    int[] evid, int[] cmt, real[] addl, int[] ss,
+                    real[] theta, real[] biovar, real[] tlag,                      
+                    real rel_tol, real abs_tol, int max_step)
+#+END_SRC
+
+Torsten may be used to fit models described by a system of
+user-specified first-order ODEs, i.e., differential equations of the form:
+\begin{equation*}
+y'(t) = f(t, y(t))
+\end{equation*}
+In the case where the rate vector $R$ is non-zero, this equation becomes:
+\begin{equation*}
+y'(t) = f(t, y(t)) + R
+\end{equation*}
+
+~ODE_system~ specifies $f(t, y(t))$, which the user
+defines inside the ~functions~ block (see section 19.2 of the
+Stan reference manual for details and Figure~\ref{GenTwoCptModelCode}
+for an example). The user does NOT include the rates in their
+definition of $f$. Torsten automatically corrects the derivatives when
+the rates are non-zero.
+
+~nCmt~ is the number of compartments (or, equivalently, the
+number of ODEs) in the model. ~rel_tol~, ~abs_tol~,
+and ~max_step~ are tuning parameters for the ODE integrator:
+respectively the relative tolerance, the absolute tolerance, and the
+maximum number of steps.
+
+The options for ~model_name~ are:
+- ~generalOdeModel_rk45~
+- ~generalOdeModel_bdf~
+
+They respectively call the built-in Runge-Kutta 4th/5th order (rk45)
+integrator, recommended for non-stiff ODEs, and the Backward
+Differentiation (BDF) integrator, recommended for stiff ODEs. Which
+value to use for the tuning parameters depends on the integrator and
+the specifics of the ODE system. Reducing the tolerance parameters and
+increasing the number of steps make for a more robust integrator but
+can significantly slow down the algorithm. The following can be used
+as a starting point: 
+- ~rel_tol = 1e-6~
+- ~abs_tol = 1e-6~
+- ~max_step = 1e+6~
+for rk45 integrator and
+- ~rel_tol = 1e-10~
+- ~abs_tol = 1e-10~
+- ~max_step = 1e+8~
+for the bdf integrator [fn::These are the default tuning parameters the integrators. Torsten functions do not have a default values for these parameters. The user must explicitly pass the tuning parameters to ~generalOdeModel_*()~ .].
+Users should be prepared to adjust these
+values. For additional information, see the Stan User's
+Manual cite:stan_team_2017.
+
+A few notable restrictions apply to src_stan[:exports_code]{generalOdeModel}:
+- ~rate~ and ~time~ cannot be passed as parameters.
+- In the case of a multiple truncated infusion rate dosing regimen:
+  + The bioavailability ~biovar~) and the amount ~amt~) cannot be passed as parameters.
+These restrictions also apply to ~mixOdeCpt_*~ functions, discussed in the next section.
+
+#+include: "../example-models/GenTwoCptModel/GenTwoCptModel.stan" :lines "1-115" src stan
+
+** Mixed ODE Model Function
+#+INDEX: Mixed ODE Model
+
+#+BEGIN_SRC stan
+  real[] model_name(reduced_ODE_system, int nOde,
+                    real[] time, real[] amt, real[] rate,
+                    real[] ii, int[] evid, int[] cmt, real[]
+                    addl, int[] ss,
+                    real[] theta, real[] biovar, real[] tlag,
+                    real rel_tol, real abs_tol, real max_step)
+#+END_SRC
+
+In certain cases, an ODE system can be divided in two subsystems:
+
+\begin{align*}
+  y_1^\prime &= f_1(t, y_1) \\
+  y_2^\prime &= f_2(t, y_1, y_2)
+\end{align*}
+where $y_1$, $y_2$, $f_1$, and $f_2$ are vector-valued functions, and
+$y_1^\prime$ is independent of $y_2$. This structure arises in PK/PD
+models, where $y_1$ describes a forcing PK function and $y_2$ the PD
+effects. If $y_1$ has an analytical solution, we can construct a
+\textit{mixed solver}, which analytically solves $y_1$ and numerically
+integrates $y_2$. This approach leads to an appreciable gain in
+computational efficiency. In the example of a Friberg-Karlsson
+semi-mechanistic model, we observe an average speedup of
+$\sim 47 \pm 18 \%$ when using the mix solver in lieu of the numerical
+integrator. Torsten supports the mixed solver for
+cases where $y_1$ solves the ODEs for a One or Two Compartment model
+with a first-order absorption.
+
+The ~reduced_ODE_system~ specifies the system we
+numerically solve ($y_2$ in the above discussion, also called the
+/reduced system/ and ~nOde~ the number of equations in
+the \underline{reduced} system. The function that defines a reduced
+system has an almost identical signature to that used for a full
+system, but takes one additional argument: $y_1$, the PKstates,
+i.e. solution to the PK ODEs.
+#+BEGIN_SRC stan
+  real[] reducedODE(real t,  // time
+                    real[] y,  // reduced state
+                    real[] y1,  // PK states}'
+                    real[] theta,  // parameters
+                    real[] x_r,  // data (real)
+                    int[] x_int)  // data (integer)
+#+END_SRC
+
+The options for ~modelName~ are:
+- ~mixOde1CptModel_rk45~
+- ~mixOde1CptModel_bdf~
+- ~mixOde2CptModel_rk45~
+- ~mixOde2CptModel_bdf~
+
+These four functions correspond to all the permutations we can obtain
+when using a forcing One or Two Compartment function, and the
+Runge-Kutta 4th/5th order (rk45) or Backward Differentiation (BDF)
+integration method. The mixed ODE functions can be used to compute the
+steady state solutions supported by the general ODE model functions.
+
+Restrictions regarding which arguments may be passed as parameters for
+~generalOdeModel_*~ also apply to
+~mixOdeCptModel_*~.
+
+We cannot apply the mixed solver to the Two Compartment example we
+have been using so far. Instead, we will consider the model which
+motivated the implementation of the method in the first place.
+
+** Friberg-Karlsson Semi-Mechanistic Model
+#+INDEX: Friberg-Karlsson Model
+   In this second example, we add to our two Compartment model a PD
+   effect, described by a system of nonlinear ODEs cite:friberg_mechanistic_2003.
+*** Friberg-Karlsson Model
+:PROPERTIES:
+:CUSTOM_ID: fkmodel
+:UNNUMBERED: t
+:END:
+  Neutropenia is observed in patients receiving an ME-2 drug. Our goal
+  is to model the relation between neutrophil counts and drug
+  exposure. Using a feedback mechanism, the body maintains the number of
+  neutrophils at a baseline value (Figure~\ref{FK}). While in the
+  patient's blood, the drug impedes the production of neutrophils. As a
+  result, the neutrophil count goes down. After the drug clears out, the
+  feedback mechanism kicks in and brings the neutrophil count back to
+  baseline.
+
+  \begin{align}
+    \log(ANC_i) \sim& N(\log(Circ), \sigma^2_{ANC})  \\
+    Circ =& f_{FK}(MTT, Circ_{0}, \alpha, \gamma, c)  \\
+    (MTT, Circ_{0}, \alpha, \gamma, ktr) =& (125, 5.0, 3 \times 10^{-4}, 0.17) \\
+    \sigma^2_{ANC} =& 0.001
+  \end{align}
+  where $c$ is the drug concentration in the blood we get from the Two
+  Compartment model, and $Circ$ is obtained by solving the following
+  system of nonlinear ODEs:
+
+\begin{eqnarray}
+  \begin{aligned}
+   y_\mathrm{prol}' &= k_\mathrm{prol} y_\mathrm{prol} (1 - E_\mathrm{drug})\left(\frac{Circ_0}{y_\mathrm{circ}}\right)^\gamma - k_\mathrm{tr}y_\mathrm{prol} \\
+   y_\mathrm{trans1}' &= k_\mathrm{tr} y_\mathrm{prol} - k_\mathrm{tr} y_\mathrm{trans1} \\
+   y_\mathrm{trans2}' &= k_\mathrm{tr} y_\mathrm{trans1} - k_\mathrm{tr} y_\mathrm{trans2}  \\
+   y_\mathrm{trans3}' &= k_\mathrm{tr} y_\mathrm{trans2} - k_\mathrm{tr} y_\mathrm{trans3}  \\
+   y_\mathrm{circ}' &= k_\mathrm{tr} y_\mathrm{trans3} - k_\mathrm{tr} y_\mathrm{circ}
+   \end{aligned}
+   \label{eq:FK}
+\end{eqnarray}
+where $E_{drug}  = \alpha c$.
+
+The ODEs specifying the Two Compartment Model
+(equation~\ref{eq:TwoCpt}) do not depend on the PD ODEs
+(equation~\ref{eq:FK}) and can be solved analytically by Torsten. We
+therefore specify our model using a mixed solver function. We do not
+expect our system to be stiff and use the Runge-Kutta 4th/5th order
+integrator (Figures \ref{FK_reduced} and \ref{FK_mix2}).
+
+#+include: "../tests/FribergKarlsson/FribergKarlsson.stan" src stan
+
+\appendix
+\printindex
+\backmatter
+
+\bibliography{torsten}
+bibliographystyle:plain

@@ -1,0 +1,12 @@
+#+TITLE: Torsten changelog
+#+AUTHOR: Metrum Research Group LLC
+#+DATE: <2018-10-20 Sat>
+#+EMAIL: mailto:billg@metrumrg.com
+#+OPTIONS: toc:nil, title:t, num:nil, date:nil
+
+#+MACRO: torstenversion 0.85
+#+MACRO: stanversion 2.18.0
+
+#+include: ./docs/torsten_manual.org::*Changelog :lines "4-"
+
+

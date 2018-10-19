@@ -1,0 +1,198 @@
+stan_parameters <- function() {         #parameters from #stan model
+    par <- c("cHatDat1",
+             "cHatDat2",
+             "cHatDat3",
+             "cHatDat4",
+             "cHatDat5",
+             "cHatDat6",
+             "cHatDat7",
+             "cHatDat8",
+             "cHatObs1",
+             "cHatObs2",
+             "cHatObs3",
+             "cHatObs4",
+             "cHatObs5",
+             "cHatObs6",
+             "cHatObs7",
+             "cHatObs8",
+             "cHatDPP1",
+             "cHatDPP2",
+             "cHatDPP3",
+             "cHatDPP4",
+             "cHatDPP5",
+             "cHatDPP6",
+             "cHatDPP7",
+             "cHatDPP8",
+             "cHatPDP1",
+             "cHatPDP2",
+             "cHatPDP3",
+             "cHatPDP4",
+             "cHatPDP5",
+             "cHatPDP6",
+             "cHatPDP7",
+             "cHatPDP8",
+             "cHatPPD1",
+             "cHatPPD2",
+             "cHatPPD3",
+             "cHatPPD4",
+             "cHatPPD5",
+             "cHatPPD6",
+             "cHatPPD7",
+             "cHatPPD8",
+             "cHatDDP1",
+             "cHatDDP2",
+             "cHatDDP3",
+             "cHatDDP4",
+             "cHatDDP5",
+             "cHatDDP6",
+             "cHatDDP7",
+             "cHatDDP8",
+             "cHatDPD1",
+             "cHatDPD2",
+             "cHatDPD3",
+             "cHatDPD4",
+             "cHatDPD5",
+             "cHatDPD6",
+             "cHatDPD7",
+             "cHatDPD8",
+             "cHatPDD1",
+             "cHatPDD2",
+             "cHatPDD3",
+             "cHatPDD4",
+             "cHatPDD5",
+             "cHatPDD6",
+             "cHatPDD7",
+             "cHatPDD8"
+             )
+    return (par)
+}
+
+run_test_TwoCptModelPopulation <- function(event, steptime) {
+
+    modelName <- "test_TwoCptModelPopulation"
+
+    torstenDir <- ".."
+    modelDir <- file.path(torstenDir, "tests")
+    toolsDir <- file.path(torstenDir, "example-models", "R", "tools")
+
+    library(rstan)
+    library(parallel)
+    library(mrgsolve)  ## tested with version 0.7.6.9029
+
+    source(file.path(toolsDir, "stanTools.R"))
+    set.seed(11091989) ## not required but assures repeatable results
+
+###############################################################################################
+    ## mrgsolve
+
+    nSub <- 3; # number of subjects
+    nIIV <- 5; # number of parameters with Inter-Individual variation
+
+    code <- '
+$PARAM CL = 5, Q = 8, V2 = 20, V3 = 70, KA = 1.2
+
+$SET delta = 0.1  // simulation grid
+
+$CMT GUT CENT PERI
+
+$MAIN
+double CLi = exp(log(CL) + ETA(1));
+double Qi = exp(log(Q) + ETA(2));
+double V2i = exp(log(V2) + ETA(3));
+double V3i = exp(log(V3) + ETA(4));
+double KAi = exp(log(KA) + ETA(5));
+
+double k10 = CLi / V2i;
+double k12 = Qi / V2i;
+double k21 = Qi / V3i;
+
+$ODE
+dxdt_GUT = -KA * GUT;
+dxdt_CENT = KA * GUT - (k10 + k12) * CENT + k21 * PERI;
+dxdt_PERI = k12 * CENT - k21 * PERI;
+
+$OMEGA name="IIV"
+0.005 0.005 0.005 0.005 0.005
+
+$TABLE
+double CP = CENT/V2i;
+
+$CAPTURE CP CLi Qi V2i V3i KAi
+'
+
+mod <- mread("accum", tempdir(), code) %>% Req(CP) %>% update(end=200, delta=0.1)
+e1 <- expand.ev(amt = rep(80 * 1000, nSub), ii = 12, addl = 14) # Create dosing events
+out <- mod %>% data_set(e1) %>% carry.out(dose) %>% Req(CP) %>% mrgsim(end = 200)
+plot(out, CP~time|factor(ID),scales="same")
+
+## Observation times
+time <- c(0, 0.083, 0.167, 0.25, 0.5, 0.75, 1, 1.5, 2,3,4,6,8)
+
+# save data in data frame
+SimData <-
+  mod %>%
+  data_set(e1) %>%
+  carry.out(cmt, ii, addl, rate, amt, evid, ss) %>%
+  mrgsim(Req = "CP", end = -1, add = time, recsort = 3) %>%
+  as.data.frame
+
+head(SimData)
+
+SimData$cmt[SimData$cmt == 0] <- 2 ## adjust cmt (adopt NONMEM convention)
+## remove observation with 0 drug concentration
+SimData <- SimData[!((SimData$evid == 0)&(SimData$CP == 0)),]
+
+
+################################################################################################
+## Format data for Stan
+nt <- nrow(SimData)
+iObs <- with(SimData, (1:nrow(SimData))[evid == 0])
+nObs <- length(iObs)
+
+## Subject specific data
+xsub <- subset(SimData, !duplicated(ID))
+nSubjects <- length(xsub$ID)
+## Row indices for start and end of each individual's data
+start <- (1:nt)[!duplicated(SimData$ID)]
+end <- c(start[-1] - 1, nt)
+
+## create Stan data set
+data <- with(SimData,
+             list(nt = nt,
+                  nSubjects = nSubjects,
+                  start = start,
+                  end = end,
+                  nObs = nObs,
+                  iObs = iObs,
+                  time = time,
+                  cObs = CP[iObs],
+                  amt =  amt,
+                  rate = rate,
+                  cmt = cmt,
+                  evid = evid,
+                  ii = ii,
+                  addl = addl,
+                  ss = ss,
+                  nIIV = nIIV)) ## number of parameters with IIV
+
+################################################################################################
+# solve ODE using stan
+rstan_options(auto_write = TRUE)
+
+parametersToPlot <- stan_parameters()
+parameters <- c(parametersToPlot)
+parametersToPlot <- c("lp__", parametersToPlot)
+
+## nChains <- 4 ## don't really need this
+## nIter <- 1000;  #
+fit <- stan(file = file.path(modelDir, paste0(modelName, ".stan")),
+            data = data,
+            pars = "CLHat",
+            ## iter = nIter,
+            ## chains = nChains,
+            ## algorithm="Fixed_param",
+            cores = 4
+            )
+
+return(list("fit"=fit, "data"=data))
+}

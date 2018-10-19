@@ -1,0 +1,71 @@
+% Created 2018-04-15 Sun 00:11
+% Intended LaTeX compiler: pdflatex
+\documentclass[11pt, reqno]{amsbook}
+              \input{mrgtitlepage}
+\usepackage{imakeidx}
+\makeindex
+\usepackage[left=1in,top=1in,bottom=1.75in,right=1in, headsep=.4in]{geometry}
+\usepackage{xcolor}
+\definecolor{MRGGreen}{rgb}{0, 0.350, 0.200}
+\usepackage[colorlinks=true, citecolor=green, urlcolor=green, linkcolor=MRGGreen]{hyperref}
+\usepackage{datetime2}
+\newcommand{\todaymetrum}{\the\year-\twodigit{\month}-\twodigit{\day}}
+\usepackage[absolute]{textpos}
+\usepackage{graphicx}
+\usepackage{float}
+\floatplacement{figure}{H}
+\floatplacement{table}{H}
+\usepackage{bm}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\pagestyle{fancyplain}
+\lhead{\includegraphics[width=3cm]{graphics/logo.jpg}}
+\chead{Torsten}
+\rhead{\mrgcategory}
+\cfoot{\thepage\ of \pageref{LastPage}}
+\usepackage{pdfpages}
+\usepackage{amssymb}
+\usepackage{epstopdf}
+\usepackage{siunitx}
+\usepackage{booktabs}
+\usepackage{subcaption}
+\theoremstyle{remark}
+\newtheorem{example}{Example}
+\newtheorem{remark}{Remark}
+\usepackage{caption}
+\usepackage[framemethod=TikZ, skipabove=10pt, skipbelow=10pt, backgroundcolor=gray!10, roundcorner=5pt, linewidth=1pt]{mdframed}
+\surroundwithmdframed{minted}
+\theoremstyle{remark}
+\newtheorem{codex}{Code example}[chapter]
+
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{grffile}
+\usepackage{longtable}
+\usepackage{wrapfig}
+\usepackage{rotating}
+\usepackage[normalem]{ulem}
+\usepackage{amsmath}
+\usepackage{textcomp}
+\usepackage{amssymb}
+\usepackage{capt-of}
+\usepackage{hyperref}
+\usepackage[newfloat]{minted}
+\usepackage{caption}
+\author{Yi Zhang}
+\date{\today}
+\title{}
+\hypersetup{
+ pdfauthor={Yi Zhang},
+ pdftitle={},
+ pdfkeywords={},
+ pdfsubject={},
+ pdfcreator={Emacs 25.3.1 (Org mode 9.1.3)}, 
+ pdflang={English}}
+\begin{document}
+
+\tableofcontents
+
+\end{document}
