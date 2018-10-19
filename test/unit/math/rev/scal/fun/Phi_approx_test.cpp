@@ -5,9 +5,9 @@
 #include <vector>
 
 TEST(AgradRev, Phi_approx) {
+  using stan::math::Phi_approx;
   using stan::math::var;
   using std::abs;
-  using stan::math::Phi_approx;
 
   std::vector<double> y_values;
   y_values.push_back(0.0);
@@ -26,17 +26,17 @@ TEST(AgradRev, Phi_approx) {
     var a = y_values[i];
     as.push_back(a);
     var f = Phi_approx(a);
-    f.grad(as,g);
+    f.grad(as, g);
 
     std::vector<double> g2;
     std::vector<var> as2;
     var a2 = y_values[i];
     as2.push_back(a2);
-    var f2 = inv_logit(0.07056 * pow(a2,3.0) + 1.5976 * a2);
-    f2.grad(as2,g2);
-    
-    EXPECT_EQ(1U,g.size());
-    EXPECT_EQ(1U,g2.size());
+    var f2 = inv_logit(0.07056 * pow(a2, 3.0) + 1.5976 * a2);
+    f2.grad(as2, g2);
+
+    EXPECT_EQ(1U, g.size());
+    EXPECT_EQ(1U, g2.size());
 
     EXPECT_FLOAT_EQ(g2[0], g[0]);
   }
@@ -44,15 +44,14 @@ TEST(AgradRev, Phi_approx) {
 
 struct Phi_approx_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return Phi_approx(arg1);
   }
 };
 
-TEST(AgradRev,Phi_approx_NaN) {
+TEST(AgradRev, Phi_approx_NaN) {
   Phi_approx_fun Phi_approx_;
-  test_nan(Phi_approx_,false,true);
+  test_nan(Phi_approx_, false, true);
 }
 
 TEST(AgradRev, check_varis_on_stack) {

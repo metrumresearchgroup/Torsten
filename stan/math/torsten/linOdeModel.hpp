@@ -1,8 +1,12 @@
-#ifndef STAN_MATH_TORSTEN_LINODEMODEL_HPP
-#define STAN_MATH_TORSTEN_LINODEMODEL_HPP
+#ifndef STAN_MATH_TORSTEN_REFACTOR_LINODEMODEL_HPP
+#define STAN_MATH_TORSTEN_REFACTOR_LINODEMODEL_HPP
 
 #include <Eigen/Dense>
 #include <boost/math/tools/promotion.hpp>
+#include <stan/math/torsten/Pred2.hpp>
+#include <stan/math/torsten/pk_linode_model.hpp>
+// #include <stan/math/torsten/pk_linode_solver.hpp>
+// #include <stan/math/torsten/pk_linode_solver_ss.hpp>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_linOde.hpp>
 #include <stan/math/torsten/PKModel/Pred/PredSS_linOde.hpp>
@@ -76,9 +80,19 @@ linOdeModel(const std::vector<T0>& time,
   torsten::pmetricsCheck(time, amt, rate, ii, evid, cmt, addl, ss,
                 pMatrix_dummy, biovar, tlag, function);
 
+  PredWrapper<refactor::PKLinODEModel> pr;
+  PkOdeIntegrator<> integrator;
+
+#ifdef OLD_TORSTEN
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
               pMatrix_dummy, biovar, tlag, nCmt, system,
               Pred1_linOde(), PredSS_linOde());
+#else
+  return pr.Pred2(time, amt, rate, ii, evid, cmt, addl, ss,
+                  pMatrix_dummy, biovar, tlag, nCmt, system,
+                  Pred1_linOde(), PredSS_linOde(),
+                  integrator);
+#endif
 }
 
 /**

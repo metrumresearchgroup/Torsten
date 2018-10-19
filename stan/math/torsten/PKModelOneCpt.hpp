@@ -1,11 +1,15 @@
-#ifndef STAN_MATH_TORSTEN_PKMODELONECPT_HPP
-#define STAN_MATH_TORSTEN_PKMODELONECPT_HPP
+#ifndef STAN_MATH_TORSTEN_REFACTOR_PKMODELONECPT_HPP
+#define STAN_MATH_TORSTEN_REFACTOR_PKMODELONECPT_HPP
 
 #include <Eigen/Dense>
 #include <boost/math/tools/promotion.hpp>
+#include <stan/math/torsten/Pred2.hpp>
 #include <stan/math/torsten/PKModel/PKModel.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_oneCpt.hpp>
 #include <stan/math/torsten/PKModel/Pred/PredSS_oneCpt.hpp>
+#include <stan/math/torsten/pk_onecpt_model.hpp>
+// #include <stan/math/torsten/pk_onecpt_solver.hpp>
+// #include <stan/math/torsten/pk_onecpt_solver_ss.hpp>
 #include <string>
 #include <vector>
 
@@ -101,10 +105,21 @@ PKModelOneCpt(const std::vector<T0>& time,
   std::vector<Eigen::Matrix<T4, Eigen::Dynamic, Eigen::Dynamic> >
     dummy_systems(1, dummy_system);
 
+  PredWrapper<refactor::PKOneCptModel> pr;
+  PkOdeIntegrator<> integrator;
+
+#ifdef OLD_TORSTEN
   return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
               pMatrix, biovar, tlag,
               nCmt, dummy_systems,
               Pred1_oneCpt(), PredSS_oneCpt());
+#else
+  return pr.Pred2(time, amt, rate, ii, evid, cmt, addl, ss,
+                  pMatrix, biovar, tlag,
+                  nCmt, dummy_systems,
+                  Pred1_oneCpt(), PredSS_oneCpt(),
+                  integrator);
+#endif
 }
 
 /**

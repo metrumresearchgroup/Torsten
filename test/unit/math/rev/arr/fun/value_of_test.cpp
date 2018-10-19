@@ -1,10 +1,11 @@
 #include <stan/math/rev/arr.hpp>
 #include <gtest/gtest.h>
+#include <vector>
 
-TEST(MathMatrix,value_of) {
+TEST(MathMatrix, value_of) {
   using stan::math::value_of;
-  using std::vector;
   using stan::math::var;
+  using std::vector;
 
   vector<double> a_vals;
 

@@ -4,13 +4,13 @@
 #include <test/unit/math/rev/mat/util.hpp>
 
 TEST(AgradRevMatrix, distance_vector_vector) {
+  using stan::math::squared_distance;
   using stan::math::vector_d;
   using stan::math::vector_v;
-  using stan::math::squared_distance;
 
   vector_d vd_1(3), vd_2(3);
   vector_v vv_1(3), vv_2(3);
-  
+
   vd_1 << 1, 3, -5;
   vv_1 << 1, 3, -5;
   vd_2 << 4, -2, -1;
@@ -34,16 +34,16 @@ TEST(AgradRevMatrix, distance_vector_vector_exception) {
   EXPECT_THROW(stan::math::distance(v1, v2), std::invalid_argument);
 }
 TEST(AgradRevMatrix, distance_rowvector_vector) {
-  using stan::math::vector_d;
-  using stan::math::vector_v;
   using stan::math::row_vector_d;
   using stan::math::row_vector_v;
+  using stan::math::vector_d;
+  using stan::math::vector_v;
 
   row_vector_d d1(3);
   row_vector_v v1(3);
   vector_d d2(3);
   vector_v v2(3);
-  
+
   d1 << 1, 3, -5;
   v1 << 1, 3, -5;
   d2 << 4, -2, -1;
@@ -54,10 +54,10 @@ TEST(AgradRevMatrix, distance_rowvector_vector) {
   EXPECT_FLOAT_EQ(7.071068, stan::math::distance(v1, v2).val());
 }
 TEST(AgradRevMatrix, distance_rowvector_vector_exception) {
-  using stan::math::vector_d;
-  using stan::math::vector_v;
   using stan::math::row_vector_d;
   using stan::math::row_vector_v;
+  using stan::math::vector_d;
+  using stan::math::vector_v;
 
   row_vector_d d1(3);
   row_vector_v v1(3);
@@ -69,30 +69,30 @@ TEST(AgradRevMatrix, distance_rowvector_vector_exception) {
   EXPECT_THROW(stan::math::distance(v1, v2), std::invalid_argument);
 }
 TEST(AgradRevMatrix, distance_vector_rowvector) {
-  using stan::math::vector_d;
-  using stan::math::vector_v;
   using stan::math::row_vector_d;
   using stan::math::row_vector_v;
+  using stan::math::vector_d;
+  using stan::math::vector_v;
 
   vector_d d1(3);
   vector_v v1(3);
   row_vector_d d2(3);
   row_vector_v v2(3);
-  
+
   d1 << 1, 3, -5;
   v1 << 1, 3, -5;
   d2 << 4, -2, -1;
   v2 << 4, -2, -1;
-  
+
   EXPECT_FLOAT_EQ(7.071068, stan::math::distance(v1, d2).val());
   EXPECT_FLOAT_EQ(7.071068, stan::math::distance(d1, v2).val());
   EXPECT_FLOAT_EQ(7.071068, stan::math::distance(v1, v2).val());
 }
 TEST(AgradRevMatrix, distance_vector_rowvector_exception) {
-  using stan::math::vector_d;
-  using stan::math::vector_v;
   using stan::math::row_vector_d;
   using stan::math::row_vector_v;
+  using stan::math::vector_d;
+  using stan::math::vector_v;
 
   vector_d d1(3);
   vector_v v1(3);
@@ -109,7 +109,7 @@ TEST(AgradRevMatrix, distance_rowvector_rowvector) {
 
   row_vector_d d1(3), d2(3);
   row_vector_v v1(3), v2(3);
-  
+
   d1 << 1, 3, -5;
   v1 << 1, 3, -5;
   d2 << 4, -2, -1;
@@ -136,9 +136,10 @@ TEST(AgradRevMatrix, distance_vv) {
 
   vector_v a(3), b(3);
   AVAR c;
-  for (int i = -1; i < 2; i++) { // a = (-1, 0, 1), b = (1, 2, 3)
-    a(i+1) = i;
-    b(i+1) = i + 2;
+  // a = (-1, 0, 1), b = (1, 2, 3)
+  for (int i = -1; i < 2; i++) {
+    a(i + 1) = i;
+    b(i + 1) = i + 2;
   }
   c = stan::math::distance(a, b);
   EXPECT_FLOAT_EQ(3.464102, c.val());
@@ -163,9 +164,10 @@ TEST(AgradRevMatrix, distance_dv) {
   vector_d a(3);
   vector_v b(3);
   AVAR c;
-  for (int i = -1; i < 2; i++) { // a = (-1, 0, 1), b = (1, 2, 3)
-    a(i+1) = i;
-    b(i+1) = i + 2;
+  // a = (-1, 0, 1), b = (1, 2, 3)
+  for (int i = -1; i < 2; i++) {
+    a(i + 1) = i;
+    b(i + 1) = i + 2;
   }
   c = stan::math::distance(a, b);
   EXPECT_FLOAT_EQ(3.464102, c.val());
@@ -186,9 +188,10 @@ TEST(AgradRevMatrix, distance_vd) {
   vector_v a(3);
   vector_d b(3);
   AVAR c;
-  for (int i = -1; i < 2; i++) { // a = (-1, 0, 1), b = (1, 2, 3)
-    a(i+1) = i;
-    b(i+1) = i + 2;
+  // a = (-1, 0, 1), b = (1, 2, 3)
+  for (int i = -1; i < 2; i++) {
+    a(i + 1) = i;
+    b(i + 1) = i + 2;
   }
   c = stan::math::distance(a, b);
   EXPECT_FLOAT_EQ(3.464102, c.val());

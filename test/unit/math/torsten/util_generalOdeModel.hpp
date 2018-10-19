@@ -1,5 +1,5 @@
-#ifndef TEST_UNIT_MATH_TORSTEN_UTIL_GENERALODEMODEL_HPP
-#define TEST_UNIT_MATH_TORSTEN_UTIL_GENERALODEMODEL_HPP
+#ifndef TEST_UNIT_MATH_TORSTEN_UTIL_GENERALODEMODEL2_HPP
+#define TEST_UNIT_MATH_TORSTEN_UTIL_GENERALODEMODEL2_HPP
 
 #include <stan/math/rev/mat.hpp>
 #include <gtest/gtest.h>
@@ -113,7 +113,7 @@ finite_diff_params(const F& f,
  * arguments as double.
  */
 template <typename F>
-void test_generalOdeModel_finite_diff_vdd(
+void test_generalOdeModel2_finite_diff_vdd(
     const F& f,
     const int nCmt,
     const std::vector<double>& time,
@@ -210,7 +210,7 @@ void test_generalOdeModel_finite_diff_vdd(
  * arguments as double.
  */
 template <typename F>
-void test_generalOdeModel_finite_diff_dvd(
+void test_generalOdeModel2_finite_diff_dvd(
     const F& f,
     const int nCmt,
     const std::vector<double>& time,
@@ -311,7 +311,7 @@ void test_generalOdeModel_finite_diff_dvd(
  * and the unit test overlooks it.
  */
 template <typename F>
-void test_generalOdeModel_finite_diff_ddv(
+void test_generalOdeModel2_finite_diff_ddv(
     const F& f,
     const int nCmt,
     const std::vector<double>& time,
@@ -434,7 +434,7 @@ void test_generalOdeModel_finite_diff_ddv(
 }
 
 template <typename F>
-void test_generalOdeModel(const F& f,
+void test_generalOdeModel2(const F& f,
                           const int nCmt,
                           const std::vector<double>& time,
                           const std::vector<double>& amt,
@@ -455,19 +455,19 @@ void test_generalOdeModel(const F& f,
                           std::string odeInt,
                           int skip = 0) {
   if (skip != 1)
-    test_generalOdeModel_finite_diff_vdd(f, nCmt, time, amt, rate,
+    test_generalOdeModel2_finite_diff_vdd(f, nCmt, time, amt, rate,
                                          ii, evid, cmt, addl, ss, 
                                          pMatrix, biovar, tlag, 
                                          rel_tol, abs_tol, max_num_steps,
                                          diff, diff2, odeInt);
   if (skip != 2)
-    test_generalOdeModel_finite_diff_dvd(f, nCmt, time, amt, rate,
+    test_generalOdeModel2_finite_diff_dvd(f, nCmt, time, amt, rate,
                                          ii, evid, cmt, addl, ss, 
                                          pMatrix, biovar, tlag, 
                                          rel_tol, abs_tol, max_num_steps,
                                          diff, diff2, odeInt);
   if (skip != 3)
-    test_generalOdeModel_finite_diff_ddv(f, nCmt, time, amt, rate,
+    test_generalOdeModel2_finite_diff_ddv(f, nCmt, time, amt, rate,
                                          ii, evid, cmt, addl, ss, 
                                          pMatrix, biovar, tlag, 
                                          rel_tol, abs_tol, max_num_steps,

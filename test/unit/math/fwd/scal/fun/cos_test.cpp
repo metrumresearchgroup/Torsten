@@ -2,13 +2,13 @@
 #include <gtest/gtest.h>
 #include <test/unit/math/fwd/scal/fun/nan_util.hpp>
 
-TEST(AgradFwdCos,Fvar) {
+TEST(AgradFwdCos, Fvar) {
   using stan::math::fvar;
-  using std::sin;
   using std::cos;
+  using std::sin;
 
-  fvar<double> x(0.5,1.0);
-  
+  fvar<double> x(0.5, 1.0);
+
   fvar<double> a = cos(x);
   EXPECT_FLOAT_EQ(cos(0.5), a.val_);
   EXPECT_FLOAT_EQ(-sin(0.5), a.d_);
@@ -38,11 +38,10 @@ TEST(AgradFwdCos,Fvar) {
   EXPECT_FLOAT_EQ(-sin(0.0), f.d_);
 }
 
-
-TEST(AgradFwdCos,FvarFvarDouble) {
+TEST(AgradFwdCos, FvarFvarDouble) {
   using stan::math::fvar;
-  using std::sin;
   using std::cos;
+  using std::sin;
 
   fvar<fvar<double> > x;
   x.val_.val_ = 1.5;
@@ -66,16 +65,14 @@ TEST(AgradFwdCos,FvarFvarDouble) {
   EXPECT_FLOAT_EQ(0, a.d_.d_);
 }
 
-
 struct cos_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return cos(arg1);
   }
 };
 
-TEST(AgradFwdCos,cos_NaN) {
+TEST(AgradFwdCos, cos_NaN) {
   cos_fun cos_;
-  test_nan_fwd(cos_,false);
+  test_nan_fwd(cos_, false);
 }

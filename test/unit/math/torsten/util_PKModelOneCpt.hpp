@@ -1,7 +1,7 @@
-#ifndef TEST_UNIT_MATH_TORSTEN_UTIL_PKMODELONECPT_HPP
-#define TEST_UNIT_MATH_TORSTEN_UTIL_PKMODELONECPT_HPP
+#ifndef TEST_UNIT_MATH_TORSTEN_UTIL_PKMODELONECPT2_HPP
+#define TEST_UNIT_MATH_TORSTEN_UTIL_PKMODELONECPT2_HPP
 
-#include <stan/math/torsten/torsten.hpp>
+#include <stan/math/rev/mat.hpp>
 #include <gtest/gtest.h>
 #include <test/unit/math/rev/arr/util.hpp>
 #include <test/unit/util.hpp>

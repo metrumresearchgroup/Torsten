@@ -4,11 +4,11 @@
 
 TEST(AgradFwdSin, Fvar) {
   using stan::math::fvar;
-  using std::sin;
   using std::cos;
+  using std::sin;
 
-  fvar<double> x(0.5,1.0);
-  
+  fvar<double> x(0.5, 1.0);
+
   fvar<double> a = sin(x);
   EXPECT_FLOAT_EQ(sin(0.5), a.val_);
   EXPECT_FLOAT_EQ(cos(0.5), a.d_);
@@ -25,12 +25,12 @@ TEST(AgradFwdSin, Fvar) {
   EXPECT_FLOAT_EQ(-3 * sin(0.5) + 5 * 0.5, d.val_);
   EXPECT_FLOAT_EQ(-3 * cos(0.5) + 5, d.d_);
 
-  fvar<double> y(-0.5,1.0);
+  fvar<double> y(-0.5, 1.0);
   fvar<double> e = sin(y);
   EXPECT_FLOAT_EQ(sin(-0.5), e.val_);
   EXPECT_FLOAT_EQ(cos(-0.5), e.d_);
 
-  fvar<double> z(0.0,1.0);
+  fvar<double> z(0.0, 1.0);
   fvar<double> f = sin(z);
   EXPECT_FLOAT_EQ(sin(0.0), f.val_);
   EXPECT_FLOAT_EQ(cos(0.0), f.d_);
@@ -38,8 +38,8 @@ TEST(AgradFwdSin, Fvar) {
 
 TEST(AgradFwdSin, FvarFvarDouble) {
   using stan::math::fvar;
-  using std::sin;
   using std::cos;
+  using std::sin;
 
   fvar<fvar<double> > x;
   x.val_.val_ = 1.5;
@@ -65,13 +65,12 @@ TEST(AgradFwdSin, FvarFvarDouble) {
 
 struct sin_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return sin(arg1);
   }
 };
 
-TEST(AgradFwdSin,sin_NaN) {
+TEST(AgradFwdSin, sin_NaN) {
   sin_fun sin_;
-  test_nan_fwd(sin_,false);
+  test_nan_fwd(sin_, false);
 }

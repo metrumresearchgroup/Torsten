@@ -2,12 +2,12 @@
 #include <gtest/gtest.h>
 #include <test/unit/math/fwd/scal/fun/nan_util.hpp>
 
-TEST(AgradFwdInv,Fvar) {
+TEST(AgradFwdInv, Fvar) {
   using stan::math::fvar;
   using stan::math::inv;
 
   fvar<double> x(0.5);
-  x.d_ = 1.0;   // Derivatives w.r.t. x
+  x.d_ = 1.0;  // Derivatives w.r.t. x
   fvar<double> a = inv(x);
 
   EXPECT_FLOAT_EQ(inv(0.5), a.val_);
@@ -40,17 +40,16 @@ TEST(AgradFwdInv,Fvar) {
   fvar<double> g = inv(z);
   EXPECT_FLOAT_EQ(stan::math::positive_infinity(), g.val_);
   EXPECT_FLOAT_EQ(stan::math::negative_infinity(), g.d_);
-}   
+}
 
 struct inv_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return inv(arg1);
   }
 };
 
-TEST(AgradFwdInv,inv_NaN) {
+TEST(AgradFwdInv, inv_NaN) {
   inv_fun inv_;
-  test_nan_fwd(inv_,false);
+  test_nan_fwd(inv_, false);
 }

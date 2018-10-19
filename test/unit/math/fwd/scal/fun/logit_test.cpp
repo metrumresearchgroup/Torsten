@@ -3,36 +3,34 @@
 #include <test/unit/math/fwd/scal/fun/nan_util.hpp>
 
 class AgradFwdLogit : public testing::Test {
-  void SetUp() {
-  }
+  void SetUp() {}
 };
 
-
-TEST_F(AgradFwdLogit,Fvar) {
+TEST_F(AgradFwdLogit, Fvar) {
   using stan::math::fvar;
   using stan::math::logit;
   using std::isnan;
 
-  fvar<double> x(0.5,1.0);
+  fvar<double> x(0.5, 1.0);
 
   fvar<double> a = logit(x);
   EXPECT_FLOAT_EQ(logit(0.5), a.val_);
   EXPECT_FLOAT_EQ(1 / (0.5 - 0.5 * 0.5), a.d_);
 
-  fvar<double> y(-1.2,1.0);
+  fvar<double> y(-1.2, 1.0);
 
   fvar<double> b = logit(y);
   isnan(b.val_);
   isnan(b.d_);
 
-  fvar<double> z(1.5,1.0);
+  fvar<double> z(1.5, 1.0);
 
   fvar<double> c = logit(z);
   isnan(c.val_);
   isnan(c.d_);
 }
 
-TEST_F(AgradFwdLogit,FvarFvarDouble) {
+TEST_F(AgradFwdLogit, FvarFvarDouble) {
   using stan::math::fvar;
   using stan::math::logit;
 
@@ -60,13 +58,12 @@ TEST_F(AgradFwdLogit,FvarFvarDouble) {
 
 struct logit_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return logit(arg1);
   }
 };
 
-TEST_F(AgradFwdLogit,logit_NaN) {
+TEST_F(AgradFwdLogit, logit_NaN) {
   logit_fun logit_;
-  test_nan_fwd(logit_,false);
+  test_nan_fwd(logit_, false);
 }

@@ -6,18 +6,18 @@
 #include <test/unit/math/mix/mat/vectorize/mix_scalar_unary_test.hpp>
 #include <stan/math/prim/mat/fun/digamma.hpp>
 #include <test/unit/math/prim/mat/vectorize/vector_builder.hpp>
+#include <vector>
 
 /**
  * This is the structure for testing vectorized digamma (defined in the
  * testing framework).
  */
 struct digamma_test {
-
   /**
    * Redefinition of function brought in from stan::math.  The reason
    * to do this is that it wraps it up in this static template class.
    *
-   * This is the version that's being tested.  
+   * This is the version that's being tested.
    *
    * WARNING:  assumes that the scalar values for all instantiations
    * (prim, rev, fwd, mix) ***have already been tested***.
@@ -40,13 +40,11 @@ struct digamma_test {
    * Redundant definition of function from stan::math to apply to an
    * integer and return a double.
    *
-   * This function delegates to apply(), defined above, directly.  
+   * This function delegates to apply(), defined above, directly.
    *
    * WARNING:  this is *not an independent test*.
    */
-  static double apply_base(int x) {
-    return apply<double>(x);
-  }
+  static double apply_base(int x) { return apply<double>(x); }
 
   /**
    * This is the generic version of the integer version defined
@@ -65,32 +63,32 @@ struct digamma_test {
    */
   static std::vector<double> valid_inputs() {
     return test::math::vector_builder<double>()
-      .add(2.3).add(5.7).add(-10.2).add(-1.2).build();
+        .add(2.3)
+        .add(5.7)
+        .add(-10.2)
+        .add(-1.2)
+        .build();
   }
 
   /**
    * Return sequence of invalid double-valued inputs.
    */
   static std::vector<double> invalid_inputs() {
-    return test::math::vector_builder<double>()
-      .build();
+    return test::math::vector_builder<double>().build();
   }
 
   /**
    * Return sequence of valid integer inputs.
    */
   static std::vector<int> int_valid_inputs() {
-    return test::math::vector_builder<int>()
-      .build();
+    return test::math::vector_builder<int>().build();
   }
 
   /**
    * Return sequence of invalid integer inputs.
    */
   static std::vector<int> int_invalid_inputs() {
-    return test::math::vector_builder<int>()
-      .add(-1).add(-12).add(-25)
-      .build();
+    return test::math::vector_builder<int>().add(-1).add(-12).add(-25).build();
   }
 };
 

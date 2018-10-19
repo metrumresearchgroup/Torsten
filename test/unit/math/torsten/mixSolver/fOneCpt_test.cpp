@@ -1,8 +1,8 @@
 #include <stan/math/rev/mat.hpp>  // FIX ME - more specific
 #include <stan/math/torsten/PKModel/Pred/fOneCpt.hpp>
 #include <gtest/gtest.h>
-#include <test/unit/math/prim/mat/fun/expect_near_matrix_eq.hpp>
-#include <test/unit/math/prim/mat/fun/expect_matrix_eq.hpp>
+#include <test/unit/math/torsten/expect_near_matrix_eq.hpp>
+#include <test/unit/math/torsten/expect_matrix_eq.hpp>
 #include <test/unit/math/torsten/util_generalOdeModel.hpp>
 
 TEST(Torsten, fOneCpt_dbl) {

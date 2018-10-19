@@ -90,7 +90,7 @@ Pred(const std::vector<T_time>& time,
 
   typedef typename promote_args<T_time, T_amt, T_rate, T_ii,
     typename promote_args<T_parameters, T_biovar, T_tlag>::type >::type scalar;
-  typedef typename promote_args<T_time, T_tlag>::type T_tau;
+  typedef typename promote_args<T_time, T_amt, T_tlag, T_rate>::type T_tau;
   typedef typename promote_args<T_rate, T_biovar>::type T_rate2;
 
   // BOOK-KEEPING: UPDATE DATA SETS
@@ -145,7 +145,8 @@ Pred(const std::vector<T_time>& time,
       dt = 0;
       init = zeros;
     } else {
-      dt = event.get_time() - tprev;
+      T_tau t_new = event.get_time();
+      dt = t_new - tprev;
       pred1 = Pred1(dt, parameter, init, rate2.get_rate());
       init = pred1;
     }

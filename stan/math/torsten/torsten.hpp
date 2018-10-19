@@ -10,6 +10,9 @@
 #include <stan/math/torsten/mixOde2CptModel_bdf.hpp>
 #include <stan/math/torsten/PKModelOneCpt.hpp>
 #include <stan/math/torsten/PKModelTwoCpt.hpp>
+#include <stan/math/torsten/linear_interpolation.hpp>
 #include <stan/math/torsten/univariate_integral.hpp>
+
+#include <stan/math/torsten/dsolve/dsolve.hpp>
 
 #endif

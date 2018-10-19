@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 #include <test/unit/math/rev/scal/fun/nan_util.hpp>
 #include <test/unit/math/rev/scal/util.hpp>
+#include <limits>
 
 double inf = std::numeric_limits<double>::infinity();
 
@@ -16,20 +17,20 @@ double finite_diff(const int y, const double y_hat) {
   using stan::math::binary_log_loss;
   static const double e = 1e-10;
 
-  double p = binary_log_loss(y, y_hat+e);
-  double m = binary_log_loss(y, y_hat-e);
-  
+  double p = binary_log_loss(y, y_hat + e);
+  double m = binary_log_loss(y, y_hat - e);
+
   return (p - m) / (2 * e);
 }
 
-TEST(AgradRev,binary_log_loss) {
+TEST(AgradRev, binary_log_loss) {
   using std::log;
 
   int y;
   AVAR y_hat, f;
   AVEC x;
   VEC grad_f;
-  
+
   y = 0;
   y_hat = 0.0;
   x = createAVEC(y_hat);
@@ -85,15 +86,14 @@ TEST(AgradRev,binary_log_loss) {
 
 struct binary_log_loss_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
-    return binary_log_loss(1,arg1);
+  inline T0 operator()(const T0& arg1) const {
+    return binary_log_loss(1, arg1);
   }
 };
 
-TEST(AgradRev,binary_log_loss_NaN) {
+TEST(AgradRev, binary_log_loss_NaN) {
   binary_log_loss_fun binary_log_loss_;
-  test_nan(binary_log_loss_,false,true);
+  test_nan(binary_log_loss_, false, true);
 }
 
 TEST(AgradRev, check_varis_on_stack) {

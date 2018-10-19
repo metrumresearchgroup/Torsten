@@ -2,18 +2,18 @@
 #include <gtest/gtest.h>
 #include <test/unit/math/fwd/scal/fun/nan_util.hpp>
 
-TEST(AgradFwdCosh,Fvar) {
+TEST(AgradFwdCosh, Fvar) {
   using stan::math::fvar;
-  using std::sinh;
   using std::cosh;
+  using std::sinh;
 
-  fvar<double> x(0.5,1.0);
+  fvar<double> x(0.5, 1.0);
 
   fvar<double> a = cosh(x);
   EXPECT_FLOAT_EQ(cosh(0.5), a.val_);
   EXPECT_FLOAT_EQ(sinh(0.5), a.d_);
 
-  fvar<double> y(-1.2,1.0);
+  fvar<double> y(-1.2, 1.0);
 
   fvar<double> b = cosh(y);
   EXPECT_FLOAT_EQ(cosh(-1.2), b.val_);
@@ -24,11 +24,10 @@ TEST(AgradFwdCosh,Fvar) {
   EXPECT_FLOAT_EQ(-sinh(-0.5), c.d_);
 }
 
-
-TEST(AgradFwdCosh,FvarFvarDouble) {
+TEST(AgradFwdCosh, FvarFvarDouble) {
   using stan::math::fvar;
-  using std::sinh;
   using std::cosh;
+  using std::sinh;
 
   fvar<fvar<double> > x;
   x.val_.val_ = 1.5;
@@ -54,13 +53,12 @@ TEST(AgradFwdCosh,FvarFvarDouble) {
 
 struct cosh_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return cosh(arg1);
   }
 };
 
-TEST(AgradFwdCosh,cosh_NaN) {
+TEST(AgradFwdCosh, cosh_NaN) {
   cosh_fun cosh_;
-  test_nan_fwd(cosh_,false);
+  test_nan_fwd(cosh_, false);
 }

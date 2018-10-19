@@ -3,11 +3,11 @@
 #include <test/unit/math/fwd/scal/fun/nan_util.hpp>
 
 TEST(AgradFwdTrunc, Fvar) {
-  using stan::math::fvar;
   using boost::math::trunc;
+  using stan::math::fvar;
 
-  fvar<double> x(0.5,1.0);
-  fvar<double> y(2.4,2.0);
+  fvar<double> x(0.5, 1.0);
+  fvar<double> y(2.4, 2.0);
 
   fvar<double> a = trunc(x);
   EXPECT_FLOAT_EQ(trunc(0.5), a.val_);
@@ -22,16 +22,14 @@ TEST(AgradFwdTrunc, Fvar) {
   EXPECT_FLOAT_EQ(0.0, c.d_);
 }
 
-
 struct trunc_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return trunc(arg1);
   }
 };
 
-TEST(AgradFwdTrunc,trunc_NaN) {
+TEST(AgradFwdTrunc, trunc_NaN) {
   trunc_fun trunc_;
-  test_nan_fwd(trunc_,false);
+  test_nan_fwd(trunc_, false);
 }

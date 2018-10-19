@@ -2,12 +2,12 @@
 #include <gtest/gtest.h>
 #include <test/unit/math/fwd/scal/fun/nan_util.hpp>
 
-TEST(AgradFwdFloor,Fvar) {
+TEST(AgradFwdFloor, Fvar) {
   using stan::math::fvar;
   using std::floor;
 
-  fvar<double> x(0.5,1.0);
-  fvar<double> y(2.0,2.0);
+  fvar<double> x(0.5, 1.0);
+  fvar<double> y(2.0, 2.0);
 
   fvar<double> a = floor(x);
   EXPECT_FLOAT_EQ(floor(0.5), a.val_);
@@ -19,10 +19,10 @@ TEST(AgradFwdFloor,Fvar) {
 
   fvar<double> c = floor(2 * x);
   EXPECT_FLOAT_EQ(floor(2 * 0.5), c.val_);
-   EXPECT_FLOAT_EQ(0.0, c.d_);
+  EXPECT_FLOAT_EQ(0.0, c.d_);
 }
 
-TEST(AgradFwdFloor,FvarFvarDouble) {
+TEST(AgradFwdFloor, FvarFvarDouble) {
   using stan::math::fvar;
   using std::floor;
 
@@ -50,13 +50,12 @@ TEST(AgradFwdFloor,FvarFvarDouble) {
 
 struct floor_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return floor(arg1);
   }
 };
 
-TEST(AgradFwdFloor,floor_NaN) {
+TEST(AgradFwdFloor, floor_NaN) {
   floor_fun floor_;
-  test_nan_fwd(floor_,false);
+  test_nan_fwd(floor_, false);
 }

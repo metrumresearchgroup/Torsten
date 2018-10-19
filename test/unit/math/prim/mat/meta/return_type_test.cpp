@@ -1,12 +1,13 @@
 #include <stan/math/prim/mat.hpp>
 #include <gtest/gtest.h>
 #include <test/unit/util.hpp>
+#include <vector>
 
+using Eigen::MatrixXd;
+using Eigen::RowVectorXd;
+using Eigen::VectorXd;
 using stan::return_type;
 using std::vector;
-using Eigen::MatrixXd;
-using Eigen::VectorXd;
-using Eigen::RowVectorXd;
 
 TEST(MetaTraits, ReturnTypeMatrixXd) {
   test::expect_same_type<double, return_type<MatrixXd>::type>();

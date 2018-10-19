@@ -3,18 +3,16 @@
 #include <test/unit/math/fwd/scal/fun/nan_util.hpp>
 
 class AgradFwdExp2 : public testing::Test {
-  void SetUp() {
-  }
+  void SetUp() {}
 };
 
-
-TEST_F(AgradFwdExp2,Fvar) {
-  using stan::math::fvar;
+TEST_F(AgradFwdExp2, Fvar) {
   using stan::math::exp2;
+  using stan::math::fvar;
   using std::log;
 
-  fvar<double> x(0.5,1.0);
-  
+  fvar<double> x(0.5, 1.0);
+
   fvar<double> a = exp2(x);
   EXPECT_FLOAT_EQ(exp2(0.5), a.val_);
   EXPECT_FLOAT_EQ(exp2(0.5) * log(2), a.d_);
@@ -31,21 +29,20 @@ TEST_F(AgradFwdExp2,Fvar) {
   EXPECT_FLOAT_EQ(-3 * exp2(-0.5) + 5 * 0.5, d.val_);
   EXPECT_FLOAT_EQ(3 * exp2(-0.5) * log(2) + 5, d.d_);
 
-  fvar<double> y(-0.5,1.0);
+  fvar<double> y(-0.5, 1.0);
   fvar<double> e = exp2(y);
   EXPECT_FLOAT_EQ(exp2(-0.5), e.val_);
   EXPECT_FLOAT_EQ(exp2(-0.5) * log(2), e.d_);
 
-  fvar<double> z(0.0,1.0);
+  fvar<double> z(0.0, 1.0);
   fvar<double> f = exp2(z);
   EXPECT_FLOAT_EQ(exp2(0.0), f.val_);
   EXPECT_FLOAT_EQ(exp2(0.0) * log(2), f.d_);
 }
 
-
-TEST_F(AgradFwdExp2,FvarFvarDouble) {
-  using stan::math::fvar;
+TEST_F(AgradFwdExp2, FvarFvarDouble) {
   using stan::math::exp2;
+  using stan::math::fvar;
   using std::log;
 
   fvar<fvar<double> > x;
@@ -72,13 +69,12 @@ TEST_F(AgradFwdExp2,FvarFvarDouble) {
 
 struct exp2_fun {
   template <typename T0>
-  inline T0
-  operator()(const T0& arg1) const {
+  inline T0 operator()(const T0& arg1) const {
     return exp2(arg1);
   }
 };
 
-TEST_F(AgradFwdExp2,exp2_NaN) {
+TEST_F(AgradFwdExp2, exp2_NaN) {
   exp2_fun exp2_;
-  test_nan_fwd(exp2_,false);
+  test_nan_fwd(exp2_, false);
 }

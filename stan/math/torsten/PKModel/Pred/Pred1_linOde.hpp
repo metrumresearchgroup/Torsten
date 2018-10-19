@@ -54,35 +54,35 @@ struct Pred1_linOde {
 
     typedef typename promote_args<T_time, T_parameters, T_rate>::type scalar;
 
-    if (dt == 0) { return init;
-    } else {
+    // if (dt == 0) { return init;
+    // } else {
       Matrix<T_parameters, Dynamic, Dynamic> system = parameter.get_K();
 
-      bool rate_zeros = true;
-      for (size_t i = 0; i < rate.size(); i++)
-        if (rate[i] != 0) rate_zeros = false;
+      // bool rate_zeros = true;
+      // for (size_t i = 0; i < rate.size(); i++)
+      //   if (rate[i] != 0) rate_zeros = false;
 
         // trick to promote dt, and dt_system
-        scalar dt_s = dt;
+        // scalar dt_s = dt;
 
-        if (rate_zeros) {
-          Matrix<scalar, Dynamic, Dynamic> dt_system = multiply(dt_s, system);
-          Matrix<scalar, Dynamic, 1> pred = matrix_exp(dt_system)
-            * init.transpose();
-          return pred.transpose();
-        } else {
+      if (std::any_of(rate.begin(), rate.end(), [](T_rate r){return r != 0;})) {
           int nCmt = system.cols();
           Matrix<scalar, Dynamic, 1> rate_vec(rate.size()), x(nCmt), x2(nCmt);
           for (size_t i = 0; i < rate.size(); i++) rate_vec(i) = rate[i];
           x = mdivide_left(system, rate_vec);
           x2 = x + init.transpose();
-          Matrix<scalar, Dynamic, Dynamic> dt_system = multiply(dt_s, system);
+          Matrix<scalar, Dynamic, Dynamic> dt_system = multiply(dt, system);
           Matrix<scalar, Dynamic, 1> pred = matrix_exp(dt_system) * x2;
           pred -= x;
           return pred.transpose();
+        } else {
+        // if (rate_zeros) {
+          Matrix<scalar, Dynamic, Dynamic> dt_system = multiply(dt, system);
+          Matrix<scalar, Dynamic, 1> pred = matrix_exp(dt_system)
+            * init.transpose();
+          return pred.transpose();
         }
     }
-  }
 };
 
 }

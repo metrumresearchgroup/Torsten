@@ -7,14 +7,13 @@ using stan::math::var;
 
 // test sum of first n numbers for sum of a
 template <typename T>
-void test_sum(stan::math::accumulator<T>& a,
-              int n) {
+void test_sum(stan::math::accumulator<T>& a, int n) {
   EXPECT_TRUE((n * (n + 1)) / 2 == a.sum());
 }
 
-TEST(AgradMixMatrixAccumulate,fvar_var) {
+TEST(AgradMixMatrixAccumulate, fvar_var) {
   using stan::math::accumulator;
-  
+
   accumulator<fvar<var> > a;
   test_sum(a, 0);
 
@@ -24,14 +23,13 @@ TEST(AgradMixMatrixAccumulate,fvar_var) {
   for (int i = 2; i <= 1000; ++i)
     a.add(i);
   test_sum(a, 1000);
-  
 }
-TEST(AgradMixMatrixAccumulate,collection_fvar_var) {
 
+TEST(AgradMixMatrixAccumulate, collection_fvar_var) {
   using stan::math::accumulator;
-  using std::vector;
-  using stan::math::vector_fv;
   using stan::math::matrix_fv;
+  using stan::math::vector_fv;
+  using std::vector;
 
   accumulator<fvar<var> > a;
 
@@ -41,15 +39,15 @@ TEST(AgradMixMatrixAccumulate,collection_fvar_var) {
   vector<fvar<var> > v(10);
   for (size_t i = 0; i < 10; ++i)
     v[i] = pos++;
-  a.add(v);                                         
-  test_sum(a, pos-1);
+  a.add(v);
+  test_sum(a, pos - 1);
 
-  a.add(pos++);                    
-  test_sum(a, pos-1);
+  a.add(pos++);
+  test_sum(a, pos - 1);
 
   double x = pos++;
-  a.add(x);                        
-  test_sum(a, pos-1);
+  a.add(x);
+  test_sum(a, pos - 1);
 
   vector<vector<fvar<var> > > ww(10);
   for (size_t i = 0; i < 10; ++i) {
@@ -59,20 +57,20 @@ TEST(AgradMixMatrixAccumulate,collection_fvar_var) {
     ww[i] = w;
   }
   a.add(ww);
-  test_sum(a, pos-1);
+  test_sum(a, pos - 1);
 
-  matrix_fv m(5,6);
+  matrix_fv m(5, 6);
   for (int i = 0; i < 5; ++i)
     for (int j = 0; j < 6; ++j)
-      m(i,j) = pos++;
+      m(i, j) = pos++;
   a.add(m);
-  test_sum(a, pos-1);
+  test_sum(a, pos - 1);
 
   vector_fv mv(7);
   for (int i = 0; i < 7; ++i)
     mv(i) = pos++;
   a.add(mv);
-  test_sum(a, pos-1);
+  test_sum(a, pos - 1);
 
   vector<vector_fv> vvx(8);
   for (size_t i = 0; i < 8; ++i) {
@@ -82,12 +80,12 @@ TEST(AgradMixMatrixAccumulate,collection_fvar_var) {
     vvx[i] = vx;
   }
   a.add(vvx);
-  test_sum(a, pos-1);
+  test_sum(a, pos - 1);
 }
 
-TEST(AgradMixMatrixAccumulate,fvar_fvar_var) {
+TEST(AgradMixMatrixAccumulate, fvar_fvar_var) {
   using stan::math::accumulator;
-  
+
   accumulator<fvar<fvar<var> > > a;
   test_sum(a, 0);
 
@@ -97,14 +95,13 @@ TEST(AgradMixMatrixAccumulate,fvar_fvar_var) {
   for (int i = 2; i <= 1000; ++i)
     a.add(i);
   test_sum(a, 1000);
-  
 }
-TEST(AgradMixMatrixAccumulate,collection_fvar_fvar_var) {
 
+TEST(AgradMixMatrixAccumulate, collection_fvar_fvar_var) {
   using stan::math::accumulator;
-  using std::vector;
-  using stan::math::vector_ffv;
   using stan::math::matrix_ffv;
+  using stan::math::vector_ffv;
+  using std::vector;
 
   accumulator<fvar<fvar<var> > > a;
 
@@ -114,15 +111,15 @@ TEST(AgradMixMatrixAccumulate,collection_fvar_fvar_var) {
   vector<fvar<fvar<var> > > v(10);
   for (size_t i = 0; i < 10; ++i)
     v[i] = pos++;
-  a.add(v);                                         
-  test_sum(a, pos-1);
+  a.add(v);
+  test_sum(a, pos - 1);
 
-  a.add(pos++);                    
-  test_sum(a, pos-1);
+  a.add(pos++);
+  test_sum(a, pos - 1);
 
   int x = pos++;
-  a.add(x);                        
-  test_sum(a, pos-1);
+  a.add(x);
+  test_sum(a, pos - 1);
 
   vector<vector<fvar<fvar<var> > > > ww(10);
   for (size_t i = 0; i < 10; ++i) {
@@ -132,20 +129,20 @@ TEST(AgradMixMatrixAccumulate,collection_fvar_fvar_var) {
     ww[i] = w;
   }
   a.add(ww);
-  test_sum(a, pos-1);
+  test_sum(a, pos - 1);
 
-  matrix_ffv m(5,6);
+  matrix_ffv m(5, 6);
   for (int i = 0; i < 5; ++i)
     for (int j = 0; j < 6; ++j)
-      m(i,j) = pos++;
+      m(i, j) = pos++;
   a.add(m);
-  test_sum(a, pos-1);
+  test_sum(a, pos - 1);
 
   vector_ffv mv(7);
   for (int i = 0; i < 7; ++i)
     mv(i) = pos++;
   a.add(mv);
-  test_sum(a, pos-1);
+  test_sum(a, pos - 1);
 
   vector<vector_ffv> vvx(8);
   for (size_t i = 0; i < 8; ++i) {
@@ -155,5 +152,5 @@ TEST(AgradMixMatrixAccumulate,collection_fvar_fvar_var) {
     vvx[i] = vx;
   }
   a.add(vvx);
-  test_sum(a, pos-1);
+  test_sum(a, pos - 1);
 }

@@ -9,13 +9,11 @@ TEST(ProbDistributionsInvWishartRng, rng) {
   using stan::math::inv_wishart_rng;
   boost::random::mt19937 rng;
 
-  MatrixXd omega(3,4);
+  MatrixXd omega(3, 4);
   EXPECT_THROW(inv_wishart_rng(3.0, omega, rng), std::invalid_argument);
 
-  MatrixXd sigma(3,3);
-  sigma << 9.0, -3.0, 0.0,
-    -3.0,  4.0, 0.0,
-    2.0, 1.0, 3.0;
+  MatrixXd sigma(3, 3);
+  sigma << 9.0, -3.0, 0.0, -3.0, 4.0, 0.0, 2.0, 1.0, 3.0;
   EXPECT_NO_THROW(inv_wishart_rng(3.0, sigma, rng));
   EXPECT_THROW(inv_wishart_rng(2, sigma, rng), std::domain_error);
   EXPECT_THROW(inv_wishart_rng(-1, sigma, rng), std::domain_error);
@@ -34,45 +32,44 @@ TEST(probdistributionsInvWishartRng, symmetry) {
 }
 
 TEST(ProbDistributionsInvWishart, chiSquareGoodnessFitTest) {
+  using Eigen::MatrixXd;
+  using boost::math::chi_squared;
+  using boost::math::digamma;
   using stan::math::determinant;
   using stan::math::inv_wishart_rng;
-  using boost::math::digamma;
-  using boost::math::chi_squared;
-  using Eigen::MatrixXd;
   using std::log;
 
   boost::random::mt19937 rng;
-  MatrixXd sigma(3,3);
-  sigma << 9.0, -3.0, 0.0,
-    -3.0,  4.0, 1.0,
-    0.0, 1.0, 3.0;
+  MatrixXd sigma(3, 3);
+  sigma << 9.0, -3.0, 0.0, -3.0, 4.0, 1.0, 0.0, 1.0, 3.0;
   int N = 10000;
 
-  MatrixXd siginv(3,3);
+  MatrixXd siginv(3, 3);
   siginv = sigma.inverse();
   int count = 0;
   double avg = 0;
   double expect = sigma.rows() * log(2.0) + log(determinant(siginv))
-    + digamma(5.0 / 2.0) + digamma(4.0 / 2.0) + digamma(3.0 / 2.0);
+                  + digamma(5.0 / 2.0) + digamma(4.0 / 2.0)
+                  + digamma(3.0 / 2.0);
 
-  MatrixXd a(sigma.rows(),sigma.rows());
+  MatrixXd a(sigma.rows(), sigma.rows());
   while (count < N) {
     a = inv_wishart_rng(5.0, sigma, rng);
     avg += log(determinant(a)) / N;
     count++;
-   }
+  }
   double chi = (expect - avg) * (expect - avg) / expect;
   chi_squared mydist(1);
   EXPECT_TRUE(chi < quantile(complement(mydist, 1e-6)));
 }
 
 TEST(ProbDistributionsInvWishart, SpecialRNGTest) {
-  //When the scale matrix is an identity matrix and df = k + 2
-  //The avg of the samples should also be an identity matrix
+  // When the scale matrix is an identity matrix and df = k + 2
+  // The avg of the samples should also be an identity matrix
 
   using Eigen::MatrixXd;
   using stan::math::inv_wishart_rng;
-  
+
   boost::random::mt19937 rng(1234U);
   int N = 1e5;
   double tol = 0.1;
@@ -92,5 +89,3 @@ TEST(ProbDistributionsInvWishart, SpecialRNGTest) {
     }
   }
 }
-
-
