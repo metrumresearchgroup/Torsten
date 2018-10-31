@@ -2,20 +2,20 @@
  "torsten_manual"
  (lambda ()
    (TeX-add-to-alist 'LaTeX-provided-class-options
-                     '(("amsbook" "11pt" "reqno")))
+                     '(("amsbook" "11pt" "reqno" "oneside")))
    (TeX-add-to-alist 'LaTeX-provided-package-options
-                     '(("geometry" "letterpaper" "width=6.5in" "height=9in") ("hyperref" "colorlinks=true" "citecolor=MRGGreen" "urlcolor=MRGGreen" "linkcolor=MRGGreen") ("mdframed" "framemethod=TikZ" "skipabove=10pt" "skipbelow=10pt" "backgroundcolor=black!10" "roundcorner=10pt" "linewidth=1pt") ("inputenc" "utf8") ("fontenc" "T1") ("ulem" "normalem")))
-   (add-to-list 'LaTeX-verbatim-environments-local "lstlisting")
+                     '(("geometry" "letterpaper" "width=6.5in" "height=9in") ("hyperref" "colorlinks=true" "citecolor=MRGGreen" "urlcolor=MRGGreen" "linkcolor=MRGGreen") ("mdframed" "framemethod=TikZ" "skipabove=10pt" "skipbelow=10pt" "backgroundcolor=black!5" "roundcorner=4pt" "linewidth=1pt") ("inputenc" "utf8") ("fontenc" "T1") ("ulem" "normalem") ("minted" "newfloat")))
    (add-to-list 'LaTeX-verbatim-environments-local "minted")
-   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "path")
-   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "url")
-   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "nolinkurl")
-   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "hyperbaseurl")
-   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "hyperimage")
-   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "hyperref")
+   (add-to-list 'LaTeX-verbatim-environments-local "lstlisting")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "lstinline")
-   (add-to-list 'LaTeX-verbatim-macros-with-delims-local "path")
+   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "hyperref")
+   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "hyperimage")
+   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "hyperbaseurl")
+   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "nolinkurl")
+   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "url")
+   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "path")
    (add-to-list 'LaTeX-verbatim-macros-with-delims-local "lstinline")
+   (add-to-list 'LaTeX-verbatim-macros-with-delims-local "path")
    (TeX-run-style-hooks
     "latex2e"
     "mrgtitlepage"
@@ -45,45 +45,66 @@
     "amsmath"
     "textcomp"
     "capt-of"
-    "minted")
+    "minted"
+    "caption")
    (TeX-add-symbols
     '("subtitle" 1)
     "mrgsubtitle"
     "mrgproject"
     "mrgtitle")
    (LaTeX-add-labels
-    "sec:org3550bd3"
-    "sec:org9568a75"
-    "sec:org85a9989"
-    "sec:org3bcb751"
-    "sec:org72e48d4"
-    "sec:org6d3af50"
-    "sec:orgce5f3c7"
-    "sec:orge4fbaa2"
-    "sec:orgee4f14a"
-    "sec:org3ca4883"
-    "sec:org959d934"
-    "sec:orgec71834"
-    "sec:orge3b95cb"
-    "sec:org8dcf413"
-    "sec:org64b05a8"
-    "sec:orgd4036b3"
-    "sec:org9139461"
-    "sec:org8590bc5"
-    "sec:orga4360cd"
-    "sec:org0c02946"
-    "sec:org734392b"
-    "fig:orgf68d5c5"
-    "sec:orga93f567"
-    "tab:orgd533f27"
-    "fig:orgc8b4df2"
-    "fig:org9c3e632"
-    "fig:orgf3926cc"
-    "fig:org4e3d4b1"
-    "sec:orgc879054"
-    "sec:org49ef30f"
-    "sec:orgc229a17"
-    "sec:orgdfde26a"
+    "sec:org18a62b9"
+    "sec:org5a2ec37"
+    "sec:orgac7ffc0"
+    "sec:org1eb3894"
+    "sec:orgc5c13c8"
+    "sec:org64ca667"
+    "sec:orge6241bf"
+    "sec:org12054b0"
+    "sec:org9761c32"
+    "sec:org8eee07f"
+    "sec:org99655c0"
+    "sec:orge98da5a"
+    "sec:orgeb453ce"
+    "sec:org8b2665b"
+    "sec:org7c67c29"
+    "sec:org0c7345a"
+    "sec:org938f9d0"
+    "sec:org42b28e6"
+    "sec:org5446901"
+    "sec:org5784b2b"
+    "sec:orga98b8e4"
+    "sec:orgdeb2e94"
+    "sec:org2ace732"
+    "sec:orgfe80ec5"
+    "sec:orgc94c7ab"
+    "sec:org3021bee"
+    "sec:org0179d0f"
+    "sec:orga428dc1"
+    "sec:org07fd4c5"
+    "sec:org896be65"
+    "sec:orgba866ac"
+    "sec:orgdb8fe1c"
+    "sec:org463e26a"
+    "sec:orgfbe159b"
+    "sec:org06b801a"
+    "sec:org15d2b1f"
+    "sec:orgde79636"
+    "sec:org8dad922"
+    "fig:orgf43a1d6"
+    "sec:org2285c7e"
+    "tab:orgf256a50"
+    "fig:org8b179c7"
+    "fig:orgbb8c03a"
+    "fig:orgb02d4bd"
+    "fig:org188eedc"
+    "sec:orge488035"
+    "sec:orgc24bc1a"
+    "sec:orgd0052cb"
+    "sec:orge8e3f4a"
+    "sec:org231bc2a"
+    "sec:orga0b89a3"
+    "sec:orgd45884c"
     "eq:FK")
    (LaTeX-add-bibliographies
     "torsten")

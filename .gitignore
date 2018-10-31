@@ -2,3 +2,6 @@
 _minted*
 *.tex#
 *.rds
+*.aux
+*.el
+docs/auto

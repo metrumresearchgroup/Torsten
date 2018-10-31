@@ -24,7 +24,6 @@ The models and data format are based on NONMEM\textregistered{}<sup><a id="fnr.1
 
 In general, all real variables may be passed as Stan parameters. A few exceptions apply /to functions which use a numerical integrator/(i.e. the general and the mix compartment models). The below listed cases present technical difficulties, which we expect to overcome in Torsten's next release:
 
--   The RATE and TIME arguments must be fixed
 -   In the case of a multiple truncated infusion rate dosing regimen:
     -   The bioavailability (F) and the amount (AMT) must be fixed.
 
@@ -33,50 +32,60 @@ This library provides Stan language functions that calculate amounts in each com
 
 ## Installation
 
-Installation files are available on GitHub
+We are working with Stan development team to create a system to add and share Stan packages. In the mean time, the current repo contains forked version of Stan with Torsten. The latest version of Torsten (v0.85) is compatible with Stan v2.18.1. Torsten is agnostic to which Stan interface you use. Here we provide command line and R interfaces.
+
+After downloading the project
 
 -   <https://github.com/metrumresearchgroup/Torsten>
 
-We are working with Stan development team to create a system to add and share Stan packages. In the mean time, the current repo contains forked version of Stan with Torsten. The latest version of Torsten (v0.84) is compatible with Stan v2.17.1. Torsten is agnostic to which Stan interface you use. Here we provide command line and R interfaces.
-
-First, download the project. The root path of the project is your `torsten_path`. Set the envionment variable `TORSTEN_PATH` to `torsten_path`. In bash this is
+to `torsten_path`, set the envionment variable `TORSTEN_PATH` as
 
 ```sh
+# in bash
 export TORSTEN_PATH=torsten_path
+# in csh
+setenv TORSTEN_PATH torsten_path
 ```
 
+-   Command line interface
 
-### Command line version
+    The command line interface `cmdstan` does not require installation. The following command builds a Torsten model `model_name` in `model_path`
+    
+    ```sh
+    cd $TORSTEN_PATH/cmdstan; make model_path/model_name
+    ```
 
-There is no need to install command line version. To build a Stan model with `model_name` in `model_path` using command line, in `torsten_path/cmdstan`, do
+-   R interface
 
-```sh
-make model_path/model_name
-```
+    The R interface is based on [rstan](https://cran.r-project.org/web/packages/rstan/index.html), the Stan's interface for R. To install R version of Torsten, at `$TORSTEN_PATH`, in R
+    
+    ```R
+    source('install.R')
+    ```
+    
+    Please ensure the R toolchain includes a C++ compiler with C++14 support. In particular, R 3.4.0 and later is recommended as it contains toolchain based on gcc 4.9.3. On Windows platform, such a toolchain can be found in Rtools34 and later.
+    
+    Please ensure `.R/Makevars` constains the following flags
+    
+    ```sh
+    CXXFLAGS=-O3 -std=c++1y -mtune=native -march=native -Wno-unused-variable -Wno-unused-function
+    CXXFLAGS += -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS -DBOOST_MPL_LIMIT_LIST_SIZE=30
+    
+    CXX14FLAGS=-O3 -std=c++1y -mtune=native -march=native -Wno-unused-variable -Wno-unused-function
+    CXX14FLAGS += -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS -DBOOST_MPL_LIMIT_LIST_SIZE=30
+    ```
+    
+    For more information of installation troubleshooting, please consult [rstan wiki](https://github.com/stan-dev/rstan/wiki).
 
+-   Testing
 
-### R version
-
-The R version is based on [rstan](https://cran.r-project.org/web/packages/rstan/index.html), the Stan's interface for R. To install R version of Torsten, at `torsten_path`, in R
-
-```R
-source('install.R')
-```
-
-Please ensure the R toolchain includes a C++ compiler with C++11 support. In particular, R 3.3.0 and later is recommended as it contains toolchain based on gcc 4.9.3. On Windows platform, such a toolchain can be found in Rtools33 and later.
-
-Please ensure CXXFLAGS in .R/Makevars constains flag -std=c++11.
-
-For more information of installation troubleshooting, please consult [rstan wiki](https://github.com/stan-dev/rstan/wiki).
-
-
-### Testing
-
-To test after installation, run
-
-```sh
-./test-torsten.sh --unit --signature --model
-```
+    To test the installation, run
+    
+    ```sh
+    ./test-torsten.sh --unit        # math unit test
+    ./test-torsten.sh --signature   # stan function # signature test
+    ./test-torsten.sh --model       # R model test, takes long time to finish
+    ```
 
 
 ## Development plans
@@ -84,7 +93,7 @@ To test after installation, run
 Our current plans for future development of Torsten include the following:
 
 -   Build a system to easily share packages of Stan functions (written in C++ or in the Stan language)
--   Allow numerical methods to handle RATE, AMT, TIME, and the bioavailability fraction (F) as parameters in all cases.
+-   Allow numerical methods to handle bioavailability fraction (F) as parameters in all cases.
 -   Optimize Matrix exponential functions
     -   Function for the action of Matrix Exponential on a vector
     -   Hand-coded gradients

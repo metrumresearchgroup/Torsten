@@ -4,8 +4,8 @@
 #+EMAIL: mailto:billg@metrumrg.com mailto:yiz@metrumrg.com
 #+OPTIONS: title:t, toc:nil, num:nil
 
-#+MACRO: torstenversion 0.85
-#+MACRO: stanversion 2.18.0
+#+MACRO: torsten_ver v0.85
+#+MACRO: stan_ver v2.18.1
 
 * Torsten
 #+include: ./docs/torsten_manual.org::#overview :minlevel 2
