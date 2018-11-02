@@ -1,5 +1,0 @@
-[submodule "lib/stan_math"]
-	path = lib/stan_math
-	url = https://github.com/metrumresearchgroup/math.git
-        branch = torsten-master
-	shallow = true
