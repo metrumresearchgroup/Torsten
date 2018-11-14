@@ -1,8 +1,8 @@
 rm(list = ls())
 gc()
 
-setwd("~/Desktop/Code/torsten/example-models/PKPD/torsten/R")
-.libPaths("~/svn-StanPmetrics/script/lib")
+setwd("/Users/yiz/Work/temp/temp/Torsten/example-models/R")
+## .libPaths("~/svn-StanPmetrics/script/lib")
 modelName <- "effCpt"
 
 ## Relative paths assuming the working directory is the script directory
@@ -21,7 +21,7 @@ tempDir <- file.path(scriptDir, "temp")
 dir.create(tempDir)
 
 # source(file.path(scriptDir, "pkgSetup.R"))
-.libPaths("~/svn-StanPmetrics/script/lib")
+## .libPaths("~/svn-StanPmetrics/script/lib")
 
 # library(rstan)
 # library(metrumrg)
@@ -139,7 +139,7 @@ init <- function(){
 
 ## Specify the variables for which you want history and density plots
 parametersToPlot <- c("CLHat", "QHat", "V1Hat", "V2Hat", "kaHat",
-                      "ke0Hat", "EC50Hat", 
+                      "ke0Hat", "EC50Hat",
                       "sigma", "sigmaResp", "omega", "rho",
                       "omegaKe0", "omegaEC50")
 
