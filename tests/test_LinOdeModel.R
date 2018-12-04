@@ -1,3 +1,5 @@
+context("LinOdeModel")
+
 library(mrgsolve)  ## tested with version 0.7.6.9029
 library(testthat)
 testmodel = "LinOdeModel"
