@@ -40,7 +40,7 @@ finite_diff_params(const F& f,
   vector<double> parameters(pMatrix[0].size());
   vector<vector<double> > pMatrix_ub(pMatrix.size(), parameters);
   vector<vector<double> > pMatrix_lb(pMatrix.size(), parameters);
-  for (size_t i = 0; i < pMatrix.size(); i++)
+  for (size_t i = 0; i < pMatrix.size(); i++) {
     for (size_t j = 0; j < pMatrix[0].size(); j++) {
       if ((i == param_row && j == param_col) && parmType == "pMatrix") {        
         pMatrix_ub[i][j] = pMatrix[i][j] + diff;
@@ -50,11 +50,12 @@ finite_diff_params(const F& f,
         pMatrix_lb[i][j] = pMatrix[i][j];
       }
     }
+  }
     
-    vector<double> biovarParameters(biovar[0].size());
+  vector<double> biovarParameters(biovar[0].size());
   vector<vector<double> > biovar_ub(biovar.size(), biovarParameters);
   vector<vector<double> > biovar_lb(biovar.size(), biovarParameters);
-  for (size_t i = 0; i < biovar.size(); i++)
+  for (size_t i = 0; i < biovar.size(); i++) {
     for (size_t j = 0; j < biovar[0].size(); j++) {
       if ((i == param_row && j == param_col) && parmType == "biovar") {
         biovar_ub[i][j] = biovar[i][j] + diff;
@@ -64,11 +65,12 @@ finite_diff_params(const F& f,
         biovar_lb[i][j] = biovar[i][j];
       }
     }
+  }
     
-    vector<double> tlagParameters(tlag[0].size());
+  vector<double> tlagParameters(tlag[0].size());
   vector<vector<double> > tlag_ub(tlag.size(), tlagParameters);
   vector<vector<double> > tlag_lb(biovar.size(), tlagParameters);
-  for (size_t i = 0; i < tlag.size(); i++)
+  for (size_t i = 0; i < tlag.size(); i++) {
     for (size_t j = 0; j < tlag[0].size(); j++) {
       if ((i == param_row && j == param_col) && parmType == "tlag") {
         tlag_ub[i][j] = tlag[i][j] + diff;
@@ -78,6 +80,7 @@ finite_diff_params(const F& f,
         tlag_lb[i][j] = tlag[i][j];
       }
     }
+  }
 
   Matrix<double, Dynamic, Dynamic> pk_res_ub;
   Matrix<double, Dynamic, Dynamic> pk_res_lb;
@@ -288,18 +291,19 @@ void test_generalOdeModel2_finite_diff_dvd(
       grads_eff.clear();
       ode_res(i, j).grad(parameters, grads_eff);
       
-      for (size_t k = 0; k < parmRows; k++)
+      for (size_t k = 0; k < parmRows; k++) {
         for (size_t l = 0; l < parmCols; l++) {
           
           EXPECT_NEAR(grads_eff[k * parmCols + l],
                       finite_diff_res[k][l](i, j), diff2)
-          << "Gradient of generalOdeModel failed with known"
-          << " parameters, tlags, and event data, "
-          << " and unknown biovar at event " << i
-          << ", in compartment " << j
-          << ", and parameter index (" << k << ", " << l << ")";
+            << "Gradient of generalOdeModel failed with known"
+            << " parameters, tlags, and event data, "
+            << " and unknown biovar at event " << i
+            << ", in compartment " << j
+            << ", and parameter index (" << k << ", " << l << ")";
         }
-        stan::math::set_zero_all_adjoints();
+      }
+      stan::math::set_zero_all_adjoints();
     }
 }
 
@@ -393,7 +397,7 @@ void test_generalOdeModel2_finite_diff_ddv(
       grads_eff.clear();
       ode_res(i, j).grad(parameters, grads_eff);
 
-      for (size_t k = 0; k < parmRows; k++)
+      for (size_t k = 0; k < parmRows; k++) {
         for (size_t l = 0; l < parmCols; l++) {
           double tlag = parameters[k * parmCols + l].val();
           bool skip = false;
@@ -412,7 +416,7 @@ void test_generalOdeModel2_finite_diff_ddv(
           if (tlag != 0)
             for (size_t m = 0; m < nEvent; m++) {
               if ((evid[m] == 1 || evid[m] == 4)
-                    && ((cmt[m] - 1) == (int) l)) {
+                  && ((cmt[m] - 1) == (int) l)) {
                 if ((time[m] + tlag) == time[i]) {
                   skip = true;
                 }
@@ -422,14 +426,15 @@ void test_generalOdeModel2_finite_diff_ddv(
           if (skip == false) {
             EXPECT_NEAR(grads_eff[k * parmCols + l],
                         finite_diff_res[k][l](i, j), diff2)
-            << "Gradient of generalOdeModel failed with known"
-            << " parameters, biovar, and event data, "
-            << " and unknown lag times at event " << i
-            << ", in compartment " << j
-            << ", and parameter index (" << k << ", " << l << ")";
+              << "Gradient of generalOdeModel failed with known"
+              << " parameters, biovar, and event data, "
+              << " and unknown lag times at event " << i
+              << ", in compartment " << j
+              << ", and parameter index (" << k << ", " << l << ")";
           }
         }
-        stan::math::set_zero_all_adjoints();
+      }
+      stan::math::set_zero_all_adjoints();
     }
 }
 

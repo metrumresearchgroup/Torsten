@@ -123,6 +123,7 @@ struct TorstenOdeTest_sho : public TorstenOdeTest {
   using F = harm_osc_ode_fun;
 
   TorstenOdeTest_sho() :
+    f(),
     ts           {0.1, 0.2, 0.3, 10},
     theta        {0.15},
     y0           {1.0, 0.0}
@@ -138,6 +139,7 @@ struct TorstenOdeTest_chem : public TorstenOdeTest {
   using F = chemical_kinetics;
 
   TorstenOdeTest_chem() :
+    f(),
     ts          {0.4, 4.0, 40.0},
     theta       {0.04, 1.E4, 3.E7},
     y0          {1.0, 0.0, 0.0}
@@ -153,6 +155,7 @@ struct TorstenOdeTest_lorenz : public TorstenOdeTest {
   using F = lorenz_ode_fun;
 
   TorstenOdeTest_lorenz() :
+    f(),
     ts        {0.1, 1.0, 10.0},
     theta     {10.0, 28.0, 8.0/3.0},
     y0        {10.0, 1.0, 1.0}

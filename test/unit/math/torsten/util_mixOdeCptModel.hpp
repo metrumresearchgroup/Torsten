@@ -352,18 +352,19 @@ void test_mixOdeCptModel_finite_diff_dvd(
       grads_eff.clear();
       ode_res(i, j).grad(parameters, grads_eff);
 
-      for (size_t k = 0; k < parmRows; k++)
+      for (size_t k = 0; k < parmRows; k++) {
         for (size_t l = 0; l < parmCols; l++) {
 
           EXPECT_NEAR(grads_eff[k * parmCols + l],
                       finite_diff_res[k][l](i, j), diff2)
-          << "Gradient of mixOde1CptModel failed with known"
-          << " event data, parameters, and tlag, "
-          << " and unknown biovar at event " << i
-          << ", in compartment " << j
-          << ", and parameter index (" << k << ", " << l << ")";
+            << "Gradient of mixOde1CptModel failed with known"
+            << " event data, parameters, and tlag, "
+            << " and unknown biovar at event " << i
+            << ", in compartment " << j
+            << ", and parameter index (" << k << ", " << l << ")";
         }
-        stan::math::set_zero_all_adjoints();
+      }
+      stan::math::set_zero_all_adjoints();
     }
 }
 
@@ -475,7 +476,7 @@ void test_mixOdeCptModel_finite_diff_ddv(
       grads_eff.clear();
       ode_res(i, j).grad(parameters, grads_eff);
 
-      for (size_t k = 0; k < parmRows; k++)
+      for (size_t k = 0; k < parmRows; k++) {
         for (size_t l = 0; l < parmCols; l++) {
           double tlag = parameters[k * parmCols + l].val();
           bool skip = false;
@@ -494,7 +495,7 @@ void test_mixOdeCptModel_finite_diff_ddv(
           if (tlag != 0)
             for (size_t m = 0; m < nEvent; m++) {
               if ((evid[m] == 1 || evid[m] == 4)
-                    && ((cmt[m] - 1) == (int) l)) {
+                  && ((cmt[m] - 1) == (int) l)) {
                 if ((time[m] + tlag) == time[i]) {
                   skip = true;
                 }
@@ -504,14 +505,15 @@ void test_mixOdeCptModel_finite_diff_ddv(
           if (skip == false) {
             EXPECT_NEAR(grads_eff[k * parmCols + l],
                         finite_diff_res[k][l](i, j), diff2)
-            << "Gradient of mixOde1CptModel failed with known"
-            << " event data, parameters, and biovar, "
-            << " and unknown lag times at event " << i
-            << ", in compartment " << j
-            << ", and parameter index (" << k << ", " << l << ")";
+              << "Gradient of mixOde1CptModel failed with known"
+              << " event data, parameters, and biovar, "
+              << " and unknown lag times at event " << i
+              << ", in compartment " << j
+              << ", and parameter index (" << k << ", " << l << ")";
           }
         }
-        stan::math::set_zero_all_adjoints();
+      }
+      stan::math::set_zero_all_adjoints();
     }
 }
 

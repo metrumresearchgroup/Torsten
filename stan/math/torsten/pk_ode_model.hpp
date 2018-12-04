@@ -35,7 +35,7 @@ namespace refactor {
      * we add a default value of @c dummy, as it is not
      * relevant when @c rate is data anyway.
      */
-    PKOdeFunctorRateAdaptor() {}
+    PKOdeFunctorRateAdaptor() : f() {}
 
     /*
      * Evaluate ODE functor and add @c rate data afterwards.

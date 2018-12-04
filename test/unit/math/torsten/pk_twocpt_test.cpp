@@ -552,8 +552,10 @@ TEST_F(TorstenPKTwoCptTest, multiple_trunc_rate_var) {
 
       // for gut there is a non-smooth point, skip it
       res(i, 0).grad(rate_v, g);
-      if(time[i] != t_cutoff)
+      if(time[i] != t_cutoff) {
         EXPECT_NEAR(g[0], (x1(i, 0) - x2(i, 0))/(2 * h), 1e-6);
+      }
+
       stan::math::set_zero_all_adjoints();
     }
   };
