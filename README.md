@@ -68,12 +68,18 @@ setenv TORSTEN_PATH torsten_path
     Please ensure `.R/Makevars` constains the following flags
     
     ```sh
+    CXX14 = g++ -fPIC               # or CXX14 = clang++ -fPIC
+    
     CXXFLAGS=-O3 -std=c++1y -mtune=native -march=native -Wno-unused-variable -Wno-unused-function
     CXXFLAGS += -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS -DBOOST_MPL_LIMIT_LIST_SIZE=30
     
     CXX14FLAGS=-O3 -std=c++1y -mtune=native -march=native -Wno-unused-variable -Wno-unused-function
     CXX14FLAGS += -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS -DBOOST_MPL_LIMIT_LIST_SIZE=30
     ```
+    
+    Fore more information of setting up `makevar` and its functionality, see
+    
+    -   <http://dirk.eddelbuettel.com/code/rcpp/Rcpp-package.pdf>
     
     For more information of installation troubleshooting, please consult [rstan wiki](https://github.com/stan-dev/rstan/wiki).
 
@@ -101,7 +107,7 @@ Our current plans for future development of Torsten include the following:
 -   Fix issue that arises when computing the adjoint of the lag time parameter (in a dosing compartment) evaluated at \(t_{\text{lag}} = 0\).
 -   Extend formal tests
     -   We want more C++ Google unit tests to address cases users may encounter
-    -   Comparison with simulations from the R package *mrgsolve* and the software NONMEM\textregistered{}
+    -   Comparison with simulations from the R package `mrgsolve` and the software NONMEM\textregistered{}
     -   Recruit non-developer users to conduct beta testing
 
 
@@ -172,7 +178,7 @@ Our current plans for future development of Torsten include the following:
 
 -   Added
 
-    check<sub>finite</sub> statements in pred<sub>1</sub> and pred<sub>2</sub> to reject metropolis proposal if initial conditions are not finite
+    check_finite statements in pred_1 and pred_2 to reject metropolis proposal if initial conditions are not finite
     
     \bibliography{./doc/torsten}
 
