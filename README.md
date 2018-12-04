@@ -114,7 +114,7 @@ Our current plans for future development of Torsten include the following:
 ## Changelog
 
 
-### 0.85 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-10-20 Sat&gt;</span></span>
+### 0.85 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-12-04 Tue&gt;</span></span>
 
 -   Added
 

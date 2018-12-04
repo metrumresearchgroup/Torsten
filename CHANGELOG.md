@@ -1,4 +1,4 @@
-# 0.85 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-10-20 Sat&gt;</span></span>
+# 0.85 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-12-04 Tue&gt;</span></span>
 
 
 ## Added
@@ -72,4 +72,4 @@ linCptModel (linear compartmental model) function
 
 ## Added
 
-check<sub>finite</sub> statements in pred<sub>1</sub> and pred<sub>2</sub> to reject metropolis proposal if initial conditions are not finite
+check_finite statements in pred_1 and pred_2 to reject metropolis proposal if initial conditions are not finite

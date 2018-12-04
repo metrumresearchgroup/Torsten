@@ -212,7 +212,7 @@ following:
 :PROPERTIES:
 :CUSTOM_ID: changelog
 :END:
-*** 0.85 <2018-10-20>
+*** 0.85 <2018-12-04 Tue>
 **** Added
      :PROPERTIES:
      :CUSTOM_ID: 0-85-added
