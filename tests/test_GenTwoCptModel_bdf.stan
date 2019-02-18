@@ -92,7 +92,7 @@ generated quantities {
   real biovar[nt, nCmt];
   real tlag[nt, nCmt];
 
-  matrix<lower = 0>[nt, nCmt] x; 
+  matrix<lower = -1e-16>[nt, nCmt] x; 
   vector<lower = 0>[nt] cHat;
 
   real<lower = 0> CL;

@@ -188,9 +188,9 @@ do_tests <- function(fit, data, pars=default_stan_parameters(), tol=1e-6) {
         ## expect_equal(tail(data$cObs, n=1), tail(ptable, n=1)[1, "mean"] , tolerance=tol)
         fit.res <- as.array(extract(fit, pars=par)[[par]])
         n <- length(fit.res)            #nb. of time steps
-        expect_equal(data$cObs[1], fit.res[1]                  , tolerance=tol)
-        expect_equal(data$cObs[n], fit.res[n]                  , tolerance=tol)
-
+        for (i in 1:length(fit.res)) {
+            expect_equal(data$cObs[i], fit.res[i], tolerance=tol)
         }
+    }
     ))
 }
