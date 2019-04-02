@@ -1,0 +1,75 @@
+# tests
+/test/*/*/*/*/*/*
+/test/*/*/*/*/*
+/test/*/*/*/*
+/test/*/*/*
+/test/*/*
+/test/*
+!/test/*/*/*/*/*/*/
+!/test/*/*/*/*/*/
+!/test/*/*/*/*/
+!/test/*/*/*/
+!/test/*/*/
+!/test/*/
+!/test/*/*/*/*/*/*.*
+!/test/*/*/*/*/*.*
+!/test/*/*/*/*.*
+!/test/*/*/*.*
+!/test/*/*.*
+!/test/*.*
+/test/**/*_generated_*_test.cpp
+/test/**/*.xml
+/test/dummy.cpp
+/test/**/*.so
+
+# other binary
+*.o
+*.o-*
+*.exe
+*.a
+
+# /doc/
+/doc/api
+/doc/*.pdf
+/doc/*.txt
+
+# temporary latex files
+*.idx
+*.ilg
+*.ind
+*.fdb_latexmk
+*.fls
+
+# temporary emacs files
+*~
+\#*#
+
+# temporary vim files
+.*.swp
+
+# depedencies files
+*.d
+*.d.*
+.Rproj.user
+.kdev4/
+.Rapp.history
+
+
+# For the Mac
+*.DS_Store
+
+# local make include
+/make/local
+
+# python byte code
+*.pyc
+
+lib/boost_*/b2
+lib/boost_*/bin.v2/
+lib/boost_*/bjam
+lib/boost_*/bootstrap.log
+lib/boost_*/project-config.jam
+lib/boost_*/project-config.jam.1
+lib/boost_*/stage/
+lib/boost_*/tools/build/*
+lib/boost_*/user-config.jam
