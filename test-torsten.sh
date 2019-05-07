@@ -37,12 +37,15 @@ while :; do
             echo ""
             echo 'Torsten library tests'
             pushd cmdstan/stan/lib/stan_math/
-            ./runTests.py test/unit/math/torsten/
+            ./runTests.py -j3 test/unit/math/torsten/
             popd
             ;;
         -m|--model)
             echo ""
             echo 'Torsten model tests'
+            pushd tests/
+            rm *.rds
+            popd
             for f in $( ls tests/test_*.R ); do
                 rcode='testthat::test_file('"\"${f}\""')'
                 Rscript -e ${rcode}
