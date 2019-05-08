@@ -23,16 +23,34 @@ mpiexec -n 2 sho_group sample data file=sho_group.data.R
 
 * Results
 Three chains are run using 
-- sequential run using Stan's =bdf= integrator(output =stan_sample.1-4.csv=)
-- sequential run using Torsten's =bdf= integrator(output =pmx_sample.1-4.csv=)
-- MPI run using Torsten's =bdf= group integrator(output =mpi_sample.1-4.csv=)
+- sequential run using Stan's =bdf= integrator.
+- sequential run using Torsten's =bdf= integrator.
+- MPI run using Torsten's =bdf= group integrator(with 1, 2,
+  4, 8, 16 processes, respectively).
 
-The wall time of sequential runs and MPI runs(in seconds):
+The wall time of sequential runs and MPI runs(in seconds)
+with ODE group size 4
 #+caption: Wall time(s)
-| chain | sequential stan | sequential pmx | MPI pmx |
-|-------+-----------------+----------------+---------|
-|     1 |              31 |             21 |      10 |
-|     2 |              31 |             21 |      10 |
-|     3 |              32 |             21 |      10 |
-|     4 |              32 |             21 |      10 |
+| run                 | wall time(s) |
+|---------------------+--------------|
+| Sequential stan     |          39 |
+| sequential pmx      |          33 |
+| MPI pmx (n_proc=1)  |          34  |
+| MPI pmx (n_proc=2)  |          18  |
+| MPI pmx (n_proc=4)  |          10  |
+
+
+The wall time of sequential runs and MPI runs(in seconds)
+with ODE group size 20
+#+caption: Wall time(s)
+| run                 | wall time(s) |
+|---------------------+--------------|
+| Sequential stan     |          262 |
+| sequential pmx      |          276 |
+| MPI pmx (n_proc=1)  |          253 |
+| MPI pmx (n_proc=2)  |          119 |
+| MPI pmx (n_proc=4)  |           62 |
+| MPI pmx (n_proc=8)  |           74 |
+| MPI pmx (n_proc=16) |           58 |
+
 

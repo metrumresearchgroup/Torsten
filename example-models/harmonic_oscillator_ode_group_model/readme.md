@@ -1,24 +1,24 @@
-- [Description](#org7ddf4cc)
-- [Build](#orgcfe8bed)
-  - [Edit/Add `cmdstan/make/local`](#orgd9d535b)
-  - [Build in `cmdstan`](#org0a61aed)
-- [Run](#orgf66c202)
-- [Results](#orgaf7a72f)
+- [Description](#org48a23c6)
+- [Build](#orgf1aba9c)
+  - [Edit/Add `cmdstan/make/local`](#org8081c39)
+  - [Build in `cmdstan`](#org51e3b15)
+- [Run](#org5967c70)
+- [Results](#orgea6b51c)
 
 
-<a id="org7ddf4cc"></a>
+<a id="org48a23c6"></a>
 
 # Description
 
 Parameter inference for the harmonic oscillator ODE using Torsten's ODE group integrator `pmx_integrate_ode_group_rk45`.
 
 
-<a id="orgcfe8bed"></a>
+<a id="orgf1aba9c"></a>
 
 # Build
 
 
-<a id="orgd9d535b"></a>
+<a id="org8081c39"></a>
 
 ## Edit/Add `cmdstan/make/local`
 
@@ -32,7 +32,7 @@ CXX=mpicxx
 ```
 
 
-<a id="org0a61aed"></a>
+<a id="org51e3b15"></a>
 
 ## Build in `cmdstan`
 
@@ -41,7 +41,7 @@ make ../example-models/harmonic_oscillator_ode_group_model/sho_group
 ```
 
 
-<a id="orgf66c202"></a>
+<a id="org5967c70"></a>
 
 # Run
 
@@ -50,21 +50,34 @@ mpiexec -n 2 sho_group sample data file=sho_group.data.R
 ```
 
 
-<a id="orgaf7a72f"></a>
+<a id="orgea6b51c"></a>
 
 # Results
 
 Three chains are run using
 
--   sequential run using Stan's `bdf` integrator(output `stan_sample.1-4.csv`)
--   sequential run using Torsten's `bdf` integrator(output `pmx_sample.1-4.csv`)
--   MPI run using Torsten's `bdf` group integrator(output `mpi_sample.1-4.csv`)
+-   sequential run using Stan's `bdf` integrator.
+-   sequential run using Torsten's `bdf` integrator.
+-   MPI run using Torsten's `bdf` group integrator(with 1, 2, 4, 8, 16 processes, respectively).
 
-The wall time of sequential runs and MPI runs(in seconds):
+The wall time of sequential runs and MPI runs(in seconds) with ODE group size 4
 
-| chain | sequential stan | sequential pmx | MPI pmx |
-|----- |--------------- |-------------- |------- |
-| 1     | 31              | 21             | 10      |
-| 2     | 31              | 21             | 10      |
-| 3     | 32              | 21             | 10      |
-| 4     | 32              | 21             | 10      |
+| run                          | wall time(s) |
+|---------------------------- |------------ |
+| Sequential stan              | 39           |
+| sequential pmx               | 33           |
+| MPI pmx (n<sub>proc</sub>=1) | 34           |
+| MPI pmx (n<sub>proc</sub>=2) | 18           |
+| MPI pmx (n<sub>proc</sub>=4) | 10           |
+
+The wall time of sequential runs and MPI runs(in seconds) with ODE group size 20
+
+| run                           | wall time(s) |
+|----------------------------- |------------ |
+| Sequential stan               | 262          |
+| sequential pmx                | 276          |
+| MPI pmx (n<sub>proc</sub>=1)  | 253          |
+| MPI pmx (n<sub>proc</sub>=2)  | 119          |
+| MPI pmx (n<sub>proc</sub>=4)  | 62           |
+| MPI pmx (n<sub>proc</sub>=8)  | 74           |
+| MPI pmx (n<sub>proc</sub>=16) | 58           |
