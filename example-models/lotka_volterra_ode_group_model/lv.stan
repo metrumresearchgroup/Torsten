@@ -42,7 +42,7 @@ parameters {
 transformed parameters {
   real z[N_subj, N, 2];
   for (isub in 1:N_subj) {
-    z[isub] = pmx_integrate_ode_rk45(dz_dt, z_init[isub], 0, ts[((isub-1)*N+1):(isub*N)], theta[isub], rep_array(0.0, 0), rep_array(0, 0));
+    z[isub] = integrate_ode_rk45(dz_dt, z_init[isub], 0, ts[((isub-1)*N+1):(isub*N)], theta[isub], rep_array(0.0, 0), rep_array(0, 0));
   }
 }
 model {

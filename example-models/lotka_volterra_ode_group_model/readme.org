@@ -1,0 +1,30 @@
+* Build
+** Edit/Add =cmdstan/make/local=
+#+BEGIN_SRC sh
+  TORSTEN_MPI = 1                                         # flag on torsten's MPI solvers
+  -include $(MATH)make/setup_torsten.mk
+  CXXFLAGS += $(CXXFLAGS_MPI) -isystem /usr/local/include # path to MPI library's headers
+  LDFLAGS += $(LDFLAGS_MPI)
+  CC=mpicxx                                               # name of mpi compilers
+  CXX=mpicxx
+#+END_SRC
+** Build in =cmdstan=
+#+BEGIN_SRC sh
+  make ../example-models/lotka_volterra_ode_group_model/lv_group
+#+END_SRC
+   
+* Run
+#+BEGIN_SRC sh
+mpiexec -n 2 lv_group sample data file=lv_group.data.R
+#+END_SRC
+
+* Results
+Three chains are run using 
+- sequential run using Stan's =rk45= integrator(output =stan_sample.1-4.csv=)
+- sequential run using Torsten's =rk45= integrator(output =pmx_sample.1-4.csv=)
+- MPI run using Torsten's =rk45= group integrator(output =mpi_sample.1-4.csv=)
+#+caption: Wall time(s)
+| chain | sequential stan | sequential pmx | MPI pmx |
+|-------+-----------------+----------------+---------|
+
+
