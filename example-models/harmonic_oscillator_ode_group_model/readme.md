@@ -1,24 +1,24 @@
-- [Description](#org74e8041)
-- [Build](#org40bba43)
-  - [Edit/Add `cmdstan/make/local`](#org1293759)
-  - [Build in `cmdstan`](#org4cd239b)
-- [Run](#org6eebecc)
-- [Results](#org605b785)
+- [Description](#org7ddf4cc)
+- [Build](#orgcfe8bed)
+  - [Edit/Add `cmdstan/make/local`](#orgd9d535b)
+  - [Build in `cmdstan`](#org0a61aed)
+- [Run](#orgf66c202)
+- [Results](#orgaf7a72f)
 
 
-<a id="org74e8041"></a>
+<a id="org7ddf4cc"></a>
 
 # Description
 
 Parameter inference for the harmonic oscillator ODE using Torsten's ODE group integrator `pmx_integrate_ode_group_rk45`.
 
 
-<a id="org40bba43"></a>
+<a id="orgcfe8bed"></a>
 
 # Build
 
 
-<a id="org1293759"></a>
+<a id="orgd9d535b"></a>
 
 ## Edit/Add `cmdstan/make/local`
 
@@ -32,7 +32,7 @@ CXX=mpicxx
 ```
 
 
-<a id="org4cd239b"></a>
+<a id="org0a61aed"></a>
 
 ## Build in `cmdstan`
 
@@ -41,7 +41,7 @@ make ../example-models/harmonic_oscillator_ode_group_model/sho_group
 ```
 
 
-<a id="org6eebecc"></a>
+<a id="orgf66c202"></a>
 
 # Run
 
@@ -50,15 +50,17 @@ mpiexec -n 2 sho_group sample data file=sho_group.data.R
 ```
 
 
-<a id="org605b785"></a>
+<a id="orgaf7a72f"></a>
 
 # Results
 
 Three chains are run using
 
--   sequential run using Stan's `bdf` integrator(output `sample1-3.stan.csv`)
--   sequential run using Torsten's `bdf` integrator(output `sample1-3.pmx.csv`)
--   MPI run using Torsten's `bdf` group integrator(output `sample1-3.mpi.csv`)
+-   sequential run using Stan's `bdf` integrator(output `stan_sample.1-4.csv`)
+-   sequential run using Torsten's `bdf` integrator(output `pmx_sample.1-4.csv`)
+-   MPI run using Torsten's `bdf` group integrator(output `mpi_sample.1-4.csv`)
+
+The wall time of sequential runs and MPI runs(in seconds):
 
 | chain | sequential stan | sequential pmx | MPI pmx |
 |----- |--------------- |-------------- |------- |

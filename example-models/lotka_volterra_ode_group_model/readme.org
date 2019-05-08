@@ -23,6 +23,8 @@ Three chains are run using
 - sequential run using Stan's =rk45= integrator(output =stan_sample.1-4.csv=)
 - sequential run using Torsten's =rk45= integrator(output =pmx_sample.1-4.csv=)
 - MPI run using Torsten's =rk45= group integrator(output =mpi_sample.1-4.csv=)
+
+The wall time of sequential runs and MPI runs(in seconds):
 #+caption: Wall time(s)
 | chain | sequential stan | sequential pmx | MPI pmx |
 |-------+-----------------+----------------+---------|
