@@ -1,16 +1,16 @@
-- [Build](#orge9524af)
-  - [Edit/Add `cmdstan/make/local`](#org8306633)
-  - [Build in `cmdstan`](#org7bd3108)
-- [Run](#orgf025eab)
-- [Results](#orge4e2a4f)
+- [Build](#org034b2b5)
+  - [Edit/Add `cmdstan/make/local`](#org427b3cf)
+  - [Build in `cmdstan`](#org33b2ed2)
+- [Run](#org7eba283)
+- [Results](#org2fe173c)
 
 
-<a id="orge9524af"></a>
+<a id="org034b2b5"></a>
 
 # Build
 
 
-<a id="org8306633"></a>
+<a id="org427b3cf"></a>
 
 ## Edit/Add `cmdstan/make/local`
 
@@ -24,7 +24,7 @@ CXX=mpicxx
 ```
 
 
-<a id="org7bd3108"></a>
+<a id="org33b2ed2"></a>
 
 ## Build in `cmdstan`
 
@@ -33,7 +33,7 @@ make ../example-models/lotka_volterra_ode_group_model/lv_group
 ```
 
 
-<a id="orgf025eab"></a>
+<a id="org7eba283"></a>
 
 # Run
 
@@ -42,17 +42,22 @@ mpiexec -n 2 lv_group sample data file=lv_group.data.R
 ```
 
 
-<a id="orge4e2a4f"></a>
+<a id="org2fe173c"></a>
 
 # Results
 
-Three chains are run using
+Three binaries are built and used to run:
 
--   sequential run using Stan's `rk45` integrator(output `stan_sample.1-4.csv`)
--   sequential run using Torsten's `rk45` integrator(output `pmx_sample.1-4.csv`)
--   MPI run using Torsten's `rk45` group integrator(output `mpi_sample.1-4.csv`)
+-   sequential run using Stan's `rk45` integrator.
+-   sequential run using Torsten's `rk45` integrator.
+-   MPI run using Torsten's `rk45` group integrator(with 2, 4, 8 processes, respectively).
 
-The wall time of sequential runs and MPI runs(in seconds):
+The wall time of sequential runs and MPI runs(in seconds) with ODE group size 4
 
-| chain | sequential stan | sequential pmx | MPI pmx |
-|----- |--------------- |-------------- |------- |
+| run                          | wall time(s) |
+|---------------------------- |------------ |
+| Sequential stan              | 2600         |
+| sequential pmx               | 2679         |
+| MPI pmx (n<sub>proc</sub>=2) | 1200         |
+| MPI pmx (n<sub>proc</sub>=4) | 696          |
+| MPI pmx (n<sub>proc</sub>=8) | 467          |

@@ -19,14 +19,20 @@ mpiexec -n 2 lv_group sample data file=lv_group.data.R
 #+END_SRC
 
 * Results
-Three chains are run using 
-- sequential run using Stan's =rk45= integrator(output =stan_sample.1-4.csv=)
-- sequential run using Torsten's =rk45= integrator(output =pmx_sample.1-4.csv=)
-- MPI run using Torsten's =rk45= group integrator(output =mpi_sample.1-4.csv=)
+Three binaries are built and used to run: 
+- sequential run using Stan's =rk45= integrator.
+- sequential run using Torsten's =rk45= integrator.
+- MPI run using Torsten's =rk45= group integrator(with 2,
+  4, 8 processes, respectively).
 
-The wall time of sequential runs and MPI runs(in seconds):
+The wall time of sequential runs and MPI runs(in seconds)
+with ODE group size 4
 #+caption: Wall time(s)
-| chain | sequential stan | sequential pmx | MPI pmx |
-|-------+-----------------+----------------+---------|
-
+| run                | wall time(s) |
+|--------------------+--------------|
+| Sequential stan    |         2600 |
+| sequential pmx     |         2679 |
+| MPI pmx (n_proc=2) |         1200 |
+| MPI pmx (n_proc=4) |          696 |
+| MPI pmx (n_proc=8) |          467 |
 

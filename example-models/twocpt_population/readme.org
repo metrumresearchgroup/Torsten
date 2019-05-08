@@ -1,3 +1,6 @@
+* Description
+Parameter inference for the two-compartment solved using
+numerical integrator =pmx_integrate_ode_group_bdf=.
 * Build
 ** Edit/Add =cmdstan/make/local=
 #+BEGIN_SRC sh
@@ -17,3 +20,11 @@
 #+BEGIN_SRC sh
 mpiexec -n 2 twocpt_population sample data file=twocpt_population.data.R init=twocpt_population.init.R
 #+END_SRC
+* Results
+MPI run results with 1, 2, 4, 8 processes, respectively, for a population size 8.
+| run      | wall time(s) |
+|----------+--------------|
+| n_proc=1 |        10791 |
+| n_proc=2 |         5282 |
+| n_proc=4 |         2847 |
+| n_proc=8 |         2971 |
