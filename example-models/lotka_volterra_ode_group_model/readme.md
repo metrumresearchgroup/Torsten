@@ -1,30 +1,28 @@
-- [Build](#org49bd101)
-  - [Edit/Add `cmdstan/make/local`](#orgf8a8d8c)
-  - [Build in `cmdstan`](#org0d267d6)
-- [Run](#org060aaa1)
-- [Results](#org3a79b6d)
+- [Build](#org42d552e)
+  - [Edit/Add `cmdstan/make/local`](#org2dfef2b)
+  - [Build in `cmdstan`](#org2c18206)
+- [Run](#org6c3b73f)
+- [Results](#org537e1cc)
+
+Predator-Prey model based on <https://mc-stan.org/users/documentation/case-studies/lotka-volterra-predator-prey.html>
 
 
-<a id="org49bd101"></a>
+<a id="org42d552e"></a>
 
 # Build
 
 
-<a id="orgf8a8d8c"></a>
+<a id="org2dfef2b"></a>
 
 ## Edit/Add `cmdstan/make/local`
 
 ```sh
 TORSTEN_MPI = 1                                         # flag on torsten's MPI solvers
--include $(MATH)make/setup_torsten.mk
-CXXFLAGS += $(CXXFLAGS_MPI) -isystem /usr/local/include # path to MPI library's headers
-LDFLAGS += $(LDFLAGS_MPI)
-CC=mpicxx                                               # name of mpi compilers
-CXX=mpicxx
+CXXFLAGS += -isystem /usr/local/include                 # path to MPI library's headers
 ```
 
 
-<a id="org0d267d6"></a>
+<a id="org2c18206"></a>
 
 ## Build in `cmdstan`
 
@@ -33,7 +31,7 @@ make ../example-models/lotka_volterra_ode_group_model/lv_group
 ```
 
 
-<a id="org060aaa1"></a>
+<a id="org6c3b73f"></a>
 
 # Run
 
@@ -42,7 +40,7 @@ mpiexec -n 2 lv_group sample data file=lv_group.data.R
 ```
 
 
-<a id="org3a79b6d"></a>
+<a id="org537e1cc"></a>
 
 # Results
 

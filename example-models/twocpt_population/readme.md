@@ -1,38 +1,34 @@
-- [Description](#orgbd288cf)
-- [Build](#org22c3eac)
-  - [Edit/Add `cmdstan/make/local`](#org29043ee)
-  - [Build in `cmdstan`](#org72f0a07)
-- [Run](#org98b35be)
-- [Results](#org0848f3a)
+- [Description](#orgc398e7c)
+- [Build](#org4656f45)
+  - [Edit/Add `cmdstan/make/local`](#orgc033e9e)
+  - [Build in `cmdstan`](#org80e506d)
+- [Run](#orgcc9ca1c)
+- [Results](#org1bb727e)
 
 
-<a id="orgbd288cf"></a>
+<a id="orgc398e7c"></a>
 
 # Description
 
 Parameter inference for the two-compartment solved using numerical integrator `pmx_integrate_ode_group_bdf`.
 
 
-<a id="org22c3eac"></a>
+<a id="org4656f45"></a>
 
 # Build
 
 
-<a id="org29043ee"></a>
+<a id="orgc033e9e"></a>
 
 ## Edit/Add `cmdstan/make/local`
 
 ```sh
 TORSTEN_MPI = 1                                         # flag on torsten's MPI solvers
--include $(MATH)make/setup_torsten.mk
-CXXFLAGS += $(CXXFLAGS_MPI) -isystem /usr/local/include # path to MPI library's headers
-LDFLAGS += $(LDFLAGS_MPI)
-CC=mpicxx                                               # name of mpi compilers
-CXX=mpicxx
+CXXFLAGS += -isystem /usr/local/include                 # path to MPI library's headers
 ```
 
 
-<a id="org72f0a07"></a>
+<a id="org80e506d"></a>
 
 ## Build in `cmdstan`
 
@@ -41,7 +37,7 @@ make ../example-models/twocpt_population/twocpt_population
 ```
 
 
-<a id="org98b35be"></a>
+<a id="orgcc9ca1c"></a>
 
 # Run
 
@@ -50,7 +46,7 @@ mpiexec -n 2 twocpt_population sample data file=twocpt_population.data.R init=tw
 ```
 
 
-<a id="org0848f3a"></a>
+<a id="org1bb727e"></a>
 
 # Results
 

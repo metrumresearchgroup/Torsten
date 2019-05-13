@@ -5,11 +5,7 @@ Torsten's ODE group integrator =pmx_integrate_ode_group_rk45=.
 ** Edit/Add =cmdstan/make/local=
 #+BEGIN_SRC sh
   TORSTEN_MPI = 1                                         # flag on torsten's MPI solvers
-  -include $(MATH)make/setup_torsten.mk
-  CXXFLAGS += $(CXXFLAGS_MPI) -isystem /usr/local/include # path to MPI library's headers
-  LDFLAGS += $(LDFLAGS_MPI)
-  CC=mpicxx                                               # name of mpi compilers
-  CXX=mpicxx
+  CXXFLAGS += -isystem /usr/local/include                 # path to MPI library's headers
 #+END_SRC
 ** Build in =cmdstan=
 #+BEGIN_SRC sh

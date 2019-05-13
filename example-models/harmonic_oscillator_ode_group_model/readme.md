@@ -1,38 +1,34 @@
-- [Description](#org577d566)
-- [Build](#orgefda1ad)
-  - [Edit/Add `cmdstan/make/local`](#org4de764d)
-  - [Build in `cmdstan`](#org6d50c58)
-- [Run](#org774e77f)
-- [Results](#org510429e)
+- [Description](#org9eaefe5)
+- [Build](#orgbe78653)
+  - [Edit/Add `cmdstan/make/local`](#org43f3e5b)
+  - [Build in `cmdstan`](#org10a2f47)
+- [Run](#orgb03e08b)
+- [Results](#org6ef3c44)
 
 
-<a id="org577d566"></a>
+<a id="org9eaefe5"></a>
 
 # Description
 
 Parameter inference for the harmonic oscillator ODE using Torsten's ODE group integrator `pmx_integrate_ode_group_rk45`.
 
 
-<a id="orgefda1ad"></a>
+<a id="orgbe78653"></a>
 
 # Build
 
 
-<a id="org4de764d"></a>
+<a id="org43f3e5b"></a>
 
 ## Edit/Add `cmdstan/make/local`
 
 ```sh
 TORSTEN_MPI = 1                                         # flag on torsten's MPI solvers
--include $(MATH)make/setup_torsten.mk
-CXXFLAGS += $(CXXFLAGS_MPI) -isystem /usr/local/include # path to MPI library's headers
-LDFLAGS += $(LDFLAGS_MPI)
-CC=mpicxx                                               # name of mpi compilers
-CXX=mpicxx
+CXXFLAGS += -isystem /usr/local/include                 # path to MPI library's headers
 ```
 
 
-<a id="org6d50c58"></a>
+<a id="org10a2f47"></a>
 
 ## Build in `cmdstan`
 
@@ -41,7 +37,7 @@ make ../example-models/harmonic_oscillator_ode_group_model/sho_group
 ```
 
 
-<a id="org774e77f"></a>
+<a id="orgb03e08b"></a>
 
 # Run
 
@@ -50,7 +46,7 @@ mpiexec -n 2 sho_group sample data file=sho_group.data.R
 ```
 
 
-<a id="org510429e"></a>
+<a id="org6ef3c44"></a>
 
 # Results
 
