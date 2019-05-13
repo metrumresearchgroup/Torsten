@@ -1,24 +1,24 @@
-- [Description](#org999ed29)
-- [Build](#org939a2d7)
-  - [Edit/Add `cmdstan/make/local`](#orgbcad262)
-  - [Build in `cmdstan`](#orge86a63d)
-- [Run](#org0caef17)
-- [Results](#orge40b55f)
+- [Description](#org577d566)
+- [Build](#orgefda1ad)
+  - [Edit/Add `cmdstan/make/local`](#org4de764d)
+  - [Build in `cmdstan`](#org6d50c58)
+- [Run](#org774e77f)
+- [Results](#org510429e)
 
 
-<a id="org999ed29"></a>
+<a id="org577d566"></a>
 
 # Description
 
 Parameter inference for the harmonic oscillator ODE using Torsten's ODE group integrator `pmx_integrate_ode_group_rk45`.
 
 
-<a id="org939a2d7"></a>
+<a id="orgefda1ad"></a>
 
 # Build
 
 
-<a id="orgbcad262"></a>
+<a id="org4de764d"></a>
 
 ## Edit/Add `cmdstan/make/local`
 
@@ -32,7 +32,7 @@ CXX=mpicxx
 ```
 
 
-<a id="orge86a63d"></a>
+<a id="org6d50c58"></a>
 
 ## Build in `cmdstan`
 
@@ -41,7 +41,7 @@ make ../example-models/harmonic_oscillator_ode_group_model/sho_group
 ```
 
 
-<a id="org0caef17"></a>
+<a id="org774e77f"></a>
 
 # Run
 
@@ -50,7 +50,7 @@ mpiexec -n 2 sho_group sample data file=sho_group.data.R
 ```
 
 
-<a id="orge40b55f"></a>
+<a id="org510429e"></a>
 
 # Results
 
@@ -74,10 +74,10 @@ The wall time of sequential runs and MPI runs(in seconds) with ODE group size 20
 
 | run                           | wall time(s) |
 |----------------------------- |------------ |
-| Sequential stan               | 262          |
-| sequential pmx                | 276          |
-| MPI pmx (n<sub>proc</sub>=1)  | 253          |
-| MPI pmx (n<sub>proc</sub>=2)  | 119          |
-| MPI pmx (n<sub>proc</sub>=4)  | 62           |
-| MPI pmx (n<sub>proc</sub>=8)  | 74           |
-| MPI pmx (n<sub>proc</sub>=16) | 58           |
+| Sequential stan               | 891          |
+| sequential pmx                | 319          |
+| MPI pmx (n<sub>proc</sub>=1)  | 476          |
+| MPI pmx (n<sub>proc</sub>=2)  | 251          |
+| MPI pmx (n<sub>proc</sub>=4)  | 136          |
+| MPI pmx (n<sub>proc</sub>=8)  | 90           |
+| MPI pmx (n<sub>proc</sub>=16) | 97           |

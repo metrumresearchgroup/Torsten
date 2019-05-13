@@ -45,12 +45,12 @@ with ODE group size 20
 #+caption: Wall time(s)
 | run                 | wall time(s) |
 |---------------------+--------------|
-| Sequential stan     |          262 |
-| sequential pmx      |          276 |
-| MPI pmx (n_proc=1)  |          253 |
-| MPI pmx (n_proc=2)  |          119 |
-| MPI pmx (n_proc=4)  |           62 |
-| MPI pmx (n_proc=8)  |           74 |
-| MPI pmx (n_proc=16) |           58 |
+| Sequential stan     |          891 |
+| sequential pmx      |          319 |
+| MPI pmx (n_proc=1)  |          476 |
+| MPI pmx (n_proc=2)  |          251 |
+| MPI pmx (n_proc=4)  |          136 |
+| MPI pmx (n_proc=8)  |           90 |
+| MPI pmx (n_proc=16) |           97 |
 
 

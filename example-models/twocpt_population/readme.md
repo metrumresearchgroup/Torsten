@@ -1,24 +1,24 @@
-- [Description](#org34faa9f)
-- [Build](#org95832f5)
-  - [Edit/Add `cmdstan/make/local`](#orgf50e734)
-  - [Build in `cmdstan`](#orgb1683f8)
-- [Run](#orgcf5e02b)
-- [Results](#org81b1f68)
+- [Description](#orgbd288cf)
+- [Build](#org22c3eac)
+  - [Edit/Add `cmdstan/make/local`](#org29043ee)
+  - [Build in `cmdstan`](#org72f0a07)
+- [Run](#org98b35be)
+- [Results](#org0848f3a)
 
 
-<a id="org34faa9f"></a>
+<a id="orgbd288cf"></a>
 
 # Description
 
 Parameter inference for the two-compartment solved using numerical integrator `pmx_integrate_ode_group_bdf`.
 
 
-<a id="org95832f5"></a>
+<a id="org22c3eac"></a>
 
 # Build
 
 
-<a id="orgf50e734"></a>
+<a id="org29043ee"></a>
 
 ## Edit/Add `cmdstan/make/local`
 
@@ -32,7 +32,7 @@ CXX=mpicxx
 ```
 
 
-<a id="orgb1683f8"></a>
+<a id="org72f0a07"></a>
 
 ## Build in `cmdstan`
 
@@ -41,7 +41,7 @@ make ../example-models/twocpt_population/twocpt_population
 ```
 
 
-<a id="orgcf5e02b"></a>
+<a id="org98b35be"></a>
 
 # Run
 
@@ -50,7 +50,7 @@ mpiexec -n 2 twocpt_population sample data file=twocpt_population.data.R init=tw
 ```
 
 
-<a id="org81b1f68"></a>
+<a id="org0848f3a"></a>
 
 # Results
 
@@ -58,7 +58,7 @@ MPI run results with 1, 2, 4, 8 processes, respectively, for a population size 8
 
 | run                | wall time(s) |
 |------------------ |------------ |
-| n<sub>proc</sub>=1 | 10791        |
-| n<sub>proc</sub>=2 | 5282         |
-| n<sub>proc</sub>=4 | 2847         |
-| n<sub>proc</sub>=8 | 2971         |
+| n<sub>proc</sub>=1 | 10274        |
+| n<sub>proc</sub>=2 | 5411         |
+| n<sub>proc</sub>=4 | 3043         |
+| n<sub>proc</sub>=8 | 2654         |

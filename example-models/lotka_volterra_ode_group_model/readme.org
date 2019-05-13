@@ -30,9 +30,10 @@ with ODE group size 4
 #+caption: Wall time(s)
 | run                | wall time(s) |
 |--------------------+--------------|
-| Sequential stan    |         2600 |
-| sequential pmx     |         2679 |
-| MPI pmx (n_proc=2) |         1200 |
-| MPI pmx (n_proc=4) |          696 |
+| Sequential stan    |         2135 |
+| sequential pmx     |         2570 |
+| MPI pmx (n_proc=1) |         2107 |
+| MPI pmx (n_proc=2) |         1187 |
+| MPI pmx (n_proc=4) |          715 |
 | MPI pmx (n_proc=8) |          467 |
 

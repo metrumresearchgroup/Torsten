@@ -1,16 +1,16 @@
-- [Build](#org034b2b5)
-  - [Edit/Add `cmdstan/make/local`](#org427b3cf)
-  - [Build in `cmdstan`](#org33b2ed2)
-- [Run](#org7eba283)
-- [Results](#org2fe173c)
+- [Build](#org49bd101)
+  - [Edit/Add `cmdstan/make/local`](#orgf8a8d8c)
+  - [Build in `cmdstan`](#org0d267d6)
+- [Run](#org060aaa1)
+- [Results](#org3a79b6d)
 
 
-<a id="org034b2b5"></a>
+<a id="org49bd101"></a>
 
 # Build
 
 
-<a id="org427b3cf"></a>
+<a id="orgf8a8d8c"></a>
 
 ## Edit/Add `cmdstan/make/local`
 
@@ -24,7 +24,7 @@ CXX=mpicxx
 ```
 
 
-<a id="org33b2ed2"></a>
+<a id="org0d267d6"></a>
 
 ## Build in `cmdstan`
 
@@ -33,7 +33,7 @@ make ../example-models/lotka_volterra_ode_group_model/lv_group
 ```
 
 
-<a id="org7eba283"></a>
+<a id="org060aaa1"></a>
 
 # Run
 
@@ -42,7 +42,7 @@ mpiexec -n 2 lv_group sample data file=lv_group.data.R
 ```
 
 
-<a id="org2fe173c"></a>
+<a id="org3a79b6d"></a>
 
 # Results
 
@@ -56,8 +56,9 @@ The wall time of sequential runs and MPI runs(in seconds) with ODE group size 4
 
 | run                          | wall time(s) |
 |---------------------------- |------------ |
-| Sequential stan              | 2600         |
-| sequential pmx               | 2679         |
-| MPI pmx (n<sub>proc</sub>=2) | 1200         |
-| MPI pmx (n<sub>proc</sub>=4) | 696          |
+| Sequential stan              | 2135         |
+| sequential pmx               | 2570         |
+| MPI pmx (n<sub>proc</sub>=1) | 2107         |
+| MPI pmx (n<sub>proc</sub>=2) | 1187         |
+| MPI pmx (n<sub>proc</sub>=4) | 715          |
 | MPI pmx (n<sub>proc</sub>=8) | 467          |

@@ -24,7 +24,7 @@ mpiexec -n 2 twocpt_population sample data file=twocpt_population.data.R init=tw
 MPI run results with 1, 2, 4, 8 processes, respectively, for a population size 8.
 | run      | wall time(s) |
 |----------+--------------|
-| n_proc=1 |        10791 |
-| n_proc=2 |         5282 |
-| n_proc=4 |         2847 |
-| n_proc=8 |         2971 |
+| n_proc=1 |        10274 |
+| n_proc=2 |         5411 |
+| n_proc=4 |         3043 |
+| n_proc=8 |         2654 |
