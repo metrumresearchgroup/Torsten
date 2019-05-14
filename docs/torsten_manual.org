@@ -239,16 +239,16 @@ following:
      :END:
   - Renaming Torsten functions in previous releases, the
     old-new name mapping is
-    + src_stan[:exports code]{PKModelOneCpt} $\rightarrow$ src_stan[:exports code]{pmx_solve_onecpt}
-    + src_stan[:exports code]{PKModelTwoCpt} $\rightarrow$ src_stan[:exports code]{pmx_solve_onecpt}
-    + src_stan[:exports code]{linOdeModel} $\rightarrow$ src_stan[:exports code]{pmx_solve_linode}
-    + src_stan[:exports code]{generalOdeModel_adams} $\rightarrow$ src_stan[:exports code]{pmx_solve_adams}
-    + src_stan[:exports code]{generalOdeModel_bdf} $\rightarrow$ src_stan[:exports code]{pmx_solve_bdf}
-    + src_stan[:exports code]{generalOdeModel_rk45} $\rightarrow$ src_stan[:exports code]{pmx_solve_rk45}
-    + src_stan[:exports code]{mixOde1CptModel_bdf} $\rightarrow$ src_stan[:exports code]{pmx_solve_onecpt_bdf}
-    + src_stan[:exports code]{mixOde1CptModel_rk45} $\rightarrow$ src_stan[:exports code]{pmx_solve_onecpt_rk45}
-    + src_stan[:exports code]{mixOde2CptModel_bdf} $\rightarrow$ src_stan[:exports code]{pmx_solve_twocpt_bdf}
-    + src_stan[:exports code]{mixOde2CptModel_rk45} $\rightarrow$ src_stan[:exports code]{pmx_solve_twocpt_rk45}
+    + src_stan[:exports code]{PKModelOneCpt} \rightarrow src_stan[:exports code]{pmx_solve_onecpt}
+    + src_stan[:exports code]{PKModelTwoCpt} \rightarrow src_stan[:exports code]{pmx_solve_onecpt}
+    + src_stan[:exports code]{linOdeModel} \rightarrow src_stan[:exports code]{pmx_solve_linode}
+    + src_stan[:exports code]{generalOdeModel_adams} \rightarrow src_stan[:exports code]{pmx_solve_adams}
+    + src_stan[:exports code]{generalOdeModel_bdf} \rightarrow src_stan[:exports code]{pmx_solve_bdf}
+    + src_stan[:exports code]{generalOdeModel_rk45} \rightarrow src_stan[:exports code]{pmx_solve_rk45}
+    + src_stan[:exports code]{mixOde1CptModel_bdf} \rightarrow src_stan[:exports code]{pmx_solve_onecpt_bdf}
+    + src_stan[:exports code]{mixOde1CptModel_rk45} \rightarrow src_stan[:exports code]{pmx_solve_onecpt_rk45}
+    + src_stan[:exports code]{mixOde2CptModel_bdf} \rightarrow src_stan[:exports code]{pmx_solve_twocpt_bdf}
+    + src_stan[:exports code]{mixOde2CptModel_rk45} \rightarrow src_stan[:exports code]{pmx_solve_twocpt_rk45}
     Note that the new version of the above functions return
     the /transpose/ of the matrix returned by the old
     versions, in order to improve memory efficiency. The old version are retained but will be
@@ -346,23 +346,14 @@ compatible with Stan {{{stan_ver}}}. Torsten is agnostic to which
 Stan interface you use. Here we provide command line and R
 interfaces.
 
-After downloading the project 
+** Command line interface
+ After downloading the project 
 
 - https://github.com/metrumresearchgroup/Torsten
 
-to ~torsten_path~, set the envionment variable
-src_sh[:exports code]{TORSTEN_PATH} as
-#+BEGIN_SRC sh
-  # in bash
-  export TORSTEN_PATH=torsten_path
-  # in csh
-  setenv TORSTEN_PATH torsten_path
-#+END_SRC
-
-** Command line interface
-   The command line interface ~cmdstan~ does not require
-   installation. The following command
-   builds a Torsten model ~model_name~ in ~model_path~
+The command line interface ~cmdstan~ is available to use without
+installation. The following command
+builds a Torsten model ~model_name~ in ~model_path~
 #+BEGIN_SRC sh
   cd $TORSTEN_PATH/cmdstan; make model_path/model_name
 #+END_SRC
@@ -406,6 +397,15 @@ For more information of installation troubleshooting,
 please consult [[https://github.com/stan-dev/rstan/wiki][rstan wiki]].
 
 ** Testing
+With project in ~torsten_path~, set the envionment variable
+src_sh[:exports code]{TORSTEN_PATH} as
+#+BEGIN_SRC sh
+  # in bash
+  export TORSTEN_PATH=torsten_path
+  # in csh
+  setenv TORSTEN_PATH torsten_path
+#+END_SRC
+
 To test the installation, run
 #+BEGIN_SRC sh
   ./test-torsten.sh --unit        # math unit test
