@@ -102,19 +102,7 @@ transformed parameters{
       theta[(id - 1) * nt + it, 5] = ka[id];
     }
   }
-
-  /* 
-     pmx_solve_group_bdf takes in the ODE system, the number of compartment 
-     (here we have a two compartment model with first order absorption, so
-     three compartments), the parameters matrix, the NONEM
-     data, and the length of data for each individual. There
-     are 4 length arrays: len for NONMEN data, len_theta for parameters,
-     len_biovar for biovariablity, len_tlag for lag time.
-     The user can choose between the Bdf, the Adams and the RK45 integrator.
-     Returns a vector of matrices with each matrix entry
-     corresponding to each individual.
-  */
-
+  
   x = pmx_solve_group_bdf(twoCptModelODE, 3, len,
                           time, amt, rate, ii, evid, cmt, addl, ss,
                           theta, biovar, tlag);

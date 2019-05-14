@@ -1,5 +1,5 @@
 #+TITLE: Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan
-#+SUBTITLE: User Manual @@latex:\\@@ @@html:<br>@@ (Torsten Version 0.85, Stan version 2.18.0)
+#+SUBTITLE: User Manual @@latex:\\@@ @@html:<br>@@ (Torsten Version 0.86, Stan version 2.19.1)
 #+LATEX_CLASS: amsbook
 #+LATEX_CLASS_OPTIONS: [11pt, reqno, oneside]
 
@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
 #+LATEX_HEADER: \newcommand\mrgproject{Torsten}
 #+LATEX_HEADER: \newcommand\mrgtitle{Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan}
-#+LATEX_HEADER: \newcommand\mrgsubtitle{\Large{User Manual} \linebreak (Torsten Version 0.85, Stan version 2.18.0)}
+#+LATEX_HEADER: \newcommand\mrgsubtitle{\Large{User Manual} \linebreak (Torsten Version 0.86, Stan version 2.19.1)}
 #+LATEX_HEADER: \include{mrgtitlepage}
 
 # make index
@@ -47,8 +47,8 @@
 #+LATEX_HEADER: \newtheorem{example}{Example}
 #+LATEX_HEADER: \newtheorem{remark}{Remark}
 
-#+MACRO: torsten_ver v0.85
-#+MACRO: stan_ver v2.18.0
+#+MACRO: torsten_ver v0.86
+#+MACRO: stan_ver v2.19.1
 #+MACRO: newline @@latex:\\@@ @@html:<br>@@ @@ascii:|@@
 #+MACRO: torsten_path /Users/yiz/Work/Torsten
 
@@ -174,7 +174,7 @@ in each compartment, given an event schedule and an ODE system.
     :PROPERTIES:
     :CUSTOM_ID: imp_details
     :END:
-- Current {{{torsten_ver}}} Torsten is based on Stan {{{stan_ver}}}.
+- Current Torsten {{{torsten_ver}}} is based on Stan {{{stan_ver}}}.
 - All functions are programmed in C++ and are compatible
   with the Stan math automatic differentiation library cite:carpenter15_stan_math_librar
 - One and two compartment models are based on analytical solutions of governing ODEs.
@@ -212,6 +212,49 @@ following:
 :PROPERTIES:
 :CUSTOM_ID: changelog
 :END:
+*** 0.86 <2019-05-15 Wed>
+**** Added
+     :PROPERTIES:
+     :CUSTOM_ID: 0-85-added
+     :END:
+  - Torsten's ODE integrator functions
+    + src_stan[:exports code]{pmx_integrate_ode_adams}
+    + src_stan[:exports code]{pmx_integrate_ode_bdf}
+    + src_stan[:exports code]{pmx_integrate_ode_rk45}
+    and their counterparts to solve a population/group of
+    subjects governed by an ODE
+    + src_stan[:exports code]{pmx_integrate_ode_group_adams}
+    + src_stan[:exports code]{pmx_integrate_ode_group_bdf}
+    + src_stan[:exports code]{pmx_integrate_ode_group_rk45}
+  - Torsten's population PMX solver functions for general
+    ODE models
+    + src_stan[:exports code]{pmx_solve_group_adams}
+    + src_stan[:exports code]{pmx_solve_group_bdf}
+    + src_stan[:exports code]{pmx_solve_group_rk45}
+  - Support time step =ts= as parameter in src_stan[:exports code]{pmx_integrate_ode_xxx}
+    solvers.
+**** Changed
+     :PROPERTIES:
+     :CUSTOM_ID: 0-85-changed
+     :END:
+  - Renaming Torsten functions in previous releases, the
+    old-new name mapping is
+    + src_stan[:exports code]{PKModelOneCpt} $\rightarrow$ src_stan[:exports code]{pmx_solve_onecpt}
+    + src_stan[:exports code]{PKModelTwoCpt} $\rightarrow$ src_stan[:exports code]{pmx_solve_onecpt}
+    + src_stan[:exports code]{linOdeModel} $\rightarrow$ src_stan[:exports code]{pmx_solve_linode}
+    + src_stan[:exports code]{generalOdeModel_adams} $\rightarrow$ src_stan[:exports code]{pmx_solve_adams}
+    + src_stan[:exports code]{generalOdeModel_bdf} $\rightarrow$ src_stan[:exports code]{pmx_solve_bdf}
+    + src_stan[:exports code]{generalOdeModel_rk45} $\rightarrow$ src_stan[:exports code]{pmx_solve_rk45}
+    + src_stan[:exports code]{mixOde1CptModel_bdf} $\rightarrow$ src_stan[:exports code]{pmx_solve_onecpt_bdf}
+    + src_stan[:exports code]{mixOde1CptModel_rk45} $\rightarrow$ src_stan[:exports code]{pmx_solve_onecpt_rk45}
+    + src_stan[:exports code]{mixOde2CptModel_bdf} $\rightarrow$ src_stan[:exports code]{pmx_solve_twocpt_bdf}
+    + src_stan[:exports code]{mixOde2CptModel_rk45} $\rightarrow$ src_stan[:exports code]{pmx_solve_twocpt_rk45}
+    Note that the new version of the above functions return
+    the /transpose/ of the matrix returned by the old
+    versions, in order to improve memory efficiency. The old version are retained but will be
+    deprecated in the future. 
+  - Update to Stan version 2.19.1.
+      
 *** 0.85 <2018-12-04 Tue>
 **** Added
      :PROPERTIES:
@@ -222,7 +265,7 @@ following:
      :PROPERTIES:
      :CUSTOM_ID: 0-85-changed
      :END:
-  - Update with Stan version 2.18.0.
+  - Update to Stan version 2.18.0.
 
 *** 0.84 <2018-02-24>
 **** Added
@@ -236,7 +279,7 @@ following:
      :PROPERTIES:
      :CUSTOM_ID: 0-84-changed
      :END:
-  - Update with Stan version 2.17.1.
+  - Update to Stan version 2.17.1.
   - Minor revisions to User Manual.
   - Bugfixes.
 
@@ -271,7 +314,7 @@ following:
      :CUSTOM_ID: 0-82-changed
      :END:
   - Split the parameter argument into three arguments: pMatrix
-    (parameters for the ODEs -- note: for linOdeModel, pMatrix
+    (parameters for the ODEs -- note: for =linOdeModel=, pMatrix
     is replaced by the constant rate matrix K), biovar
     (parameters for the biovariability), and tlag (parameters
     for the lag time).
@@ -316,15 +359,24 @@ src_sh[:exports code]{TORSTEN_PATH} as
   setenv TORSTEN_PATH torsten_path
 #+END_SRC
 
-*** Command line interface
+** Command line interface
    The command line interface ~cmdstan~ does not require
    installation. The following command
    builds a Torsten model ~model_name~ in ~model_path~
 #+BEGIN_SRC sh
   cd $TORSTEN_PATH/cmdstan; make model_path/model_name
 #+END_SRC
-
-*** R interface
+Currently MPI support is only available through =cmdstan=
+interface. To use MPI-supported population/group solvers,
+add/edit =make/local=
+#+BEGIN_SRC sh
+  TORSTEN_MPI=1
+  CXXFLAGS += -isystem /usr/local/include # path to MPI headers
+#+END_SRC
+Note that currently =TORSTEN_MPI= and =STAN_MPI= flags
+conflict on processes management and cannot be used in a
+same Stan model.
+** R interface
    The R interface is based on [[https://cran.r-project.org/web/packages/rstan/index.html][rstan]], the Stan's interface for
    R. To install R version of Torsten, at ~$TORSTEN_PATH~, in R
 #+BEGIN_SRC R
@@ -353,7 +405,7 @@ functionality, see
 For more information of installation troubleshooting,
 please consult [[https://github.com/stan-dev/rstan/wiki][rstan wiki]].
 
-*** Testing
+** Testing
 To test the installation, run
 #+BEGIN_SRC sh
   ./test-torsten.sh --unit        # math unit test
@@ -381,7 +433,7 @@ and also at the =example-models= foler of your =TORSTEN_PATH=.
 #+LABEL: sec:OneCpt
 #+INDEX: One Compartment Model
 #+BEGIN_SRC stan
-  real[nt, ncmt] = PKModelOneCpt(real[] time, real[] amt, real[] rate,
+  matrix = pmx_solve_onecpt(real[] time, real[] amt, real[] rate,
                                  real[] ii, int[] evid, int[] cmt,
                                  real[] addl, int[] ss, real[] theta,
                                  real[] biovar, real[] tlag)
@@ -392,7 +444,7 @@ and also at the =example-models= foler of your =TORSTEN_PATH=.
 #+ATTR_LATEX: :width 2.0in
 [[file:./graphics/cptModels.png]]
 
-Torsten function =PKModelOneCpt= solves one-compartment PK
+Torsten function =pmx_solve_onecpt= solves one-compartment PK
 models(Figure [[one_two_cpt_models]]). The model obtains plasma concentrations of parent drug $c=y_2/V_2$
 by solving for the mass of drug in the central compartment
 $y_2$ from ordinary differential equations(ODEs)
@@ -427,13 +479,13 @@ $y_2$ from ordinary differential equations(ODEs)
 <<sec:twocpt>>
 #+INDEX: Two Compartment Model
 #+BEGIN_SRC stan
-  real[nt, ncmt] = PKModelTwoCpt(real[] time, real[] amt, real[] rate,
+  matrix = pmx_solve_twocpt(real[] time, real[] amt, real[] rate,
                                  real[] ii, int[] evid, int[] cmt,
                                  real[] addl, int[] ss, real[] theta,
                                  real[] biovar, real[] tlag)
 #+END_SRC
 
-Torsten function =PKModelTwoCpt= (see also Figure [[one_two_cpt_models]]) solves two-compartment PK
+Torsten function =pmx_solve_twocpt= (see also Figure [[one_two_cpt_models]]) solves two-compartment PK
 models. The model obtains plasma concentrations of parent drug $c=y_2/V_2$
 by solving for $y_2$ and $y_3$, the mass of drug in the central and peripheral compartments,
 respectively, from ODEs
@@ -472,7 +524,7 @@ respectively, from ODEs
   \end{align*}
   The data are generated using the R package =mrgsolve= cite:Baron000.
 
-Code below shows how Torsten function ~PKModelTwoCpt~ can be used to fit the above model.
+Code below shows how Torsten function ~pmx_solve_twocpt~ can be used to fit the above model.
 
 #+include: "../example-models/TwoCptModel/TwoCptModel.stan" :lines "5-74" src stan
 
@@ -531,12 +583,12 @@ are consistent with the values used for simulation.
 ** General Linear ODE Model Function
 #+INDEX: General linear model 
 #+BEGIN_SRC stan
-  real[nt, n] = linOdeModel(real[] time, real[] amt, real[] rate,
+  real[nt, n] = pmx_solve_linode(real[] time, real[] amt, real[] rate,
                        real[] ii, int[] evid, int[] cmt,
                        real[] addl, int[] ss,
                        matrix K, real[] biovar, real[] tlag)
 #+END_SRC
-Torsten function =linOdeModel= 
+Torsten function =pmx_solve_linode= 
 solves a (piecewise) linear ODEs model with coefficients
 in form of matrix $K$
 \begin{equation}
@@ -567,7 +619,7 @@ where $k_{10}=CL/V_2$, $k_{12}=Q/V_2$, and $k_{21}=Q/V_3$.
   =n= is the size of the square matrix =K=.
 
 *** Example
-Using =linOdeModel=, the following example fits a two-compartment model
+Using =pmx_solve_linode=, the following example fits a two-compartment model
 with first order absorption.
 
 #+include: "../example-models/LinTwoCptModel/LinTwoCptModel.stan" :lines "1-68" src stan
@@ -575,21 +627,28 @@ with first order absorption.
 ** General ODE Model Function
 #+INDEX: General ODE Model
 #+BEGIN_SRC stan
-  real[] generalOdeModel_rk45(ODE_system, int nCmt,
+  matrix pmx_solve_adams(ODE_system, int nCmt,
+                             real[] time, real[] amt, real[] rate, real[] ii,
+                             int[] evid, int[] cmt, real[] addl, int[] ss,
+                             real[] theta, real[] biovar, real[] tlag,                      
+                             real rel_tol, real abs_tol, int max_step);
+#+END_SRC
+#+BEGIN_SRC stan
+  matrix pmx_solve_rk45(ODE_system, int nCmt,
                               real[] time, real[] amt, real[] rate, real[] ii,
                               int[] evid, int[] cmt, real[] addl, int[] ss,
                               real[] theta, real[] biovar, real[] tlag,                      
                               real rel_tol, real abs_tol, int max_step);
 #+END_SRC
 #+BEGIN_SRC stan
-  real[] generalOdeModel_bdf(ODE_system, int nCmt,
+  matrix pmx_solve_bdf(ODE_system, int nCmt,
                              real[] time, real[] amt, real[] rate, real[] ii,
                              int[] evid, int[] cmt, real[] addl, int[] ss,
                              real[] theta, real[] biovar, real[] tlag,                      
                              real rel_tol, real abs_tol, int max_step);
 #+END_SRC
-Torsten function =generalOdeModel_rk45= and
-=generalOdeModel_bdf= solve first ODEs with
+Torsten function =pmx_solve_adams=, =pmx_solve_rk45= and
+=pmx_solve_bdf= solve first ODEs with
 user-specified first-order right-hand-side(RHS)
 \begin{equation*}
 y'(t) = f(t, y(t))
@@ -611,10 +670,11 @@ y'(t) = f(t, y(t)) + r
   and ~max_step~ are tuning parameters for the ODE integrator:
   respectively the relative tolerance, the absolute tolerance, and the
   maximum number of steps.
-- =generalOdeModel_rk45= solves ODEs with Stan's Runge-Kutta
-  ODE solver function =integrate_ode_rk45=.
-- =generalOdeModel_rk45= solves ODEs with Stan's Backward
-  Differentiation(BDF) ODE solver function =integrate_ode_bdf=, 
+- =pmx_solve_rk45= solves ODE with Stan's Runge-Kutta
+  ODE solver function.
+- =pmx_solve_adams= solves ODE with Torsten's Adams-Moulton ODE solver function =pmx_integrate_ode_adams=.
+- =pmx_solve_bdf= solves ODE with Torsten's Backward
+  Differentiation(BDF) ODE solver function =pmx_integrate_ode_bdf=, 
 - The values to use for the tuning parameters depends on the integrator and
   the specifics of the ODE system. Reducing the tolerance parameters and
   increasing the number of steps make for a more robust integrator but
@@ -638,7 +698,7 @@ y'(t) = f(t, y(t)) + r
 # These restrictions also apply to ~mixOdeCpt_*~ functions, discussed in the next section.
 
 *** Example
-Using =generalOdeModel_rk45=, the following example fits a two-compartment model
+Using =pmx_solve_rk45=, the following example fits a two-compartment model
 with first order absorption. User-defined function
 =twoCptModelODE= describes the RHS of the ODEs.
 
@@ -649,7 +709,7 @@ with first order absorption. User-defined function
 #+INDEX: Mixed ODE Model
 
 #+BEGIN_SRC stan
-  real[] mixOde1CptModel_rk45(reduced_ODE_system, int nOde,
+  real[] pmx_solve_onecpt_rk45(reduced_ODE_system, int nOde,
                               real[] time, real[] amt, real[] rate,
                               real[] ii, int[] evid, int[] cmt, real[]
                               addl, int[] ss,
@@ -657,7 +717,7 @@ with first order absorption. User-defined function
                               real rel_tol, real abs_tol, real max_step)
 #+END_SRC
 #+BEGIN_SRC stan
-  real[] mixOde1CptModel_bdf(reduced_ODE_system, int nOde,
+  real[] pmx_solve_onecpt_bdf(reduced_ODE_system, int nOde,
                               real[] time, real[] amt, real[] rate,
                               real[] ii, int[] evid, int[] cmt, real[]
                               addl, int[] ss,
@@ -665,7 +725,7 @@ with first order absorption. User-defined function
                               real rel_tol, real abs_tol, real max_step)
 #+END_SRC
 #+BEGIN_SRC stan
-  real[] mixOde2CptModel_rk45(reduced_ODE_system, int nOde,
+  real[] pmx_solve_twocpt_rk45(reduced_ODE_system, int nOde,
                               real[] time, real[] amt, real[] rate,
                               real[] ii, int[] evid, int[] cmt, real[]
                               addl, int[] ss,
@@ -673,7 +733,7 @@ with first order absorption. User-defined function
                               real rel_tol, real abs_tol, real max_step)
 #+END_SRC
 #+BEGIN_SRC stan
-  real[] mixOde2CptModel_bdf(reduced_ODE_system, int nOde,
+  real[] pmx_solve_twocpt_bdf(reduced_ODE_system, int nOde,
                               real[] time, real[] amt, real[] rate,
                               real[] ii, int[] evid, int[] cmt, real[]
                               addl, int[] ss,
@@ -724,6 +784,111 @@ Restrictions regarding which arguments may be passed as parameters for
 general ODE solvers also apply to
 mixed solvers.
 
+
+** General ODE-based Population Model Function
+#+INDEX: General ODE Model
+#+BEGIN_SRC stan
+  matrix pmx_solve_group_adams(ODE_system, int nCmt, int[] len,
+                             real[] time, real[] amt, real[] rate, real[] ii,
+                             int[] evid, int[] cmt, real[] addl, int[] ss,
+                             real[] theta, real[] biovar, real[] tlag,                      
+                             real rel_tol, real abs_tol, int max_step);
+#+END_SRC
+#+BEGIN_SRC stan
+  matrix pmx_solve_group_rk45(ODE_system, int nCmt, int[] len,
+                              real[] time, real[] amt, real[] rate, real[] ii,
+                              int[] evid, int[] cmt, real[] addl, int[] ss,
+                              real[] theta, real[] biovar, real[] tlag,                      
+                              real rel_tol, real abs_tol, int max_step);
+#+END_SRC
+#+BEGIN_SRC stan
+  matrix pmx_solve_group_bdf(ODE_system, int nCmt, int[] len,
+                             real[] time, real[] amt, real[] rate, real[] ii,
+                             int[] evid, int[] cmt, real[] addl, int[] ss,
+                             real[] theta, real[] biovar, real[] tlag,                      
+                             real rel_tol, real abs_tol, int max_step);
+#+END_SRC
+Similar to their single-subject counterparts, Torsten function =pmx_solve_group_adams=, =pmx_solve_group_rk45= and
+=pmx_solve_group_bdf= solve a population ODE model. These
+solvers support MPI parallelization.
+- The ragged array arguments ~time~, ~amt~, ~rate~, ~ii~,
+  ~evid~, ~cmt~, ~addl~, ~ss~ describe data record for the
+  entire population.
+- ~len~ specifies the length of data for each subject within
+  the above ragged arrays, and the size of ~len~ is the size
+  of the population.
+- ~rel_tol~, ~abs_tol~,
+  and ~max_step~ have same meaning and default values as in
+  corresponding single-subject solvers.
+- In ~cmdstan~, define ~TORSTEN_MPI=1~ in ~make/local~ to
+  activate MPI solution for these population solvers.
+- The solvers return a single matrix ragged column-wise. The
+  number of rows equals to the number of compartments in the model.
+
+*** Example
+Using =pmx_solve_group_bdf=, the following example fits a
+two-compartment population model.
+
+#+include: "../example-models/twocpt_population/twocpt_population.stan" :lines "1-145" src stan
+
+** ODE  integrator Function
+#+INDEX: PMX ODE integrators
+#+BEGIN_SRC stan
+  real[ , ] pmx_integrate_ode_adams(ODE_system, real[] y0, real t0, real[] ts,
+                                    real[] theta, real[] x_r, int[] x_i,
+                                    real rtol, real atol, int max_step);
+#+END_SRC
+#+BEGIN_SRC stan
+  real[ , ] pmx_integrate_ode_bdf(ODE_system, real[] y0, real t0, real[] ts,
+                                  real[] theta, real[] x_r, int[] x_i,
+                                  real rtol, real atol, int max_step);
+#+END_SRC
+#+BEGIN_SRC stan
+  real[ , ] pmx_integrate_ode_rk45(ODE_system, real[] y0, real t0, real[] ts,
+                                   real[] theta, real[] x_r, int[] x_i,
+                                   real rtol, real atol, int max_step);
+#+END_SRC
+Torsten's own implementation of ODE integrators. They have same
+signature as those in Stan.
+- ~ts~ can be parameters in Torsten's ODE integrators.
+
+** ODE group  integrator Function
+#+INDEX: PMX ODE group integrators
+#+BEGIN_SRC stan
+  matrix pmx_integrate_ode_group_adams(ODE_system, real[ , ] y0, real t0,
+                                       int[] len, real[ , ] ts,
+                                       real[ , ] theta, real[ , ] x_r, int[ , ] x_i,
+                                       real rtol, real atol, int max_step);
+#+END_SRC
+#+BEGIN_SRC stan
+  matrix pmx_integrate_ode_group_bdf(ODE_system, real[ , ] y0, real t0,
+                                     int[] len, real[ , ] ts,
+                                     real[ , ] theta, real[ , ] x_r, int[ , ] x_i,
+                                     real rtol, real atol, int max_step);
+#+END_SRC
+#+BEGIN_SRC stan
+  matrix pmx_integrate_ode_group_rk45(ODE_system, real[ , ] y0, real t0,
+                                      int[] len, real[ , ] ts,
+                                      real[ , ] theta, real[ , ] x_r, int[ , ] x_i,
+                                      real rtol, real atol, int max_step);
+#+END_SRC
+Torsten provides group solvers for a population of subjects with different parameters/data but
+governed by a same ODE. These solvers support MPI parallelization.
+- The ragged array arguments ~y0~, ~ts~, ~theta~, ~x_r~, ~x_i~ describe data record for the
+  entire ODE group.
+- ~len~ specifies the length of data for each subject within
+  the above ragged arrays, and the size of ~len~ is the size
+  of the population.
+- ~ts~ can only be data in the group integrators.
+- The group integrators return a single matrix ragged
+  column-wise. The number of rows equals to the size of ODE system.
+
+*** Example
+Using =pmx_integrate_ode_group_rk45=, the following example fits
+a Lotka-Volterra group model, based on [[https://mc-stan.org/users/documentation/case-studies/lotka-volterra-predator-prey.html][Stan's case study]].
+
+#+include: "../example-models/lotka_volterra_ode_group_model/lv_group.stan" :lines "1-57" src stan
+
 ** Example
 #+INDEX: Friberg-Karlsson Model
 
@@ -765,7 +930,7 @@ where $E_{drug}  = \alpha c$.
 The ODEs specifying the Two Compartment Model
 (Equation \eqref{eq:twocpt}) do not depend on the PD ODEs
 (Equation \eqref{eq:FK}) and can be solved analytically
-using Torsten's src_stan[:exports code]{PKModelTwoCpt} function. We
+using Torsten's src_stan[:exports code]{pmx_solve_twocpt} function. We
 therefore specify our model using a mixed solver function. We do not
 expect our system to be stiff and use the Runge-Kutta 4th/5th order
 integrator.
@@ -954,10 +1119,10 @@ treatment.
 
 The model is simultaneously fitted to the PK and the PD
 data. For this effect compartment model, we construct a
-constant rate matrix and use =linOdeModel=. Correct use of
+constant rate matrix and use =pmx_solve_linode=. Correct use of
 Torsten requires the user pass the entire event history
 (observation and dosing events) for an individual to the
-function. Thus the Stan model shows the call to =linOdeModel=
+function. Thus the Stan model shows the call to =pmx_solve_linode=
 within a loop over the individual subjects rather than over
 the individual observations.
 
