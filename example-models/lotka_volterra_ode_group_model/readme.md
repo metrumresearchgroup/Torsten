@@ -50,7 +50,7 @@ Three binaries are built and used to run:
 -   sequential run using Torsten's `rk45` integrator.
 -   MPI run using Torsten's `rk45` group integrator(with 2, 4, 8 processes, respectively).
 
-The wall time of sequential runs and MPI runs(in seconds) with ODE group size 4
+The wall time of sequential runs and MPI runs(in seconds) with ODE group size 16.
 
 | run                          | wall time(s) |
 |---------------------------- |------------ |
