@@ -1,0 +1,10 @@
+#ifndef STAN_LANG_TORSTEN_GRAMMARS_SEMANTIC_ACTIONS_DATA_ONLY_EXPRESSION_HPP
+#define STAN_LANG_TORSTEN_GRAMMARS_SEMANTIC_ACTIONS_DATA_ONLY_EXPRESSION_HPP
+
+#include <stan/torsten/torsten_func_expression_list.h>
+
+#define TORSTEN_FUNC_EXPR(F, R) bool operator()(const F& /*x*/) const;
+    TORSTEN_LANG_FUNCTORS_EXPRESSION_LIST
+#undef TORSTEN_FUNC_EXPR
+
+#endif
