@@ -294,7 +294,7 @@ void operator()(const pmx_solve_group_control& fx) const {
   o_ << ", ";
 
   generate_expression(fx.tlag_, NOT_USER_FACING, o_);
-  o_ << ", pstream__)";
+  o_ << ", pstream__, ";
 
   generate_expression(fx.rel_tol_, NOT_USER_FACING, o_);
   o_ << ", ";
