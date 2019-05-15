@@ -1,3 +1,45 @@
+# 0.86 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-05-15 Wed&gt;</span></span>
+
+
+## Added
+
+-   Torsten's ODE integrator functions
+    
+    -   `pmx_integrate_ode_adams`
+    -   `pmx_integrate_ode_bdf`
+    -   `pmx_integrate_ode_rk45`
+    
+    and their counterparts to solve a population/group of subjects governed by an ODE
+    
+    -   `pmx_integrate_ode_group_adams`
+    -   `pmx_integrate_ode_group_bdf`
+    -   `pmx_integrate_ode_group_rk45`
+-   Torsten's population PMX solver functions for general ODE models
+    -   `pmx_solve_group_adams`
+    -   `pmx_solve_group_bdf`
+    -   `pmx_solve_group_rk45`
+-   Support time step `ts` as parameter in `pmx_integrate_ode_xxx` solvers.
+
+
+## Changed
+
+-   Renaming Torsten functions in previous releases, the old-new name mapping is
+    
+    -   `PKModelOneCpt` &rarr; `pmx_solve_onecpt`
+    -   `PKModelTwoCpt` &rarr; `pmx_solve_onecpt`
+    -   `linOdeModel` &rarr; `pmx_solve_linode`
+    -   `generalOdeModel_adams` &rarr; `pmx_solve_adams`
+    -   `generalOdeModel_bdf` &rarr; `pmx_solve_bdf`
+    -   `generalOdeModel_rk45` &rarr; `pmx_solve_rk45`
+    -   `mixOde1CptModel_bdf` &rarr; `pmx_solve_onecpt_bdf`
+    -   `mixOde1CptModel_rk45` &rarr; `pmx_solve_onecpt_rk45`
+    -   `mixOde2CptModel_bdf` &rarr; `pmx_solve_twocpt_bdf`
+    -   `mixOde2CptModel_rk45` &rarr; `pmx_solve_twocpt_rk45`
+    
+    Note that the new version of the above functions return the *transpose* of the matrix returned by the old versions, in order to improve memory efficiency. The old version are retained but will be deprecated in the future.
+-   Update to Stan version 2.19.1.
+
+
 # 0.85 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-12-04 Tue&gt;</span></span>
 
 
@@ -8,7 +50,7 @@
 
 ## Changed
 
--   Update with Stan version 2.18.0.
+-   Update to Stan version 2.18.0.
 
 
 # 0.84 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-02-24 Sat&gt;</span></span>
@@ -22,7 +64,7 @@
 
 ## Changed
 
--   Update with Stan version 2.17.1.
+-   Update to Stan version 2.17.1.
 -   Minor revisions to User Manual.
 -   Bugfixes.
 
@@ -55,7 +97,7 @@
 
 ## Changed
 
--   Split the parameter argument into three arguments: pMatrix (parameters for the ODEs &#x2013; note: for linOdeModel, pMatrix is replaced by the constant rate matrix K), biovar (parameters for the biovariability), and tlag (parameters for the lag time).
+-   Split the parameter argument into three arguments: pMatrix (parameters for the ODEs &#x2013; note: for `linOdeModel`, pMatrix is replaced by the constant rate matrix K), biovar (parameters for the biovariability), and tlag (parameters for the lag time).
 -   bugfixes
 
 

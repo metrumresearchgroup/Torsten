@@ -4,9 +4,6 @@
 #+EMAIL: mailto:billg@metrumrg.com
 #+OPTIONS: toc:nil, title:t, num:nil, date:nil
 
-#+MACRO: torsten_ver v0.85
-#+MACRO: stan_ver v2.18.1
-
 #+include: ./docs/torsten_manual.org::*Changelog :lines "4-"
 
 
