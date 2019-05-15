@@ -34,23 +34,14 @@ This library provides Stan language functions that calculate amounts in each com
 
 We are working with Stan development team to create a system to add and share Stan packages. In the mean time, the current repo contains forked version of Stan with Torsten. The latest version of Torsten (v0.86) is compatible with Stan v2.19.1. Torsten is agnostic to which Stan interface you use. Here we provide command line and R interfaces.
 
+
+### Command line interface
+
 After downloading the project
 
 -   <https://github.com/metrumresearchgroup/Torsten>
 
-to `torsten_path`, set the envionment variable `TORSTEN_PATH` as
-
-```sh
-# in bash
-export TORSTEN_PATH=torsten_path
-# in csh
-setenv TORSTEN_PATH torsten_path
-```
-
-
-### Command line interface
-
-The command line interface `cmdstan` does not require installation. The following command builds a Torsten model `model_name` in `model_path`
+The command line interface `cmdstan` is available to use without installation. The following command builds a Torsten model `model_name` in `model_path`
 
 ```sh
 cd $TORSTEN_PATH/cmdstan; make model_path/model_name
@@ -96,6 +87,15 @@ For more information of installation troubleshooting, please consult [rstan wiki
 
 
 ### Testing
+
+With project in `torsten_path`, set the envionment variable `TORSTEN_PATH` as
+
+```sh
+# in bash
+export TORSTEN_PATH=torsten_path
+# in csh
+setenv TORSTEN_PATH torsten_path
+```
 
 To test the installation, run
 
@@ -151,16 +151,16 @@ Our current plans for future development of Torsten include the following:
 
     -   Renaming Torsten functions in previous releases, the old-new name mapping is
         
-        -   `PKModelOneCpt` \(\rightarrow\) `pmx_solve_onecpt`
-        -   `PKModelTwoCpt` \(\rightarrow\) `pmx_solve_onecpt`
-        -   `linOdeModel` \(\rightarrow\) `pmx_solve_linode`
-        -   `generalOdeModel_adams` \(\rightarrow\) `pmx_solve_adams`
-        -   `generalOdeModel_bdf` \(\rightarrow\) `pmx_solve_bdf`
-        -   `generalOdeModel_rk45` \(\rightarrow\) `pmx_solve_rk45`
-        -   `mixOde1CptModel_bdf` \(\rightarrow\) `pmx_solve_onecpt_bdf`
-        -   `mixOde1CptModel_rk45` \(\rightarrow\) `pmx_solve_onecpt_rk45`
-        -   `mixOde2CptModel_bdf` \(\rightarrow\) `pmx_solve_twocpt_bdf`
-        -   `mixOde2CptModel_rk45` \(\rightarrow\) `pmx_solve_twocpt_rk45`
+        -   `PKModelOneCpt` &rarr; `pmx_solve_onecpt`
+        -   `PKModelTwoCpt` &rarr; `pmx_solve_onecpt`
+        -   `linOdeModel` &rarr; `pmx_solve_linode`
+        -   `generalOdeModel_adams` &rarr; `pmx_solve_adams`
+        -   `generalOdeModel_bdf` &rarr; `pmx_solve_bdf`
+        -   `generalOdeModel_rk45` &rarr; `pmx_solve_rk45`
+        -   `mixOde1CptModel_bdf` &rarr; `pmx_solve_onecpt_bdf`
+        -   `mixOde1CptModel_rk45` &rarr; `pmx_solve_onecpt_rk45`
+        -   `mixOde2CptModel_bdf` &rarr; `pmx_solve_twocpt_bdf`
+        -   `mixOde2CptModel_rk45` &rarr; `pmx_solve_twocpt_rk45`
         
         Note that the new version of the above functions return the *transpose* of the matrix returned by the old versions, in order to improve memory efficiency. The old version are retained but will be deprecated in the future.
     -   Update to Stan version 2.19.1.

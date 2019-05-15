@@ -11,7 +11,7 @@
 #+include: ./docs/torsten_manual.org::#overview :minlevel 2
 #+include: ./docs/torsten_manual.org::#installation :minlevel 2
 #+include: ./docs/torsten_manual.org::#dev_plans :minlevel 2
-#+include: ./docs/torsten_manual.org::#changelog :minlevel 2
+#+include: ./docs/torsten_manual.org::#changelog
 
 \bibliography{./doc/torsten}
 bibliographystyle:plain
