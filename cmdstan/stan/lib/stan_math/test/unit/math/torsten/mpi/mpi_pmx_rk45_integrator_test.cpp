@@ -322,7 +322,7 @@ TEST_F(TorstenOdeTest_chem, group_rk45_fwd_sensitivity_y0_theta) {
     matrix_v y_i = y_m.block(0, icol, y0.size(), len[i]);
     vector<var> vars_i = y0_var_m[i];
     vars_i.insert(vars_i.end(), theta_var_m[i].begin(), theta_var_m[i].end());
-    torsten::test::test_grad(vars, vars_i, y, y_i, 1e-14, 1e-12);
+    torsten::test::test_grad(vars, vars_i, y, y_i, 2e-14, 1e-12);
     icol += len[i];
   }
 }

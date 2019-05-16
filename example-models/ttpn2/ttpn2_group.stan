@@ -118,28 +118,3 @@ model{
   target += log(hazardObs .* survObs); // observed PN event log likelihood
   target += log(survCens); // censored PN event log likelihood
 }
-
-generated quantities{
-  // Simulate CDF for time to PN
-  vector<lower = 0, upper = 1>[ntPred] cdfPred[nId];
-  real<lower = 0> amtPred[ntPred] = rep_array(0.0, ntPred);
-  real<lower = 0> parmsPred[5];
-
-  for(j in 1:nId){
-    parmsPred = {CL[j], V[j], ke0, alpha, beta};
-    amtPred[1] = amt[start[j]];
-
-    cdfPred[j] =  1 - exp(-generalOdeModel_rk45(oneCptPNODE, 3,
-						tPred, 
-						amtPred,
-						ratePred,
-						iiPred,
-						evidPred,
-						cmtPred,
-						addlPred,
-						ssPred,
-						parmsPred, F, tLag,
-						1e-6, 1e-6, 1e8)[,3]);
-
-  }
-}
