@@ -1,18 +1,18 @@
-- [Build](#orgf9267f0)
-  - [Edit/Add `cmdstan/make/local`](#org5d1ec6b)
-  - [Build in `cmdstan`](#org70610a8)
-- [Run](#org779a276)
-- [Results](#orgaffa7a3)
+- [Build](#org41860ac)
+  - [Edit/Add `cmdstan/make/local`](#org74f61a7)
+  - [Build in `cmdstan`](#orgbd65b25)
+- [Run](#org80f32f1)
+- [Results](#org4855bd9)
 
 TTPN model from Hands-on session 4 of the advanced Stan by Bill Gillespie
 
 
-<a id="orgf9267f0"></a>
+<a id="org41860ac"></a>
 
 # Build
 
 
-<a id="org5d1ec6b"></a>
+<a id="org74f61a7"></a>
 
 ## Edit/Add `cmdstan/make/local`
 
@@ -22,7 +22,7 @@ CXXFLAGS += -isystem /usr/local/include                 # path to MPI library's 
 ```
 
 
-<a id="org70610a8"></a>
+<a id="orgbd65b25"></a>
 
 ## Build in `cmdstan`
 
@@ -31,7 +31,7 @@ make ../example-models/ttpn2/ttpn2_group
 ```
 
 
-<a id="org779a276"></a>
+<a id="org80f32f1"></a>
 
 # Run
 
@@ -40,7 +40,7 @@ mpiexec -n 2 ttpn2_group sample num_warmup=500 num_samples=500 data file=ttpn2.d
 ```
 
 
-<a id="orgaffa7a3"></a>
+<a id="org4855bd9"></a>
 
 # Results
 
@@ -49,7 +49,7 @@ Two binaries are built and used to run:
 -   sequential run using Torsten's `rk45` solver `pmx_solve_rk45` by looping through the population.
 -   MPI run using Torsten's group solver `pmx_solve_group_rk45` (with 1, 2, 4, 8, 16, 32, 64 processes, respectively). Note that with 64 processes the number of processes is greater than the number of subjects(60).
 
-The wall time of sequential runs and MPI runs(in seconds) with ODE group size 4
+The wall time of sequential runs and MPI runs(in seconds)
 
 | run                           | wall time(s) | Speedup |
 |----------------------------- |------------ |------- |

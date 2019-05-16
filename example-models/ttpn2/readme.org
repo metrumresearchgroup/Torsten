@@ -26,7 +26,6 @@ Two binaries are built and used to run:
   number of subjects(60).
 
 The wall time of sequential runs and MPI runs(in seconds)
-with ODE group size 4
 #+caption: Wall time(s)
 | run                   | wall time(s) | Speedup |
 |-----------------------+--------------+---------|
