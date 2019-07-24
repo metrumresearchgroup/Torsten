@@ -1,5 +1,0 @@
-[submodule "stan"]
-	path = stan
-        url = git@github.com:metrumresearchgroup/stan.git
-        branch = torsten-master
-	shallow = true
