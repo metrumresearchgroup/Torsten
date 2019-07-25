@@ -1,0 +1,16 @@
+* Link Torsten functions to Stan lang
+Files in this folder that you should edit manually instead
+of using the included macro.
+- =expression_visgen.hpp=
+- =has_non_param_var_vis_def.hpp=
+- =has_var_vis_def.hpp=
+- =semantic_actions_def.cpp=
+- =term_grammar_def.hpp=
+- =term_grammar_def_boost_fusion.hpp=
+- =torsten_ast.hpp=
+- =torsten_ast_def.hpp=
+
+Other than the included files in this folder, add torsten
+functions in
+- =stan/lang/grammars/term_grammar_def.hpp=
+- =stan/lang/ast/node/expression.hpp=
