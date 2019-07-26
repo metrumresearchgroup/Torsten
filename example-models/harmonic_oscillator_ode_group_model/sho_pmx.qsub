@@ -7,4 +7,5 @@
 #$ -j y
 #$ -S /bin/bash
 
-./sho_pmx_loop sample data file=sho_group.data.R random seed=26722 output file=pmx_sample.csv
+
+./sho_pmx_loop sample data file=sho_group.data.R init=sho.init.R random seed=701713864 output file=pmx_sample.csv

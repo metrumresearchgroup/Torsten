@@ -22,6 +22,8 @@ transformed data {
 }
 
 parameters {
+  real<lower=0> mu;
+  real<lower=0> tau;
   real<lower=0> sigma[N_subj, n];
   real<lower=0> theta[N_subj, 1];
 }
@@ -34,12 +36,12 @@ transformed parameters {
 }
 
 model {
+  mu ~ normal(3, 0.5);
+  tau ~ normal(0.5, 0.1);
   for (i in 1:N_subj) {
-    theta[i, 1] ~ normal(3, 0.5);
-    sigma[i] ~ normal(0, 1);
-    for (j in 1:nt) {
-      y1_obs[(i-1)*nt + j] ~ normal(y[i, j, 1], sigma[i, 1]);
-      y2_obs[(i-1)*nt + j] ~ normal(y[i, j, 2], sigma[i, 2]);
-    }
+    theta[i, 1] ~ normal(mu, tau);
+    sigma[i] ~ cauchy(0, 1);
+    y1_obs[((i-1)*nt+1):(i*nt)] ~ normal(y[i, 1:nt, 1], sigma[i, 1]);
+    y2_obs[((i-1)*nt+1):(i*nt)] ~ normal(y[i, 1:nt, 2], sigma[i, 2]);
   }
 }

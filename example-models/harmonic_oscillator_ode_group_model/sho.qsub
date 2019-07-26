@@ -7,4 +7,4 @@
 #$ -j y
 #$ -S /bin/bash
 
-./sho_loop sample data file=sho_group.data.R random seed=26722 output file=stan_sample.csv
+./sho_loop sample data file=sho_group.data.R init=sho.init.R random seed=701713864 output file=stan_sample.csv
