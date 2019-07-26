@@ -1,5 +1,5 @@
 #+TITLE: Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan
-#+SUBTITLE: User Manual @@latex:\\@@ @@html:<br>@@ (Torsten Version 0.86, Stan version 2.19.1)
+#+SUBTITLE: User Manual @@latex:\\@@ @@html:<br>@@ (Torsten Version 0.87, Stan version 2.19.1)
 #+LATEX_CLASS: amsbook
 #+LATEX_CLASS_OPTIONS: [11pt, reqno, oneside]
 
@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
 #+LATEX_HEADER: \newcommand\mrgproject{Torsten}
 #+LATEX_HEADER: \newcommand\mrgtitle{Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan}
-#+LATEX_HEADER: \newcommand\mrgsubtitle{\Large{User Manual} \linebreak (Torsten Version 0.86, Stan version 2.19.1)}
+#+LATEX_HEADER: \newcommand\mrgsubtitle{\Large{User Manual} \linebreak (Torsten Version 0.87, Stan version 2.19.1)}
 #+LATEX_HEADER: \include{mrgtitlepage}
 
 # make index
@@ -47,7 +47,7 @@
 #+LATEX_HEADER: \newtheorem{example}{Example}
 #+LATEX_HEADER: \newtheorem{remark}{Remark}
 
-#+MACRO: torsten_ver v0.86
+#+MACRO: torsten_ver v0.87
 #+MACRO: stan_ver v2.19.1
 #+MACRO: newline @@latex:\\@@ @@html:<br>@@ @@ascii:|@@
 #+MACRO: torsten_path /Users/yiz/Work/Torsten
@@ -212,6 +212,26 @@ following:
 :PROPERTIES:
 :CUSTOM_ID: changelog
 :END:
+*** 0.87 <2019-07-26 Fri>
+**** Added
+     :PROPERTIES:
+     :CUSTOM_ID: 0-85-added
+     :END:
+  - MPI dynamic load balance for Torsten's population ODE integrators
+    + src_stan[:exports code]{pmx_integrate_ode_group_adams}
+    + src_stan[:exports code]{pmx_integrate_ode_group_bdf}
+    + src_stan[:exports code]{pmx_integrate_ode_group_rk45}
+    To invoke dynamic load balance instead of default static
+    balance for MPI, issue =TORSTEN_MPI=2= in =make/local=.
+  - Support =time= as parameter in src_stan[:exports code]{pmx_solve_rk45/bdf/adams}
+    functions.
+**** Changed
+     :PROPERTIES:
+     :CUSTOM_ID: 0-85-changed
+     :END:
+  - Some fixes on steady-state solvers
+  - Update to rstan version 2.19.2.
+
 *** 0.86 <2019-05-15 Wed>
 **** Added
      :PROPERTIES:
