@@ -1,10 +1,98 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_HPP
 
+#include <stan/math/prim/mat/fun/Eigen.hpp>
+#include <stan/math/torsten/PKModel/ModelParameters.hpp>
+#include <stan/math/rev/mat/fun/multiply.hpp>
+#include <boost/math/tools/promotion.hpp>
 #include <Eigen/Dense>
 #include <vector>
 
 namespace torsten{
+
+/**
+ * The Event class defines objects that contain the elements of an event,
+ * following NONMEM conventions:
+ *    time
+ *    amt: amount
+ *    rate
+ *    ii: interdose interval
+ *    evid: event identity
+ *      (0) observation
+ *      (1) dosing
+ *      (2) other
+ *      (3) reset
+ *      (4) reset and dosing
+ *    cmt: compartment in which the event occurs
+ *    addl: additional doses
+ *    ss: steady state approximation (0: no, 1: yes)
+ *    keep: if TRUE, save the predicted amount at this event
+ *          in the final output of the pred function.
+ *    isnew: if TRUE, event was created when pred augmented
+ *           the input data set
+ */
+template <typename T_time, typename T_amt, typename T_rate, typename T_ii>
+struct Event{
+
+  T_time time;
+  T_amt amt;
+  T_rate rate;
+  T_ii ii;
+  int evid, cmt, addl, ss;
+  bool keep, isnew;
+
+  Event() : time(0), amt(0), rate(0), ii(0), cmt(0), addl(0), ss(0), keep(false), isnew(false)
+  {}
+
+  Event(T_time p_time, T_amt p_amt, T_rate p_rate, T_ii p_ii, int p_evid,
+        int p_cmt, int p_addl, int p_ss, bool p_keep, bool p_isnew) :
+    time  (p_time ),
+    amt   (p_amt  ),
+    rate  (p_rate ),
+    ii    (p_ii   ),
+    evid  (p_evid ),
+    cmt   (p_cmt  ),
+    addl  (p_addl ),
+    ss    (p_ss   ),
+    keep  (p_keep ),
+    isnew (p_isnew)
+  {}
+
+  /**
+   * The function operator is handy when we need to define the same event
+   * multiple times, as we might in a FOR loop.
+   */
+  Event operator()(T_time p_time, T_amt p_amt, T_rate p_rate, T_ii p_ii,
+                   int p_evid, int p_cmt, int p_addl, int p_ss, bool p_keep,
+                   bool p_isnew) {
+    Event newEvent;
+    newEvent.time = p_time;
+    newEvent.amt = p_amt;
+    newEvent.rate = p_rate;
+    newEvent.ii = p_ii;
+    newEvent.evid = p_evid;
+    newEvent.cmt = p_cmt;
+    newEvent.addl = p_addl;
+    newEvent.ss = p_ss;
+    newEvent.keep = p_keep;
+    newEvent.isnew = p_isnew;
+    return newEvent;
+  }
+
+  // Access functions
+  T_time get_time() { return time; }
+  T_amt get_amt() { return amt; }
+  T_rate get_rate() { return rate; }
+  T_ii get_ii() { return ii; }
+  int get_evid() { return evid; }
+  int get_cmt() { return cmt; }
+  int get_addl() { return addl; }
+  int get_ss() { return ss; }
+  bool get_keep() { return keep; }
+  bool get_isnew() { return isnew; }
+
+  // declare friends
+};
 
 /**
  * Every Torsten function calls Pred.
@@ -94,22 +182,21 @@ Pred(const std::vector<T_time>& time,
   typedef typename promote_args<T_rate, T_biovar>::type T_rate2;
 
   // BOOK-KEEPING: UPDATE DATA SETS
-  EventHistory<T_tau, T_amt, T_rate, T_ii>
-    events(time, amt, rate, ii, evid, cmt, addl, ss);
+  EventHistory<T_time, T_amt, T_rate, T_ii, std::vector<T_parameters>, T_biovar, T_tlag>
+    events(nCmt, time, amt, rate, ii, evid, cmt, addl, ss);
 
-  ModelParameterHistory<T_tau, T_parameters, T_biovar, T_tlag>
+  ModelParameterHistory<T_tau, std::vector<T_parameters>, T_biovar, T_tlag>
     parameters(time, pMatrix, biovar, tlag, system);
-  RateHistory<T_tau, T_rate> rates;
 
   events.Sort();
   parameters.Sort();
-  int nKeep = events.get_size();
+  int nKeep = events.size();
 
-  events.AddlDoseEvents();
+  events.insert_addl_dose();
   parameters.CompleteParameterHistory(events);
 
-  events.AddLagTimes(parameters, nCmt);
-  rates.MakeRates(events, nCmt);
+  events.insert_lag_dose();
+  // RateHistory<T_time, T_amt, T_rate, T_ii, std::vector<T_parameters>, T_biovar, T_tlag> rates(events, nCmt);
   parameters.CompleteParameterHistory(events);
 
   Matrix<scalar, 1, Dynamic> zeros = Matrix<scalar, 1, Dynamic>::Zero(nCmt);
@@ -127,17 +214,16 @@ Pred(const std::vector<T_time>& time,
   ModelParameters<T_tau, T_parameters, T_biovar, T_tlag> parameter;
   int iRate = 0, ikeep = 0;
 
-  for (int i = 0; i < events.get_size(); i++) {
+  for (int i = 0; i < events.size(); i++) {
     event = events.GetEvent(i);
 
     // Use index iRate instead of i to find rate at matching time, given there
     // is one rate per time, not per event.
-    if (rates.get_time(iRate) != events.get_time(i)) iRate++;
-    Rate<T_tau, T_rate2> rate2;
-    rate2.copy(rates.GetRate(iRate));
-
-    for (int j = 0; j < nCmt; j++)
-      rate2.rate[j] *= parameters.GetValueBio(i, j);
+    // if (rates.get_time(iRate) != events.get_time(i)) iRate++;
+    std::vector<T_rate2> rate2(nCmt);
+    for (int j = 0; j < nCmt; ++j) {
+      // rate2[j] = rates.Rates[iRate].rate[j] * parameters.GetValueBio(i, j);
+    }
 
     parameter = parameters.GetModelParameters(i);
 

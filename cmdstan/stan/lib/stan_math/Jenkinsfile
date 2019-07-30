@@ -2,22 +2,21 @@
 @Library('StanUtils')
 import org.stan.Utils
 
-def setupCC(Boolean failOnError = true) {
-    errorStr = failOnError ? "-Werror " : ""
-    "echo CC=${env.CXX} ${errorStr}> make/local"
-}
-
-def setup(Boolean failOnError = true) {
-    sh """
-        git clean -xffd
-        ${setupCC(failOnError)}
-    """
-}
-
 def runTests(String testPath) {
     sh "./runTests.py -j${env.PARALLEL} ${testPath} --make-only"
     try { sh "./runTests.py -j${env.PARALLEL} ${testPath}" }
     finally { junit 'test/**/*.xml' }
+}
+
+def runTestsWin(String testPath) {
+    bat "runTests.py -j${env.PARALLEL} ${testPath} --make-only"
+    try { bat "runTests.py -j${env.PARALLEL} ${testPath}" }
+    finally { junit 'test/**/*.xml' }
+}
+
+def deleteDirWin() {
+    bat "attrib -r -s /s /d"
+    deleteDir()
 }
 
 def utils = new org.stan.Utils()
@@ -32,21 +31,24 @@ String alsoNotify() {
 Boolean isPR() { env.CHANGE_URL != null }
 String fork() { env.CHANGE_FORK ?: "stan-dev" }
 String branchName() { isPR() ? env.CHANGE_BRANCH :env.BRANCH_NAME }
-String cmdstan_pr() { params.cmdstan_pr ?: "downstream_tests" }
-String stan_pr() { params.stan_pr ?: "downstream_tests" }
+String cmdstan_pr() { params.cmdstan_pr ?: ( env.CHANGE_TARGET == "master" ? "downstream_hotfix" : "downstream_tests" ) }
+String stan_pr() { params.stan_pr ?: ( env.CHANGE_TARGET == "master" ? "downstream_hotfix" : "downstream_tests" ) }
 
 pipeline {
     agent none
     parameters {
-        string(defaultValue: 'downstream_tests', name: 'cmdstan_pr',
+        string(defaultValue: '', name: 'cmdstan_pr',
           description: 'PR to test CmdStan upstream against e.g. PR-630')
-        string(defaultValue: 'downstream_tests', name: 'stan_pr',
+        string(defaultValue: '', name: 'stan_pr',
           description: 'PR to test Stan upstream against e.g. PR-630')
         booleanParam(defaultValue: false, description:
         'Run additional distribution tests on RowVectors (takes 5x as long)',
         name: 'withRowVector')
     }
-    options { skipDefaultCheckout() }
+    options {
+        skipDefaultCheckout()
+        preserveStashes(buildCount: 7)
+    }
     stages {
         stage('Kill previous builds') {
             when {
@@ -112,19 +114,24 @@ pipeline {
                 script {
                     deleteDir()
                     retry(3) { checkout scm }
-                    setup(false)
+                    sh "git clean -xffd"
                     stash 'MathSetup'
-                    sh setupCC()
+                    sh "echo CXX=${env.CXX} -Werror > make/local"
+                    sh "echo BOOST_PARALLEL_JOBS=${env.PARALLEL} >> make/local"
                     parallel(
                         CppLint: { sh "make cpplint" },
-                        Dependencies: { sh 'make test-math-dependencies' } ,
-                        Documentation: { sh 'make doxygen' },
+                        Dependencies: { sh """#!/bin/bash
+                            set -o pipefail
+                            make test-math-dependencies 2>&1 | tee dependencies.log""" } ,
+                        Documentation: { sh "make doxygen" },
                     )
                 }
             }
             post {
                 always {
-                    warnings consoleParsers: [[parserName: 'CppLint']], canRunOnFailed: true
+                    recordIssues enabledForFailure: true, tools:
+                        [cppLint(),
+                         groovyScript(parserId: 'mathDependencies', pattern: '**/dependencies.log')]
                     deleteDir()
                 }
             }
@@ -134,36 +141,58 @@ pipeline {
             steps {
                 deleteDir()
                 unstash 'MathSetup'
-                sh setupCC()
+                sh "echo CXX=${env.CXX} -Werror > make/local"
                 sh "make -j${env.PARALLEL} test-headers"
             }
-            post {
-                always {
-                    warnings consoleParsers: [[parserName: 'math-dependencies']], canRunOnFailed: true
-                    deleteDir()
-                }
-            }
+            post { always { deleteDir() } }
         }
-        stage('Vanilla tests') {
+        stage('Always-run tests part 1') {
             parallel {
-                stage('Unit') {
-                    agent any
+                stage('Linux Unit with MPI') {
+                    agent { label 'linux && mpi' }
                     steps {
                         deleteDir()
                         unstash 'MathSetup'
-                        sh setupCC()
+                        sh "echo CXX=${MPICXX} >> make/local"
+                        sh "echo STAN_MPI=true >> make/local"
                         runTests("test/unit")
                     }
                     post { always { retry(3) { deleteDir() } } }
                 }
+                stage('Full unit with GPU') {
+                    agent { label "gpu" }
+                    steps {
+                        deleteDir()
+                        unstash 'MathSetup'
+                        sh "echo CXX=${env.CXX} -Werror > make/local"
+                        sh "echo STAN_OPENCL=true>> make/local"
+                        sh "echo OPENCL_PLATFORM_ID=0>> make/local"
+                        sh "echo OPENCL_DEVICE_ID=${OPENCL_DEVICE_ID}>> make/local"
+                        runTests("test/unit")
+                    }
+                    post { always { retry(3) { deleteDir() } } }
+                }
+                stage('Windows Headers & Unit') {
+                    agent { label 'windows' }
+                    steps {
+                        deleteDirWin()
+                        unstash 'MathSetup'
+                        bat "make -j${env.PARALLEL} test-headers"
+                        runTestsWin("test/unit")
+                    }
+                }
+            }
+        }
+        stage('Always-run tests part 2') {
+            parallel {
                 stage('Distribution tests') {
                     agent { label "distribution-tests" }
                     steps {
                         deleteDir()
                         unstash 'MathSetup'
                         sh """
-                            ${setupCC(false)}
-                            echo 'O=0' >> make/local
+                            echo CXX=${env.CXX} > make/local
+                            echo O=0 >> make/local
                             echo N_TESTS=${env.N_TESTS} >> make/local
                             """
                         script {
@@ -180,33 +209,45 @@ pipeline {
                         }
                         failure {
                             echo "Distribution tests failed. Check out dist.log.zip artifact for test logs."
-                        }
+                            }
                     }
                 }
-            }
-        }
-        stage('Modded tests') {
-            parallel {
-                stage('Unit with GPU') {
-                    agent { label "gelman-group-mac" }
-                    steps {
-                        deleteDir()
-                        unstash 'MathSetup'
-                        sh setupCC()
-                        sh "echo STAN_OPENCL=true>> make/local"
-                        sh "echo OPENCL_PLATFORM_ID=0>> make/local"
-                        sh "echo OPENCL_DEVICE_ID=0>> make/local"
-                        runTests("test/unit")
-                    }
-                    post { always { retry(3) { deleteDir() } } }
-                }
-                stage('Unit with MPI') {
+                stage('Threading tests') {
                     agent any
                     steps {
                         deleteDir()
                         unstash 'MathSetup'
-                        sh "echo CC=${MPICXX} >> make/local"
-                        sh "echo STAN_MPI=true >> make/local"
+                        sh "echo CXX=${env.CXX} -Werror > make/local"
+                        sh "echo CPPFLAGS+=-DSTAN_THREADS >> make/local"
+                        runTests("test/unit -f thread")
+                        sh "find . -name *_test.xml | xargs rm"
+                        runTests("test/unit -f map_rect")
+                    }
+                    post { always { retry(3) { deleteDir() } } }
+                }
+            }
+        }
+        stage('Additional merge tests') {
+            when { anyOf { branch 'develop'; branch 'master' } }
+            parallel {
+                stage('Linux Unit with Threading') {
+                    agent { label 'linux' }
+                    steps {
+                        deleteDir()
+                        unstash 'MathSetup'
+                        sh "echo CXX=${GCC} >> make/local"
+                        sh "echo CPPFLAGS=-DSTAN_THREADS >> make/local"
+                        runTests("test/unit")
+                    }
+                    post { always { retry(3) { deleteDir() } } }
+                }
+                stage('Mac Unit with Threading') {
+                    agent  { label 'osx' }
+                    steps {
+                        deleteDir()
+                        unstash 'MathSetup'
+                        sh "echo CC=${env.CXX} -Werror > make/local"
+                        sh "echo CXXFLAGS+=-DSTAN_THREADS >> make/local"
                         runTests("test/unit")
                     }
                     post { always { retry(3) { deleteDir() } } }
@@ -250,7 +291,7 @@ pipeline {
     post {
         always {
             node("osx || linux") {
-                warnings canRunOnFailed: true, consoleParsers: [[parserName: 'GNU C Compiler 4 (gcc)'], [parserName: 'Clang (LLVM based)']]
+                recordIssues enabledForFailure: false, tool: clang()
             }
         }
         success {

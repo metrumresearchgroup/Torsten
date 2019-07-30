@@ -49,12 +49,12 @@ install_torsten <- function(StanHeaders_version=NULL,
 
   rstan_version <- as.package_version(rstan_version)
 
-  if(pkgVersionCRAN('rstan')==rstan_version){
-    utils::install.packages('rstan', lib=lib, type='source', ...)
-  }else{
-    devtools::install_version(package = 'rstan', version = rstan_version, lib=lib, type='source', ...)
-  }
-
+  ## if(pkgVersionCRAN('rstan')==rstan_version){
+  ##   utils::install.packages('rstan', lib=lib, type='source', ...)
+  ## }else{
+  ##   devtools::install_version(package = 'rstan', version = rstan_version, lib=lib, type='source', ...)
+  ## }
+  remotes::install_github('metrumresearchgroup/rstan/rstan/rstan', ref="torsten-develop")
 
 
 }

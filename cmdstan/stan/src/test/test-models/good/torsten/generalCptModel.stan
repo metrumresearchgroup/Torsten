@@ -40,42 +40,84 @@ transformed data {
   nCmt = 2;
 
   // RK45
-  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data, tlag_data, 1e-8, 1e-8, 1e8);
-  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data, tlag_data, 1e-8, 1e-8, 1e8);
-  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data, tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data, tlag_data[0], 1e-8, 1e-8, 1e8);   
+  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] , 1e-8, 1e-8, 1e8);
+  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] , 1e-8, 1e-8, 1e8);
+  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] , 1e-8, 1e-8, 1e8);
+  x_data = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] , 1e-8, 1e-8, 1e8);   
 
   // BDF    
-  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data, tlag_data, 1e-8, 1e-8, 1e8);
-  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data, tlag_data, 1e-8, 1e-8, 1e8);
-  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data, tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data, tlag_data[0], 1e-8, 1e-8, 1e8);
+  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data     , biovar_data    , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0]  , biovar_data    , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0]  , biovar_data[0] , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0]  , biovar_data[0] , tlag_data[0] , 1e-8, 1e-8, 1e8);
+  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0]  , biovar_data    , tlag_data[0] , 1e-8, 1e-8, 1e8);
+  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data     , biovar_data[0] , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data     , biovar_data[0] , tlag_data[0] , 1e-8, 1e-8, 1e8);
+  x_data = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data     , biovar_data    , tlag_data[0] , 1e-8, 1e-8, 1e8);
 
+  /*****************************************************************
+   pmx_solve_rk45/adams/bdf
+   *****************************************************************/
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] , 1e-8, 1e-8, 1e8);   
 
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] , 1e-8, 1e-8, 1e8);
+
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] , 1e-8, 1e-8, 1e8);
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] , 1e-8, 1e-8, 1e8);
+
+  /*****************************************************************
+   pmx_solve_rk45/adams/bdf with controls
+   *****************************************************************/
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    );
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    );
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] );
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] );
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    );
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] );
+  x_data = pmx_solve_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] );   
+
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    );
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    );
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] );
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] );
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    );
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] );
+  x_data = pmx_solve_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] );
+
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    );
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    );
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] );
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] );
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    );
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] );
+  x_data = pmx_solve_adams (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] );
 }
 
 parameters {
@@ -92,279 +134,754 @@ transformed parameters {
   matrix[nt, nCmt] x_parm;
 
   // RK45
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm, tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm, tlag_parm[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm[0] );
 
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm, tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm, tlag_parm[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm[0] );
 
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data, tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data, tlag_parm[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm[0] );
 
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data, tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data, tlag_data[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] );
 
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm, tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm, tlag_data[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data[0] );
 
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data, tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data, tlag_parm[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm[0] );
 
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data, tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data, tlag_data[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data[0] );
 
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm, tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_rk45(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm, tlag_data[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data[0] );
 
 
   // BDF
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm, tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm, tlag_parm[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm[0] );
 
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm, tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm, tlag_parm[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm[0] );
 
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data, tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data, tlag_parm[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm[0] );
 
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_data, tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_data, tlag_data[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] );
 
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data[0], biovar_parm, tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_data, biovar_parm, tlag_data[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data[0] );
 
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data, tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data, tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data[0], tlag_parm, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data[0], tlag_parm[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data, tlag_parm[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm[0] );
 
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_data, tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_data, tlag_data[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data[0] );
 
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm, tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm[0], biovar_parm, tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm[0], tlag_data, 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm[0], tlag_data[0], 1e-8, 1e-8, 1e8);
-  x_parm = generalOdeModel_bdf(ode, nCmt, time, amt, rate, ii, evid, cmt,
-    addl, ss, theta_parm, biovar_parm, tlag_data[0], 1e-8, 1e-8, 1e8);
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data[0] );
+
+  // ADAMS
+  /* generalOdeModel doesn't support Adams */
+
+  /*****************************************************************
+   pmx_solve_ode
+   ****************************************************************/
+  // RK45
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm[0] );
+
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] );
+
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data[0] );
+
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm[0] );
+
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data[0] );
+
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data[0] );
+
+
+  // BDF
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm[0] );
+
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] );
+
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data[0] );
+
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm[0] );
+
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data[0] );
+
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data[0] );
+
+  // ADAMS
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm[0] );
+
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] );
+
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data[0] );
+
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm[0] );
+
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data[0] );
+
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data[0] );
+
+
+  /****************************************************************
+   ode solvers w/o controls
+   ****************************************************************/
+  // RK45
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm[0] );
+
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] );
+
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data[0] );
+
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm[0] );
+
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data[0] );
+
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_rk45  (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data[0] );
+
+
+  // BDF
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm[0] );
+
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] );
+
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data[0] );
+
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm[0] );
+
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data[0] );
+
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data    );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data[0] );
+  x_parm = generalOdeModel_bdf   (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data[0] );
+
+  // ADAMS
+  /* generalOdeModel doesn't support Adams */
+
+  /*****************************************************************
+   pmx_solve_ode
+   ****************************************************************/
+  // RK45
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm[0] );
+
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] );
+
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data[0] );
+
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm[0] );
+
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data[0] );
+
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_rk45        (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data[0] );
+
+
+  // BDF
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm[0] );
+
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] );
+
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data[0] );
+
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm[0] );
+
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data[0] );
+
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_bdf         (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data[0] );
+
+  // ADAMS
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_parm[0] );
+
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_parm[0] );
+
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] );
+
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_parm    , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_parm    , tlag_data[0] );
+
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_parm[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_parm[0] );
+
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_data    , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_data    , tlag_data[0] );
+
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm[0] , biovar_parm    , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data    );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm[0] , tlag_data[0] );
+  x_parm = pmx_solve_adams       (ode, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_parm    , biovar_parm    , tlag_data[0] );
 }
 
 model {

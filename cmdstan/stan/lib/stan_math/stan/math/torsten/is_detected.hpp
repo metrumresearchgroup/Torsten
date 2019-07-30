@@ -1,6 +1,8 @@
 #ifndef TORSTEN_IS_DETECTED_HPP
 #define TORSTEN_IS_DETECTED_HPP
 
+#include <type_traits>
+
 /* torsten's own @c void_t type and detect idiom */
 namespace torsten {
 

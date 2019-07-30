@@ -114,165 +114,663 @@ generated quantities {
     tlag[i] = { 0, 0, 0 };
   }
 
+  /*****************************************************************
+   generalodemodel signature will be deprecated
+  *****************************************************************/  
   /* data args */
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data,    rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data    );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data    );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data[1] );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data[1] );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data    );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data[1] );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
 
   /* param args */
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag,         rtol, atol, max_step);  
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag[1],      rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag         );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag         );  
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag         );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag[1]      );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag[1]      );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag         );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag[1]      );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag[1]      );
 
   /* theta: data                                                            , biovar: param  , tlag: param */
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag,         rtol, atol, max_step);  
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag[1],      rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag         );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag         );  
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag         );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag[1]      );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag[1]      );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag         );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag[1]      );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag[1]      );
 
   /* theta: parm                                                            , biovar: data   , tlag: param */
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag,         rtol, atol, max_step);  
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag[1],      rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag         );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag         );  
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag         );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag[1]      );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag[1]      );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag         );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag[1]      );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag[1]      );
 
   /* theta: parm                                                            , biovar: parm   , tlag: data */
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data,    rtol, atol, max_step);  
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data[1], rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data    );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data    );  
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data    );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data[1] );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data[1] );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data    );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data[1] );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data[1] );
 
   /* theta: data                                                            , biovar: data   , tlag: param */
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag,         rtol, atol, max_step);  
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag[1],      rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag         );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag         );  
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag         );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag[1]      );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag[1]      );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag         );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag[1]      );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag[1]      );
 
   /* theta: data                                                            , biovar: param  , tlag: data */
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data,    rtol, atol, max_step);  
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data[1], rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data    );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data    );  
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data    );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data[1] );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data[1] );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data    );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data[1] );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data[1] );
 
   /* theta: param                                                           , biovar: data   , tlag: data */
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data,    rtol, atol, max_step);  
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data[1], rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data    );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data    );  
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data    );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data[1] );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data[1] );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data    );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data[1] );
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data[1] );
 
   /* bdf */
   /* data args */
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data,    rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data     );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data     );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data     );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data[1]  );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data[1]  );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data     );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data[1]  );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data     );
 
   /* param args */
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag,         rtol, atol, max_step);  
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag[1],      rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag          );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag          );  
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag          );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag[1]       );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag[1]       );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag          );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag[1]       );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag[1]       );
 
   /* theta: data                                                            , biovar: param  , tlag: param */
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag,         rtol, atol, max_step);  
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag[1],      rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag          );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag          );  
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag          );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag[1]       );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag[1]       );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag          );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag[1]       );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag[1]       );
 
   /* theta: parm                                                            , biovar: data   , tlag: param */
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag,         rtol, atol, max_step);  
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag[1],      rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag          );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag          );  
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag          );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag[1]       );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag[1]       );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag          );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag[1]       );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag[1]       );
 
   /* theta: parm                                                            , biovar: parm   , tlag: data */
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data,    rtol, atol, max_step);  
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data[1], rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data     );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data     );  
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data     );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data[1]  );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data[1]  );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data     );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data[1]  );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data[1]  );
 
   /* theta: data                                                            , biovar: data   , tlag: param */
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag,         rtol, atol, max_step);  
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag,         rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag[1],      rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag[1],      rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag          );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag          );  
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag          );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag[1]       );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag[1]       );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag          );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag[1]       );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag[1]       );
 
   /* theta: data                                                            , biovar: param  , tlag: data */
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data,    rtol, atol, max_step);  
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data[1], rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data     );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data     );  
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data     );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data[1]  );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data[1]  );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data     );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data[1]  );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data[1]  );
 
   /* theta: param                                                           , biovar: data   , tlag: data */
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data,    rtol, atol, max_step);  
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data,    rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data[1], rtol, atol, max_step);
-  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data[1], rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data     );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data     );  
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data     );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data[1]  );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data[1]  );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data     );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data[1]  );
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data[1]  );
+
+
+  /*****************************************************************
+   generalodemodel with control signature will be deprecated
+  *****************************************************************/  
+  /* data args */
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data    , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data    , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data[1] , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data[1] , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data    , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data[1] , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    , rtol, atol, max_step);
+
+  /* param args */
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag         , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag         , rtol, atol, max_step);  
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag         , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag[1]      , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag[1]      , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag         , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag[1]      , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag[1]      , rtol, atol, max_step);
+
+  /* theta: data                                                            , biovar: param  , tlag: param */
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag         , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag         , rtol, atol, max_step);  
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag         , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag[1]      , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag[1]      , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag         , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag[1]      , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag[1]      , rtol, atol, max_step);
+
+  /* theta: parm                                                            , biovar: data   , tlag: param */
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag         , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag         , rtol, atol, max_step);  
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag         , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag[1]      , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag[1]      , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag         , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag[1]      , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag[1]      , rtol, atol, max_step);
+
+  /* theta: parm                                                            , biovar: parm   , tlag: data */
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data    , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data    , rtol, atol, max_step);  
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data    , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data[1] , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data[1] , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data    , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data[1] , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data[1] , rtol, atol, max_step);
+
+  /* theta: data                                                            , biovar: data   , tlag: param */
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag         , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag         , rtol, atol, max_step);  
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag         , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag[1]      , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag[1]      , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag         , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag[1]      , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag[1]      , rtol, atol, max_step);
+
+  /* theta: data                                                            , biovar: param  , tlag: data */
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data    , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data    , rtol, atol, max_step);  
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data    , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data[1] , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data[1] , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data    , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data[1] , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data[1] , rtol, atol, max_step);
+
+  /* theta: param                                                           , biovar: data   , tlag: data */
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data    , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data    , rtol, atol, max_step);  
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data    , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data[1] , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data[1] , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data    , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data[1] , rtol, atol, max_step);
+  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data[1] , rtol, atol, max_step);
+
+  /* bdf */
+  /* data args */
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data     , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data     , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data     , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data[1]  , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data[1]  , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data     , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data[1]  , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data     , rtol, atol, max_step);
+
+  /* param args */
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag          , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag          , rtol, atol, max_step);  
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag          , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag[1]       , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag[1]       , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag          , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag[1]       , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag[1]       , rtol, atol, max_step);
+
+  /* theta: data                                                            , biovar: param  , tlag: param */
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag          , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag          , rtol, atol, max_step);  
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag          , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag[1]       , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag[1]       , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag          , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag[1]       , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag[1]       , rtol, atol, max_step);
+
+  /* theta: parm                                                            , biovar: data   , tlag: param */
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag          , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag          , rtol, atol, max_step);  
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag          , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag[1]       , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag[1]       , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag          , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag[1]       , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag[1]       , rtol, atol, max_step);
+
+  /* theta: parm                                                            , biovar: parm   , tlag: data */
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data     , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data     , rtol, atol, max_step);  
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data     , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data[1]  , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data[1]  , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data     , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data[1]  , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data[1]  , rtol, atol, max_step);
+
+  /* theta: data                                                            , biovar: data   , tlag: param */
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag          , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag          , rtol, atol, max_step);  
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag          , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag[1]       , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag[1]       , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag          , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag[1]       , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag[1]       , rtol, atol, max_step);
+
+  /* theta: data                                                            , biovar: param  , tlag: data */
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data     , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data     , rtol, atol, max_step);  
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data     , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data[1]  , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data[1]  , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data     , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data[1]  , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data[1]  , rtol, atol, max_step);
+
+  /* theta: param                                                           , biovar: data   , tlag: data */
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data     , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data     , rtol, atol, max_step);  
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data     , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data[1]  , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data[1]  , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data     , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data[1]  , rtol, atol, max_step);
+  x = generalOdeModel_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data[1]  , rtol, atol, max_step);
+
+  /*****************************************************************
+   pmx_solve_ode replaces the old generalodemodel with
+   returned matrix tranposed
+  *****************************************************************/
+  /* data args */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data          );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data          );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data          );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data[1]       );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data[1]       );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data          );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data[1]       );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data          );
+
+  /* param args */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag               );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag               );  
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag               );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag[1]            );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag[1]            );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag               );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag[1]            );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag[1]            );
+
+  /* theta: data                                                            , biovar: param  , tlag: param */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag               );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag               );  
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag               );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag[1]            );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag[1]            );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag               );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag[1]            );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag[1]            );
+
+  /* theta: parm                                                            , biovar: data   , tlag: param */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag               );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag               );  
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag               );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag[1]            );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag[1]            );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag               );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag[1]            );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag[1]            );
+
+  /* theta: parm                                                            , biovar: parm   , tlag: data */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data          );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data          );  
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data          );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data[1]       );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data[1]       );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data          );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data[1]       );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data[1]       );
+
+  /* theta: data                                                            , biovar: data   , tlag: param */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag               );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag               );  
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag               );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag[1]            );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag[1]            );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag               );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag[1]            );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag[1]            );
+
+  /* theta: data                                                            , biovar: param  , tlag: data */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data          );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data          );  
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data          );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data[1]       );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data[1]       );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data          );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data[1]       );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data[1]       );
+
+  /* theta: param                                                           , biovar: data   , tlag: data */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data          );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data          );  
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data          );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data[1]       );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data[1]       );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data          );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data[1]       );
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data[1]       );
+
+  /* bdf */
+  /* data args */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data           );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data           );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data           );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data[1]        );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data[1]        );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data           );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data[1]        );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data           );
+
+  /* param args */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag                );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag                );  
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag                );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag[1]             );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag[1]             );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag                );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag[1]             );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag[1]             );
+
+  /* theta: data                                                            , biovar: param  , tlag: param */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag                );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag                );  
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag                );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag[1]             );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag[1]             );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag                );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag[1]             );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag[1]             );
+
+  /* theta: parm                                                            , biovar: data   , tlag: param */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag                );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag                );  
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag                );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag[1]             );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag[1]             );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag                );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag[1]             );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag[1]             );
+
+  /* theta: parm                                                            , biovar: parm   , tlag: data */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data           );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data           );  
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data           );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data[1]        );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data[1]        );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data           );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data[1]        );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data[1]        );
+
+  /* theta: data                                                            , biovar: data   , tlag: param */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag                );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag                );  
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag                );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag[1]             );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag[1]             );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag                );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag[1]             );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag[1]             );
+
+  /* theta: data                                                            , biovar: param  , tlag: data */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data           );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data           );  
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data           );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data[1]        );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data[1]        );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data           );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data[1]        );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data[1]        );
+
+  /* theta: param                                                           , biovar: data   , tlag: data */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data           );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data           );  
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data           );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data[1]        );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data[1]        );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data           );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data[1]        );
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data[1]        );
+
+  /*****************************************************************
+   pmx_solve_ode with control replaces the old generalodemodel with
+   returned matrix tranposed
+  *****************************************************************/
+  /* data args */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data          , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data          , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data          , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data[1]       , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data[1]       , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data          , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data[1]       , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data          , rtol, atol, max_step);
+
+  /* param args */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag               , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag               , rtol, atol, max_step);  
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag               , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag[1]            , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag[1]            , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag               , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag[1]            , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag[1]            , rtol, atol, max_step);
+
+  /* theta: data                                                            , biovar: param  , tlag: param */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag               , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag               , rtol, atol, max_step);  
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag               , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag[1]            , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag[1]            , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag               , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag[1]            , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag[1]            , rtol, atol, max_step);
+
+  /* theta: parm                                                            , biovar: data   , tlag: param */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag               , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag               , rtol, atol, max_step);  
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag               , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag[1]            , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag[1]            , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag               , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag[1]            , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag[1]            , rtol, atol, max_step);
+
+  /* theta: parm                                                            , biovar: parm   , tlag: data */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data          , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data          , rtol, atol, max_step);  
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data          , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data[1]       , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data[1]       , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data          , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data[1]       , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data[1]       , rtol, atol, max_step);
+
+  /* theta: data                                                            , biovar: data   , tlag: param */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag               , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag               , rtol, atol, max_step);  
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag               , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag[1]            , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag[1]            , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag               , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag[1]            , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag[1]            , rtol, atol, max_step);
+
+  /* theta: data                                                            , biovar: param  , tlag: data */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data          , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data          , rtol, atol, max_step);  
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data          , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data[1]       , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data[1]       , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data          , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data[1]       , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data[1]       , rtol, atol, max_step);
+
+  /* theta: param                                                           , biovar: data   , tlag: data */
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data          , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data          , rtol, atol, max_step);  
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data          , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data[1]       , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data[1]       , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data          , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data[1]       , rtol, atol, max_step);
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data[1]       , rtol, atol, max_step);
+
+  /* bdf */
+  /* data args */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data           , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data           , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data           , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag_data[1]        , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag_data[1]        , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data           , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag_data[1]        , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data           , rtol, atol, max_step);
+
+  /* param args */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag                , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag                , rtol, atol, max_step);  
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag                , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag[1]             , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag[1]             , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag                , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag[1]             , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag[1]             , rtol, atol, max_step);
+
+  /* theta: data                                                            , biovar: param  , tlag: param */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag                , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag                , rtol, atol, max_step);  
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag                , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag[1]             , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag[1]             , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag                , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag[1]             , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag[1]             , rtol, atol, max_step);
+
+  /* theta: parm                                                            , biovar: data   , tlag: param */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag                , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag                , rtol, atol, max_step);  
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag                , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag[1]             , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag[1]             , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag                , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag[1]             , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag[1]             , rtol, atol, max_step);
+
+  /* theta: parm                                                            , biovar: parm   , tlag: data */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data           , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data           , rtol, atol, max_step);  
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data           , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar[1]      , tlag_data[1]        , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar         , tlag_data[1]        , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data           , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar[1]      , tlag_data[1]        , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar         , tlag_data[1]        , rtol, atol, max_step);
+
+  /* theta: data                                                            , biovar: data   , tlag: param */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag                , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag                , rtol, atol, max_step);  
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag                , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data[1] , tlag[1]             , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar_data    , tlag[1]             , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag                , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[1] , tlag[1]             , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag[1]             , rtol, atol, max_step);
+
+  /* theta: data                                                            , biovar: param  , tlag: data */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data           , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data           , rtol, atol, max_step);  
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data           , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar[1]      , tlag_data[1]        , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[1] , biovar         , tlag_data[1]        , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data           , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar[1]      , tlag_data[1]        , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar         , tlag_data[1]        , rtol, atol, max_step);
+
+  /* theta: param                                                           , biovar: data   , tlag: data */
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data           , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data           , rtol, atol, max_step);  
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data           , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data[1]        , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data[1]        , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data           , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data[1]        , rtol, atol, max_step);
+  x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data[1]        , rtol, atol, max_step);
 }
 

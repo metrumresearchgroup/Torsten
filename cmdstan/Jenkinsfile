@@ -3,29 +3,14 @@ import org.stan.Utils
 
 def utils = new org.stan.Utils()
 
-def checkout_pr(String repo, String pr) {
-    prNumber = pr.tokenize('-').last()
-    if (repo == "math") {
-        dir = "stan/lib/stan_math"
-    } else {
-        dir = repo
-    }
-    sh """
-        cd ${dir}
-        git clean -xffd
-        git fetch https://github.com/stan-dev/${repo} +refs/pull/${prNumber}/merge:refs/remotes/origin/pr/${prNumber}/merge
-        git checkout refs/remotes/origin/pr/${prNumber}/merge
-    """
-}
-
-def setupCC(CC = env.CXX) {
+def setupCXX(CXX = env.CXX) {
     unstash 'CmdStanSetup'
-    writeFile(file: "make/local", text: "CXX = ${CC}\n")
+    writeFile(file: "make/local", text: "CXX = ${CXX}\n")
 }
 
 def runTests(String prefix = "") {
     """ make -j${env.PARALLEL} build
-        ${prefix}runCmdStanTests.py src/test/interface
+  ${prefix}runCmdStanTests.py src/test/interface
     """
 }
 
@@ -34,9 +19,9 @@ pipeline {
     options { skipDefaultCheckout() }
     parameters {
         string(defaultValue: '', name: 'stan_pr',
-          description: "Stan PR to test against. Will check out this PR in the downstream Stan repo.")
+               description: "Stan PR to test against. Will check out this PR in the downstream Stan repo.")
         string(defaultValue: '', name: 'math_pr',
-          description: "Math PR to test against. Will check out this PR in the downstream Math repo.")
+               description: "Math PR to test against. Will check out this PR in the downstream Math repo.")
     }
     stages {
         stage('Kill previous builds') {
@@ -54,12 +39,8 @@ pipeline {
                 sh 'git clean -xffd'
                 sh 'make stan-revert'
                 script {
-                    if (params.stan_pr != '') {
-                        checkout_pr("stan", params.stan_pr)
-                    }
-                    if (params.math_pr != '') {
-                        checkout_pr("math", params.math_pr)
-                    }
+                    utils.checkout_pr("stan", "stan", params.stan_pr)
+                    utils.checkout_pr("math", "stan/lib/stan_math", params.math_pr)
                 }
                 stash 'CmdStanSetup'
             }
@@ -70,21 +51,33 @@ pipeline {
                 stage('Windows interface tests') {
                     agent { label 'windows' }
                     steps {
-                          setupCC()
-                          bat runTests()
+                        setupCXX()
+                        bat runTests()
                     }
                     post { always { deleteDir() }}
                 }
                 stage('Non-windows interface tests') {
                     agent any
                     steps {
-                          setupCC()
-                          sh runTests("./")
+                        setupCXX()
+                        sh runTests("./")
                     }
                     post {
                         always {
-                            warnings consoleParsers: [[parserName: 'GNU C Compiler 4 (gcc)']], failedTotalAll: '0', usePreviousBuildAsReference: false, canRunOnFailed: true
-                            warnings consoleParsers: [[parserName: 'Clang (LLVM based)']], failedTotalAll: '0', usePreviousBuildAsReference: false, canRunOnFailed: true
+
+                            recordIssues id: "non_windows", 
+                            name: "Non-windows interface tests",
+                            enabledForFailure: true, 
+                            aggregatingResults : true, 
+                            tools: [
+                                gcc4(id: "non_windows_gcc4", name: "Non-windows interface tests@GCC4"),
+                                clang(id: "non_windows_clang", name: "Non-windows interface tests@CLANG")
+                            ],
+                            blameDisabled: false,
+                            qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]],
+                            healthy: 10, unhealthy: 100, minimumSeverity: 'HIGH',
+                            referenceJobName: env.BRANCH_NAME
+
                             deleteDir()
                         }
                     }
@@ -92,36 +85,50 @@ pipeline {
                 stage('Non-windows interface tests with MPI') {
                     agent { label 'linux' }
                     /* use system default compiler used to build MPI
-                    environment {
-                        OMPI_CXX = "${env.CXX}"
-                        MPICH_CXX = "${env.CXX}"
-                    }
-                    */
+                     environment {
+                     OMPI_CXX = "${env.CXX}"
+                     MPICH_CXX = "${env.CXX}"
+                 }
+                     */
                     steps {
-                          setupCC("${env.MPICXX}")
-                          sh "echo STAN_MPI=true >> make/local"
-                          sh "make build-mpi > build-mpi.log 2>&1"
-                          sh runTests("./")
+                        setupCXX("${MPICXX}")
+                        sh "echo STAN_MPI=true >> make/local"
+                        sh "make build-mpi > build-mpi.log 2>&1"
+                        sh runTests("./")
                     }
                     post {
                         always {
                             archiveArtifacts 'build-mpi.log'
-                            warnings consoleParsers: [[parserName: 'GNU C Compiler 4 (gcc)']], failedTotalAll: '0', usePreviousBuildAsReference: false, canRunOnFailed: true
-                            warnings consoleParsers: [[parserName: 'Clang (LLVM based)']], failedTotalAll: '0', usePreviousBuildAsReference: false, canRunOnFailed: true
+
+                            recordIssues id: "non_windows_mpi", 
+                            name: "Non-windows interface tests with MPI",
+                            enabledForFailure: true, 
+                            aggregatingResults : true,
+                            blameDisabled: false,
+                            tools: [
+                                gcc4(id: "non_windows_mpi_gcc4", name: "Non-windows interface tests with MPI@GCC4"),
+                                clang(id: "non_windows_mpi_clang", name: "Non-windows interface tests with MPI@CLANG")
+                            ],
+                            qualityGates: [[threshold: 1, type: 'TOTAL', unstable: true]],
+                            healthy: 10, unhealthy: 100, minimumSeverity: 'HIGH',
+                            referenceJobName: env.BRANCH_NAME
+                            
                             deleteDir()
                         }
                     }
                 }
-                stage('Manual') {
-                    agent any
-                    steps {
-                        unstash 'CmdStanSetup'
-                        sh 'make manual'
-                        archiveArtifacts 'doc/*'
-                    }
-                    post { always { deleteDir() }}
-                }
             }
         }
+    }
+    post {
+        success { 
+            script { 
+                utils.mailBuildResults("SUCCESSFUL") 
+            }
+            // Use wait=false to detach CmdStan Performance Tests from the current Job when starting
+            build job: 'CmdStan Performance Tests', wait: false
+        }
+        unstable { script { utils.mailBuildResults("UNSTABLE", "stan-buildbot@googlegroups.com") } }
+        failure { script { utils.mailBuildResults("FAILURE", "stan-buildbot@googlegroups.com") } }
     }
 }

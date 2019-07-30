@@ -1,18 +1,14 @@
 #ifndef STAN_LANG_TORSTEN_AST_FUN_IS_NIL_VIS_DEF_HPP
 #define STAN_LANG_TORSTEN_AST_FUN_IS_NIL_VIS_DEF_HPP
 
+#include <stan/torsten/torsten_func_expression_list.h>
+
 namespace stan {
   namespace lang {
 
-    bool is_nil_vis::operator()(const univariate_integral_control& /* x */) const {
-      return false;
-    }
-    bool is_nil_vis::operator()(const generalOdeModel_control& /* x */) const {
-      return false;
-    }
-    bool is_nil_vis::operator()(const generalOdeModel& /* x */) const {
-      return false;
-    }
+#define TORSTEN_FUNC_EXPR(F, R) bool is_nil_vis::operator()(const F& /* x */) const {return false;}
+    TORSTEN_LANG_FUNCTORS_EXPRESSION_LIST
+#undef TORSTEN_FUNC_EXPR
 
   }
 }

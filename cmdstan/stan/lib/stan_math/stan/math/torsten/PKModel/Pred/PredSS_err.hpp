@@ -2,6 +2,9 @@
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_ERR_HPP
 
 #include <stan/math/prim/scal/err/invalid_argument.hpp>
+#include <stan/math/torsten/PKModel/ModelParameters.hpp>
+#include <stan/math/prim/mat/fun/Eigen.hpp>
+#include <boost/math/tools/promotion.hpp>
 
 namespace torsten {
 

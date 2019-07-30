@@ -83,12 +83,12 @@ finite_diff_params(const F& f,
   Matrix<double, Dynamic, Dynamic> pk_res_ub;
   Matrix<double, Dynamic, Dynamic> pk_res_lb;
   if (odeInt == "1_rk45") {
-    pk_res_ub = torsten::mixOde1CptModel_rk45(f, nOde, time, amt, rate, ii,
+    pk_res_ub = torsten::pmx_solve_onecpt_rk45(f, nOde, time, amt, rate, ii,
                                      evid, cmt, addl, ss,
                                      pMatrix_ub, biovar_ub, tlag_ub,
                                      0,
                                      rel_tol, abs_tol, max_num_steps);
-    pk_res_lb = torsten::mixOde1CptModel_rk45(f, nOde, time, amt, rate, ii,
+    pk_res_lb = torsten::pmx_solve_onecpt_rk45(f, nOde, time, amt, rate, ii,
                                      evid, cmt, addl, ss,
                                      pMatrix_lb, biovar_lb, tlag_lb,
                                      0,
@@ -96,12 +96,12 @@ finite_diff_params(const F& f,
   }
 
   if (odeInt == "1_bdf") {
-    pk_res_ub = torsten::mixOde1CptModel_bdf(f, nOde, time, amt, rate, ii,
+    pk_res_ub = torsten::pmx_solve_onecpt_bdf(f, nOde, time, amt, rate, ii,
                                     evid, cmt, addl, ss,
                                     pMatrix_ub, biovar_ub, tlag_ub,
                                     0,
                                     rel_tol, abs_tol, max_num_steps);
-    pk_res_lb = torsten::mixOde1CptModel_bdf(f, nOde, time, amt, rate, ii,
+    pk_res_lb = torsten::pmx_solve_onecpt_bdf(f, nOde, time, amt, rate, ii,
                                     evid, cmt, addl, ss,
                                     pMatrix_lb, biovar_lb, tlag_lb,
                                     0,
@@ -109,12 +109,12 @@ finite_diff_params(const F& f,
   }
 
   if (odeInt == "2_rk45") {
-    pk_res_ub = torsten::mixOde2CptModel_rk45(f, nOde, time, amt, rate, ii,
+    pk_res_ub = torsten::pmx_solve_twocpt_rk45(f, nOde, time, amt, rate, ii,
                                      evid, cmt, addl, ss,
                                      pMatrix_ub, biovar_ub, tlag_ub,
                                      0,
                                      rel_tol, abs_tol, max_num_steps);
-    pk_res_lb = torsten::mixOde2CptModel_rk45(f, nOde, time, amt, rate, ii,
+    pk_res_lb = torsten::pmx_solve_twocpt_rk45(f, nOde, time, amt, rate, ii,
                                      evid, cmt, addl, ss,
                                      pMatrix_lb, biovar_lb, tlag_lb,
                                      0,
@@ -122,12 +122,12 @@ finite_diff_params(const F& f,
   }
 
   if (odeInt == "2_bdf") {
-    pk_res_ub = torsten::mixOde2CptModel_bdf(f, nOde, time, amt, rate, ii,
+    pk_res_ub = torsten::pmx_solve_twocpt_bdf(f, nOde, time, amt, rate, ii,
                                     evid, cmt, addl, ss,
                                     pMatrix_ub, biovar_ub, tlag_ub,
                                     0,
                                     rel_tol, abs_tol, max_num_steps);
-    pk_res_lb = torsten::mixOde2CptModel_bdf(f, nOde, time, amt, rate, ii,
+    pk_res_lb = torsten::pmx_solve_twocpt_bdf(f, nOde, time, amt, rate, ii,
                                     evid, cmt, addl, ss,
                                     pMatrix_lb, biovar_lb, tlag_lb,
                                     0,
@@ -198,28 +198,28 @@ void test_mixOdeCptModel_finite_diff_vdd(
 
   Matrix<var, Dynamic, Dynamic> ode_res;
   if (odeInt == "1_rk45")
-    ode_res = torsten::mixOde1CptModel_rk45(f, nOde,
+    ode_res = torsten::pmx_solve_onecpt_rk45(f, nOde,
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    pMatrix_v, biovar, tlag,
                                    0,
                                    rel_tol, abs_tol, max_num_steps);
 
   if (odeInt == "1_bdf")
-    ode_res = torsten::mixOde1CptModel_bdf(f, nOde,
+    ode_res = torsten::pmx_solve_onecpt_bdf(f, nOde,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar, tlag,
                                   0,
                                   rel_tol, abs_tol, max_num_steps);
 
   if (odeInt == "2_rk45")
-    ode_res = torsten::mixOde2CptModel_rk45(f, nOde,
+    ode_res = torsten::pmx_solve_twocpt_rk45(f, nOde,
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    pMatrix_v, biovar, tlag,
                                    0,
                                    rel_tol, abs_tol, max_num_steps);
 
   if (odeInt == "2_bdf")
-    ode_res = torsten::mixOde2CptModel_bdf(f, nOde,
+    ode_res = torsten::pmx_solve_twocpt_bdf(f, nOde,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix_v, biovar, tlag,
                                   0,
@@ -313,28 +313,28 @@ void test_mixOdeCptModel_finite_diff_dvd(
 
   Matrix<var, Dynamic, Dynamic> ode_res;
   if (odeInt == "1_rk45")
-    ode_res = torsten::mixOde1CptModel_rk45(f, nOde,
+    ode_res = torsten::pmx_solve_onecpt_rk45(f, nOde,
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    pMatrix, biovar_v, tlag,
                                    0,
                                    rel_tol, abs_tol, max_num_steps);
 
   if (odeInt == "1_bdf")
-    ode_res = torsten::mixOde1CptModel_bdf(f, nOde,
+    ode_res = torsten::pmx_solve_onecpt_bdf(f, nOde,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar_v, tlag,
                                   0,
                                   rel_tol, abs_tol, max_num_steps);
 
   if (odeInt == "2_rk45")
-    ode_res = torsten::mixOde2CptModel_rk45(f, nOde,
+    ode_res = torsten::pmx_solve_twocpt_rk45(f, nOde,
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    pMatrix, biovar_v, tlag,
                                    0,
                                    rel_tol, abs_tol, max_num_steps);
 
   if (odeInt == "2_bdf")
-    ode_res = torsten::mixOde2CptModel_bdf(f, nOde,
+    ode_res = torsten::pmx_solve_twocpt_bdf(f, nOde,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar_v, tlag,
                                   0,
@@ -432,28 +432,28 @@ void test_mixOdeCptModel_finite_diff_ddv(
 
   Matrix<var, Dynamic, Dynamic> ode_res;
   if (odeInt == "1_rk45")
-    ode_res = torsten::mixOde1CptModel_rk45(f, nOde,
+    ode_res = torsten::pmx_solve_onecpt_rk45(f, nOde,
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    pMatrix, biovar, tlag_v,
                                    0,
                                    rel_tol, abs_tol, max_num_steps);
 
   if (odeInt == "1_bdf")
-    ode_res = torsten::mixOde1CptModel_bdf(f, nOde,
+    ode_res = torsten::pmx_solve_onecpt_bdf(f, nOde,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar, tlag_v,
                                   0,
                                   rel_tol, abs_tol, max_num_steps);
 
   if (odeInt == "2_rk45")
-    ode_res = torsten::mixOde2CptModel_rk45(f, nOde,
+    ode_res = torsten::pmx_solve_twocpt_rk45(f, nOde,
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    pMatrix, biovar, tlag_v,
                                    0,
                                    rel_tol, abs_tol, max_num_steps);
 
   if (odeInt == "2_bdf")
-    ode_res = torsten::mixOde2CptModel_bdf(f, nOde,
+    ode_res = torsten::pmx_solve_twocpt_bdf(f, nOde,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar, tlag_v,
                                   0,

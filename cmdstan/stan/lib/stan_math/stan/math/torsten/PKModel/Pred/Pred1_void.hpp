@@ -1,6 +1,9 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_VOID_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_VOID_HPP
 
+#include <stan/math/torsten/PKModel/ModelParameters.hpp>
+#include <stan/math/prim/mat/fun/Eigen.hpp>
+#include <boost/math/tools/promotion.hpp>
 #include <iostream>
 #include <vector>
 

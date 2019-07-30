@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <stan/math.hpp>
-#include <stan/math/torsten/pk_csda.hpp>
+#include <stan/math/torsten/pmx_csda.hpp>
 #include <test/unit/util.hpp>
 #include <boost/range/numeric.hpp>
 #include <iostream>

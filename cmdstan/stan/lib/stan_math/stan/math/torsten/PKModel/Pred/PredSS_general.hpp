@@ -112,7 +112,7 @@ struct PredSS_general {
       y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r);
       x_r.push_back(amt);
       pred = algebra_solver(system, y,
-                            to_vector(parameter.get_RealParameters()),
+                            to_vector(parameter.get_RealParameters(false)),
                             x_r, x_i,
                             0, rel_tol, f_tol, max_num_steps);
       // DEV - what tuning parameters should we use for the algebra solver?
@@ -123,7 +123,7 @@ struct PredSS_general {
       y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r);
       x_r.push_back(amt);
       pred = algebra_solver(system, y,
-                            to_vector(parameter.get_RealParameters()),
+                            to_vector(parameter.get_RealParameters(false)),
                             x_r, x_i,
                             0, rel_tol, 1e-3, max_num_steps);  // FIX ME
                                                                // use ftol
@@ -133,7 +133,7 @@ struct PredSS_general {
 
       x_r.push_back(amt);
       pred = algebra_solver(system, y,
-                            to_vector(parameter.get_RealParameters()),
+                            to_vector(parameter.get_RealParameters(false)),
                             x_r, x_i,
                             0, rel_tol, f_tol, max_num_steps);
     }
@@ -193,10 +193,10 @@ struct PredSS_general {
     // Construct Pred1_general functor
     Pred1_general<F> Pred1(f_, integrator_);
 
-    int nParameters = parameter.get_RealParameters().size();
+    int nParameters = parameter.get_RealParameters(false).size();
     Matrix<scalar, Dynamic, 1> parms(nParameters + 1);
     for (int i = 0; i < nParameters; i++)
-      parms(i) = parameter.get_RealParameters()[i];
+      parms(i) = parameter.get_RealParameters(false)[i];
     parms(nParameters) = amt;
 
     if (rate == 0) {  // bolus dose

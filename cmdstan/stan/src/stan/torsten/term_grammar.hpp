@@ -1,20 +1,16 @@
 #ifndef STAN_LANG_TORSTEN_GRAMMARS_TERM_GRAMMAR_HPP
 #define STAN_LANG_TORSTEN_GRAMMARS_TERM_GRAMMAR_HPP
 
-boost::spirit::qi::rule<Iterator,
-                        univariate_integral_control(scope),
-                        whitespace_grammar<Iterator> >
-univariate_integral_control_r;
+#include <stan/torsten/torsten_func_expression_list.h>
 
-boost::spirit::qi::rule<Iterator,
-                        generalOdeModel_control(scope),
-                        whitespace_grammar<Iterator> >
-generalOdeModel_control_r;
+/* use macro to declare the following given torsten expresion F */
+// boost::spirit::qi::rule<Iterator,
+//                         F(scope),
+//                         whitespace_grammar<Iterator> >
+// F_r;
 
-boost::spirit::qi::rule<Iterator,
-                        generalOdeModel(scope),
-                        whitespace_grammar<Iterator> >
-generalOdeModel_r;
-
+#define TORSTEN_FUNC_EXPR(F, R) boost::spirit::qi::rule<Iterator, F(scope), whitespace_grammar<Iterator> > F##_r; 
+  TORSTEN_LANG_FUNCTORS_EXPRESSION_LIST
+#undef TORSTEN_FUNC_EXPR
 
 #endif

@@ -61,7 +61,7 @@ ModelParameters<double, double, double, double>
 unpromote(const ModelParameters<T0, T1, T2, T3>& parameters) {
   return ModelParameters<double, double, double, double>
     (unpromote(parameters.get_time()),
-     unpromote(parameters.get_RealParameters()),
+     unpromote(parameters.get_RealParameters(false)),
      unpromote(parameters.get_biovar()),
      unpromote(parameters.get_tlag()));
 }

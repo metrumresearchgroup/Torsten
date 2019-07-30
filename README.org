@@ -1,17 +1,17 @@
 #+TITLE: Torsten: library of C++ functions that support applications of Stan in Pharmacometrics
 #+AUTHOR: Metrum Research Group LLC
-#+DATE: <2018-10-20 Sat>
+#+DATE: <2019-05-15 Wed>
 #+EMAIL: mailto:billg@metrumrg.com mailto:yiz@metrumrg.com
 #+OPTIONS: title:t, toc:nil, num:nil
 
-#+MACRO: torsten_ver v0.85
-#+MACRO: stan_ver v2.18.1
+#+MACRO: torsten_ver v0.86
+#+MACRO: stan_ver v2.19.1
 
 * Torsten
 #+include: ./docs/torsten_manual.org::#overview :minlevel 2
 #+include: ./docs/torsten_manual.org::#installation :minlevel 2
 #+include: ./docs/torsten_manual.org::#dev_plans :minlevel 2
-#+include: ./docs/torsten_manual.org::#changelog :minlevel 2
+#+include: ./docs/torsten_manual.org::#changelog
 
 \bibliography{./doc/torsten}
 bibliographystyle:plain

@@ -1,8 +1,8 @@
 Package: torstenHeaders
 Type: Package
 Title: Torsten library extension for 'rstan'
-Version: 0.1.1
-Date: 2018-01-16
+Version: 0.2.1
+Date: 2019-07-24
 Maintainer: The package maintainer <billg@metrumrg.com>
 Authors@R: c(person("Jonathan", "Sidi", email = "yonis@metrumrg.com", role = c("aut", "cre")),
              person("Bill", "Gillespie", email = "billg@metrumrg.com", role = c("aut")),

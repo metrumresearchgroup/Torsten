@@ -4,9 +4,13 @@
 #include <stan/math/version.hpp>
 
 #include <stan/math/prim/scal/meta/ad_promotable.hpp>
+#include <stan/math/prim/scal/meta/as_array_or_scalar.hpp>
+#include <stan/math/prim/scal/meta/as_column_vector_or_scalar.hpp>
+#include <stan/math/prim/scal/meta/as_scalar.hpp>
 #include <stan/math/prim/scal/meta/child_type.hpp>
 #include <stan/math/prim/scal/meta/contains_fvar.hpp>
 #include <stan/math/prim/scal/meta/contains_nonconstant_struct.hpp>
+#include <stan/math/prim/scal/meta/contains_std_vector.hpp>
 #include <stan/math/prim/scal/meta/contains_vector.hpp>
 #include <stan/math/prim/scal/meta/error_index.hpp>
 #include <stan/math/prim/scal/meta/get.hpp>
@@ -14,11 +18,11 @@
 #include <stan/math/prim/scal/meta/index_type.hpp>
 #include <stan/math/prim/scal/meta/is_constant.hpp>
 #include <stan/math/prim/scal/meta/is_constant_struct.hpp>
+#include <stan/math/prim/scal/meta/is_nonconstant_struct.hpp>
 #include <stan/math/prim/scal/meta/is_fvar.hpp>
 #include <stan/math/prim/scal/meta/is_var.hpp>
 #include <stan/math/prim/scal/meta/is_var_or_arithmetic.hpp>
 #include <stan/math/prim/scal/meta/is_vector.hpp>
-#include <stan/math/prim/scal/meta/is_std_vector.hpp>
 #include <stan/math/prim/scal/meta/is_vector_like.hpp>
 #include <stan/math/prim/scal/meta/length.hpp>
 #include <stan/math/prim/scal/meta/length_mvt.hpp>
@@ -51,12 +55,16 @@
 #include <stan/math/prim/scal/err/check_not_nan.hpp>
 #include <stan/math/prim/scal/err/check_positive.hpp>
 #include <stan/math/prim/scal/err/check_positive_finite.hpp>
-#include <stan/math/prim/scal/err/check_positive_size.hpp>
 #include <stan/math/prim/scal/err/check_size_match.hpp>
 #include <stan/math/prim/scal/err/domain_error.hpp>
 #include <stan/math/prim/scal/err/domain_error_vec.hpp>
 #include <stan/math/prim/scal/err/invalid_argument.hpp>
 #include <stan/math/prim/scal/err/invalid_argument_vec.hpp>
+#include <stan/math/prim/scal/err/is_less_or_equal.hpp>
+#include <stan/math/prim/scal/err/is_not_nan.hpp>
+#include <stan/math/prim/scal/err/is_positive.hpp>
+#include <stan/math/prim/scal/err/is_scal_finite.hpp>
+#include <stan/math/prim/scal/err/is_size_match.hpp>
 #include <stan/math/prim/scal/err/out_of_range.hpp>
 
 #include <stan/math/prim/scal/fun/abs.hpp>
@@ -120,6 +128,8 @@
 #include <stan/math/prim/scal/fun/ldexp.hpp>
 #include <stan/math/prim/scal/fun/lgamma.hpp>
 #include <stan/math/prim/scal/fun/lmgamma.hpp>
+#include <stan/math/prim/scal/fun/locscale_constrain.hpp>
+#include <stan/math/prim/scal/fun/locscale_free.hpp>
 #include <stan/math/prim/scal/fun/log.hpp>
 #include <stan/math/prim/scal/fun/log1m.hpp>
 #include <stan/math/prim/scal/fun/log1m_exp.hpp>
@@ -151,6 +161,8 @@
 #include <stan/math/prim/scal/fun/modified_bessel_second_kind.hpp>
 #include <stan/math/prim/scal/fun/modulus.hpp>
 #include <stan/math/prim/scal/fun/multiply_log.hpp>
+#include <stan/math/prim/scal/fun/offset_multiplier_constrain.hpp>
+#include <stan/math/prim/scal/fun/offset_multiplier_free.hpp>
 #include <stan/math/prim/scal/fun/owens_t.hpp>
 #include <stan/math/prim/scal/fun/Phi.hpp>
 #include <stan/math/prim/scal/fun/Phi_approx.hpp>
@@ -168,7 +180,9 @@
 #include <stan/math/prim/scal/fun/size_zero.hpp>
 #include <stan/math/prim/scal/fun/square.hpp>
 #include <stan/math/prim/scal/fun/squared_distance.hpp>
+#include <stan/math/prim/scal/fun/sqrt.hpp>
 #include <stan/math/prim/scal/fun/step.hpp>
+#include <stan/math/prim/scal/fun/sum.hpp>
 #include <stan/math/prim/scal/fun/tgamma.hpp>
 #include <stan/math/prim/scal/fun/trigamma.hpp>
 #include <stan/math/prim/scal/fun/trunc.hpp>
@@ -204,6 +218,13 @@
 #include <stan/math/prim/scal/prob/beta_log.hpp>
 #include <stan/math/prim/scal/prob/beta_lpdf.hpp>
 #include <stan/math/prim/scal/prob/beta_rng.hpp>
+#include <stan/math/prim/scal/prob/beta_proportion_ccdf_log.hpp>
+#include <stan/math/prim/scal/prob/beta_proportion_cdf_log.hpp>
+#include <stan/math/prim/scal/prob/beta_proportion_lccdf.hpp>
+#include <stan/math/prim/scal/prob/beta_proportion_lcdf.hpp>
+#include <stan/math/prim/scal/prob/beta_proportion_log.hpp>
+#include <stan/math/prim/scal/prob/beta_proportion_lpdf.hpp>
+#include <stan/math/prim/scal/prob/beta_proportion_rng.hpp>
 #include <stan/math/prim/scal/prob/binomial_ccdf_log.hpp>
 #include <stan/math/prim/scal/prob/binomial_cdf.hpp>
 #include <stan/math/prim/scal/prob/binomial_cdf_log.hpp>

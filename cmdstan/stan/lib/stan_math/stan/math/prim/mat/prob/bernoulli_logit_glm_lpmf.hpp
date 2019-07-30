@@ -3,14 +3,23 @@
 
 #include <stan/math/prim/scal/meta/is_constant_struct.hpp>
 #include <stan/math/prim/scal/meta/partials_return_type.hpp>
+#include <stan/math/prim/scal/meta/broadcast_array.hpp>
 #include <stan/math/prim/scal/meta/operands_and_partials.hpp>
 #include <stan/math/prim/scal/err/check_consistent_sizes.hpp>
+#include <stan/math/prim/scal/err/check_consistent_size.hpp>
 #include <stan/math/prim/scal/err/check_bounded.hpp>
 #include <stan/math/prim/scal/err/check_finite.hpp>
 #include <stan/math/prim/scal/fun/constants.hpp>
-#include <stan/math/prim/scal/fun/value_of.hpp>
-#include <stan/math/prim/mat/fun/value_of.hpp>
+#include <stan/math/prim/mat/fun/value_of_rec.hpp>
+#include <stan/math/prim/arr/fun/value_of_rec.hpp>
+#include <stan/math/prim/scal/meta/as_array_or_scalar.hpp>
+#include <stan/math/prim/scal/meta/as_scalar.hpp>
+#include <stan/math/prim/mat/meta/as_scalar.hpp>
+#include <stan/math/prim/arr/meta/as_scalar.hpp>
+#include <stan/math/prim/mat/meta/as_column_vector_or_scalar.hpp>
+#include <stan/math/prim/scal/meta/as_column_vector_or_scalar.hpp>
 #include <stan/math/prim/scal/meta/include_summand.hpp>
+#include <stan/math/prim/mat/meta/is_vector.hpp>
 #include <stan/math/prim/scal/meta/scalar_seq_view.hpp>
 #include <stan/math/prim/scal/fun/size_zero.hpp>
 #include <boost/random/variate_generator.hpp>
@@ -22,125 +31,127 @@ namespace math {
 /**
  * Returns the log PMF of the Generalized Linear Model (GLM)
  * with Bernoulli distribution and logit link function.
+ * The idea is that bernoulli_logit_glm_lpmf(y, x, alpha, beta) should
+ * compute a more efficient version of bernoulli_logit_lpmf(y, alpha + x * beta)
+ * by using analytically simplified gradients.
  * If containers are supplied, returns the log sum of the probabilities.
- * @tparam T_n type of binary vector of dependent variables (labels);
+ * @tparam T_y type of binary vector of dependent variables (labels);
  * this can also be a single binary value;
  * @tparam T_x type of the matrix of independent variables (features); this
  * should be an Eigen::Matrix type whose number of rows should match the
- * length of n and whose number of columns should match the length of beta
+ * length of y and whose number of columns should match the length of beta
+ * @tparam T_alpha type of the intercept(s);
+ * this can be a vector (of the same length as y) of intercepts or a single
+ * value (for models with constant intercept);
  * @tparam T_beta type of the weight vector;
  * this can also be a single value;
- * @tparam T_alpha type of the intercept;
- * this has to be single value;
- * @param n binary vector parameter
+ * @param y binary vector parameter
  * @param x design matrix
- * @param beta weight vector
  * @param alpha intercept (in log odds)
+ * @param beta weight vector
  * @return log probability or log sum of probabilities
  * @throw std::domain_error if x, beta or alpha is infinite.
- * @throw std::domain_error if n is not binary.
+ * @throw std::domain_error if y is not binary.
  * @throw std::invalid_argument if container sizes mismatch.
  */
-template <bool propto, typename T_n, typename T_x, typename T_beta,
-          typename T_alpha>
-typename return_type<T_x, T_beta, T_alpha>::type bernoulli_logit_glm_lpmf(
-    const T_n &n, const T_x &x, const T_beta &beta, const T_alpha &alpha) {
+
+template <bool propto, typename T_y, typename T_x, typename T_alpha,
+          typename T_beta>
+typename return_type<T_x, T_alpha, T_beta>::type bernoulli_logit_glm_lpmf(
+    const T_y &y, const T_x &x, const T_alpha &alpha, const T_beta &beta) {
   static const char *function = "bernoulli_logit_glm_lpmf";
-  typedef typename stan::partials_return_type<T_n, T_x, T_beta, T_alpha>::type
+  typedef typename partials_return_type<T_y, T_x, T_alpha, T_beta>::type
       T_partials_return;
+  typedef typename std::conditional<
+      is_vector<T_y>::value,
+      Eigen::Matrix<typename partials_return_type<T_y>::type, -1, 1>,
+      typename partials_return_type<T_y>::type>::type T_y_val;
 
   using Eigen::Dynamic;
   using Eigen::Matrix;
   using std::exp;
 
-  if (size_zero(n, x, beta))
+  if (size_zero(y, x, beta))
     return 0.0;
 
   T_partials_return logp(0.0);
 
-  check_bounded(function, "Vector of dependent variables", n, 0, 1);
-  check_finite(function, "Matrix of independent variables", x);
-  check_finite(function, "Weight vector", beta);
-  check_finite(function, "Intercept", alpha);
-  check_consistent_sizes(function, "Rows in matrix of independent variables",
-                         x.col(0), "Vector of dependent variables", n);
-  check_consistent_sizes(function, "Columns in matrix of independent variables",
-                         x.row(0), "Weight vector", beta);
+  const size_t N = x.rows();
+  const size_t M = x.cols();
 
-  if (!include_summand<propto, T_x, T_beta, T_alpha>::value)
+  check_bounded(function, "Vector of dependent variables", y, 0, 1);
+  check_consistent_size(function, "Vector of dependent variables", y, N);
+  check_consistent_size(function, "Weight vector", beta, M);
+  if (is_vector<T_alpha>::value)
+    check_consistent_sizes(function, "Vector of intercepts", alpha,
+                           "Vector of dependent variables", y);
+
+  if (!include_summand<propto, T_x, T_alpha, T_beta>::value)
     return 0.0;
 
-  const size_t N = x.col(0).size();
-  const size_t M = x.row(0).size();
+  const auto &x_val = value_of_rec(x);
+  const auto &y_val = value_of_rec(y);
+  const auto &beta_val = value_of_rec(beta);
+  const auto &alpha_val = value_of_rec(alpha);
 
-  Matrix<T_partials_return, Dynamic, 1> signs(N, 1);
-  {
-    scalar_seq_view<T_n> n_vec(n);
-    for (size_t n = 0; n < N; ++n) {
-      signs[n] = 2 * n_vec[n] - 1;
-    }
-  }
-  Matrix<T_partials_return, Dynamic, 1> beta_dbl(M, 1);
-  {
-    scalar_seq_view<T_beta> beta_vec(beta);
-    for (size_t m = 0; m < M; ++m) {
-      beta_dbl[m] = value_of(beta_vec[m]);
-    }
-  }
-  Matrix<T_partials_return, Dynamic, Dynamic> x_dbl = value_of(x);
+  const auto &y_val_vec = as_column_vector_or_scalar(y_val);
+  const auto &beta_val_vec = as_column_vector_or_scalar(beta_val);
+  const auto &alpha_val_vec = as_column_vector_or_scalar(alpha_val);
 
-  Eigen::Array<T_partials_return, Dynamic, 1> ntheta
-      = signs.array()
-        * (x_dbl * beta_dbl
-           + Matrix<double, Dynamic, 1>::Ones(N, 1) * value_of(alpha))
-              .array();
-  Eigen::Array<T_partials_return, Dynamic, 1> exp_m_ntheta = (-ntheta).exp();
+  T_y_val signs = 2 * as_array_or_scalar(y_val_vec) - 1;
 
+  Eigen::Array<T_partials_return, Dynamic, 1> ytheta = x_val * beta_val_vec;
+  ytheta = as_array_or_scalar(signs)
+           * (ytheta + as_array_or_scalar(alpha_val_vec));
+
+  // Compute the log-density and handle extreme values gracefully
+  // using Taylor approximations.
+  // And compute the derivatives wrt theta.
   static const double cutoff = 20.0;
-  for (size_t n = 0; n < N; ++n) {
-    // Compute the log-density and handle extreme values gracefully
-    // using Taylor approximations.
-    if (ntheta[n] > cutoff)
-      logp -= exp_m_ntheta[n];
-    else if (ntheta[n] < -cutoff)
-      logp += ntheta[n];
-    else
-      logp -= log1p(exp_m_ntheta[n]);
+  Eigen::Array<T_partials_return, Dynamic, 1> exp_m_ytheta = exp(-ytheta);
+  logp += sum(
+      (ytheta > cutoff)
+          .select(-exp_m_ytheta,
+                  (ytheta < -cutoff).select(ytheta, -log1p(exp_m_ytheta))));
+  if (!std::isfinite(logp)) {
+    check_finite(function, "Weight vector", beta);
+    check_finite(function, "Intercept", alpha);
+    check_finite(function, "Matrix of independent variables", ytheta);
   }
 
   // Compute the necessary derivatives.
-  operands_and_partials<T_x, T_beta, T_alpha> ops_partials(x, beta, alpha);
-  if (!(is_constant_struct<T_x>::value && is_constant_struct<T_beta>::value
-        && is_constant_struct<T_alpha>::value)) {
-    Matrix<T_partials_return, Dynamic, 1> theta_derivative(N, 1);
-    for (size_t n = 0; n < N; ++n) {
-      if (ntheta[n] > cutoff)
-        theta_derivative[n] = -exp_m_ntheta[n];
-      else if (ntheta[n] < -cutoff)
-        theta_derivative[n] = signs[n];
-      else
-        theta_derivative[n]
-            = signs[n] * exp_m_ntheta[n] / (exp_m_ntheta[n] + 1);
-    }
+  operands_and_partials<T_x, T_alpha, T_beta> ops_partials(x, alpha, beta);
+  if (!is_constant_struct<T_beta>::value || !is_constant_struct<T_x>::value
+      || !is_constant_struct<T_alpha>::value) {
+    Matrix<T_partials_return, Dynamic, 1> theta_derivative
+        = (ytheta > cutoff)
+              .select(-exp_m_ytheta,
+                      (ytheta < -cutoff)
+                          .select(as_array_or_scalar(signs),
+                                  as_array_or_scalar(signs) * exp_m_ytheta
+                                      / (exp_m_ytheta + 1)));
     if (!is_constant_struct<T_beta>::value) {
-      ops_partials.edge2_.partials_ = x_dbl.transpose() * theta_derivative;
+      ops_partials.edge3_.partials_ = x_val.transpose() * theta_derivative;
     }
     if (!is_constant_struct<T_x>::value) {
-      ops_partials.edge1_.partials_ = theta_derivative * beta_dbl.transpose();
+      ops_partials.edge1_.partials_
+          = (beta_val_vec * theta_derivative.transpose()).transpose();
     }
     if (!is_constant_struct<T_alpha>::value) {
-      ops_partials.edge3_.partials_[0] = theta_derivative.trace();
+      if (is_vector<T_alpha>::value)
+        ops_partials.edge2_.partials_ = theta_derivative;
+      else
+        ops_partials.edge2_.partials_[0] = sum(theta_derivative);
     }
   }
-
   return ops_partials.build(logp);
 }
 
-template <typename T_n, typename T_x, typename T_beta, typename T_alpha>
+template <typename T_y, typename T_x, typename T_alpha, typename T_beta>
 inline typename return_type<T_x, T_beta, T_alpha>::type
-bernoulli_logit_glm_lpmf(const T_n &n, const T_x &x, const T_beta &beta,
-                         const T_alpha &alpha) {
-  return bernoulli_logit_glm_lpmf<false>(n, x, beta, alpha);
+bernoulli_logit_glm_lpmf(const T_y &y, const T_x &x, const T_alpha &alpha,
+                         const T_beta &beta) {
+  return bernoulli_logit_glm_lpmf<false>(y, x, alpha, beta);
 }
 }  // namespace math
 }  // namespace stan

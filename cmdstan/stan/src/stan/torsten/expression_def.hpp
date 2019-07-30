@@ -1,17 +1,16 @@
 #ifndef STAN_LANG_TORSTEN_AST_NODE_EXPRESSION_DEF_HPP
 #define STAN_LANG_TORSTEN_AST_NODE_EXPRESSION_DEF_HPP
 
-#include <stan/lang/ast.hpp>
+// #include <stan/lang/ast.hpp>
+#include <stan/torsten/torsten_func_expression_list.h>
 
 namespace stan {
   namespace lang {
 
-    expression::expression(const univariate_integral_control& expr) :
-      expr_(expr) { }
-    expression::expression(const generalOdeModel_control& expr) :
-      expr_(expr) { }
-    expression::expression(const generalOdeModel& expr) :
-      expr_(expr) { }
+#define TORSTEN_FUNC_EXPR(F, R) expression::expression(const F& expr) : expr_(expr) { }
+    TORSTEN_LANG_FUNCTORS_EXPRESSION_LIST
+#undef TORSTEN_FUNC_EXPR
+
   }
 }
 #endif

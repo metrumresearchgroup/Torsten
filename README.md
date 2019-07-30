@@ -32,13 +32,63 @@ This library provides Stan language functions that calculate amounts in each com
 
 ## Installation
 
-We are working with Stan development team to create a system to add and share Stan packages. In the mean time, the current repo contains forked version of Stan with Torsten. The latest version of Torsten (v0.85) is compatible with Stan v2.18.1. Torsten is agnostic to which Stan interface you use. Here we provide command line and R interfaces.
+We are working with Stan development team to create a system to add and share Stan packages. In the mean time, the current repo contains forked version of Stan with Torsten. The latest version of Torsten (v0.86) is compatible with Stan v2.19.1. Torsten is agnostic to which Stan interface you use. Here we provide command line and R interfaces.
+
+
+### Command line interface
 
 After downloading the project
 
 -   <https://github.com/metrumresearchgroup/Torsten>
 
-to `torsten_path`, set the envionment variable `TORSTEN_PATH` as
+The command line interface `cmdstan` is available to use without installation. The following command builds a Torsten model `model_name` in `model_path`
+
+```sh
+cd $TORSTEN_PATH/cmdstan; make model_path/model_name
+```
+
+Currently MPI support is only available through `cmdstan` interface. To use MPI-supported population/group solvers, add/edit `make/local`
+
+```sh
+TORSTEN_MPI=1
+CXXFLAGS += -isystem /usr/local/include # path to MPI headers
+```
+
+Note that currently `TORSTEN_MPI` and `STAN_MPI` flags conflict on processes management and cannot be used in a same Stan model.
+
+
+### R interface
+
+The R interface is based on [rstan](https://cran.r-project.org/web/packages/rstan/index.html), the Stan's interface for R. To install R version of Torsten, at `$TORSTEN_PATH`, in R
+
+```R
+source('install.R')
+```
+
+Please ensure the R toolchain includes a C++ compiler with C++14 support. In particular, R 3.4.0 and later is recommended as it contains toolchain based on gcc 4.9.3. On Windows platform, such a toolchain can be found in Rtools34 and later.
+
+Please ensure `.R/Makevars` constains the following flags
+
+```sh
+CXX14 = g++ -fPIC               # or CXX14 = clang++ -fPIC
+
+CXXFLAGS=-O3 -std=c++1y -mtune=native -march=native -Wno-unused-variable -Wno-unused-function
+CXXFLAGS += -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS -DBOOST_MPL_LIMIT_LIST_SIZE=30
+
+CXX14FLAGS=-O3 -std=c++1y -mtune=native -march=native -Wno-unused-variable -Wno-unused-function
+CXX14FLAGS += -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS -DBOOST_MPL_LIMIT_LIST_SIZE=30
+```
+
+Fore more information of setting up `makevar` and its functionality, see
+
+-   <http://dirk.eddelbuettel.com/code/rcpp/Rcpp-package.pdf>
+
+For more information of installation troubleshooting, please consult [rstan wiki](https://github.com/stan-dev/rstan/wiki).
+
+
+### Testing
+
+With project in `torsten_path`, set the envionment variable `TORSTEN_PATH` as
 
 ```sh
 # in bash
@@ -47,51 +97,13 @@ export TORSTEN_PATH=torsten_path
 setenv TORSTEN_PATH torsten_path
 ```
 
--   Command line interface
+To test the installation, run
 
-    The command line interface `cmdstan` does not require installation. The following command builds a Torsten model `model_name` in `model_path`
-    
-    ```sh
-    cd $TORSTEN_PATH/cmdstan; make model_path/model_name
-    ```
-
--   R interface
-
-    The R interface is based on [rstan](https://cran.r-project.org/web/packages/rstan/index.html), the Stan's interface for R. To install R version of Torsten, at `$TORSTEN_PATH`, in R
-    
-    ```R
-    source('install.R')
-    ```
-    
-    Please ensure the R toolchain includes a C++ compiler with C++14 support. In particular, R 3.4.0 and later is recommended as it contains toolchain based on gcc 4.9.3. On Windows platform, such a toolchain can be found in Rtools34 and later.
-    
-    Please ensure `.R/Makevars` constains the following flags
-    
-    ```sh
-    CXX14 = g++ -fPIC               # or CXX14 = clang++ -fPIC
-    
-    CXXFLAGS=-O3 -std=c++1y -mtune=native -march=native -Wno-unused-variable -Wno-unused-function
-    CXXFLAGS += -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS -DBOOST_MPL_LIMIT_LIST_SIZE=30
-    
-    CXX14FLAGS=-O3 -std=c++1y -mtune=native -march=native -Wno-unused-variable -Wno-unused-function
-    CXX14FLAGS += -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS -DBOOST_MPL_LIMIT_LIST_SIZE=30
-    ```
-    
-    Fore more information of setting up `makevar` and its functionality, see
-    
-    -   <http://dirk.eddelbuettel.com/code/rcpp/Rcpp-package.pdf>
-    
-    For more information of installation troubleshooting, please consult [rstan wiki](https://github.com/stan-dev/rstan/wiki).
-
--   Testing
-
-    To test the installation, run
-    
-    ```sh
-    ./test-torsten.sh --unit        # math unit test
-    ./test-torsten.sh --signature   # stan function # signature test
-    ./test-torsten.sh --model       # R model test, takes long time to finish
-    ```
+```sh
+./test-torsten.sh --unit        # math unit test
+./test-torsten.sh --signature   # stan function # signature test
+./test-torsten.sh --model       # R model test, takes long time to finish
+```
 
 
 ## Development plans
@@ -114,6 +126,46 @@ Our current plans for future development of Torsten include the following:
 ## Changelog
 
 
+### 0.86 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-05-15 Wed&gt;</span></span>
+
+-   Added
+
+    -   Torsten's ODE integrator functions
+        
+        -   `pmx_integrate_ode_adams`
+        -   `pmx_integrate_ode_bdf`
+        -   `pmx_integrate_ode_rk45`
+        
+        and their counterparts to solve a population/group of subjects governed by an ODE
+        
+        -   `pmx_integrate_ode_group_adams`
+        -   `pmx_integrate_ode_group_bdf`
+        -   `pmx_integrate_ode_group_rk45`
+    -   Torsten's population PMX solver functions for general ODE models
+        -   `pmx_solve_group_adams`
+        -   `pmx_solve_group_bdf`
+        -   `pmx_solve_group_rk45`
+    -   Support time step `ts` as parameter in `pmx_integrate_ode_xxx` solvers.
+
+-   Changed
+
+    -   Renaming Torsten functions in previous releases, the old-new name mapping is
+        
+        -   `PKModelOneCpt` &rarr; `pmx_solve_onecpt`
+        -   `PKModelTwoCpt` &rarr; `pmx_solve_onecpt`
+        -   `linOdeModel` &rarr; `pmx_solve_linode`
+        -   `generalOdeModel_adams` &rarr; `pmx_solve_adams`
+        -   `generalOdeModel_bdf` &rarr; `pmx_solve_bdf`
+        -   `generalOdeModel_rk45` &rarr; `pmx_solve_rk45`
+        -   `mixOde1CptModel_bdf` &rarr; `pmx_solve_onecpt_bdf`
+        -   `mixOde1CptModel_rk45` &rarr; `pmx_solve_onecpt_rk45`
+        -   `mixOde2CptModel_bdf` &rarr; `pmx_solve_twocpt_bdf`
+        -   `mixOde2CptModel_rk45` &rarr; `pmx_solve_twocpt_rk45`
+        
+        Note that the new version of the above functions return the *transpose* of the matrix returned by the old versions, in order to improve memory efficiency. The old version are retained but will be deprecated in the future.
+    -   Update to Stan version 2.19.1.
+
+
 ### 0.85 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-12-04 Tue&gt;</span></span>
 
 -   Added
@@ -122,7 +174,7 @@ Our current plans for future development of Torsten include the following:
 
 -   Changed
 
-    -   Update with Stan version 2.18.0.
+    -   Update to Stan version 2.18.0.
 
 
 ### 0.84 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-02-24 Sat&gt;</span></span>
@@ -134,7 +186,7 @@ Our current plans for future development of Torsten include the following:
 
 -   Changed
 
-    -   Update with Stan version 2.17.1.
+    -   Update to Stan version 2.17.1.
     -   Minor revisions to User Manual.
     -   Bugfixes.
 
@@ -163,7 +215,7 @@ Our current plans for future development of Torsten include the following:
 
 -   Changed
 
-    -   Split the parameter argument into three arguments: pMatrix (parameters for the ODEs &#x2013; note: for linOdeModel, pMatrix is replaced by the constant rate matrix K), biovar (parameters for the biovariability), and tlag (parameters for the lag time).
+    -   Split the parameter argument into three arguments: pMatrix (parameters for the ODEs &#x2013; note: for `linOdeModel`, pMatrix is replaced by the constant rate matrix K), biovar (parameters for the biovariability), and tlag (parameters for the lag time).
     -   bugfixes
 
 

@@ -1,6 +1,7 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_POLYEXP_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_POLYEXP_HPP
 
+#include <boost/math/tools/promotion.hpp>
 #include <math.h>
 #include <iostream>
 #include <limits>

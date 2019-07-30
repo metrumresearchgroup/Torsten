@@ -2,6 +2,9 @@
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_TWOCPT_HPP
 
 #include <stan/math/torsten/PKModel/Pred/PolyExp.hpp>
+#include <stan/math/torsten/PKModel/ModelParameters.hpp>
+#include <stan/math/prim/mat/fun/Eigen.hpp>
+#include <boost/math/tools/promotion.hpp>
 #include <iostream>
 #include <vector>
 #include <limits>
@@ -55,11 +58,11 @@ struct PredSS_twoCpt {
 
     double inf = std::numeric_limits<double>::max();  // "infinity"
 
-    T_parameters CL = parameter.get_RealParameters()[0],
-      Q = parameter.get_RealParameters()[1],
-      V2 = parameter.get_RealParameters()[2],
-      V3 = parameter.get_RealParameters()[3],
-      ka = parameter.get_RealParameters()[4],
+    T_parameters CL = parameter.get_RealParameters(false)[0],
+      Q = parameter.get_RealParameters(false)[1],
+      V2 = parameter.get_RealParameters(false)[2],
+      V3 = parameter.get_RealParameters(false)[3],
+      ka = parameter.get_RealParameters(false)[4],
       k10 = CL / V2,
       k12 = Q / V2,
       k21 = Q / V3,

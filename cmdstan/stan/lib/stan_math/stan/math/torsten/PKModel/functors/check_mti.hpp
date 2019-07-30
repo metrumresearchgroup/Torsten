@@ -33,7 +33,7 @@ void check_mti(const T0& amt,
   }
 
   if (unpromote(delta) > unpromote(ii)) {
-    std::string msg = " but must be smaller than the interdose interval (ii): "  // NOLINT
+    std::string msg = " but must be less than the interdose interval (ii): "  // NOLINT
     + boost::lexical_cast<std::string>(ii) + "!";
     const char* msg2 = msg.c_str();
     stan::math::invalid_argument(function,

@@ -17,7 +17,6 @@ import time
 
 winsfx = ".exe"
 testsfx = "_test.cpp"
-batchSize = 25
 
 
 def processCLIArgs():
@@ -41,10 +40,9 @@ def processCLIArgs():
     parser.add_argument("tests", nargs="+", type=str,
                         help=tests_help_msg)
     f_help_msg = "Only tests with file names matching these will be executed.\n"
-    f_help_msg += "Example: '-f chol', '-f gpu', '-f prim mat'"
-    parser.add_argument("-f", nargs="+", type=str, default = "",
+    f_help_msg += "Example: '-f chol', '-f opencl', '-f prim'"
+    parser.add_argument("-f", type=str, default = [], action="append",
                         help=f_help_msg)
-
     parser.add_argument("-d", "--debug", dest="debug", action="store_true",
                         help="request additional script debugging output.")
     parser.add_argument("-m", "--make-only", dest="make_only",
@@ -66,6 +64,10 @@ def stopErr(msg, returncode):
 def isWin():
     return (platform.system().lower().startswith("windows")
             or os.name.lower().startswith("windows"))
+
+
+batchSize = 20 if isWin() else 200
+
 
 def mungeName(name):
     """Set up the makefile target name"""
@@ -114,7 +116,7 @@ def runTest(name, run_all=False, mpi=False, j=1):
                     + "\nCheck https://github.com/stan-dev/stan/wiki/Parallelism-using-MPI-in-Stan for more details."
                     , -1)
         if "mpi_" in name:
-            j = j > 2 and j or 2
+            j = j > 2 and j or 3
         else:
             j = 1
         command = "mpirun -np {} {}".format(j, command)
@@ -148,6 +150,13 @@ def main():
     except IOError:
         stan_mpi = False
 
+    try:
+        with open("make/local") as f:
+            torsten_mpi =  "TORSTEN_MPI" in f.read()
+    except IOError:
+        torsten_mpi = False
+
+
     # pass 0: generate all auto-generated tests
     if any(['test/prob' in arg for arg in inputs.tests]):
         generateTests(inputs.j)
@@ -155,6 +164,8 @@ def main():
     tests = findTests(inputs.tests, inputs.f)
     if not tests:
         stopErr("No matching tests found.", -1)
+    if inputs.debug:
+        print("Collected the following tests:\n", tests)
 
     # pass 1: make test executables
     for batch in batched(tests):
@@ -167,7 +178,7 @@ def main():
         for t in tests:
             if inputs.debug:
                 print("run single test: %s" % testname)
-            runTest(t, inputs.run_all, mpi = stan_mpi, j = inputs.j)
+            runTest(t, inputs.run_all, mpi = stan_mpi or torsten_mpi, j = inputs.j)
 
 
 if __name__ == "__main__":

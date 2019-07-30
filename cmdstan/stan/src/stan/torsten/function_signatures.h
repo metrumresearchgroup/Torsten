@@ -4,87 +4,54 @@
  * TORSTEN: function signatures
  ****************************************/
 
-/* arg_types.push_back(function_arg_type(arg_type)) */
+/* TIME, AMT,, RATE, II, EVID, CMT, ADDL, SS */
+const int num_pmx_args = 11;
+std::vector<bare_expr_type> pmx_data_arg_types(num_pmx_args);
+for (int i = 0; i < 4; i++) pmx_data_arg_types[i] = vector_types[1]; /* std:vector<double> */
+for (int i = 0; i < 4; i++) pmx_data_arg_types[i + 4] = int_vector_types[1]; /* std::vector<int> */
 
-std::vector<function_arg_type> data_arg_types;
-for (int i = 0; i < 4; i++)
-  data_arg_types.push_back(function_arg_type(vector_types[1]));
-for (int i = 0; i < 4; i++)
-  data_arg_types.push_back(function_arg_type(int_vector_types[1]));
+/* THETA, BIOVAR, TLAG */
+#define TORSTEN_PMX_FUNC_ARG_TYPES_TABLE \
+  TORSTEN_PMX_ARGS(1U, 1U, 1U)           \
+  TORSTEN_PMX_ARGS(2U, 1U, 1U)           \
+  TORSTEN_PMX_ARGS(1U, 2U, 1U)           \
+  TORSTEN_PMX_ARGS(2U, 2U, 1U)           \
+  TORSTEN_PMX_ARGS(1U, 1U, 2U)           \
+  TORSTEN_PMX_ARGS(2U, 1U, 2U)           \
+  TORSTEN_PMX_ARGS(1U, 2U, 2U)           \
+  TORSTEN_PMX_ARGS(2U, 2U, 2U)
 
-std::vector<function_arg_type> arg_types_222 = data_arg_types;
-for (int i = 0; i < 3; i++)
-  arg_types_222.push_back(function_arg_type(expr_type(double_type(), 2U)));
+#define TORSTEN_PMX_ARGS(A, B, C) pmx_data_arg_types[8] = bare_array_type(double_type(), A); \
+  pmx_data_arg_types[9]  = bare_array_type(double_type(), B); \
+  pmx_data_arg_types[10] = bare_array_type(double_type(), C); \
+  add("PKModelOneCpt"   , bare_expr_type(matrix_type()), pmx_data_arg_types); \
+  add("PKModelTwoCpt"   , bare_expr_type(matrix_type()), pmx_data_arg_types); \
+  add("pmx_solve_onecpt", bare_expr_type(matrix_type()), pmx_data_arg_types); \
+  add("pmx_solve_twocpt", bare_expr_type(matrix_type()), pmx_data_arg_types);
+    TORSTEN_PMX_FUNC_ARG_TYPES_TABLE
+#undef TORSTEN_PMX_ARGS
 
-std::vector<function_arg_type> arg_types_122 = data_arg_types;
-arg_types_122.push_back(function_arg_type(expr_type(double_type(), 1U)));
-arg_types_122.push_back(function_arg_type(expr_type(double_type(), 2U)));
-arg_types_122.push_back(function_arg_type(expr_type(double_type(), 2U)));
+#undef TORSTEN_PMX_FUNC_ARG_TYPES_TABLE
 
-std::vector<function_arg_type> arg_types_112 = data_arg_types;
-arg_types_112.push_back(function_arg_type(expr_type(double_type(), 1U)));
-arg_types_112.push_back(function_arg_type(expr_type(double_type(), 1U)));
-arg_types_112.push_back(function_arg_type(expr_type(double_type(), 2U)));
+#define TORSTEN_PMX_FUNC_ARG_TYPES_TABLE                                    \
+    TORSTEN_PMX_ARGS(bare_array_type(matrix_type(), 1U), 1U, 1U)        \
+    TORSTEN_PMX_ARGS(bare_expr_type(matrix_type())     , 1U, 1U)        \
+    TORSTEN_PMX_ARGS(bare_array_type(matrix_type(), 1U), 2U, 1U)        \
+    TORSTEN_PMX_ARGS(bare_expr_type(matrix_type())     , 2U, 1U)        \
+    TORSTEN_PMX_ARGS(bare_array_type(matrix_type(), 1U), 1U, 2U)        \
+    TORSTEN_PMX_ARGS(bare_expr_type(matrix_type())     , 1U, 2U)        \
+    TORSTEN_PMX_ARGS(bare_array_type(matrix_type(), 1U), 2U, 2U)        \
+    TORSTEN_PMX_ARGS(bare_expr_type(matrix_type())     , 2U, 2U)
 
-std::vector<function_arg_type> arg_types_111 = data_arg_types;
-for (int i = 0; i < 3; i++)
-  arg_types_111.push_back(function_arg_type(expr_type(double_type(), 1U)));
+#define TORSTEN_PMX_ARGS(A, B, C) pmx_data_arg_types[8] = A; \
+  pmx_data_arg_types[9]  = bare_array_type(double_type(), B); \
+  pmx_data_arg_types[10] = bare_array_type(double_type(), C); \
+  add("linOdeModel"     , bare_expr_type(matrix_type()), pmx_data_arg_types); \
+  add("pmx_solve_linode", bare_expr_type(matrix_type()), pmx_data_arg_types);
+    TORSTEN_PMX_FUNC_ARG_TYPES_TABLE
+#undef TORSTEN_PMX_ARGS
 
-std::vector<function_arg_type> arg_types_121 = data_arg_types;
-arg_types_121.push_back(function_arg_type(expr_type(double_type(), 1U)));
-arg_types_121.push_back(function_arg_type(expr_type(double_type(), 2U)));
-arg_types_121.push_back(function_arg_type(expr_type(double_type(), 1U)));
+#undef TORSTEN_PMX_FUNC_ARG_TYPES_TABLE
 
-std::vector<function_arg_type> arg_types_212 = data_arg_types;
-arg_types_212.push_back(function_arg_type(expr_type(double_type(), 2U)));
-arg_types_212.push_back(function_arg_type(expr_type(double_type(), 1U)));
-arg_types_212.push_back(function_arg_type(expr_type(double_type(), 2U)));
-
-std::vector<function_arg_type> arg_types_211 = data_arg_types;
-arg_types_211.push_back(function_arg_type(expr_type(double_type(), 2U)));
-arg_types_211.push_back(function_arg_type(expr_type(double_type(), 1U)));
-arg_types_211.push_back(function_arg_type(expr_type(double_type(), 1U)));
-
-std::vector<function_arg_type> arg_types_221 = data_arg_types;
-arg_types_221.push_back(function_arg_type(expr_type(double_type(), 2U)));
-arg_types_221.push_back(function_arg_type(expr_type(double_type(), 2U)));
-arg_types_221.push_back(function_arg_type(expr_type(double_type(), 1U)));
-
-add("PKModelOneCpt", expr_type(matrix_type()), arg_types_222);
-add("PKModelOneCpt", expr_type(matrix_type()), arg_types_122);
-add("PKModelOneCpt", expr_type(matrix_type()), arg_types_112);
-add("PKModelOneCpt", expr_type(matrix_type()), arg_types_111);
-add("PKModelOneCpt", expr_type(matrix_type()), arg_types_121);
-add("PKModelOneCpt", expr_type(matrix_type()), arg_types_212);
-add("PKModelOneCpt", expr_type(matrix_type()), arg_types_211);
-add("PKModelOneCpt", expr_type(matrix_type()), arg_types_221);
-
-add("PKModelTwoCpt", expr_type(matrix_type()), arg_types_222);
-add("PKModelTwoCpt", expr_type(matrix_type()), arg_types_122);
-add("PKModelTwoCpt", expr_type(matrix_type()), arg_types_112);
-add("PKModelTwoCpt", expr_type(matrix_type()), arg_types_111);
-add("PKModelTwoCpt", expr_type(matrix_type()), arg_types_121);
-add("PKModelTwoCpt", expr_type(matrix_type()), arg_types_212);
-add("PKModelTwoCpt", expr_type(matrix_type()), arg_types_211);
-add("PKModelTwoCpt", expr_type(matrix_type()), arg_types_221);
-
-arg_types_222[8] = function_arg_type(expr_type(matrix_type(), 1U));
-arg_types_122[8] = function_arg_type(expr_type(matrix_type()));
-arg_types_112[8] = function_arg_type(expr_type(matrix_type()));
-arg_types_111[8] = function_arg_type(expr_type(matrix_type()));
-arg_types_121[8] = function_arg_type(expr_type(matrix_type()));
-arg_types_212[8] = function_arg_type(expr_type(matrix_type(), 1U));
-arg_types_211[8] = function_arg_type(expr_type(matrix_type(), 1U));
-arg_types_221[8] = function_arg_type(expr_type(matrix_type(), 1U));
-
-add("linOdeModel", expr_type(matrix_type()), arg_types_222);
-add("linOdeModel", expr_type(matrix_type()), arg_types_122);
-add("linOdeModel", expr_type(matrix_type()), arg_types_112);
-add("linOdeModel", expr_type(matrix_type()), arg_types_111);
-add("linOdeModel", expr_type(matrix_type()), arg_types_121);
-add("linOdeModel", expr_type(matrix_type()), arg_types_212);
-add("linOdeModel", expr_type(matrix_type()), arg_types_211);
-add("linOdeModel", expr_type(matrix_type()), arg_types_221);
-
-add("linear_interpolation", expr_type(double_type()), expr_type(double_type()), vector_types[1], vector_types[1]);
+add("linear_interpolation", bare_expr_type(double_type()), bare_expr_type(double_type()), vector_types[1], vector_types[1]);
 add("linear_interpolation", vector_types[1], vector_types[1], vector_types[1], vector_types[1]);

@@ -1,6 +1,7 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_LINODE_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_LINODE_HPP
 
+#include <stan/math/torsten/PKModel/ModelParameters.hpp>
 #include <stan/math/prim/mat/fun/mdivide_left.hpp>
 #include <stan/math/rev/mat/fun/mdivide_left.hpp>
 #include <stan/math/rev/mat/fun/multiply.hpp>

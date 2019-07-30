@@ -1,6 +1,8 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_FUNCTORS_GENERAL_FUNCTOR_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_FUNCTORS_GENERAL_FUNCTOR_HPP
 
+#include <stan/math/prim/mat/fun/to_array_1d.hpp>
+#include <stan/math/prim/mat/fun/to_vector.hpp>
 #include <stan/math/rev/core.hpp>
 #include <stan/math/fwd/core.hpp>
 #include <vector>

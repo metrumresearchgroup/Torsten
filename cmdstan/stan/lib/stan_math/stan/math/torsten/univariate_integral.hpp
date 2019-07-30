@@ -1,13 +1,15 @@
 #ifndef STAN_MATH_TORSTEN_UNIVARIATE_INTEGRAL_HPP
 #define STAN_MATH_TORSTEN_UNIVARIATE_INTEGRAL_HPP
 
+#include <stan/math/rev/core.hpp>
+#include <stan/math/rev/scal/fun/to_var.hpp>
+#include <stan/math/rev/arr/fun/to_var.hpp>
+#include <stan/math/rev/mat/fun/to_var.hpp>
 #include <stan/math/prim/arr/functor/coupled_ode_observer.hpp>
 #include <stan/math/prim/arr/functor/coupled_ode_system.hpp>
 #include <stan/math/prim/arr/functor/integrate_ode_rk45.hpp>
 #include <stan/math/rev/mat/functor/integrate_ode_bdf.hpp>
-#include <stan/math/torsten/PKModel/SearchReal.hpp>
 #include <stan/math/torsten/PKModel/functors/functor.hpp>
-
 #include <vector>
 #include <algorithm>
 

@@ -132,12 +132,12 @@ struct PredSS_mix2 {
       predPD_guess = to_vector(integrator_(ode_rate_dbl_functor<F>(f_),
                                         to_array_1d(init_dbl),
                                         0.0, std::vector<double>(1, ii_dbl),
-                                        unpromote(theta.get_RealParameters()),
+                                        unpromote(theta.get_RealParameters(false)),
                                         x_r, x_i)[0]);
 
       x_r.push_back(amt);
       predPD = algebra_solver(system, predPD_guess,
-                              to_vector(theta.get_RealParameters()),
+                              to_vector(theta.get_RealParameters(false)),
                               x_r, x_i,
                               0, rel_tol, f_tol, max_num_steps);
 
@@ -156,12 +156,12 @@ struct PredSS_mix2 {
       predPD_guess = to_vector(integrator_(ode_rate_dbl_functor<F>(f_),
                                          to_array_1d(init_dbl),
                                          0.0, std::vector<double>(1, ii_dbl),
-                                         unpromote(theta.get_RealParameters()),
+                                         unpromote(theta.get_RealParameters(false)),
                                          x_r, x_i)[0]);
 
       x_r.push_back(amt);  // needed?
       predPD = algebra_solver(system, predPD_guess,
-                            to_vector(theta.get_RealParameters()),
+                            to_vector(theta.get_RealParameters(false)),
                             x_r, x_i,
                             0, rel_tol, f_tol, max_num_steps);
     } else {  // constant infusion
@@ -175,12 +175,12 @@ struct PredSS_mix2 {
       predPD_guess = to_vector(integrator_(ode_rate_dbl_functor<F>(f_),
                                          to_array_1d(init_dbl),
                                          0.0, std::vector<double>(1, 100),
-                                         unpromote(theta.get_RealParameters()),
+                                         unpromote(theta.get_RealParameters(false)),
                                          x_r, x_i)[0]);
 
       x_r.push_back(amt);
       predPD = algebra_solver(system, predPD_guess,
-                              to_vector(theta.get_RealParameters()),
+                              to_vector(theta.get_RealParameters(false)),
                               x_r, x_i,
                               0, rel_tol, f_tol, max_num_steps);
     }
@@ -266,11 +266,11 @@ struct PredSS_mix2 {
       predPD_guess = to_vector(integrator_(ode_rate_dbl_functor<F>(f_),
                                         to_array_1d(init_dbl),
                                         0.0, std::vector<double>(1, ii_dbl),
-                                        unpromote(theta.get_RealParameters()),
+                                        unpromote(theta.get_RealParameters(false)),
                                         x_r, x_i)[0]);
 
       predPD = algebra_solver(system, predPD_guess,
-                              to_vector(theta.get_RealParameters()),
+                              to_vector(theta.get_RealParameters(false)),
                               x_r, x_i,
                               0, rel_tol, f_tol, max_num_steps);
 
@@ -286,11 +286,11 @@ struct PredSS_mix2 {
       predPD_guess = to_vector(integrator_(ode_rate_dbl_functor<F>(f_),
                                          to_array_1d(init_dbl),
                                          0.0, std::vector<double>(1, 100),
-                                         unpromote(theta.get_RealParameters()),
+                                         unpromote(theta.get_RealParameters(false)),
                                          x_r, x_i)[0]);
 
       predPD = algebra_solver(system, predPD_guess,
-                              to_vector(theta.get_RealParameters()),
+                              to_vector(theta.get_RealParameters(false)),
                               x_r, x_i,
                               0, rel_tol, f_tol, max_num_steps);
     }

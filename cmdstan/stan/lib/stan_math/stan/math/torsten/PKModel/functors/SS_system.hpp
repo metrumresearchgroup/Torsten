@@ -1,6 +1,8 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_FUNCTORS_SS_SYSTEM_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_FUNCTORS_SS_SYSTEM_HPP
 
+#include <stan/math/rev/core.hpp>
+#include <stan/math/prim/mat/fun/to_vector.hpp>
 #include <stan/math/torsten/PKModel/Pred/Pred1_general.hpp>
 #include <stan/math/torsten/PKModel/functors/check_mti.hpp>
 #include <stan/math/rev/core.hpp>

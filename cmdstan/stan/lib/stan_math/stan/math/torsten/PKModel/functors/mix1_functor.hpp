@@ -2,7 +2,8 @@
 #define STAN_MATH_TORSTEN_PKMODEL_FUNCTORS_MIX1_FUNCTOR_HPP
 
 #include <stan/math/rev/core.hpp>
-#include <stan/math/fwd/core.hpp>
+#include <stan/math/prim/mat/fun/to_array_1d.hpp>
+#include <stan/math/prim/mat/fun/to_vector.hpp>
 #include <stan/math/torsten/PKModel/Pred/fOneCpt.hpp>
 #include <vector>
 #include <iostream>

@@ -1,6 +1,7 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_MIX1_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_MIX1_HPP
 
+#include <stan/math/torsten/PKModel/functors/functor.hpp>
 #include <stan/math/torsten/PKModel/integrator.hpp>
 #include <stan/math/torsten/PKModel/functors/functor.hpp>
 #include <stan/math/torsten/PKModel/Pred/unpromote.hpp>
@@ -87,10 +88,10 @@ struct Pred1_mix1 {
 
     vector<scalar> y0 = to_array_1d(init);
 
-    size_t nParm = parameter.get_RealParameters().size();
+    size_t nParm = parameter.get_RealParameters(false).size();
     vector<T_theta> theta(nParm);
     for (size_t i = 0; i < nParm; i++)
-      theta[i] = parameter.get_RealParameters()[i];
+      theta[i] = parameter.get_RealParameters(false)[i];
 
     Eigen::Matrix<scalar, 1, Eigen::Dynamic> pred;
     if (t_dbl[0] == t0_dbl) { pred = init;
@@ -172,10 +173,10 @@ struct Pred1_mix1 {
 
     vector<scalar> y0 = to_array_1d(init);
 
-    size_t nParm = parameter.get_RealParameters().size();
+    size_t nParm = parameter.get_RealParameters(false).size();
     vector<T_theta> theta(nParm);
     for (size_t i = 0; i < nParm; i++)
-      theta[i] = parameter.get_RealParameters()[i];
+      theta[i] = parameter.get_RealParameters(false)[i];
 
     Eigen::Matrix<scalar, 1, Eigen::Dynamic> pred;
     if (t_dbl[0] == t0_dbl) { pred = init;

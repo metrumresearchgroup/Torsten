@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+# run from stan_math with qsub -pe orte num_of_slots script_name.qsub
+#
+#$ -V
+#$ -cwd
+#$ -j y
+#$ -S /bin/bash
+
+mpiexec -l ./lv_group sample data file=lv.data.R random seed=19872439 output file=mpi_sample.1.csv

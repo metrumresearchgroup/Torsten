@@ -1,6 +1,9 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_ONECPT_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_ONECPT_HPP
 
+#include <stan/math/prim/scal/err/check_finite.hpp>
+#include <stan/math/torsten/PKModel/ModelParameters.hpp>
+#include <stan/math/prim/mat/fun/Eigen.hpp>
 #include <stan/math/torsten/PKModel/Pred/PolyExp.hpp>
 #include <iostream>
 #include <vector>
@@ -51,9 +54,9 @@ struct Pred1_oneCpt {
     typedef typename promote_args<T_time, T_rate, T_parameters,
                                   T_init>::type scalar;
 
-    T_parameters CL = parameter.get_RealParameters()[0],
-      V2 = parameter.get_RealParameters()[1],
-      ka = parameter.get_RealParameters()[2];
+    T_parameters CL = parameter.get_RealParameters(false)[0],
+      V2 = parameter.get_RealParameters(false)[1],
+      ka = parameter.get_RealParameters(false)[2];
 
     T_parameters k10 = CL / V2;
     vector<T_parameters> alpha(2, 0);

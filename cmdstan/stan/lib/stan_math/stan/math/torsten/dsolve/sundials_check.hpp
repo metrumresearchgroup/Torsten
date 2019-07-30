@@ -1,6 +1,8 @@
 #ifndef TORSTEN_DSOLVE_SUNDIALS_CHECK_HPP
 #define TORSTEN_DSOLVE_SUNDIALS_CHECK_HPP
 
+#include <sstream>
+
 #define CHECK_SUNDIALS_CALL(call) sundials_check(call, #call)
 
 /**

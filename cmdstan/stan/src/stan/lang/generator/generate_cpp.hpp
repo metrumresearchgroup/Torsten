@@ -12,7 +12,7 @@
 #include <stan/lang/generator/generate_functions.hpp>
 #include <stan/lang/generator/generate_globals.hpp>
 #include <stan/lang/generator/generate_includes.hpp>
-#include <stan/lang/generator/generate_init_method.hpp>
+#include <stan/lang/generator/generate_transform_inits_method.hpp>
 #include <stan/lang/generator/generate_log_prob.hpp>
 #include <stan/lang/generator/generate_member_var_decls_all.hpp>
 #include <stan/lang/generator/generate_model_name_method.hpp>
@@ -24,6 +24,7 @@
 #include <stan/lang/generator/generate_program_reader_fun.hpp>
 #include <stan/lang/generator/generate_public_decl.hpp>
 #include <stan/lang/generator/generate_register_mpi.hpp>
+#include <stan/lang/generator/generate_torsten_mpi.hpp>
 #include <stan/lang/generator/generate_typedefs.hpp>
 #include <stan/lang/generator/generate_unconstrained_param_names_method.hpp>
 #include <stan/lang/generator/generate_usings.hpp>
@@ -55,7 +56,6 @@ namespace stan {
       generate_includes(o);
       generate_namespace_start(model_name, o);
       generate_usings(o);
-      //      generate_typedefs(o);
       generate_globals(o);
       generate_program_reader_fun(history, o);
       generate_functions(prog.function_decl_defs_, o);
@@ -65,9 +65,7 @@ namespace stan {
       generate_public_decl(o);
       generate_constructor(prog, model_name, o);
       generate_destructor(model_name, o);
-      // put back if ever need integer params
-      // generate_set_param_ranges(prog.parameter_decl_, o);
-      generate_init_method(prog.parameter_decl_, o);
+      generate_transform_inits_method(prog.parameter_decl_, o);
       generate_log_prob(prog, o);
       generate_param_names_method(prog, o);
       generate_dims_method(prog, o);
@@ -79,6 +77,7 @@ namespace stan {
       generate_namespace_end(o);
       generate_model_typedef(model_name, o);
       generate_register_mpi(model_name, o);
+      generate_torsten_mpi(model_name, o);
     }
 
   }

@@ -63,7 +63,7 @@ TEST(Torsten, pred1_mix) {
 
   // initialize Model Parameters object
   torsten::ModelParameters<double, double, double, double>
-    parms(dt, parameters, biovar_dummy, tlag_dummy, K);
+    parms(dt, parameters, biovar_dummy, tlag_dummy);
 
   int nOdes = 6;
   Matrix<double, 1, Dynamic> init(nOdes);
