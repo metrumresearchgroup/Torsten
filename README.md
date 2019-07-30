@@ -32,7 +32,7 @@ This library provides Stan language functions that calculate amounts in each com
 
 ## Installation
 
-We are working with Stan development team to create a system to add and share Stan packages. In the mean time, the current repo contains forked version of Stan with Torsten. The latest version of Torsten (v0.86) is compatible with Stan v2.19.1. Torsten is agnostic to which Stan interface you use. Here we provide command line and R interfaces.
+We are working with Stan development team to create a system to add and share Stan packages. In the mean time, the current repo contains forked version of Stan with Torsten. The latest version of Torsten (v0.87) is compatible with Stan v2.19.1. Torsten is agnostic to which Stan interface you use. Here we provide command line and R interfaces.
 
 
 ### Command line interface
@@ -124,6 +124,25 @@ Our current plans for future development of Torsten include the following:
 
 
 ## Changelog
+
+
+### 0.87 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-07-26 Fri&gt;</span></span>
+
+-   Added
+
+    -   MPI dynamic load balance for Torsten's population ODE integrators
+        
+        -   `pmx_integrate_ode_group_adams`
+        -   `pmx_integrate_ode_group_bdf`
+        -   `pmx_integrate_ode_group_rk45`
+        
+        To invoke dynamic load balance instead of default static balance for MPI, issue `TORSTEN_MPI=2` in `make/local`.
+    -   Support `time` as parameter in `pmx_solve_rk45/bdf/adams` functions.
+
+-   Changed
+
+    -   Some fixes on steady-state solvers
+    -   Update to rstan version 2.19.2.
 
 
 ### 0.86 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-05-15 Wed&gt;</span></span>
