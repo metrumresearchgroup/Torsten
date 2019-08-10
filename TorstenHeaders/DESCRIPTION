@@ -1,0 +1,20 @@
+Package: torstenHeaders
+Type: Package
+Title: Torsten library extension for 'rstan'
+Version: 0.2.1
+Date: 2019-07-24
+Maintainer: The package maintainer <billg@metrumrg.com>
+Authors@R: c(person("Jonathan", "Sidi", email = "yonis@metrumrg.com", role = c("aut", "cre")),
+             person("Bill", "Gillespie", email = "billg@metrumrg.com", role = c("aut")),
+             person("Yi", "Zhang", email = "yiz@metrumrg.com", role = c("aut")))
+Description: Something smart about torsten.
+Depends: 
+  R (>= 3.3.2)
+Imports:
+  devtools,utils, xml2, rvest, tools
+License: GPL-2 | GPL-3
+Encoding: UTF-8
+LazyData: false
+URL: https://github.com/metrumresearchgroup/TorstenHeaders
+BugReports: https://github.com/metrumresearchgroup/TorstenHeaders/issues
+RoxygenNote: 6.0.1
