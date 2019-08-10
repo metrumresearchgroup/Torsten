@@ -30,7 +30,7 @@ while :; do
         -s|--signature)
             echo 'Torsten function signature tests'
             pushd cmdstan/stan/
-            ./runTests.py src/test/unit/lang/parser/torsten_functions_test.cpp
+            ./runTests.py -j3 src/test/unit/lang/parser/torsten_functions_test.cpp
             popd
             ;;
         -u|--unit)
