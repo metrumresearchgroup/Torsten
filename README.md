@@ -51,7 +51,12 @@ Currently MPI support is only available through `cmdstan` interface. To use MPI-
 
 ```sh
 TORSTEN_MPI=1
-CXXFLAGS += -isystem /usr/local/include # path to MPI headers
+
+# path to MPI headers
+CXXFLAGS += -isystem /usr/local/include
+# if you are using Metrum's metworx platform, add MPICH3's
+# headers with
+# CXXFLAGS += -isystem /usr/local/mpich3/include
 ```
 
 Note that currently `TORSTEN_MPI` and `STAN_MPI` flags conflict on processes management and cannot be used in a same Stan model.
