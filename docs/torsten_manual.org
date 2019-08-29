@@ -99,22 +99,32 @@ This work was funded in part by the following organizations:
 
 * Introduction
 Stan is an open source probabilistic programing language designed
-primarily to do Bayesian data analysis cite:carpenter17_stan. Several of its
+primarily to do Bayesian data analysis
+cite:carpenter17_stan. 
+
+
+Several of its
 features make it a powerful tool to specify and fit complex
-models. Notably, its language is extremely flexible and its No U-Turn
-Sampler (NUTS), an adaptative Hamiltonian Monte Carlo algorithm, has
-proven more efficient than commonly used Monte Carlo Markov Chains
-(MCMC) samplers for complex high dimensional problems cite:hoffman_no-u-turn_2011. Our
-goal is to harness these innovative features and make Stan a better
+models. First, its language is very expressive and
+flexible. Secondly, it implements a variant of No U-Turn
+Sampler(NUTS), an adaptative Hamiltonian Monte Carlo
+algorithm that was proven more efficient than commonly used Monte Carlo Markov Chains
+(MCMC) samplers for complex high dimensional problems cite:hoffman_no-u-turn_2011,betancourt_hmc_2018. Our
+goal is to harness these innovations and make Stan a better
 software for pharmacometrics modeling. Our efforts are twofold:
-1. We contribute to the development of new mathematical tools, such as functions that support differential equations based models, and implement them directly into Stan's core language.
+1. We contribute to the development of features, such as functions that support differential equations based models, and implement them directly into Stan's core language.
 2. We develop Torsten, an extension with specialized pharmacometrics functions.
 
 Throughout the process, we work very closely with the Stan Development
 Team. We have benefited immensely from their mentorship, advice, and
 feedback. Just like Stan, Torsten is an open source project that
-fosters collaborative work. Interested in contributing? Shoot us an
-e-mail and we will help you help us([[mailto:billg@metrumrg.com][billg@metrumrg.com]])!
+fosters collaborative work. Interested in contributing?
+Comment at Torsten repository
+
+[[https://github.com/metrumresearchgroup/Torsten][https://github.com/metrumresearchgroup/Torsten]] 
+
+or shoot us an
+e-mail([[mailto:billg@metrumrg.com][billg@metrumrg.com]], [[mailto:yz@yizh.org][yz@yizh.org]])and we will help you help us!
 
 Torsten is licensed under the BSD 3-clause license.
 
@@ -159,9 +169,9 @@ conventions including:
   + Note: The infusion time must be shorter than the inter-dose interval.
 - Implemented NMTRAN data items include: TIME, EVID, CMT, AMT, RATE, ADDL, II, SS
 
-In general, all real variables may be passed as Stan parameters. A
+In general, all real variables may be passed as model parameters. A
 few exceptions apply /to functions which use a numerical
-integrator/(i.e. the general and the mix compartment
+integrator(i.e. the general and the mix compartment
 models). The below listed cases present technical difficulties, which we expect to
 overcome in Torsten's next release:
 - In the case of a multiple truncated infusion rate dosing regimen:
@@ -442,13 +452,11 @@ To test the installation, run
 The reader should have a basic understanding of how Stan works before
 reading this chapter. There are excellent resources online to get
 started with Stan
-
 - [[http://mc-stan.org/documentation][http://mc-stan.org/documentation]]
 
 
 In this section we go through the different functions Torsten adds to
 Stan. The code for the examples can be found at
-
 - [[https://github.com/metrumresearchgroup/example-models][https://github.com/metrumresearchgroup/example-models]]
 
 and also at the =example-models= foler of your =TORSTEN_PATH=.
@@ -532,79 +540,6 @@ respectively, from ODEs
   by =ncmt=, where =nt= is the number of time steps and
   =ncmt=3= is the number of compartments.
 
-*** Example
-  We model drug absorption in a single patient and simulate plasma drug concentrations:
-
-  - Multiple Doses: 1250 mg, every 12 hours, for a total of 15 doses
-  - PK measured at 0.083, 0.167, 0.25, 0.5, 0.75, 1, 1.5, 2, 4, 6,
-    8, 10 and 12 hours after 1st, 2nd, and 15th dose. In addition, the
-    PK is measured every 12 hours throughout the trial.
-
-  With the plasma concentration $\hat{c}$ solved from
-  two-compartment ODEs in [[sec:twocpt]], we simulate $c$ according to:
-  \begin{align*}
-    \log\left(c\right) &\sim N\left(\log\left(\widehat{c}\right),\sigma^2\right) \\
-    \left(CL, Q, V_2, V_3, ka\right) &= \left(5\ {\rm L/h}, 8\  {\rm L/h}, 20\  {\rm L},  70\ {\rm L}, 1.2\ {\rm h^{-1}} \right) \\
-    \sigma^2 &= 0.01
-  \end{align*}
-  The data are generated using the R package =mrgsolve= cite:Baron000.
-
-Code below shows how Torsten function ~pmx_solve_twocpt~ can be used to fit the above model.
-
-#+include: "../example-models/TwoCptModel/TwoCptModel.stan" :lines "5-74" src stan
-
-#+BEGIN_SRC R :results output silent :exports none
-  setwd("~/Work/Torsten_debug/example-models/R")
-  source("TwoCpt.R")                      #
-#+END_SRC
-
-Three MCMC chains of 2000 iterations are simulated. The first
-1000 iteration of each chain were discarded. Thus 1000 MCMC samples
-per chain were used for the subsequent analyses.
-The MCMC history plots(Figure [[twocpt_mcmc_history]])
-suggest that the 3 chains have converged to common distributions for
-all of the key model parameters. The fit to the plasma concentration
-data (Figure [[twocpt_mcmc_predict]]) are in close agreement with the
-data, which is not surprising since the fitted model is identical to
-the one used to simulate the data. Similarly the parameter estimates
-summarized in Table [[tab:twocpt_summary]] and Figure [[twocpt_mcmc_posterior]]
-are consistent with the values used for simulation.
-
-#+CAPTION: Summary of the MCMC simulations of the marginal posterior distribu- tions of the model parameters
-#+NAME: tab:twocpt_summary
-|-------+--------+---------+-------+--------+--------+--------+--------+--------+----------+------|
-|       |   mean | se_mean |    sd |   2.5% |    25% |    50% |    75% |  97.5% |    n_eff | Rhat |
-|-------+--------+---------+-------+--------+--------+--------+--------+--------+----------+------|
-| CL    |  4.823 |   0.002 | 0.092 |  4.647 |  4.762 |  4.823 |  4.883 |  5.012 | 2392.155 | 1.00 |
-| Q     |  7.596 |   0.013 | 0.586 |  6.479 |  7.201 |  7.594 |  7.977 |  8.785 | 1923.939 | 1.00 |
-| V1    | 21.073 |   0.069 | 2.573 | 16.017 | 19.352 | 21.046 | 22.817 | 26.097 | 1385.883 | 1.00 |
-| V2    | 76.365 |   0.105 | 5.611 | 65.805 | 72.623 | 76.172 | 79.916 | 87.971 | 2862.184 | 1.00 |
-| ka    |  1.231 |   0.004 | 0.177 |  0.907 |  1.107 |  1.221 |  1.344 |  1.599 | 1581.825 | 1.00 |
-| sigma |  0.109 |   0.000 | 0.012 |  0.089 |  0.100 |  0.108 |  0.116 |  0.134 | 2560.112 | 1.00 |
-|-------+--------+---------+-------+--------+--------+--------+--------+--------+----------+------|
-#+TBLFM: $2=$0;%0.3f::$3=$0;%0.3f::$4=$0;%0.3f::$5=$0;%0.3f::$6=$0;%0.3f::$7=$0;%0.3f::$8=$0;%0.3f::$9=$0;%0.3f::$10=$0;%0.3f::$11=$0;%0.3f
-
-#+CAPTION: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
-#+NAME: twocpt_mcmc_history
-#+ATTR_LATEX: :width 0.6\linewidth
-[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots001.pdf]]
-
-#+CAPTION: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
-#+NAME: twocpt_mcmc_history
-#+ATTR_LATEX: :width 0.6\linewidth
-[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots002.pdf]]
-
-#+CAPTION: Posterior Marginal Densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
-#+NAME: twocpt_mcmc_posterior
-#+ATTR_LATEX: :width 0.6\linewidth
-[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots003.pdf]]
-
-#+CAPTION: Predicted (posterior median and 90% credible intervals) and observed plasma drug concentrations of a two compartment model with first order absorption
-#+NAME: twocpt_mcmc_predict
-#+ATTR_LATEX: :width 0.5\linewidth
-[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots006.pdf]]
-
-
 ** General Linear ODE Model Function
 #+INDEX: General linear model 
 #+BEGIN_SRC stan
@@ -642,12 +577,6 @@ where $k_{10}=CL/V_2$, $k_{12}=Q/V_2$, and $k_{21}=Q/V_3$.
 - The function returns a two-dimensional array of size =nt=
   by =n=, where =nt= is the number of time steps and
   =n= is the size of the square matrix =K=.
-
-*** Example
-Using =pmx_solve_linode=, the following example fits a two-compartment model
-with first order absorption.
-
-#+include: "../example-models/LinTwoCptModel/LinTwoCptModel.stan" :lines "1-68" src stan
 
 ** General ODE Model Function
 #+INDEX: General ODE Model
@@ -722,19 +651,12 @@ y'(t) = f(t, y(t)) + r
   ~biovar~, and ~tlag~.
 # These restrictions also apply to ~mixOdeCpt_*~ functions, discussed in the next section.
 
-*** Example
-Using =pmx_solve_rk45=, the following example fits a two-compartment model
-with first order absorption. User-defined function
-=twoCptModelODE= describes the RHS of the ODEs.
-
-#+include: "../example-models/GenTwoCptModel/GenTwoCptModel.stan" :lines "1-115" src stan
-
-** Mixed ODE Model Function
+** Coupled ODE Model Function
 <<sec:mixed>>
 #+INDEX: Mixed ODE Model
 
 #+BEGIN_SRC stan
-  real[] pmx_solve_onecpt_rk45(reduced_ODE_system, int nOde,
+  matrix pmx_solve_onecpt_rk45(reduced_ODE_system, int nOde,
                               real[] time, real[] amt, real[] rate,
                               real[] ii, int[] evid, int[] cmt, real[]
                               addl, int[] ss,
@@ -742,7 +664,7 @@ with first order absorption. User-defined function
                               real rel_tol, real abs_tol, real max_step)
 #+END_SRC
 #+BEGIN_SRC stan
-  real[] pmx_solve_onecpt_bdf(reduced_ODE_system, int nOde,
+  matrix pmx_solve_onecpt_bdf(reduced_ODE_system, int nOde,
                               real[] time, real[] amt, real[] rate,
                               real[] ii, int[] evid, int[] cmt, real[]
                               addl, int[] ss,
@@ -750,7 +672,7 @@ with first order absorption. User-defined function
                               real rel_tol, real abs_tol, real max_step)
 #+END_SRC
 #+BEGIN_SRC stan
-  real[] pmx_solve_twocpt_rk45(reduced_ODE_system, int nOde,
+  matrix pmx_solve_twocpt_rk45(reduced_ODE_system, int nOde,
                               real[] time, real[] amt, real[] rate,
                               real[] ii, int[] evid, int[] cmt, real[]
                               addl, int[] ss,
@@ -758,7 +680,7 @@ with first order absorption. User-defined function
                               real rel_tol, real abs_tol, real max_step)
 #+END_SRC
 #+BEGIN_SRC stan
-  real[] pmx_solve_twocpt_bdf(reduced_ODE_system, int nOde,
+  matrix pmx_solve_twocpt_bdf(reduced_ODE_system, int nOde,
                               real[] time, real[] amt, real[] rate,
                               real[] ii, int[] evid, int[] cmt, real[]
                               addl, int[] ss,
@@ -850,12 +772,6 @@ solvers support MPI parallelization.
 - The solvers return a single matrix ragged column-wise. The
   number of rows equals to the number of compartments in the model.
 
-*** Example
-Using =pmx_solve_group_bdf=, the following example fits a
-two-compartment population model.
-
-#+include: "../example-models/twocpt_population/twocpt_population.stan" :lines "1-145" src stan
-
 ** ODE  integrator Function
 #+INDEX: PMX ODE integrators
 #+BEGIN_SRC stan
@@ -908,13 +824,133 @@ governed by a same ODE. These solvers support MPI parallelization.
 - The group integrators return a single matrix ragged
   column-wise. The number of rows equals to the size of ODE system.
 
-*** Example
-Using =pmx_integrate_ode_group_rk45=, the following example fits
-a Lotka-Volterra group model, based on [[https://mc-stan.org/users/documentation/case-studies/lotka-volterra-predator-prey.html][Stan's case study]].
+** Univariate integral
+#+INDEX: univariate integral
+#+BEGIN_SRC stan
+  real univariate_integral_rk45(f, t0, t1, theta, x_r, x_i)
+#+END_SRC
+#+BEGIN_SRC stan
+  real univariate_integral_bdf(f, t0, t1, theta, x_r, x_i)
+#+END_SRC
+Based on the ODE solver capability in Stan, Torsten provides functions
+calculating the integral of a univariate function. The integrand function $f$ must follow the signature
+#+BEGIN_SRC stan
+    real f(real t, real[] theta, real[] x_r, int[] x_i) {
+      /* ... */
+  }
+#+END_SRC
 
-#+include: "../example-models/lotka_volterra_ode_group_model/lv_group.stan" :lines "1-57" src stan
+** Piecewise linear interpolation
+#+INDEX: linear interpolation
+#+BEGIN_SRC stan
+real linear_interpolation(real xout, real[] x, real[] y)
+#+END_SRC
+#+BEGIN_SRC stan
+real[] linear_interpolation(real[] xout, real[] x, real[] y)
+#+END_SRC
+Torsten also provides function =linear_interpolation= for piecewise linear interpolation over a
+set of x, y pairs. It returns the values of a piecewise linear
+function at specified values =xout= of the first function argument. The
+function is specified in terms of a set of x, y
+pairs. Specifically, =linear_interpolation= implements the following function
+\begin{align*}
+  y_{\text{out}} = \left\{\begin{array}{ll}
+                 y_1, & x_{\text{out}} < x_1 \\
+                 y_i + \frac{y_{i+1} - y_i}{x_{i+1} - x_i}
+                 \left(x_{\text{out}} - x_i\right), & x_{\text{out}} \in [x_i, x_{i+1}) \\
+                 y_n, & x_{\text{out}} \ge x_n 
+                          \end{array}\right.
+\end{align*}
+- The x values must be in increasing order, i.e. $x_i < x_{i+1}$.
+- All three arguments may be data or parameters.
 
-** Example
+* Examples
+** Two-compartment model for single patient 
+  We model drug absorption in a single patient and simulate plasma drug concentrations:
+
+  - Multiple Doses: 1250 mg, every 12 hours, for a total of 15 doses
+  - PK measured at 0.083, 0.167, 0.25, 0.5, 0.75, 1, 1.5, 2, 4, 6,
+    8, 10 and 12 hours after 1st, 2nd, and 15th dose. In addition, the
+    PK is measured every 12 hours throughout the trial.
+
+  With the plasma concentration $\hat{c}$ solved from
+  two-compartment ODEs in [[sec:twocpt]], we simulate $c$ according to:
+  \begin{align*}
+    \log\left(c\right) &\sim N\left(\log\left(\widehat{c}\right),\sigma^2\right) \\
+    \left(CL, Q, V_2, V_3, ka\right) &= \left(5\ {\rm L/h}, 8\  {\rm L/h}, 20\  {\rm L},  70\ {\rm L}, 1.2\ {\rm h^{-1}} \right) \\
+    \sigma^2 &= 0.01
+  \end{align*}
+  The data are generated using the R package =mrgsolve= cite:Baron000.
+
+Code below shows how Torsten function ~pmx_solve_twocpt~ can be used to fit the above model.
+
+#+include: "../example-models/TwoCptModel/TwoCptModel.stan" :lines "5-74" src stan
+
+#+BEGIN_SRC R :results output silent :exports none
+  setwd("~/Work/Torsten_debug/example-models/R")
+  source("TwoCpt.R")                      #
+#+END_SRC
+
+Three MCMC chains of 2000 iterations are simulated. The first
+1000 iteration of each chain were discarded. Thus 1000 MCMC samples
+per chain were used for the subsequent analyses.
+The MCMC history plots(Figure [[twocpt_mcmc_history]])
+suggest that the 3 chains have converged to common distributions for
+all of the key model parameters. The fit to the plasma concentration
+data (Figure [[twocpt_mcmc_predict]]) are in close agreement with the
+data, which is not surprising since the fitted model is identical to
+the one used to simulate the data. Similarly the parameter estimates
+summarized in Table [[tab:twocpt_summary]] and Figure [[twocpt_mcmc_posterior]]
+are consistent with the values used for simulation.
+
+#+CAPTION: Summary of the MCMC simulations of the marginal posterior distribu- tions of the model parameters
+#+NAME: tab:twocpt_summary
+|-------+--------+---------+-------+--------+--------+--------+--------+--------+----------+------|
+|       |   mean | se_mean |    sd |   2.5% |    25% |    50% |    75% |  97.5% |    n_eff | Rhat |
+|-------+--------+---------+-------+--------+--------+--------+--------+--------+----------+------|
+| CL    |  4.823 |   0.002 | 0.092 |  4.647 |  4.762 |  4.823 |  4.883 |  5.012 | 2392.155 | 1.00 |
+| Q     |  7.596 |   0.013 | 0.586 |  6.479 |  7.201 |  7.594 |  7.977 |  8.785 | 1923.939 | 1.00 |
+| V1    | 21.073 |   0.069 | 2.573 | 16.017 | 19.352 | 21.046 | 22.817 | 26.097 | 1385.883 | 1.00 |
+| V2    | 76.365 |   0.105 | 5.611 | 65.805 | 72.623 | 76.172 | 79.916 | 87.971 | 2862.184 | 1.00 |
+| ka    |  1.231 |   0.004 | 0.177 |  0.907 |  1.107 |  1.221 |  1.344 |  1.599 | 1581.825 | 1.00 |
+| sigma |  0.109 |   0.000 | 0.012 |  0.089 |  0.100 |  0.108 |  0.116 |  0.134 | 2560.112 | 1.00 |
+|-------+--------+---------+-------+--------+--------+--------+--------+--------+----------+------|
+#+TBLFM: $2=$0;%0.3f::$3=$0;%0.3f::$4=$0;%0.3f::$5=$0;%0.3f::$6=$0;%0.3f::$7=$0;%0.3f::$8=$0;%0.3f::$9=$0;%0.3f::$10=$0;%0.3f::$11=$0;%0.3f
+
+#+CAPTION: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
+#+NAME: twocpt_mcmc_history
+#+ATTR_LATEX: :width 0.6\linewidth
+[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots001.pdf]]
+
+#+CAPTION: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
+#+NAME: twocpt_mcmc_history
+#+ATTR_LATEX: :width 0.6\linewidth
+[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots002.pdf]]
+
+#+CAPTION: Posterior Marginal Densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
+#+NAME: twocpt_mcmc_posterior
+#+ATTR_LATEX: :width 0.6\linewidth
+[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots003.pdf]]
+
+#+CAPTION: Predicted (posterior median and 90% credible intervals) and observed plasma drug concentrations of a two compartment model with first order absorption
+#+NAME: twocpt_mcmc_predict
+#+ATTR_LATEX: :width 0.5\linewidth
+[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots006.pdf]]
+
+** Two-compartment model as a linear ODE model for single patient 
+Using =pmx_solve_linode=, the following example fits a two-compartment model
+with first order absorption.
+
+#+include: "../example-models/LinTwoCptModel/LinTwoCptModel.stan" :lines "1-68" src stan
+
+** Two-compartment model solved by numerical integrator for single patient 
+Using =pmx_solve_rk45=, the following example fits a two-compartment model
+with first order absorption. User-defined function
+=twoCptModelODE= describes the RHS of the ODEs.
+
+#+include: "../example-models/GenTwoCptModel/GenTwoCptModel.stan" :lines "1-115" src stan
+
+** Joint PK-PD model
 #+INDEX: Friberg-Karlsson Model
 
    A Friberg-Karlsson Semi-Mechanistic model cite:friberg_mechanistic_2003 couples
@@ -967,23 +1003,21 @@ integrator.
 
 #+include: "../tests/FribergKarlsson/FribergKarlsson.stan" src stan
 
-** Univariate integral
-#+INDEX: univariate integral
-#+BEGIN_SRC stan
-  real univariate_integral_rk45(f, t0, t1, theta, x_r, x_i)
-#+END_SRC
-#+BEGIN_SRC stan
-  real univariate_integral_bdf(f, t0, t1, theta, x_r, x_i)
-#+END_SRC
-Based on the ODE solver capability in Stan, Torsten provides functions
-calculating the integral of a univariate function. The integrand function $f$ must follow the signature
-#+BEGIN_SRC stan
-    real f(real t, real[] theta, real[] x_r, int[] x_i) {
-      /* ... */
-  }
-#+END_SRC
 
-*** Example
+** Two-compartment population model
+Using =pmx_solve_group_bdf=, the following example fits a
+two-compartment population model.
+
+#+include: "../example-models/twocpt_population/twocpt_population.stan" :lines "1-145" src stan
+
+** Lotka-Volterra group model
+Using =pmx_integrate_ode_group_rk45=, the following example fits
+a Lotka-Volterra group model, based on [[https://mc-stan.org/users/documentation/case-studies/lotka-volterra-predator-prey.html][Stan's case study]].
+
+#+include: "../example-models/lotka_volterra_ode_group_model/lv_group.stan" :lines "1-57" src stan
+
+** Univariate integral of a quadratic function
+integral of a quadratic function.
 This example shows how to use =univariate_integral_rk45= to calculate the
 integral of a quadratic function.
 #+BEGIN_SRC stan
@@ -1012,31 +1046,7 @@ integral of a quadratic function.
   /* ... */
 #+END_SRC
 
-
-** Piecewise linear interpolation
-#+INDEX: linear interpolation
-#+BEGIN_SRC stan
-real linear_interpolation(real xout, real[] x, real[] y)
-#+END_SRC
-#+BEGIN_SRC stan
-real[] linear_interpolation(real[] xout, real[] x, real[] y)
-#+END_SRC
-Torsten also provides function =linear_interpolation= for piecewise linear interpolation over a
-set of x, y pairs. It returns the values of a piecewise linear
-function at specified values =xout= of the first function argument. The
-function is specified in terms of a set of x, y
-pairs. Specifically, =linear_interpolation= implements the following function
-\begin{align*}
-  y_{\text{out}} = \left\{\begin{array}{ll}
-                 y_1, & x_{\text{out}} < x_1 \\
-                 y_i + \frac{y_{i+1} - y_i}{x_{i+1} - x_i}
-                 \left(x_{\text{out}} - x_i\right), & x_{\text{out}} \in [x_i, x_{i+1}) \\
-                 y_n, & x_{\text{out}} \ge x_n 
-                          \end{array}\right.
-\end{align*}
-- The x values must be in increasing order, i.e. $x_i < x_{i+1}$.
-- All three arguments may be data or parameters.
-*** Example
+** Linear intepolation
 This example illustrates how to use =linear_intepolationi=
 to fit a piecewise linear function to a data set consisting
 of $(x, y)$ pairs.
@@ -1089,7 +1099,6 @@ generated quantities{
 }
 #+END_SRC
 
-* Additional examples
 ** Effect Compartment Population Model
 Here we expand the example in [[sec:twocpt]] to a population model fitted to the
 combined data from phase I and phase IIa studies. The

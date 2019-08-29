@@ -7,6 +7,8 @@
     "carpenter17_stan"
     "carpenter15_stan_math_librar"
     "Baron000"
-    "stan_team_2017"))
+    "stan_team_2017"
+    "betancourt_hmc_2018"
+    "margossian_mixed_2017"))
  :bibtex)
 
