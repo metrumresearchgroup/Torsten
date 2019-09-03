@@ -22,7 +22,7 @@ The models and data format are based on NONMEM\textregistered{}<sup><a id="fnr.1
     -   Note: The infusion time must be shorter than the inter-dose interval.
 -   Implemented NMTRAN data items include: TIME, EVID, CMT, AMT, RATE, ADDL, II, SS
 
-In general, all real variables may be passed as Stan parameters. A few exceptions apply /to functions which use a numerical integrator/(i.e. the general and the mix compartment models). The below listed cases present technical difficulties, which we expect to overcome in Torsten's next release:
+In general, all real variables may be passed as model parameters. A few exceptions apply /to functions which use a numerical integrator(i.e. the general and the mix compartment models). The below listed cases present technical difficulties, which we expect to overcome in Torsten's next release:
 
 -   In the case of a multiple truncated infusion rate dosing regimen:
     -   The bioavailability (F) and the amount (AMT) must be fixed.
@@ -142,7 +142,7 @@ Our current plans for future development of Torsten include the following:
         -   `pmx_integrate_ode_group_rk45`
         
         To invoke dynamic load balance instead of default static balance for MPI, issue `TORSTEN_MPI=2` in `make/local`.
-    -   Support `time` as parameter in `pmx_solve_rk45/bdf/adams` functions.
+    -   Support `RATE` as parameter in `pmx_solve_rk45/bdf/adams` functions.
 
 -   Changed
 
