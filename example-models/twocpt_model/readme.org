@@ -4,13 +4,14 @@
 We consider fitting a single-patient two-compartment model with linear absorption,
 to demonstrate the usage of =pmx_solve_twocpt= function.
 * Build
+In =Torsten/cmdstan= path
 #+BEGIN_SRC bash
 make ../example-models/twocpt_model/twocpt_model
 #+END_SRC
 * Run
-Using =cmdstan=
+In model path
 #+BEGIN_SRC bash
-for i in {1..4}; do ./TwoCptModel sample random seed=3892749 id=$i data file=TwoCptModel.data.R init=TwoCptModel.init.R output file=output_$i.csv; done
+for i in {1..4}; do ./twocpt_model sample random seed=3892749 id=$i data file=TwoCptModel.data.R init=TwoCptModel.init.R output file=output_$i.csv; done
 #+END_SRC
 * Results
 =./result/= directory contains Stan output from the above

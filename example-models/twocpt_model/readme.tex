@@ -1,4 +1,4 @@
-% Created 2019-09-24 Tue 12:56
+% Created 2019-09-24 Tue 13:09
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -30,22 +30,23 @@
 
 \maketitle
 \section{Model}
-\label{sec:org58d8ed1}
+\label{sec:orge9f17a2}
 We consider fitting a single-patient two-compartment model with linear absorption,
 to demonstrate the usage of \texttt{pmx\_solve\_twocpt} function.
 \section{Build}
-\label{sec:orga0a39de}
+\label{sec:org759237b}
+In \texttt{Torsten/cmdstan} path
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
 make ../example-models/twocpt_model/twocpt_model
 \end{minted}
 \section{Run}
-\label{sec:orgd4c8ebf}
-Using \texttt{cmdstan}
+\label{sec:org5e9e255}
+In model path
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
-for i in {1..4}; do ./TwoCptModel sample random seed=3892749 id=$i data file=TwoCptModel.data.R init=TwoCptModel.init.R output file=output_$i.csv; done
+for i in {1..4}; do ./twocpt_model sample random seed=3892749 id=$i data file=TwoCptModel.data.R init=TwoCptModel.init.R output file=output_$i.csv; done
 \end{minted}
 \section{Results}
-\label{sec:orgcaa9a49}
+\label{sec:orgae944e8}
 \texttt{./result/} directory contains Stan output from the above
 run. To examine the results in \texttt{R}, we use \texttt{bayesplot} and \texttt{rstan}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{r}
@@ -55,7 +56,7 @@ fit <- read_stan_csv(list.files(path="result", pattern="*.csv", full.names=TRUE)
 \end{minted}
 
 \subsection{Scatter plot diagnostic}
-\label{sec:org55e9152}
+\label{sec:orgf64a0b4}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{r}
 mcmc_scatter(as.matrix(fit), pars = c("CL", "ka"), np = nuts_params(fit),
              np_style = scatter_style_np(div_color = "green", div_alpha = 0.8))
@@ -67,7 +68,7 @@ mcmc_scatter(as.matrix(fit), pars = c("CL", "ka"), np = nuts_params(fit),
 \end{center}
 
 \subsection{Energy  plot diagnostic}
-\label{sec:org84300d8}
+\label{sec:org2d6111e}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{r}
 color_scheme_set("red");
 np <- nuts_params(fit);
