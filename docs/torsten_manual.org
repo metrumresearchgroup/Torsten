@@ -175,7 +175,7 @@ integrator(i.e. the general and the mix compartment
 models). The below listed cases present technical difficulties, which we expect to
 overcome in Torsten's next release:
 - In the case of a multiple truncated infusion rate dosing regimen:
-  + The bioavailability (F) and the amount (AMT) must be fixed.
+  - The dosing interval =II= must be fixed.
 
 This library provides Stan language functions that calculate amounts
 in each compartment, given an event schedule and an ODE system.

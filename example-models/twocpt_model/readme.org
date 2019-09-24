@@ -1,0 +1,36 @@
+#+TITLE: Two-compartment model solved using Torsten's =pmx_solve_twocpt= function
+#+OPTIONS: toc:nil
+* Model
+We consider fitting a single-patient two-compartment model with linear absorption,
+to demonstrate the usage of =pmx_solve_twocpt= function.
+* Build
+#+BEGIN_SRC bash
+make ../example-models/twocpt_model/twocpt_model
+#+END_SRC
+* Run
+Using =cmdstan=
+#+BEGIN_SRC bash
+for i in {1..4}; do ./TwoCptModel sample random seed=3892749 id=$i data file=TwoCptModel.data.R init=TwoCptModel.init.R output file=output_$i.csv; done
+#+END_SRC
+* Results
+=./result/= directory contains Stan output from the above
+run. To examine the results in =R=, we use =bayesplot= and =rstan=
+#+BEGIN_SRC R :session
+  library(bayesplot)
+  library(rstan)
+  fit <- read_stan_csv(list.files(path="result", pattern="*.csv", full.names=TRUE))
+#+END_SRC
+
+** Scatter plot diagnostic
+#+BEGIN_SRC R :exports both :results output graphics :file result/scatter.png :session :height 250
+  mcmc_scatter(as.matrix(fit), pars = c("CL", "ka"), np = nuts_params(fit),
+               np_style = scatter_style_np(div_color = "green", div_alpha = 0.8))
+
+#+END_SRC
+
+** Energy  plot diagnostic
+#+BEGIN_SRC R :exports both :results output graphics :file result/energy.png :session :height 250
+  color_scheme_set("red");
+  np <- nuts_params(fit);
+  mcmc_nuts_energy(np) + ggtitle("NUTS Energy Diagnostic")
+#+END_SRC
