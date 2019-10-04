@@ -2,7 +2,7 @@
 name: Torsten feature request
 about: feature request
 title: "[FEATURE] "
-labels: ''
+labels: enhancement
 assignees: yizhang-yiz
 
 ---

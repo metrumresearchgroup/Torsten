@@ -2,7 +2,7 @@
 name: Torsten bug report
 about: Bug report
 title: "[BUG] "
-labels: ''
+labels: bug
 assignees: yizhang-yiz
 
 ---
