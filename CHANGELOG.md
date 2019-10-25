@@ -1,3 +1,24 @@
+# 0.87 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-07-26 Fri&gt;</span></span>
+
+
+## Added
+
+-   MPI dynamic load balance for Torsten's population ODE integrators
+    
+    -   `pmx_integrate_ode_group_adams`
+    -   `pmx_integrate_ode_group_bdf`
+    -   `pmx_integrate_ode_group_rk45`
+    
+    To invoke dynamic load balance instead of default static balance for MPI, issue `TORSTEN_MPI=2` in `make/local`.
+-   Support `RATE` as parameter in `pmx_solve_rk45/bdf/adams` functions.
+
+
+## Changed
+
+-   Some fixes on steady-state solvers
+-   Update to rstan version 2.19.2.
+
+
 # 0.86 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-05-15 Wed&gt;</span></span>
 
 
