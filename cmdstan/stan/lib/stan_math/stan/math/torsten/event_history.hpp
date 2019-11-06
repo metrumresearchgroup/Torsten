@@ -217,6 +217,10 @@ namespace torsten {
       return evid(i) == 1 || evid(i) == 4;
     }
 
+    bool is_replace(int i) const {   // enhancement evid 8
+      return evid(i) == 8;
+    }
+
     /*
      * if an event is steady-state dosing event.
      */

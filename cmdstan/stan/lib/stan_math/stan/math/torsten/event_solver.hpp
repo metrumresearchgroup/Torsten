@@ -67,6 +67,7 @@ namespace torsten{
      *                    (2) other
      *                    (3) reset
      *                    (4) reset AND dosing
+     *                    (8) replace
      * @param[in] cmt compartment number at each event (starts at 1)
      * @param[in] addl additional dosing at each event
      * @param[in] ss steady state approximation at each event
@@ -160,6 +161,9 @@ namespace torsten{
       if (events.is_bolus_dosing(i)) {
         init(0, events.cmt(i) - 1) += events.fractioned_amt(i);
       }
+      if (events.is_replace(i)){   // enhancement evid 8
+        init(0, events.cmt(i) - 1) = events.fractioned_amt(i);
+      }
       tprev = events.time(i);
     }
 
@@ -199,6 +203,9 @@ namespace torsten{
       if (events.is_bolus_dosing(i)) {
         init(0, events.cmt(i) - 1) += events.fractioned_amt(i);
       }
+      if (events.is_replace(i)){
+        init(0, events.cmt(i) - 1) = events.fractioned_amt(i);
+      }
       tprev = events.time(i);
     }
 
@@ -237,6 +244,9 @@ namespace torsten{
 
       if (events.is_bolus_dosing(i)) {
         init(0, events.cmt(i) - 1) += events.fractioned_amt(i);
+      }
+      if (events.is_replace(i)){
+        init(0, events.cmt(i) - 1) = events.fractioned_amt(i);
       }
     }
 
@@ -278,7 +288,7 @@ namespace torsten{
 
       std::vector<MPI_Request> req(np);
       vector<MatrixXd> res_d(np);
-      
+
       res.resize(nCmt, events_rec.total_num_event_times);
 
       PKRec<scalar> init(nCmt);
@@ -389,7 +399,7 @@ namespace torsten{
               iev++;
             }
           }
-        } 
+        }
       }
 
       MPI_Barrier(comm);
@@ -510,7 +520,7 @@ namespace torsten{
 
       const int nCmt = EM::nCmt(events_rec);
       const int np = events_rec.num_subjects();
-      
+
       res.resize(nCmt, events_rec.total_num_event_times);
 
       static bool has_warning = false;
