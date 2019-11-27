@@ -47,19 +47,28 @@ The command line interface `cmdstan` is available to use without installation. T
 cd $TORSTEN_PATH/cmdstan; make model_path/model_name
 ```
 
-Currently MPI support is only available through `cmdstan` interface. To use MPI-supported population/group solvers, add/edit `make/local`
+-   MPI support
 
-```sh
-TORSTEN_MPI=1
-
-# path to MPI headers
-CXXFLAGS += -isystem /usr/local/include
-# if you are using Metrum's metworx platform, add MPICH3's
-# headers with
-# CXXFLAGS += -isystem /usr/local/mpich3/include
-```
-
-Note that currently `TORSTEN_MPI` and `STAN_MPI` flags conflict on processes management and cannot be used in a same Stan model.
+    Torsten's MPI support is of a different flavour than `map_rect` found in Stan. To be able to utilize MPI parallelisation, one first needs to ensure an MPI library such as
+    
+    -   <https://www.mpich.org/downloads/>
+    -   <https://www.open-mpi.org/software/ompi/>
+    
+    is available in the OS. Torsen's implementation is tested on both `MPICH` and `OpenMPI`.
+    
+    Then, to use MPI-supported population/group solvers, add/edit `make/local`
+    
+    ```sh
+    TORSTEN_MPI=1
+    
+    # path to MPI headers
+    CXXFLAGS += -isystem /usr/local/include
+    # if you are using Metrum's metworx platform, add MPICH3's
+    # headers with
+    # CXXFLAGS += -isystem /usr/local/mpich3/include
+    ```
+    
+    Note that currently `TORSTEN_MPI` and `STAN_MPI` flags conflict on processes management and cannot be used in a same Stan model, and MPI support is only available through `cmdstan` interface.
 
 
 ### R interface
