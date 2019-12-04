@@ -65,22 +65,25 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename torsten::return_t<T0, T1, T2, T3, T4, T5, T6>::type,
                Eigen::Dynamic, Eigen::Dynamic>
 pmx_solve_twocpt_bdf(const F& f,
-                    const int nOde,
-                    const std::vector<T0>& time,
-                    const std::vector<T1>& amt,
-                    const std::vector<T2>& rate,
-                    const std::vector<T3>& ii,
-                    const std::vector<int>& evid,
-                    const std::vector<int>& cmt,
-                    const std::vector<int>& addl,
-                    const std::vector<int>& ss,
-                    const std::vector<std::vector<T4> >& theta,
-                    const std::vector<std::vector<T5> >& biovar,
-                    const std::vector<std::vector<T6> >& tlag,
-                    std::ostream* msgs = 0,
-                    double rel_tol = 1e-6,
-                    double abs_tol = 1e-6,
-                    long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
+                     const int nOde,
+                     const std::vector<T0>& time,
+                     const std::vector<T1>& amt,
+                     const std::vector<T2>& rate,
+                     const std::vector<T3>& ii,
+                     const std::vector<int>& evid,
+                     const std::vector<int>& cmt,
+                     const std::vector<int>& addl,
+                     const std::vector<int>& ss,
+                     const std::vector<std::vector<T4> >& theta,
+                     const std::vector<std::vector<T5> >& biovar,
+                     const std::vector<std::vector<T6> >& tlag,
+                     std::ostream* msgs = 0,
+                     double rel_tol = 1e-6,
+                     double abs_tol = 1e-6,
+                     long int max_num_steps = 1e6,
+                     double as_rel_tol = 1e-6,
+                     double as_abs_tol = 1e-6,
+                     long int as_max_num_steps = 1e2) {
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
@@ -101,7 +104,7 @@ pmx_solve_twocpt_bdf(const F& f,
 
   const int &nPK = refactor::PMXTwoCptModel<double, double, double, double>::Ncmt;
   
-  PMXOdeIntegrator<StanBdf> integrator(rel_tol, abs_tol, max_num_steps, msgs);
+  PMXOdeIntegrator<StanBdf> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
 
   Pred1_mix2<F0> pred1(F0(f), rel_tol, abs_tol, max_num_steps, msgs,
                        "bdf");
@@ -145,30 +148,34 @@ pmx_solve_twocpt_bdf(const F& f,
                                             typename torsten::value_type<T_tlag>::type>::type,
                  Eigen::Dynamic, Eigen::Dynamic>
   pmx_solve_twocpt_bdf(const F& f,
-                        const int nOde,
-                        const std::vector<T0>& time,
-                        const std::vector<T1>& amt,
-                        const std::vector<T2>& rate,
-                        const std::vector<T3>& ii,
-                        const std::vector<int>& evid,
-                        const std::vector<int>& cmt,
-                        const std::vector<int>& addl,
-                        const std::vector<int>& ss,
-                        const std::vector<T_par>& pMatrix,
-                        const std::vector<T_biovar>& biovar,
-                        const std::vector<T_tlag>& tlag,
-                        std::ostream* msgs = 0,
-                        double rel_tol = 1e-6,
-                        double abs_tol = 1e-6,
-                        long int max_num_steps = 1e6) {
+                       const int nOde,
+                       const std::vector<T0>& time,
+                       const std::vector<T1>& amt,
+                       const std::vector<T2>& rate,
+                       const std::vector<T3>& ii,
+                       const std::vector<int>& evid,
+                       const std::vector<int>& cmt,
+                       const std::vector<int>& addl,
+                       const std::vector<int>& ss,
+                       const std::vector<T_par>& pMatrix,
+                       const std::vector<T_biovar>& biovar,
+                       const std::vector<T_tlag>& tlag,
+                       std::ostream* msgs = 0,
+                       double rel_tol = 1e-6,
+                       double abs_tol = 1e-6,
+                       long int max_num_steps = 1e6,
+                       double as_rel_tol = 1e-6,
+                       double as_abs_tol = 1e-6,
+                       long int as_max_num_steps = 1e2) {
     auto param_ = torsten::to_array_2d(pMatrix);
     auto biovar_ = torsten::to_array_2d(biovar);
     auto tlag_ = torsten::to_array_2d(tlag);
 
     return pmx_solve_twocpt_bdf(f, nOde,
-                                 time, amt, rate, ii, evid, cmt, addl, ss,
-                                 param_, biovar_, tlag_,
-                                 msgs, rel_tol, abs_tol, max_num_steps);
+                                time, amt, rate, ii, evid, cmt, addl, ss,
+                                param_, biovar_, tlag_,
+                                msgs, rel_tol, abs_tol, max_num_steps,
+                                as_rel_tol, as_abs_tol, as_max_num_steps);
   }
 
   // old version

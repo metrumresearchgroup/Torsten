@@ -336,6 +336,7 @@ namespace stan {
         | algebra_solver_control_r(_r1)[assign_lhs_f(_val, _1)]
         | algebra_solver_r(_r1)[assign_lhs_f(_val, _1)]
         | univariate_integral_control_r(_r1)[assign_lhs_f(_val, _1)]
+        | generalOdeModel_control_ss_r(_r1)[assign_lhs_f(_val, _1)]
         | generalOdeModel_control_r(_r1)[assign_lhs_f(_val, _1)]
         | generalOdeModel_r(_r1)[assign_lhs_f(_val, _1)]
         | pmx_solve_group_control_r(_r1)[assign_lhs_f(_val, _1)]

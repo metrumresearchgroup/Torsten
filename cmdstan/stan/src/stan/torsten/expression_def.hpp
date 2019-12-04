@@ -7,7 +7,7 @@
 namespace stan {
   namespace lang {
 
-#define TORSTEN_FUNC_EXPR(F, R) expression::expression(const F& expr) : expr_(expr) { }
+#define TORSTEN_FUNC_EXPR(F, R) expression::expression(const F& expr) : expr_(expr) { } // NOLINT
     TORSTEN_LANG_FUNCTORS_EXPRESSION_LIST
 #undef TORSTEN_FUNC_EXPR
 

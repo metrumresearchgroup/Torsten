@@ -6,6 +6,185 @@
 #include <vector>
 #include <test/unit/util.hpp>
 
+TEST(linear_interpolation, xdbl){
+  using torsten::linear_interpolation;
+  using stan::math::var;
+  int nx = 5;
+  std::vector<double> x(nx), y(nx);
+
+  const double k = 2.0;
+  for(int i = 0; i < nx; i++){
+    x[i] = i;
+    y[i] = k * i;
+  }
+
+  double xout = 3.4;
+  double yout = linear_interpolation(xout, x, y);
+  EXPECT_FLOAT_EQ(yout, k * xout);
+}
+
+TEST(linear_interpolation, in_range_gradient_x_y){
+  using torsten::linear_interpolation;
+  using stan::math::var;
+  using stan::math::value_of;
+  int nx = 5;
+  std::vector<var> x(nx), y(nx);
+
+  const double k = 2.0;
+  for(int i = 0; i < nx; i++){
+    x[i] = i;
+    y[i] = k * i;
+  }
+
+  {                             // xout is double
+    double xout = 0.4;
+    var yout = linear_interpolation(xout, x, y);
+    int i = 0;
+    var y0 = y.at(i) + (y.at(i+1) - y.at(i)) / (x.at(i+1) - x.at(i)) * (xout - x.at(i));
+    EXPECT_FLOAT_EQ(value_of(yout), k * xout);
+
+    std::vector<double> g1, g2;
+    stan::math::set_zero_all_adjoints();
+    yout.grad(x, g1);
+    stan::math::set_zero_all_adjoints();
+    y0.grad(x, g2);
+    for (int j = 0; j < nx; ++j) {
+      EXPECT_FLOAT_EQ(g1[j], g2[j]);
+    }
+
+    stan::math::set_zero_all_adjoints();
+    yout.grad(y, g1);
+    stan::math::set_zero_all_adjoints();
+    y0.grad(y, g2);
+    for (int j = 0; j < nx; ++j) {
+      EXPECT_FLOAT_EQ(g1[j], g2[j]);
+    }
+  }
+
+  {                             // xout is double
+    double xout = 2.4;
+    var yout = linear_interpolation(xout, x, y);
+    int i = 2;
+    var y0 = y.at(i) + (y.at(i+1) - y.at(i)) / (x.at(i+1) - x.at(i)) * (xout - x.at(i));
+    EXPECT_FLOAT_EQ(value_of(yout), k * xout);
+
+    std::vector<double> g1, g2;
+    stan::math::set_zero_all_adjoints();
+    yout.grad(x, g1);
+    stan::math::set_zero_all_adjoints();
+    y0.grad(x, g2);
+    for (int j = 0; j < nx; ++j) {
+      EXPECT_FLOAT_EQ(g1[j], g2[j]);
+    }
+
+    stan::math::set_zero_all_adjoints();
+    yout.grad(y, g1);
+    stan::math::set_zero_all_adjoints();
+    y0.grad(y, g2);
+    for (int j = 0; j < nx; ++j) {
+      EXPECT_FLOAT_EQ(g1[j], g2[j]);
+    }
+  }
+
+  {                             // xout is var
+    var xout = 1.4;
+    var yout = linear_interpolation(xout, x, y);
+    int i = 1;
+    var y0 = y.at(i) + (y.at(i+1) - y.at(i)) / (x.at(i+1) - x.at(i)) * (xout - x.at(i));
+    EXPECT_FLOAT_EQ(value_of(yout), value_of(k * xout));
+
+    std::vector<double> g1, g2;
+    std::vector<var> xout_v{xout};
+    stan::math::set_zero_all_adjoints();
+    yout.grad(xout_v, g1);
+    stan::math::set_zero_all_adjoints();
+    y0.grad(xout_v, g2);
+    for (int j = 0; j < 1; ++j) {
+      EXPECT_FLOAT_EQ(g1[j], g2[j]);
+    }
+
+    stan::math::set_zero_all_adjoints();
+    yout.grad(x, g1);
+    stan::math::set_zero_all_adjoints();
+    y0.grad(x, g2);
+    for (int j = 0; j < nx; ++j) {
+      EXPECT_FLOAT_EQ(g1[j], g2[j]);
+    }
+
+    stan::math::set_zero_all_adjoints();
+    yout.grad(y, g1);
+    stan::math::set_zero_all_adjoints();
+    y0.grad(y, g2);
+    for (int j = 0; j < nx; ++j) {
+      EXPECT_FLOAT_EQ(g1[j], g2[j]);
+    }
+  }
+}
+
+TEST(linear_interpolation, out_range_gradient_x_y){
+  using torsten::linear_interpolation;
+  using stan::math::var;
+  using stan::math::value_of;
+  int nx = 5;
+  std::vector<var> x(nx), y(nx);
+
+  const double k = 2.0;
+  for(int i = 0; i < nx; i++){
+    x[i] = i;
+    y[i] = k * i;
+  }
+
+  {                             // xout is double
+    double xout = -1.2;
+    var yout = linear_interpolation(xout, x, y);
+    int i = 0;
+    var y0 = y.front();
+    EXPECT_FLOAT_EQ(value_of(yout), value_of(y.front()));
+
+    std::vector<double> g1, g2;
+    stan::math::set_zero_all_adjoints();
+    yout.grad(x, g1);
+    stan::math::set_zero_all_adjoints();
+    y0.grad(x, g2);
+    for (int j = 0; j < nx; ++j) {
+      EXPECT_FLOAT_EQ(g1[j], g2[j]);
+    }
+
+    stan::math::set_zero_all_adjoints();
+    yout.grad(y, g1);
+    stan::math::set_zero_all_adjoints();
+    y0.grad(y, g2);
+    for (int j = 0; j < nx; ++j) {
+      EXPECT_FLOAT_EQ(g1[j], g2[j]);
+    }
+  }
+
+  {                             // xout is double
+    double xout = 7.5;
+    var yout = linear_interpolation(xout, x, y);
+    int i = 2;
+    var y0 = y.back();
+    EXPECT_FLOAT_EQ(value_of(yout), value_of(y.back()));
+
+    std::vector<double> g1, g2;
+    stan::math::set_zero_all_adjoints();
+    yout.grad(x, g1);
+    stan::math::set_zero_all_adjoints();
+    y0.grad(x, g2);
+    for (int j = 0; j < nx; ++j) {
+      EXPECT_FLOAT_EQ(g1[j], g2[j]);
+    }
+
+    stan::math::set_zero_all_adjoints();
+    yout.grad(y, g1);
+    stan::math::set_zero_all_adjoints();
+    y0.grad(y, g2);
+    for (int j = 0; j < nx; ++j) {
+      EXPECT_FLOAT_EQ(g1[j], g2[j]);
+    }
+  }
+}
+
 TEST(linear_interpolation, linear_example) {
   int nx = 5, nout = 3;
   std::vector<double> x(nx), y(nx), xout(nout), yout;

@@ -153,8 +153,4 @@
 #include <stan/torsten/torsten_ast_def.hpp>
 
 
-// Torsten
-#include <stan/torsten/torsten_ast_def.hpp>
-
-
 #endif

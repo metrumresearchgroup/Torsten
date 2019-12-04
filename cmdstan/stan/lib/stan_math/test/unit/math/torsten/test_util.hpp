@@ -3,7 +3,7 @@
 
 #include <stan/math/prim/mat/fun/Eigen.hpp>
 #include <stan/math/rev/mat.hpp>
-#include <stan/math/prim/mat/functor/finite_diff_gradient.hpp>
+#include <stan/math/torsten/finite_diff_gradient.hpp>
 #include <gtest/gtest.h>
 #include <test/unit/math/prim/arr/functor/harmonic_oscillator.hpp>
 #include <test/unit/math/prim/arr/functor/lorenz.hpp>
@@ -727,10 +727,11 @@ namespace torsten {
                    double h,
                    double fval_eps,
                    double r_sens_eps,  double a_sens_eps) {
+      using stan::math::value_of;
       std::vector<stan::math::var> theta_v(stan::math::to_var(theta));
       std::vector<double> theta_1(theta), theta_2(theta);
 
-      Eigen::MatrixXd fd = f1(theta);
+      auto fd = f1(theta);
       Eigen::Matrix<stan::math::var, -1, -1> fv = f2(theta_v);
 
       EXPECT_EQ(fd.rows(), fv.rows());
@@ -740,20 +741,14 @@ namespace torsten {
       for (int k = 0; k < fv.size(); ++k) {
         stan::math::set_zero_all_adjoints();
         fv(k).grad(theta_v, g);
-        const Eigen::Matrix<double, -1, 1> theta_x = stan::math::to_vector(theta);
-        auto f = [&f1, &k](const Eigen::Matrix<double, -1, 1>& x) {
-          std::vector<double> x_arr = stan::math::to_array_1d(x);
-          return f1(x_arr)(k);
-        };
-        double fx;
-        Eigen::Matrix<double, -1, 1> g_fd(g.size());
-        stan::math::finite_diff_gradient(f, theta_x, fx, g_fd, h);
-        EXPECT_NEAR(fv(k).val(), fx, fval_eps);
+        auto g_fd = torsten::finite_diff_gradient(f1, theta, k, h);
+        auto fx = fd(k);
+        EXPECT_NEAR(fv(k).val(), value_of(fx), fval_eps);
         for (size_t i = 0; i < g.size(); ++i) {
-          if (abs(g[i]) < 1e-4 || abs(g_fd(i)) < 1e-4) {
-            EXPECT_NEAR(g[i], g_fd(i), a_sens_eps);
+          if (abs(g[i]) < 1e-4 || abs(g_fd[i]) < 1e-4) {
+            EXPECT_NEAR(g[i], value_of(g_fd[i]), a_sens_eps);
           } else {
-            EXPECT_NEAR(g[i], g_fd(i), r_sens_eps * std::max(abs(g[i]), abs(g_fd(i))));
+            EXPECT_NEAR(g[i], value_of(g_fd[i]), r_sens_eps * std::max(abs(g[i]), abs(value_of(g_fd[i]))));
           }
         }
       }
@@ -1159,10 +1154,10 @@ namespace torsten {
 #define TORSTEN_CPT_GRAD_THETA_TEST(FUN, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, \
                                     H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                     \
   {                                                                                                     \
-    auto f1 = [&] (std::vector<std::vector<double> >& x) {                                              \
+    auto f1 = [&] (const std::vector<std::vector<double> >& x) {                                        \
       return FUN(TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, x, BIOVAR, TLAG);                            \
     };                                                                                                  \
-    auto f2 = [&] (std::vector<std::vector<stan::math::var> >& x) {                                     \
+    auto f2 = [&] (const std::vector<std::vector<stan::math::var> >& x) {                               \
       return FUN(TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, x, BIOVAR, TLAG);                            \
     };                                                                                                  \
     torsten::test::test_grad(f1, f2, THETA, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                            \
@@ -1171,10 +1166,10 @@ namespace torsten {
 #define TORSTEN_LIN_GRAD_THETA_TEST(FUN, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, \
                                     H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                     \
   {                                                                                                     \
-    auto f1 = [&] (std::vector<Eigen::MatrixXd>& x) {                                                   \
+    auto f1 = [&] (const std::vector<Eigen::MatrixXd>& x) {                                             \
       return FUN(TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, x, BIOVAR, TLAG);                            \
     };                                                                                                  \
-    auto f2 = [&] (std::vector<stan::math::matrix_v>& x) {                                              \
+    auto f2 = [&] (const std::vector<stan::math::matrix_v>& x) {                                        \
       return FUN(TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, x, BIOVAR, TLAG);                            \
     };                                                                                                  \
     torsten::test::test_grad(f1, f2, THETA, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                            \
@@ -1183,10 +1178,10 @@ namespace torsten {
 #define TORSTEN_CPT_GRAD_BIOVAR_TEST(FUN, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, \
                                     H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                      \
   {                                                                                                      \
-    auto f1 = [&] (std::vector<std::vector<double> >& x) {                                               \
+    auto f1 = [&] (const std::vector<std::vector<double> >& x) {                                         \
       return FUN(TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, x, TLAG);                              \
     };                                                                                                   \
-    auto f2 = [&] (std::vector<std::vector<stan::math::var> >& x) {                                      \
+    auto f2 = [&] (const std::vector<std::vector<stan::math::var> >& x) {                                \
       return FUN(TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, x, TLAG);                              \
     };                                                                                                   \
     torsten::test::test_grad(f1, f2, BIOVAR, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                            \
@@ -1195,10 +1190,10 @@ namespace torsten {
 #define TORSTEN_CPT_GRAD_TLAG_TEST(FUN, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG,   \
                                     H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                      \
   {                                                                                                      \
-    auto f1 = [&] (std::vector<std::vector<double> >& x) {                                               \
+    auto f1 = [&] (const std::vector<std::vector<double> >& x) {                                         \
       return FUN(TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, x);                            \
     };                                                                                                   \
-    auto f2 = [&] (std::vector<std::vector<stan::math::var> >& x) {                                      \
+    auto f2 = [&] (const std::vector<std::vector<stan::math::var> >& x) {                                \
       return FUN(TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, x);                            \
     };                                                                                                   \
     torsten::test::test_grad(f1, f2, TLAG, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                              \
@@ -1207,10 +1202,10 @@ namespace torsten {
 #define TORSTEN_CPT_GRAD_RATE_TEST(FUN, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG,   \
                                     H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                      \
   {                                                                                                      \
-    auto f1 = [&] (std::vector<double>& x) {                                                             \
+    auto f1 = [&] (const std::vector<double>& x) {                                                       \
       return FUN(TIME, AMT, x, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG);                            \
     };                                                                                                   \
-    auto f2 = [&] (std::vector<stan::math::var>& x) {                                                    \
+    auto f2 = [&] (const std::vector<stan::math::var>& x) {                                              \
       return FUN(TIME, AMT, x, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG);                            \
     };                                                                                                   \
     torsten::test::test_grad(f1, f2, RATE, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                              \
@@ -1250,10 +1245,10 @@ namespace torsten {
                                    RTOL, ATOL, NSTEP,                                                             \
                                    H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                                \
   {                                                                                                               \
-    auto f1 = [&] (std::vector<std::vector<double> >& x) {                                                        \
+    auto f1 = [&] (const std::vector<std::vector<double> >& x) {                                                  \
       return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, x, BIOVAR, TLAG, 0, RTOL, ATOL, NSTEP);       \
     };                                                                                                            \
-    auto f2 = [&] (std::vector<std::vector<stan::math::var> >& x) {                                               \
+    auto f2 = [&] (const std::vector<std::vector<stan::math::var> >& x) {                                         \
       return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, x, BIOVAR, TLAG, 0, RTOL, ATOL, NSTEP);       \
     };                                                                                                            \
     torsten::test::test_grad(f1, f2, THETA, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                                      \
@@ -1263,10 +1258,10 @@ namespace torsten {
                                    RTOL, ATOL, NSTEP,                                                             \
                                    H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                                \
   {                                                                                                               \
-    auto f1 = [&] (std::vector<std::vector<double> >& x) {                                                        \
+    auto f1 = [&] (const std::vector<std::vector<double> >& x) {                                                  \
       return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, x, TLAG, 0, RTOL, ATOL, NSTEP);        \
     };                                                                                                            \
-    auto f2 = [&] (std::vector<std::vector<stan::math::var> >& x) {                                               \
+    auto f2 = [&] (const std::vector<std::vector<stan::math::var> >& x) {                                         \
       return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, x, TLAG, 0, RTOL, ATOL, NSTEP);        \
     };                                                                                                            \
     torsten::test::test_grad(f1, f2, BIOVAR, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                                     \
@@ -1277,10 +1272,10 @@ namespace torsten {
                                    RTOL, ATOL, NSTEP,                                                             \
                                    H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                                \
   {                                                                                                               \
-    auto f1 = [&] (std::vector<std::vector<double> >& x) {                                                        \
+    auto f1 = [&] (const std::vector<std::vector<double> >& x) {                                                  \
       return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, x, 0, RTOL, ATOL, NSTEP);      \
     };                                                                                                            \
-    auto f2 = [&] (std::vector<std::vector<stan::math::var> >& x) {                                               \
+    auto f2 = [&] (const std::vector<std::vector<stan::math::var> >& x) {                                         \
       return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, x, 0, RTOL, ATOL, NSTEP);      \
     };                                                                                                            \
     torsten::test::test_grad(f1, f2, TLAG, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                                       \
@@ -1290,13 +1285,53 @@ namespace torsten {
                                    RTOL, ATOL, NSTEP,                                                             \
                                     H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                               \
   {                                                                                                               \
-    auto f1 = [&] (std::vector<double>& x) {                                                                      \
+    auto f1 = [&] (const std::vector<double>& x) {                                                                \
       return FUN(F, NCMT, TIME, AMT, x, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, 0, RTOL, ATOL, NSTEP);      \
     };                                                                                                            \
-    auto f2 = [&] (std::vector<stan::math::var>& x) {                                                             \
+    auto f2 = [&] (const std::vector<stan::math::var>& x) {                                                       \
       return FUN(F, NCMT, TIME, AMT, x, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, 0, RTOL, ATOL, NSTEP);      \
     };                                                                                                            \
     torsten::test::test_grad(f1, f2, RATE, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                                       \
   }
+
+#define TORSTEN_ODE_GRAD_AMT_TEST(FUN, F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG,    \
+                                   RTOL, ATOL, NSTEP,                                                             \
+                                    H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                               \
+  {                                                                                                               \
+    auto f1 = [&] (const std::vector<double>& x) {                                                                \
+      return FUN(F, NCMT, TIME, x, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, 0, RTOL, ATOL, NSTEP);     \
+    };                                                                                                            \
+    auto f2 = [&] (const std::vector<stan::math::var>& x) {                                                       \
+      return FUN(F, NCMT, TIME, x, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, 0, RTOL, ATOL, NSTEP);     \
+    };                                                                                                            \
+    torsten::test::test_grad(f1, f2, AMT, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                                        \
+  }
+
+#define TORSTEN_ODE_GRAD_TIME_TEST(FUN, F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG,   \
+                                   RTOL, ATOL, NSTEP,                                                             \
+                                   H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                                \
+  {                                                                                                               \
+    auto f1 = [&] (const std::vector<double>& x) {                                                                \
+      return FUN(F, NCMT, x, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, 0, RTOL, ATOL, NSTEP);      \
+    };                                                                                                            \
+    auto f2 = [&] (const std::vector<stan::math::var>& x) {                                                       \
+      return FUN(F, NCMT, x, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, 0, RTOL, ATOL, NSTEP);      \
+    };                                                                                                            \
+    torsten::test::test_grad(f1, f2, TIME, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                                       \
+  }
+
+#define TORSTEN_ODE_GRAD_II_TEST(FUN, F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG,     \
+                                   RTOL, ATOL, NSTEP,                                                             \
+                                    H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                               \
+   {                                                                                                              \
+     auto f1 = [&] (const std::vector<double>& x) {                                                               \
+       return FUN(F, NCMT, TIME, AMT, RATE, x, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, 0, RTOL, ATOL, NSTEP);   \
+     };                                                                                                           \
+     auto f2 = [&] (const std::vector<stan::math::var>& x) {                                                      \
+       return FUN(F, NCMT, TIME, AMT, RATE, x, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, 0, RTOL, ATOL, NSTEP);   \
+     };                                                                                                           \
+     torsten::test::test_grad(f1, f2, II, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                                        \
+   }
+
 
 #endif

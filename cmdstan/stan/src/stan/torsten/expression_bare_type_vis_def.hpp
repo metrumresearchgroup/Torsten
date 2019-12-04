@@ -7,7 +7,7 @@
 namespace stan {
   namespace lang {
 
-#define TORSTEN_FUNC_EXPR(F, R) bare_expr_type expression_bare_type_vis::operator()(const F& e) const {return R;}
+#define TORSTEN_FUNC_EXPR(F, R) bare_expr_type expression_bare_type_vis::operator()(const F& e) const {return R;} // NOLINT
     TORSTEN_LANG_FUNCTORS_EXPRESSION_LIST
 #undef TORSTEN_FUNC_EXPR
 

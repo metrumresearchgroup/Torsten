@@ -8,6 +8,7 @@
 #include <stan/math/torsten/pk_nvars.hpp>
 #include <stan/math/prim/scal/err/check_positive_finite.hpp>
 #include <stan/math/prim/scal/err/check_finite.hpp>
+#include <stan/math/prim/scal/err/check_nonnegative.hpp>
 
 namespace refactor {
 
@@ -137,14 +138,13 @@ namespace refactor {
         ka_},
       par_{CL_, Q_, V2_, V3_, ka_}
     {
-      using stan::math::check_positive_finite;
-      using stan::math::check_finite;
       const char* fun = "PMXTwoCptModel";
-      check_positive_finite(fun, "CL", CL_);
-      check_positive_finite(fun, "Q", Q_);
-      check_positive_finite(fun, "V2", V2_);
-      check_positive_finite(fun, "V3", V3_);
-      check_positive_finite(fun, "ka", ka_);
+      stan::math::check_positive_finite(fun, "CL", CL_);
+      stan::math::check_positive_finite(fun, "Q", Q_);
+      stan::math::check_positive_finite(fun, "V2", V2_);
+      stan::math::check_positive_finite(fun, "V3", V3_);
+      stan::math::check_nonnegative(fun, "ka", ka_);
+      stan::math::check_finite(fun, "ka", ka_);
     }
 
   /**
@@ -283,22 +283,26 @@ namespace refactor {
 
       // contribution from cpt 0
       {
-        const T_par a1 = ka_ * (k21_ - alpha_[0]) / ((ka_ - alpha_[0]) * (alpha_[1] - alpha_[0]));
-        const T_par a2 = ka_ * (k21_ - alpha_[1]) / ((ka_ - alpha_[1]) * (alpha_[0] - alpha_[1]));
-        const T_par a3 = -(a1 + a2);
-        const T_par a4 = ka_ * k12_ / ((ka_ - alpha_[0]) * (alpha_[1] - alpha_[0]));
-        const T_par a5 = ka_ * k12_ / ((ka_ - alpha_[1]) * (alpha_[0] - alpha_[1]));
-        const T_par a6 = -(a4 + a5);
+        if (ka_ > 0.0) {
+          const T_par a1 = ka_ * (k21_ - alpha_[0]) / ((ka_ - alpha_[0]) * (alpha_[1] - alpha_[0]));
+          const T_par a2 = ka_ * (k21_ - alpha_[1]) / ((ka_ - alpha_[1]) * (alpha_[0] - alpha_[1]));
+          const T_par a3 = -(a1 + a2);
+          const T_par a4 = ka_ * k12_ / ((ka_ - alpha_[0]) * (alpha_[1] - alpha_[0]));
+          const T_par a5 = ka_ * k12_ / ((ka_ - alpha_[1]) * (alpha_[0] - alpha_[1]));
+          const T_par a6 = -(a4 + a5);
 
-        // bolus
-        pred(0) += y0_[0] * exp(-ka_ * dt);
-        pred(1) += y0_[0] * (a1 * exp(-alpha_[0] * dt) + a2 * exp(-alpha_[1] * dt) + a3 * exp(-alpha_[2] * dt));
-        pred(2) += y0_[0] * (a4 * exp(-alpha_[0] * dt) + a5 * exp(-alpha_[1] * dt) + a6 * exp(-alpha_[2] * dt));
+          // bolus
+          pred(0) += y0_[0] * exp(-ka_ * dt);
+          pred(1) += y0_[0] * (a1 * exp(-alpha_[0] * dt) + a2 * exp(-alpha_[1] * dt) + a3 * exp(-alpha_[2] * dt));
+          pred(2) += y0_[0] * (a4 * exp(-alpha_[0] * dt) + a5 * exp(-alpha_[1] * dt) + a6 * exp(-alpha_[2] * dt));
 
-        // infusion
-        pred(0) += rate_[0] * (1 - exp(-ka_ * dt)) / ka_;
-        pred(1) += rate_[0] * (a1 * (1 - exp(-alpha_[0] * dt)) / alpha_[0] + a2 * (1 - exp(-alpha_[1] * dt)) / alpha_[1] + a3 * (1 - exp(-alpha_[2] * dt)) / alpha_[2]);
-        pred(2) += rate_[0] * (a4 * (1 - exp(-alpha_[0] * dt)) / alpha_[0] + a5 * (1 - exp(-alpha_[1] * dt)) / alpha_[1] + a6 * (1 - exp(-alpha_[2] * dt)) / alpha_[2]);
+          // infusion
+          pred(0) += rate_[0] * (1 - exp(-ka_ * dt)) / ka_;
+          pred(1) += rate_[0] * (a1 * (1 - exp(-alpha_[0] * dt)) / alpha_[0] + a2 * (1 - exp(-alpha_[1] * dt)) / alpha_[1] + a3 * (1 - exp(-alpha_[2] * dt)) / alpha_[2]);
+          pred(2) += rate_[0] * (a4 * (1 - exp(-alpha_[0] * dt)) / alpha_[0] + a5 * (1 - exp(-alpha_[1] * dt)) / alpha_[1] + a6 * (1 - exp(-alpha_[2] * dt)) / alpha_[2]);
+        } else {
+          pred(0) += y0_[0] + rate_[0] * dt;
+        }
       }
 
       // contribution from cpt 1
@@ -362,6 +366,7 @@ namespace refactor {
 
       stan::math::check_positive_finite("steady state two-cpt solver", "cmt", cmt);
       stan::math::check_less("steady state two-cpt solver", "cmt", cmt, 4);
+      stan::math::check_positive_finite("steady state two-cpt solver", "ka", ka_);
 
       std::vector<ss_scalar_type> a(3, 0);
       Matrix<ss_scalar_type, -1, 1> pred = Matrix<ss_scalar_type, 1, Dynamic>::Zero(3);

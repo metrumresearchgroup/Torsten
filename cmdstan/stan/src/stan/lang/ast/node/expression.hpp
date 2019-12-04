@@ -34,15 +34,16 @@ namespace stan {
 
     struct expression {
       typedef boost::variant<
-                             boost::recursive_wrapper<univariate_integral_control>,
-                             boost::recursive_wrapper<generalOdeModel_control>,
+                             boost::recursive_wrapper<univariate_integral_control>, // NOLINT
+                             boost::recursive_wrapper<generalOdeModel_control_ss>, // NOLINT
+                             boost::recursive_wrapper<generalOdeModel_control>, // NOLINT
                              boost::recursive_wrapper<generalOdeModel>,
-                             boost::recursive_wrapper<pmx_solve_group_control>,
+                             boost::recursive_wrapper<pmx_solve_group_control>, // NOLINT
                              boost::recursive_wrapper<pmx_solve_group>,
+                             boost::recursive_wrapper<pmx_integrate_ode_control>, // NOLINT
                              boost::recursive_wrapper<pmx_integrate_ode>,
-                             boost::recursive_wrapper<pmx_integrate_ode_control>,
-                             boost::recursive_wrapper<pmx_integrate_ode_group>,
-                             boost::recursive_wrapper<pmx_integrate_ode_group_control>,
+                             boost::recursive_wrapper<pmx_integrate_ode_group_control>, // NOLINT
+                             boost::recursive_wrapper<pmx_integrate_ode_group>, // NOLINT
                              boost::recursive_wrapper<nil>,
                              boost::recursive_wrapper<int_literal>,
                              boost::recursive_wrapper<double_literal>,

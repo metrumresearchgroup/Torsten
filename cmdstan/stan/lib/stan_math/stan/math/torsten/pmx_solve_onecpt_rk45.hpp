@@ -69,22 +69,25 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename torsten::return_t<T0, T1, T2, T3, T4, T5, T6>::type,
                Eigen::Dynamic, Eigen::Dynamic>
 pmx_solve_onecpt_rk45(const F& f,
-                     const int nOde,
-                     const std::vector<T0>& time,
-                     const std::vector<T1>& amt,
-                     const std::vector<T2>& rate,
-                     const std::vector<T3>& ii,
-                     const std::vector<int>& evid,
-                     const std::vector<int>& cmt,
-                     const std::vector<int>& addl,
-                     const std::vector<int>& ss,
-                     const std::vector<std::vector<T4> >& theta,
-                     const std::vector<std::vector<T5> >& biovar,
-                     const std::vector<std::vector<T6> >& tlag,
-                     std::ostream* msgs = 0,
-                     double rel_tol = 1e-6,
-                     double abs_tol = 1e-6,
-                     long int max_num_steps = 1e6) {  // NOLINT(runtime/int)
+                      const int nOde,
+                      const std::vector<T0>& time,
+                      const std::vector<T1>& amt,
+                      const std::vector<T2>& rate,
+                      const std::vector<T3>& ii,
+                      const std::vector<int>& evid,
+                      const std::vector<int>& cmt,
+                      const std::vector<int>& addl,
+                      const std::vector<int>& ss,
+                      const std::vector<std::vector<T4> >& theta,
+                      const std::vector<std::vector<T5> >& biovar,
+                      const std::vector<std::vector<T6> >& tlag,
+                      std::ostream* msgs = 0,
+                      double rel_tol = 1e-6,
+                      double abs_tol = 1e-6,
+                      long int max_num_steps = 1e6,
+                      double as_rel_tol = 1e-6,
+                      double as_abs_tol = 1e-6,
+                      long int as_max_num_steps = 1e2) {
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
@@ -104,7 +107,7 @@ pmx_solve_onecpt_rk45(const F& f,
 
   const int &nPK = refactor::PMXOneCptModel<double, double, double, double>::Ncmt;
 
-  PMXOdeIntegrator<StanRk45> integrator(rel_tol, abs_tol, max_num_steps, msgs);
+  PMXOdeIntegrator<StanRk45> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
 
   Pred1_mix1<F0> pred1(F0(f), rel_tol, abs_tol, max_num_steps, msgs,
                        "rk45");
@@ -163,7 +166,10 @@ pmx_solve_onecpt_rk45(const F& f,
                         std::ostream* msgs = 0,
                         double rel_tol = 1e-6,
                         double abs_tol = 1e-6,
-                        long int max_num_steps = 1e6) {
+                        long int max_num_steps = 1e6,
+                        double as_rel_tol = 1e-6,
+                        double as_abs_tol = 1e-6,
+                        long int as_max_num_steps = 1e2) {
     auto param_ = torsten::to_array_2d(pMatrix);
     auto biovar_ = torsten::to_array_2d(biovar);
     auto tlag_ = torsten::to_array_2d(tlag);
@@ -171,7 +177,8 @@ pmx_solve_onecpt_rk45(const F& f,
     return pmx_solve_onecpt_rk45(f, nOde,
                                  time, amt, rate, ii, evid, cmt, addl, ss,
                                  param_, biovar_, tlag_,
-                                 msgs, rel_tol, abs_tol, max_num_steps);
+                                 msgs, rel_tol, abs_tol, max_num_steps,
+                                 as_rel_tol, as_abs_tol, as_max_num_steps);
   }
 
   // old version

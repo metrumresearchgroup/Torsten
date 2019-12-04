@@ -6,6 +6,7 @@
 #define TORSTEN_LANG_FUNCTORS_EXPRESSION_LIST                                            \
   TORSTEN_FUNC_EXPR(univariate_integral_control     , bare_expr_type(double_type()))     \
   TORSTEN_FUNC_EXPR(generalOdeModel_control         , bare_expr_type(matrix_type()))     \
+  TORSTEN_FUNC_EXPR(generalOdeModel_control_ss      , bare_expr_type(matrix_type()))     \
   TORSTEN_FUNC_EXPR(generalOdeModel                 , bare_expr_type(matrix_type()))     \
   TORSTEN_FUNC_EXPR(pmx_solve_group_control         , bare_expr_type(matrix_type()))     \
   TORSTEN_FUNC_EXPR(pmx_solve_group                 , bare_expr_type(matrix_type()))     \

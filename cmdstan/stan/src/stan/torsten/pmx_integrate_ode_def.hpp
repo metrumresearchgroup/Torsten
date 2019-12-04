@@ -9,11 +9,11 @@ namespace stan {
 
     pmx_integrate_ode::pmx_integrate_ode() { }
 
-    pmx_integrate_ode::pmx_integrate_ode(const std::string& integration_function_name,
-                                         const std::string& system_function_name,
-                                         const expression& y0, const expression& t0,
-                                         const expression& ts, const expression& theta,
-                                         const expression& x, const expression& x_int)
+    pmx_integrate_ode::pmx_integrate_ode(const std::string& integration_function_name, // NOLINT
+                                         const std::string& system_function_name, // NOLINT
+                                         const expression& y0, const expression& t0, // NOLINT
+                                         const expression& ts, const expression& theta, // NOLINT
+                                         const expression& x, const expression& x_int) // NOLINT
       : integration_function_name_(integration_function_name),
         system_function_name_(system_function_name),
         y0_(y0), t0_(t0), ts_(ts), theta_(theta), x_(x), x_int_(x_int) {  }

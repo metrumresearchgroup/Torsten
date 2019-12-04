@@ -27,7 +27,7 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4_contai
 struct NONMENEventsRecord {
   using T4 = typename stan::math::value_type<T4_container>::type;
   using T_scalar = typename torsten::return_t<T0, T1, T2, T3, T4, T5, T6>::type;
-  using T_time = typename torsten::return_t<T0, T1, T6, T2>::type;
+  using T_time = typename torsten::return_t<T0, T1, T3, T6, T2>::type;
   using T_rate = typename torsten::return_t<T2, T5>::type;
   using T_amt = typename torsten::return_t<T1, T5>::type;
   using T_par = T4;

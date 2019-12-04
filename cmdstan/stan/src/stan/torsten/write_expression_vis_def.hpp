@@ -10,7 +10,7 @@
 namespace stan {
 namespace lang {
 
-std::string write_expression_vis::operator()(const univariate_integral_control& e) const {
+std::string write_expression_vis::operator()(const univariate_integral_control& e) const { // NOLINT
   std::stringstream ss;
   ss << e.integration_function_name_ << "(" << e.system_function_name_ << ", "
      << e.t0_.to_string() << ", " << e.t1_.to_string() << ", "
@@ -18,7 +18,7 @@ std::string write_expression_vis::operator()(const univariate_integral_control& 
   return ss.str();
 }
 
-std::string write_expression_vis::operator()(const pmx_integrate_ode& e) const {
+std::string write_expression_vis::operator()(const pmx_integrate_ode& e) const { // NOLINT
   std::stringstream ss;
   ss << e.integration_function_name_ << "(" << e.system_function_name_ << ", "
      << e.y0_.to_string() << ", " << e.t0_.to_string() << ", "
@@ -27,7 +27,7 @@ std::string write_expression_vis::operator()(const pmx_integrate_ode& e) const {
   return ss.str();
 }
 
-std::string write_expression_vis::operator()(const pmx_integrate_ode_control& e) const {
+std::string write_expression_vis::operator()(const pmx_integrate_ode_control& e) const { // NOLINT
   std::stringstream ss;
   ss << e.integration_function_name_ << "(" << e.system_function_name_ << ", "
      << e.y0_.to_string() << ", " << e.t0_.to_string() << ", "
@@ -37,7 +37,7 @@ std::string write_expression_vis::operator()(const pmx_integrate_ode_control& e)
   return ss.str();
 }
 
-std::string write_expression_vis::operator()(const pmx_integrate_ode_group& e) const {
+std::string write_expression_vis::operator()(const pmx_integrate_ode_group& e) const { // NOLINT
   std::stringstream ss;
   ss << e.integration_function_name_ << "(" << e.system_function_name_ << ", "
      << e.y0_.to_string() << ", " << e.t0_.to_string() << ", "
@@ -47,7 +47,7 @@ std::string write_expression_vis::operator()(const pmx_integrate_ode_group& e) c
   return ss.str();
 }
 
-std::string write_expression_vis::operator()(const pmx_integrate_ode_group_control& e) const {
+std::string write_expression_vis::operator()(const pmx_integrate_ode_group_control& e) const { // NOLINT
   std::stringstream ss;
   ss << e.integration_function_name_ << "(" << e.system_function_name_ << ", "
      << e.y0_.to_string() << ", " << e.t0_.to_string() << ", "
@@ -58,7 +58,7 @@ std::string write_expression_vis::operator()(const pmx_integrate_ode_group_contr
   return ss.str();
 }
 
-std::string write_expression_vis::operator()(const generalOdeModel& e) const {
+std::string write_expression_vis::operator()(const generalOdeModel& e) const { // NOLINT
   std::stringstream ss;
   ss << e.integration_function_name_ << "(" << e.system_function_name_ << ", "
      << e.nCmt_.to_string() << ", "
@@ -76,7 +76,7 @@ std::string write_expression_vis::operator()(const generalOdeModel& e) const {
   return ss.str();
 }
 
-std::string write_expression_vis::operator()(const generalOdeModel_control& e) const {
+std::string write_expression_vis::operator()(const generalOdeModel_control& e) const { // NOLINT
   std::stringstream ss;
   ss << e.integration_function_name_ << "(" << e.system_function_name_ << ", "
      << e.nCmt_.to_string() << ", "
@@ -97,7 +97,31 @@ std::string write_expression_vis::operator()(const generalOdeModel_control& e) c
   return ss.str();
 }
 
-std::string write_expression_vis::operator()(const pmx_solve_group& e) const {
+std::string write_expression_vis::operator()(const generalOdeModel_control_ss& e) const { // NOLINT
+  std::stringstream ss;
+  ss << e.integration_function_name_ << "(" << e.system_function_name_ << ", "
+     << e.nCmt_.to_string() << ", "
+     << e.time_.to_string() << ", "
+     << e.amt_.to_string() << ", "
+     << e.rate_.to_string() << ", "
+     << e.ii_.to_string() << ", "
+     << e.evid_.to_string() << ", "
+     << e.cmt_.to_string() << ", "
+     << e.addl_.to_string() << ", "
+     << e.ss_.to_string() << ", "
+     << e.pMatrix_.to_string() << ", "
+     << e.biovar_.to_string() << ", "
+     << e.tlag_.to_string() << ", "
+     << e.rel_tol_.to_string() << ", "
+     << e.abs_tol_.to_string() << ", "
+     << e.max_num_steps_.to_string() << ", "
+     << e.ss_rel_tol_.to_string() << ", "
+     << e.ss_abs_tol_.to_string() << ", "
+     << e.ss_max_num_steps_.to_string() << ")";
+  return ss.str();
+}
+
+std::string write_expression_vis::operator()(const pmx_solve_group& e) const { // NOLINT
   std::stringstream ss;
   ss << e.integration_function_name_ << "(" << e.system_function_name_ << ", "
      << e.nCmt_.to_string() << ", "
@@ -116,7 +140,7 @@ std::string write_expression_vis::operator()(const pmx_solve_group& e) const {
   return ss.str();
 }
 
-std::string write_expression_vis::operator()(const pmx_solve_group_control& e) const {
+std::string write_expression_vis::operator()(const pmx_solve_group_control& e) const { // NOLINT
   std::stringstream ss;
   ss << e.integration_function_name_ << "(" << e.system_function_name_ << ", "
      << e.nCmt_.to_string() << ", "

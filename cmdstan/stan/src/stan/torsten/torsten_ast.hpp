@@ -9,6 +9,7 @@
 #include <stan/torsten/pmx_solve_group_control.hpp>
 #include <stan/torsten/generalOdeModel.hpp>
 #include <stan/torsten/generalOdeModel_control.hpp>
+#include <stan/torsten/generalOdeModel_control_ss.hpp>
 #include <stan/torsten/univariate_integral_control.hpp>
 
 #endif

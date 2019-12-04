@@ -8,6 +8,7 @@
 #include <stan/math/torsten/pk_nvars.hpp>
 #include <stan/math/prim/scal/err/check_positive_finite.hpp>
 #include <stan/math/prim/scal/err/check_finite.hpp>
+#include <stan/math/prim/scal/err/check_nonnegative.hpp>
 
 namespace refactor {
 
@@ -110,12 +111,11 @@ namespace refactor {
       alpha_{k10_, ka_},
       par_{CL_, V2_, ka_}
     {
-      using stan::math::check_positive_finite;
-      using stan::math::check_finite;
       const char* fun = "PMXOneCptModel";
-      check_positive_finite(fun, "CL", CL_);
-      check_positive_finite(fun, "V2", V2_);
-      check_positive_finite(fun, "ka", ka_);
+      stan::math::check_positive_finite(fun, "CL", CL_);
+      stan::math::check_positive_finite(fun, "V2", V2_);
+      stan::math::check_nonnegative(fun, "ka", ka_);
+      stan::math::check_finite(fun, "ka", ka_);
     }
 
   /**
@@ -245,19 +245,24 @@ namespace refactor {
       typename torsten::return_t<T_par, T_time>::type exp1 = exp(-k10_ * dt);
       typename torsten::return_t<T_par, T_time>::type exp2 = exp(-ka_ * dt);
 
-      // contribution from cpt 0 bolus dose
-      pred(0) += y0_[0] * exp2;
-      pred(1) += y0_[0] * ka_ / (ka_ - k10_) * (exp1 - exp2);
-
-      // contribution from cpt 0 infusion dose
-      pred(0) += rate_[0] * (1 - exp2) / ka_;
-      pred(1) += rate_[0] * ka_ / (ka_ - k10_) * ((1 - exp1) / k10_ - (1 - exp2) / ka_);
-
       // contribution from cpt 1 bolus dose
       pred(1) += y0_[1] * exp1;
 
       // contribution from cpt 1 infusion dose
       pred(1) += rate_[1] * (1 - exp1) / k10_;
+
+      if (ka_ > 0.0) {
+        // contribution from cpt 0 bolus dose
+        pred(0) += y0_[0] * exp2;
+        pred(1) += y0_[0] * ka_ / (ka_ - k10_) * (exp1 - exp2);
+
+        // contribution from cpt 0 infusion dose
+        pred(0) += rate_[0] * (1 - exp2) / ka_;
+        pred(1) += rate_[0] * ka_ / (ka_ - k10_) * ((1 - exp1) / k10_ - (1 - exp2) / ka_);
+      } else {
+        // no absorption, GUT is accumulating dosages.
+        pred(0) += y0_[0] + rate_[0] * dt;
+      }
 
       return pred;
     }
@@ -290,6 +295,7 @@ namespace refactor {
 
       stan::math::check_positive_finite("steady state one-cpt solver", "cmt", cmt);
       stan::math::check_less("steady state one-cpt solver", "cmt", cmt, 3);
+      stan::math::check_positive_finite("steady state one-cpt solver", "ka", ka_);
 
       std::vector<ss_scalar_type> a(2, 0);
       Matrix<ss_scalar_type, -1, 1> pred = Matrix<ss_scalar_type, -1, 1>::Zero(2);

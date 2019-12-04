@@ -426,6 +426,123 @@ void validate_generalOdeModel_control_args(const T& ode_fun,
   }
 }
 
+/********************************************
+   pmx_solve_xxx with algebra solver controls
+********************************************/
+
+template <class T>
+void validate_generalOdeModel_control_ss_args(const T& ode_fun,
+                                              const variable_map& var_map,
+                                              bool& pass,
+                                              std::ostream& error_msgs) {
+  if (!ode_fun.rel_tol_.bare_type().is_primitive()) {
+    error_msgs << "14th argument to "
+               << ode_fun.integration_function_name_
+               << " must be type real or int"
+               << " for relative tolerance"
+               << "; found type="
+               << ode_fun.rel_tol_.bare_type()
+               << ". ";
+    pass = false;
+  }
+  if (!ode_fun.abs_tol_.bare_type().is_primitive()) {
+    error_msgs << "15th argument to "
+               << ode_fun.integration_function_name_
+               << " must be type real or int"
+               << " for absolute tolerance"
+               << "; found type="
+               << ode_fun.abs_tol_.bare_type()
+               << ". ";
+    pass = false;
+  }
+  if (!ode_fun.max_num_steps_.bare_type().is_primitive()) {
+    error_msgs << "16th argument to "
+               << ode_fun.integration_function_name_
+               << " must be type real or int"
+               << " for maximum number of steps"
+               << "; found type="
+               << ode_fun.max_num_steps_.bare_type()
+               << ". ";
+    pass = false;
+  }
+
+  if (!ode_fun.ss_rel_tol_.bare_type().is_primitive()) {
+    error_msgs << "17th argument to "
+               << ode_fun.integration_function_name_
+               << " must be type real or int"
+               << " for relative tolerance"
+               << "; found type="
+               << ode_fun.rel_tol_.bare_type()
+               << ". ";
+    pass = false;
+  }
+  if (!ode_fun.ss_abs_tol_.bare_type().is_primitive()) {
+    error_msgs << "18th argument to "
+               << ode_fun.integration_function_name_
+               << " must be type real or int"
+               << " for absolute tolerance"
+               << "; found type="
+               << ode_fun.abs_tol_.bare_type()
+               << ". ";
+    pass = false;
+  }
+  if (!ode_fun.ss_max_num_steps_.bare_type().is_primitive()) {
+    error_msgs << "19th argument to "
+               << ode_fun.integration_function_name_
+               << " must be type real or int"
+               << " for maximum number of steps"
+               << "; found type="
+               << ode_fun.max_num_steps_.bare_type()
+               << ". ";
+    pass = false;
+  }
+
+  // test data-only variables do not have parameters (int locals OK)
+  if (has_var(ode_fun.rel_tol_, var_map)) {
+    error_msgs << "14th argument to "
+               << ode_fun.integration_function_name_
+               << " for relative tolerance"
+               << " must be data only and not reference parameters";
+    pass = false;
+  }
+  if (has_var(ode_fun.abs_tol_, var_map)) {
+    error_msgs << "15th argument to "
+               << ode_fun.integration_function_name_
+               << " for absolute tolerance"
+               << " must be data only and not reference parameters";
+    pass = false;
+  }
+  if (has_var(ode_fun.max_num_steps_, var_map)) {
+    error_msgs << "16th argument to "
+               << ode_fun.integration_function_name_
+               << " for maximum number of steps"
+               << " must be data only and not reference parameters";
+    pass = false;
+  }
+
+  if (has_var(ode_fun.ss_rel_tol_, var_map)) {
+    error_msgs << "17th argument to "
+               << ode_fun.integration_function_name_
+               << " for relative tolerance"
+               << " must be data only and not reference parameters";
+    pass = false;
+  }
+  if (has_var(ode_fun.ss_abs_tol_, var_map)) {
+    error_msgs << "18th argument to "
+               << ode_fun.integration_function_name_
+               << " for absolute tolerance"
+               << " must be data only and not reference parameters";
+    pass = false;
+  }
+  if (has_var(ode_fun.ss_max_num_steps_, var_map)) {
+    error_msgs << "19th argument to "
+               << ode_fun.integration_function_name_
+               << " for maximum number of steps"
+               << " must be data only and not reference parameters";
+    pass = false;
+  }
+}
+
 /**********************************
    pmx_solve_group
 **********************************/
@@ -1030,6 +1147,36 @@ bool data_only_expression::operator()(const generalOdeModel_control& x)
 
 template void assign_lhs::operator()(expression&,
                                      const generalOdeModel_control&)
+  const;
+
+/*****************
+ generalOdeModel_control_ss
+*****************/
+
+void validate_generalOdeModel_control_ss::operator()(
+                      const generalOdeModel_control_ss& ode_fun,
+                      const variable_map& var_map,
+                      bool& pass,
+                      std::ostream& error_msgs) const {
+  validate_generalOdeModel_non_control_args(ode_fun, var_map, pass, error_msgs);
+  validate_generalOdeModel_control_ss_args(ode_fun, var_map, pass, error_msgs);
+}
+boost::phoenix::function<validate_generalOdeModel_control_ss>
+validate_generalOdeModel_control_ss_f;
+
+bool data_only_expression::operator()(const generalOdeModel_control_ss& x)
+  const {
+  return ((((((boost::apply_visitor(*this, x.time_.expr_)
+               && boost::apply_visitor(*this, x.amt_.expr_)))
+             && boost::apply_visitor(*this, x.rate_.expr_)
+             && boost::apply_visitor(*this, x.ii_.expr_))
+            && boost::apply_visitor(*this, x.pMatrix_.expr_))
+           && boost::apply_visitor(*this, x.biovar_.expr_))
+          && boost::apply_visitor(*this, x.tlag_.expr_));
+}  // include all arguments with a template type
+
+template void assign_lhs::operator()(expression&,
+                                     const generalOdeModel_control_ss&)
   const;
 
 /*****************

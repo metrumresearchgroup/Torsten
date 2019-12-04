@@ -129,6 +129,9 @@ TEST(lang_parser, generalCptModel) {
   test_throws("torsten/pmx_solve/rk45_bad_biovar" , "12th argument to pmx_solve_rk45 must be type real[] or real[ , ] for bioavailability;");
   test_throws("torsten/pmx_solve/rk45_bad_tlag"   , "13th argument to pmx_solve_rk45 must be type real[] or real[ , ] for lag times;");
   test_throws("torsten/pmx_solve/rk45_var_rtol"   , "14th argument to pmx_solve_rk45 for relative tolerance must be data only");
+  test_throws("torsten/pmx_solve/adams_var_atol"  , "15th argument to pmx_solve_adams for absolute tolerance must be data only");
+  test_throws("torsten/pmx_solve/adams_bad_ss_rtol"  , "17th argument to pmx_solve_adams must be type real or int for relative tolerance");
+  test_throws("torsten/pmx_solve/adams_bad_ss_atol"  , "18th argument to pmx_solve_adams must be type real or int for absolute tolerance");
 }
 
 /*****************************************************************

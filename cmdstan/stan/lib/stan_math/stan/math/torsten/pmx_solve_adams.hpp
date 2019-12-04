@@ -65,22 +65,25 @@ template <typename T0, typename T1, typename T2, typename T3, typename T4,
 Eigen::Matrix <typename torsten::return_t<T0, T1, T2, T3, T4, T5, T6>::type,
                Eigen::Dynamic, Eigen::Dynamic>
 pmx_solve_adams(const F& f,
-                    const int nCmt,
-                    const std::vector<T0>& time,
-                    const std::vector<T1>& amt,
-                    const std::vector<T2>& rate,
-                    const std::vector<T3>& ii,
-                    const std::vector<int>& evid,
-                    const std::vector<int>& cmt,
-                    const std::vector<int>& addl,
-                    const std::vector<int>& ss,
-                    const std::vector<std::vector<T4> >& pMatrix,
-                    const std::vector<std::vector<T5> >& biovar,
-                    const std::vector<std::vector<T6> >& tlag,
-                    std::ostream* msgs = 0,
-                    double rel_tol = 1e-10,
-                    double abs_tol = 1e-10,
-                    long int max_num_steps = 1e8) {  // NOLINT(runtime/int)
+                const int nCmt,
+                const std::vector<T0>& time,
+                const std::vector<T1>& amt,
+                const std::vector<T2>& rate,
+                const std::vector<T3>& ii,
+                const std::vector<int>& evid,
+                const std::vector<int>& cmt,
+                const std::vector<int>& addl,
+                const std::vector<int>& ss,
+                const std::vector<std::vector<T4> >& pMatrix,
+                const std::vector<std::vector<T5> >& biovar,
+                const std::vector<std::vector<T6> >& tlag,
+                std::ostream* msgs = 0,
+                double rel_tol = 1e-10,
+                double abs_tol = 1e-10,
+                long int max_num_steps = 1e8,
+                double as_rel_tol = 1e-6,
+                double as_abs_tol = 1e-6,
+                long int as_max_num_steps = 1e2) {
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
@@ -119,10 +122,10 @@ pmx_solve_adams(const F& f,
   using model_type = refactor::PKODEModel<typename EM::T_time, typename EM::T_scalar, typename EM::T_rate, typename EM::T_par, F>;
 
 #ifdef TORSTEN_USE_STAN_ODE
-  PMXOdeIntegrator<StanAdams> integrator(rel_tol, abs_tol, max_num_steps, msgs);
+  PMXOdeIntegrator<StanAdams> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
   EventSolver<model_type, PMXOdeIntegrator<StanAdams>&> pr;
 #else
-  PMXOdeIntegrator<PkAdams> integrator(rel_tol, abs_tol, max_num_steps, msgs);
+  PMXOdeIntegrator<PkAdams> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
   EventSolver<model_type, PMXOdeIntegrator<PkAdams>&> pr;
 #endif
 
@@ -161,7 +164,10 @@ pmx_solve_adams(const F& f,
                 std::ostream* msgs = 0,
                 double rel_tol = 1e-6,
                 double abs_tol = 1e-6,
-                long int max_num_steps = 1e6) {
+                long int max_num_steps = 1e6,
+                double as_rel_tol = 1e-6,
+                double as_abs_tol = 1e-6,
+                long int as_max_num_steps = 1e2) {
   auto param_ = torsten::to_array_2d(pMatrix);
   auto biovar_ = torsten::to_array_2d(biovar);
   auto tlag_ = torsten::to_array_2d(tlag);
@@ -169,7 +175,8 @@ pmx_solve_adams(const F& f,
   return pmx_solve_adams(f, nCmt,
                          time, amt, rate, ii, evid, cmt, addl, ss,
                          param_, biovar_, tlag_,
-                         msgs, rel_tol, abs_tol, max_num_steps);
+                         msgs, rel_tol, abs_tol, max_num_steps,
+                         as_rel_tol, as_abs_tol, as_max_num_steps);                         
 }
 
   /*
@@ -186,22 +193,22 @@ pmx_solve_adams(const F& f,
                                             typename torsten::value_type<T_tlag>::type>::type,
                  Eigen::Dynamic, Eigen::Dynamic>
   generalOdeModel_adams(const F& f,
-                      const int nCmt,
-                      const std::vector<T0>& time,
-                      const std::vector<T1>& amt,
-                      const std::vector<T2>& rate,
-                      const std::vector<T3>& ii,
-                      const std::vector<int>& evid,
-                      const std::vector<int>& cmt,
-                      const std::vector<int>& addl,
-                      const std::vector<int>& ss,
-                      const std::vector<T_par>& pMatrix,
-                      const std::vector<T_biovar>& biovar,
-                      const std::vector<T_tlag>& tlag,
-                      std::ostream* msgs = 0,
-                      double rel_tol = 1e-6,
-                      double abs_tol = 1e-6,
-                      long int max_num_steps = 1e6) {
+                        const int nCmt,
+                        const std::vector<T0>& time,
+                        const std::vector<T1>& amt,
+                        const std::vector<T2>& rate,
+                        const std::vector<T3>& ii,
+                        const std::vector<int>& evid,
+                        const std::vector<int>& cmt,
+                        const std::vector<int>& addl,
+                        const std::vector<int>& ss,
+                        const std::vector<T_par>& pMatrix,
+                        const std::vector<T_biovar>& biovar,
+                        const std::vector<T_tlag>& tlag,
+                        std::ostream* msgs = 0,
+                        double rel_tol = 1e-6,
+                        double abs_tol = 1e-6,
+                        long int max_num_steps = 1e6) {
     auto x = pmx_solve_adams(f, nCmt,
                            time, amt, rate, ii, evid, cmt, addl, ss,
                            pMatrix, biovar, tlag,
@@ -237,7 +244,10 @@ pmx_solve_group_adams(const F& f,
                       std::ostream* msgs = 0,
                       double rel_tol = 1e-10,
                       double abs_tol = 1e-10,
-                      long int max_num_steps = 1e8) {
+                      long int max_num_steps = 1e8,
+                      double as_rel_tol = 1e-6,
+                      double as_abs_tol = 1e-6,
+                      long int as_max_num_steps = 1e2) {
   static const char* caller("pmx_solve_group_adams");
   torsten::pmx_population_check(len, time, amt, rate, ii, evid, cmt, addl, ss,
                                 pMatrix, biovar, tlag, caller);
@@ -249,10 +259,10 @@ pmx_solve_group_adams(const F& f,
   ER events_rec(nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag);
 
 #ifdef TORSTEN_USE_STAN_ODE
-  PMXOdeIntegrator<StanAdams> integrator(rel_tol, abs_tol, max_num_steps, msgs);
+  PMXOdeIntegrator<StanAdams> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
   EventSolver<model_type, PMXOdeIntegrator<StanAdams>&> pr;
 #else
-  PMXOdeIntegrator<PkAdams> integrator(rel_tol, abs_tol, max_num_steps, msgs);
+  PMXOdeIntegrator<PkAdams> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
   EventSolver<model_type, PMXOdeIntegrator<PkAdams>&> pr;
 #endif
 

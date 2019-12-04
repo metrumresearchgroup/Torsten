@@ -69,9 +69,17 @@ transformed data{
   real atol;
   int max_step;
 
+  real ss_rtol;
+  real ss_atol;
+  int ss_max_step;
+
   rtol = 1e-8;
   atol = 1e-8;
   max_step = 100000;
+
+  ss_rtol = 1e-5;
+  ss_atol = 1e-6;
+  ss_max_step = 100;
 
   CL_data    = 5;
   ka_data    = 1.2;
@@ -772,5 +780,15 @@ generated quantities {
   x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data           , rtol, atol, max_step);
   x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data[1]        , rtol, atol, max_step);
   x = pmx_solve_bdf(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data[1]        , rtol, atol, max_step);
+
+  /* algebra solver controls: theta: param                                                           , biovar: data   , tlag: data */
+  x = pmx_solve_adams(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data         , rtol, atol, max_step, ss_rtol, ss_atol, ss_max_step);
+  x = pmx_solve_adams(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data         , rtol, atol, max_step, ss_rtol, ss_atol, ss_max_step);
+  x = pmx_solve_adams(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data         , rtol, atol, max_step, ss_rtol, ss_atol, ss_max_step);
+  x = pmx_solve_adams(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data[1] , tlag_data[1]      , rtol, atol, max_step, ss_rtol, ss_atol, ss_max_step);
+  x = pmx_solve_adams(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta[1]      , biovar_data    , tlag_data[1]      , rtol, atol, max_step, ss_rtol, ss_atol, ss_max_step);
+  x = pmx_solve_adams(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data         , rtol, atol, max_step, ss_rtol, ss_atol, ss_max_step);
+  x = pmx_solve_adams(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data[1] , tlag_data[1]      , rtol, atol, max_step, ss_rtol, ss_atol, ss_max_step);
+  x = pmx_solve_adams(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta         , biovar_data    , tlag_data[1]      , rtol, atol, max_step, ss_rtol, ss_atol, ss_max_step);
 }
 

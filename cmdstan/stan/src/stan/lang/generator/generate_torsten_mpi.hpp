@@ -20,23 +20,23 @@ void generate_torsten_mpi(const std::string& model_name,
                            std::ostream& o) {
   // if (pmx_integrate_ode_group::CALLED_FUNCTORS.empty()) return;
 
-  const std::set<std::string> funcs(pmx_integrate_ode_group::CALLED_FUNCTORS.begin(),
-                                    pmx_integrate_ode_group::CALLED_FUNCTORS.end());
+  const std::set<std::string> funcs(pmx_integrate_ode_group::CALLED_FUNCTORS.begin(), // NOLINT
+                                    pmx_integrate_ode_group::CALLED_FUNCTORS.end()); // NOLINT
 
   // generate @c pmx_ode_group_mpi_functor::operator()
   o << "namespace torsten {" << EOL
     << "namespace dsolve {" << EOL
     << INDENT << "template<typename... Args>" << EOL
-    << INDENT << "inline auto pmx_ode_group_mpi_functor::operator()(Args&&... args) const {" << EOL;
-    
+    << INDENT << "inline auto pmx_ode_group_mpi_functor::operator()(Args&&... args) const {" << EOL; // NOLINT
+
   int i = 0;
   for (auto fs : funcs) {
-    o << INDENT2 << "if (id == " << i << ") { " 
-      << model_name << "_namespace::" << fs << "_functor__ f; return f(std::forward<Args>(args)...); }" << EOL;
+    o << INDENT2 << "if (id == " << i << ") { "
+      << model_name << "_namespace::" << fs << "_functor__ f; return f(std::forward<Args>(args)...); }" << EOL; // NOLINT
     i++;
   }
   // default to dummy
-  o << INDENT2 << "dummy_functor f; return f(std::forward<Args>(args)...);" << EOL
+  o << INDENT2 << "dummy_functor f; return f(std::forward<Args>(args)...);" << EOL // NOLINT
     << INDENT << "}" << EOL2;
 
   // generate specializations of @c pmx_ode_group_mpi_functor_id
@@ -44,7 +44,7 @@ void generate_torsten_mpi(const std::string& model_name,
   for (auto fs : funcs) {
     o << INDENT << "template<>" << EOL
       << INDENT << "struct pmx_ode_group_mpi_functor_id<"
-      << model_name << "_namespace::" << fs << "_functor__> { static constexpr int value = " << i << "; };"
+      << model_name << "_namespace::" << fs << "_functor__> { static constexpr int value = " << i << "; };" // NOLINT
       << EOL;
     i++;
   }

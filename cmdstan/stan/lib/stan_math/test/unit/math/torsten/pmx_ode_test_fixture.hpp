@@ -116,37 +116,6 @@ struct TorstenOdeTest : public testing::Test {
     for (size_t i = 0; i < y0.size(); ++i)
       EXPECT_EQ(NV_Ith_S(res, i), fval[i]);
   }
-
-  void test_cvodes_fwd_sens(std::vector<stan::math::var>& theta,
-                            std::vector<std::vector<stan::math::var>>& pk_y,
-                            std::vector<std::vector<stan::math::var>>& stan_y,
-                            double fval_eps,
-                            double sens_eps) {
-    torsten::test::test_grad(theta, pk_y, stan_y, fval_eps, sens_eps);
-  }
-
-  void test_cvodes_fwd_sens(std::vector<stan::math::var>& theta,
-                            Eigen::MatrixXd& pk_y,
-                            std::vector<std::vector<stan::math::var>>& stan_y,
-                            double fval_eps,
-                            double sens_eps) {
-    EXPECT_EQ(pk_y.rows(), stan_y.size());
-    EXPECT_EQ(pk_y.cols() % stan_y[0].size(), 0);
-    const int n = pk_y.cols() / stan_y[0].size();
-    EXPECT_EQ(n, 1 + theta.size());
-
-    std::vector<double> g;
-    for (int i = 0; i < pk_y.rows(); ++i) {
-      for (size_t j = 0; j < stan_y[0].size(); ++j) {
-        EXPECT_NEAR(pk_y(i, n * j), stan_y[i][j].val(), fval_eps);
-        stan::math::set_zero_all_adjoints();
-        stan_y[i][j].grad(theta, g);
-        for (size_t k = 0; k < g.size(); ++k) {
-          EXPECT_NEAR(pk_y(i, n * j + k + 1), g[k], sens_eps);
-        }
-      }
-    }
-  }
 };
 
 struct TorstenOdeTest_sho : public TorstenOdeTest {

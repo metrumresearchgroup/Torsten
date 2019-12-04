@@ -17,6 +17,7 @@
 #include <stan/torsten/pmx_solve_group_control_def.hpp>
 #include <stan/torsten/generalOdeModel_def.hpp>
 #include <stan/torsten/generalOdeModel_control_def.hpp>
+#include <stan/torsten/generalOdeModel_control_ss_def.hpp>
 #include <stan/torsten/univariate_integral_control_def.hpp>
 
 

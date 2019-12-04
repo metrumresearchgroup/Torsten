@@ -31,14 +31,14 @@ TEST_F(TorstenOdeTest_sho, t0_var) {
   std::vector<double> t0_vec{t0};
   
   {
-    auto f1 = [&] (std::vector<double>& x) {
+    auto f1 = [&] (const std::vector<double>& x) {
       auto y = torsten::pmx_integrate_ode_bdf(f, y0, x[0], ts, theta , x_r, x_i);
       Eigen::MatrixXd y1(1, 2);
       y1(0) = y[0][0];
       y1(1) = y[0][1];
       return y1;
     };
-    auto f2 = [&] (std::vector<var>& x) {
+    auto f2 = [&] (const std::vector<var>& x) {
       double t0 = stan::math::value_of(x[0]);
       std::vector<var> ts_v{t0 + ts[0] - x[0]};
       auto y = torsten::pmx_integrate_ode_bdf(f, y0, t0, ts_v, theta , x_r, x_i);
@@ -58,7 +58,7 @@ TEST_F(TorstenOdeTest_chem, t0_var) {
   std::vector<double> t0_vec{t0};
   
   {
-    auto f1 = [&] (std::vector<double>& x) {
+    auto f1 = [&] (const std::vector<double>& x) {
       auto y = torsten::pmx_integrate_ode_bdf(f, y0, x[0], ts, theta , x_r, x_i);
       Eigen::MatrixXd y1(1, 3);
       y1(0) = y[0][0];
@@ -66,7 +66,7 @@ TEST_F(TorstenOdeTest_chem, t0_var) {
       y1(2) = y[0][2];
       return y1;
     };
-    auto f2 = [&] (std::vector<var>& x) {
+    auto f2 = [&] (const std::vector<var>& x) {
       double t0 = stan::math::value_of(x[0]);
       std::vector<var> ts_v{t0 + ts[0] - x[0]};
       auto y = torsten::pmx_integrate_ode_bdf(f, y0, t0, ts_v, theta , x_r, x_i);
@@ -87,7 +87,7 @@ TEST_F(TorstenOdeTest_lorenz, t0_var) {
   std::vector<double> t0_vec{t0};
   
   {
-    auto f1 = [&] (std::vector<double>& x) {
+    auto f1 = [&] (const std::vector<double>& x) {
       auto y = torsten::pmx_integrate_ode_bdf(f, y0, x[0], ts, theta , x_r, x_i);
       Eigen::MatrixXd y1(1, 3);
       y1(0) = y[0][0];
@@ -95,7 +95,7 @@ TEST_F(TorstenOdeTest_lorenz, t0_var) {
       y1(2) = y[0][2];
       return y1;
     };
-    auto f2 = [&] (std::vector<var>& x) {
+    auto f2 = [&] (const std::vector<var>& x) {
       double t0 = stan::math::value_of(x[0]);
       std::vector<var> ts_v{t0 + ts[0] - x[0]};
       auto y = torsten::pmx_integrate_ode_bdf(f, y0, t0, ts_v, theta , x_r, x_i);
