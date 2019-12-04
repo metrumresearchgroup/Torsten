@@ -1,0 +1,10 @@
+[submodule "inst/stan"]
+	path = inst/stan
+	url = git@github.com:metrumresearchgroup/stan.git
+        branch = torsten-master
+	shallow = true
+[submodule "inst/math"]
+	path = inst/math
+	url = git@github.com:metrumresearchgroup/math.git
+        branch = torsten-master
+	shallow = true
