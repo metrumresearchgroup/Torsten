@@ -1,0 +1,78 @@
+##
+# Models (to be passed through stanc)
+##
+CMDSTAN_MAIN ?= src/cmdstan/main.cpp
+CMDSTAN_MAIN_O = $(patsubst %.cpp,%.o,$(CMDSTAN_MAIN))
+
+STAN_TARGETS = $(patsubst %.stan,%$(EXE),$(wildcard $(patsubst %$(EXE),%.stan,$(MAKECMDGOALS))))
+
+##
+# Precompiled model header
+##
+$(STAN)src/stan/model/model_header.d : DEPTARGETS = -MT $(patsubst %.d,%.hpp.gch,$@) -MT $@
+$(STAN)src/stan/model/model_header.hpp.gch : $(STAN)src/stan/model/model_header.hpp
+	@echo ''
+	@echo '--- Compiling pre-compiled header ---	'
+	$(COMPILE.cpp) $< $(OUTPUT_OPTION)
+
+ifeq ($(CXX_TYPE),clang)
+CXXFLAGS_PROGRAM += -include-pch $(STAN)src/stan/model/model_header.hpp.gch
+$(STAN_TARGETS) examples/bernoulli/bernoulli$(EXE) $(patsubst %.stan,%$(EXE),$(wildcard src/test/test-models/*.stan)) : %$(EXE) : $(STAN)src/stan/model/model_header.hpp.gch
+endif
+
+ifneq ($(findstring allow_undefined,$(STANCFLAGS)),)
+$(STAN_TARGETS) examples/bernoulli/bernoulli$(EXE) $(patsubst %.stan,%$(EXE),$(wildcard src/test/test-models/*.stan)) : CXXFLAGS_PROGRAM += -include $(USER_HEADER)
+endif
+
+##
+# Model executable
+##
+
+ifdef STAN_OPENCL
+STANCFLAGS+= --use-opencl
+endif
+
+ifneq ($(STANC2),)
+  BINSTANC = bin/stanc2$(EXE)
+else
+  BINSTANC = bin/stanc$(EXE)
+endif
+
+%.hpp : %.stan $(BINSTANC)
+	@echo ''
+	@echo '--- Translating Stan model to C++ code ---'
+	$(WINE) $(BINSTANC) $(STANCFLAGS) --o=$(subst  \,/,$@) $(subst  \,/,$<)
+
+.PRECIOUS: %.hpp
+%$(EXE) : %.hpp %.d $(CMDSTAN_MAIN_O) $(LIBSUNDIALS) $(MPI_TARGETS) $(TBB_TARGETS)
+	@echo ''
+	@echo '--- Compiling, linking C++ code ---'
+	$(COMPILE.cpp) $(CXXFLAGS_PROGRAM) -x c++ -o $(subst  \,/,$*).o $(subst \,/,$<)
+	$(LINK.cpp) $(subst \,/,$*.o) $(CMDSTAN_MAIN_O) $(LDLIBS) $(LIBSUNDIALS) $(MPI_TARGETS) $(TBB_TARGETS) $(subst \,/,$(OUTPUT_OPTION))
+ifeq ($(OS),Windows_NT)
+ifneq ($(notdir $(shell where tbb.dll)),tbb.dll)
+	@echo 'Intel TBB is not in PATH.'
+	@echo 'Consider calling '
+	@echo 'make install-tbb'
+	@echo 'to avoid copying Intel TBB library files.'
+	@if ! [[ -f "$(@D)/tbb.dll" ]]; then \
+		cp -v $(TBB_TARGETS) $(@D); \
+	else \
+		echo 'Using existing $(@D)/tbb.dll'; \
+	fi
+endif
+endif
+
+##
+# Dependencies file
+##
+ifneq (,$(STAN_TARGETS))
+$(patsubst %$(EXE),%.d,$(STAN_TARGETS)) : DEPTARGETS += -MT $(patsubst %.d,%$(EXE),$@) -include $< -include $(CMDSTAN_MAIN)
+-include $(patsubst %$(EXE),%.d,$(STAN_TARGETS))
+-include src/cmdstan/stanc.d
+-include $(patsubst %.cpp,%.d,$(STANC_TEMPLATE_INSTANTIATION_CPP))
+-include $(patsubst %.cpp,%.d,$(CMDSTAN_MAIN))
+ifeq ($(CXX_TYPE),clang)
+-include $(STAN)src/stan/model/model_header.d
+endif
+endif
