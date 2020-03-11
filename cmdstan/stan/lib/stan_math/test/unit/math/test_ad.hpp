@@ -16,9 +16,46 @@ namespace test {
 namespace internal {
 
 /**
- * Evaluates expression. A no-op for scalars.
- * @tparam T nested type of fvar
- * @param x value
+ * Evaluates nested matrix template expressions, which is a no-op for
+ * arithmetic arguments.
+ *
+ * @tparam T arithmetic type
+ * @param[in] x value
+ * @return value
+ */
+template <typename T, typename = std::enable_if_t<std::is_arithmetic<T>::value>>
+auto eval(T x) {
+  return x;
+}
+
+/**
+ * Evaluates nested matrix template expressions, which is a no-op for
+ * complex arguments.
+ *
+ * @tparam T complex value type
+ * @param x[in] value
+ * @return value
+ */
+template <typename T>
+auto eval(const std::complex<T>& x) {
+  return x;
+}
+
+/**
+ * Evaluates all nested matrix expression templates, which is a no-op for
+ * reverse-mode autodiff variables.
+ *
+ * @param[in] x value
+ * @return value
+ */
+auto eval(const stan::math::var& x) { return x; }
+
+/**
+ * Evaluates all matrix expression templates, which is a no-op for
+ * forward-mode autodiff variables.
+ *
+ * @tparam T value type of fvar
+ * @param[in] x value
  * @return value
  */
 template <typename T>
@@ -27,28 +64,9 @@ auto eval(const stan::math::fvar<T>& x) {
 }
 
 /**
- * Evaluates expression. A no-op for scalars.
- * @param x value
- * @return value
- */
-auto eval(const stan::math::var& x) { return x; }
-
-/**
- * Evaluates expression. A no-op for scalars.
- * @param x value
- * @return value
- */
-auto eval(double x) { return x; }
-
-/**
- * Evaluates expression. A no-op for scalars.
- * @param x value
- * @return value
- */
-auto eval(int x) { return x; }
-
-/**
- * Evaluates expression.
+ * Evaluates all nested matrix expression templates, which evaluates
+ * the specified derived matrix.
+ *
  * @tparam Derived derived type of the expression
  * @param x expression
  * @return evaluated expression
@@ -57,11 +75,13 @@ template <typename Derived>
 auto eval(const Eigen::EigenBase<Derived>& x) {
   return x.derived().eval();
 }
+
 /**
- * Evaluates expressions in a \c std::vector.
- * @tparam T type of \c std::vector elements
- * @param x a \c std::vector of expressions
- * @return a \cstd::vector of evaluated expressions
+ * Evaluates all nested matrix expression templates elementwise.
+ *
+ * @tparam T type of elements
+ * @param[in] x vector of expressions
+ * @return vector of evaluated expressions
  */
 template <typename T>
 auto eval(const std::vector<T>& x) {
@@ -389,7 +409,7 @@ void expect_all_throw(const F& f, double x1, double x2) {
 
 /**
  * Succeeds if the specified function applied to the specified
- * argument thorws an exception at every level of autodiff.
+ * argument throws an exception at every level of autodiff.
  *
  * @tparam F type of function
  * @param f function to evaluate
@@ -1194,12 +1214,12 @@ void expect_ad(const F& f, const T1& x1, const T2& x2, const T3& x3) {
 }
 
 /**
- * Test that the specified vectorized polymoprhic unary function
+ * Test that the specified vectorized polymorphic unary function
  * produces autodiff results consistent with values determined by
  * double and integer inputs and 1st-, 2nd-, and 3rd-order derivatives
  * consistent with finite differences of double inputs.
  *
- * @tparam F type of poymorphic, vectorized functor to test
+ * @tparam F type of polymorphic, vectorized functor to test
  * @tparam T1 type of first argument (integer or double)
  * @param tols tolerances for test
  * @param f functor to test
@@ -1303,7 +1323,7 @@ void expect_common_nonzero_unary(const F& f) {
  * primitive version of the function, when applied to all pairs of
  * common integer and double argument combinations excluding zero.
  *
- * If the `disable_lhs_int` flag is set to `true` (it defauls to
+ * If the `disable_lhs_int` flag is set to `true` (it defaults to
  * `false`), then integers will not be considered as first arguments.
  * This is useful for testing assignment operators like `+=` and
  * division operators like `/` where integer and real arguments
@@ -1347,7 +1367,7 @@ void expect_common_nonzero_binary(const F& f, bool disable_lhs_int = false) {
  * primitive version of the function, when applied to all pairs of
  * common integer and double argument combinations.
  *
- * If the `disable_lhs_int` flag is set to `true` (it defauls to
+ * If the `disable_lhs_int` flag is set to `true` (it defaults to
  * `false`), then integers will not be considered as first arguments.
  * This is useful for testing assignment operators like `+=` and
  * division operators like `/` where integer and real arguments
