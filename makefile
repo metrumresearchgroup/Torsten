@@ -109,15 +109,6 @@ clean:
 	@echo '  removing generated test files'
 	@$(RM) $(wildcard test/prob/generate_tests$(EXE))
 	@$(RM) $(call findfiles,test/prob,*_generated_*_test.cpp)
-	@echo '  removing torsten test executables'
-	@$(RM) $(call findfiles,stan/math/torsten/test,*_test$(EXE))
-	@$(RM) $(call findfiles,stan/math/torsten/test,*_test.d)
-	@$(RM) $(call findfiles,stan/math/torsten/test,*_test.d~)
-	@$(RM) $(call findfiles,stan/math/torsten/test,*_test.cpp~)
-	@$(RM) $(call findfiles,stan/math/torsten/test,*.hpp~)
-	@$(RM) $(call findfiles,stan/math/torsten/test,*_test.d.*)
-	@$(RM) $(call findfiles,stan/math/torsten/test,*_test.xml)
-	@$(RM) $(call findfiles,stan/math/torsten/test,*.o)
 
 clean-doxygen:
 	@echo '  removing doxygen'

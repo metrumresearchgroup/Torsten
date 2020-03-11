@@ -147,7 +147,4 @@
 
 #include <stan/math/rev.hpp>
 
-#include <stan/math/torsten.hpp>
-using namespace torsten;
-
 #endif
