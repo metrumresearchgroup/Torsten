@@ -52,9 +52,9 @@ parameters{
 
 transformed parameters{
   real theta[nTheta];  // ODE parameters
-  vector<lower = 0>[nt] cHat;
+  row_vector<lower = 0>[nt] cHat;
   vector<lower = 0>[nObs] cHatObs;
-  matrix<lower = 0>[nt, nCmt] x; 
+  matrix<lower = 0>[nCmt, nt] x;
 
   theta[1] = CL;
   theta[2] = Q;
@@ -65,12 +65,12 @@ transformed parameters{
   // PKModelTwoCpt takes in the NONMEM data, followed by the parameter
   // arrays abd returns a matrix with the predicted amount in each 
   // compartment at each event.
-  x = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
-                   theta, biovar, tlag);
+  x = pmx_solve_twocpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                       theta, biovar, tlag);
 
-  cHat = col(x, 2) ./ V1; // we're interested in the amount in the second compartment 
+  cHat = x[2, :] ./ V1; // we're interested in the amount in the second compartment
 
-  cHatObs = cHat[iObs]; // predictions for observed data recors
+  cHatObs = cHat'[iObs]; // predictions for observed data recors
 
   // for(i in 1:nObs){
   //   cHatObs[i] = cHat[iObs[i]]; //// predictions for observed data records
