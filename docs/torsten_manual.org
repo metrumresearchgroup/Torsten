@@ -554,7 +554,7 @@ respectively, from ODEs
 ** General Linear ODE Model Function
 #+INDEX: General linear model 
 #+BEGIN_SRC stan
-  real[nt, n] = pmx_solve_linode(real[] time, real[] amt, real[] rate,
+  matrix = pmx_solve_linode(real[] time, real[] amt, real[] rate,
                        real[] ii, int[] evid, int[] cmt,
                        real[] addl, int[] ss,
                        matrix K, real[] biovar, real[] tlag)
@@ -895,7 +895,7 @@ pairs. Specifically, =linear_interpolation= implements the following function
 
 Code below shows how Torsten function ~pmx_solve_twocpt~ can be used to fit the above model.
 
-#+include: "../example-models/TwoCptModel/TwoCptModel.stan" :lines "5-74" src stan
+#+include: "../example-models/pk2cpt/pk2cpt.stan" :lines "5-74" src stan
 
 #+BEGIN_SRC R :results output silent :exports none
   setwd("~/Work/Torsten_debug/example-models/R")

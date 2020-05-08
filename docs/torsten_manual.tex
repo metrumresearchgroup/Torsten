@@ -1,4 +1,4 @@
-% Created 2019-11-27 Wed 08:52
+% Created 2020-05-07 Thu 21:40
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt, reqno, oneside]{amsbook}
               \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
@@ -59,7 +59,7 @@
  pdftitle={Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan},
  pdfkeywords={},
  pdfsubject={},
- pdfcreator={Emacs 25.3.1 (Org mode 9.1.3)}, 
+ pdfcreator={Emacs 26.3 (Org mode 9.1.9)}, 
  pdflang={English}}
 \begin{document}
 
@@ -68,36 +68,36 @@
 
 
 \section*{Development team}
-\label{sec:orge2f81f6}
+\label{sec:org8e222dd}
 \subsection*{Bill Gillespie}
-\label{sec:org87c0a0d}
+\label{sec:org61bc370}
 \href{mailto:billg@metrumrg.com}{\texttt{billg@metrumrg.com}},
 Metrum Research Group, LLC
 \subsection*{Yi Zhang}
-\label{sec:orgb2dc63b}
+\label{sec:org7395597}
 \href{mailto:yiz@metrumrg.com}{\texttt{yiz@metrumrg.com}}, Metrum Research Group, LLC
 \subsection*{Charles Margossian}
-\label{sec:org39798ec}
+\label{sec:org30cdfc0}
 \href{mailto:charles.margossian@columbia.edu}{\texttt{charles.margossian@columbia.edu}}, Columbia University, Department of Statistics(formerly Metrum Research Group, LLC)
 
 \chapter*{Acknowledgements}
-\label{sec:org0c6970a}
+\label{sec:org9312c36}
 \section*{Institutions}
-\label{sec:org8e4881f}
+\label{sec:org165159e}
 We thank Metrum Research Group, Columbia University, and AstraZeneca.
 \section*{Funding}
-\label{sec:org29968d3}
+\label{sec:org51e794b}
 This work was funded in part by the following organizations:
 \subsection*{Office of Naval Research (ONR) contract N00014-16-P-2039}
-\label{sec:org41d5c99}
+\label{sec:org4bf5b2a}
 provided as part of the Small Business Technology Transfer (STTR)
 program. The content of the information presented in this document
 does not necessarily reflect the position or policy of the
 Government and no official endorsement should be inferred.
 \subsection*{Bill \& Melinda Gates Foundation.}
-\label{sec:org12579c0}
+\label{sec:orgf16b039}
 \section*{Individuals}
-\label{sec:org29b6f6d}
+\label{sec:orge616433}
 We thank the Stan Development Team for giving us guidance on how to
 create new Stan functions and adding features to Stan's core language
 that facilitate building ODE-based models.
@@ -107,7 +107,7 @@ in C++ and using GitHub, Curtis Johnston for reviewing the User
 Manual, and Yaming Su for using Torsten and giving us feedback.
 
 \chapter{Introduction}
-\label{sec:org79d64ca}
+\label{sec:orgd15149d}
 Stan is an open source probabilistic programing language designed
 primarily to do Bayesian data analysis
 \cite{carpenter17_stan}. 
@@ -153,7 +153,7 @@ assist. Please report issues, bugs, and feature requests on
 \end{mdframed}
 
 \section{Overview}
-\label{sec:org4ba9586}
+\label{overview}
 Torsten is a collection of Stan functions to facilitate analysis of
 pharmacometric data using Stan. The current version
 includes:
@@ -201,7 +201,7 @@ This library provides Stan language functions that calculate amounts
 in each compartment, given an event schedule and an ODE system.
 
 \section{Implementation summary}
-\label{sec:org624fd30}
+\label{imp_details}
 \begin{itemize}
 \item Current Torsten v0.87 is based on Stan v2.19.1.
 \item All functions are programmed in C++ and are compatible
@@ -215,7 +215,7 @@ numerically.
 \end{itemize}
 
 \section{Development plans}
-\label{sec:orgede04aa}
+\label{dev_plans}
 Our current plans for future development of Torsten include the
 following:
 \begin{itemize}
@@ -242,12 +242,12 @@ encounter
 \end{itemize}
 
 \section{Changelog}
-\label{sec:org615c402}
+\label{changelog}
 \subsection{0.87 \textit{<2019-07-26 Fri>}}
-\label{sec:org5c6001f}
+\label{sec:org37cc75d}
 \begin{itemize}
 \item Added
-\label{sec:orgf7972eb}
+\label{0-85-added}
 \begin{itemize}
 \item MPI dynamic load balance for Torsten's population ODE integrators
 \begin{itemize}
@@ -261,7 +261,7 @@ balance for MPI, issue \texttt{TORSTEN\_MPI=2} in \texttt{make/local}.
 functions.
 \end{itemize}
 \item Changed
-\label{sec:orga97a2e4}
+\label{0-85-changed}
 \begin{itemize}
 \item Some fixes on steady-state solvers
 \item Update to rstan version 2.19.2.
@@ -269,10 +269,10 @@ functions.
 \end{itemize}
 
 \subsection{0.86 \textit{<2019-05-15 Wed>}}
-\label{sec:org3db5b11}
+\label{sec:orgf3d017a}
 \begin{itemize}
 \item Added
-\label{sec:org2ad3ba1}
+\label{0-85-added}
 \begin{itemize}
 \item Torsten's ODE integrator functions
 \begin{itemize}
@@ -298,7 +298,7 @@ ODE models
 solvers.
 \end{itemize}
 \item Changed
-\label{sec:orgdaaf122}
+\label{0-85-changed}
 \begin{itemize}
 \item Renaming Torsten functions in previous releases, the
 old-new name mapping is
@@ -323,32 +323,32 @@ deprecated in the future.
 \end{itemize}
 
 \subsection{0.85 \textit{<2018-12-04 Tue>}}
-\label{sec:org4f14fed}
+\label{sec:org455dd22}
 \begin{itemize}
 \item Added
-\label{sec:org75979d3}
+\label{0-85-added}
 \begin{itemize}
 \item Dosing rate as parameter
 \end{itemize}
 \item Changed
-\label{sec:orgbee8617}
+\label{0-85-changed}
 \begin{itemize}
 \item Update to Stan version 2.18.0.
 \end{itemize}
 \end{itemize}
 
 \subsection{0.84 \textit{<2018-02-24 Sat>}}
-\label{sec:orgc817de2}
+\label{sec:orgaab0347}
 \begin{itemize}
 \item Added
-\label{sec:orgab0d6f4}
+\label{0-84-added}
 \begin{itemize}
 \item Piecewise linear interpolation function.
 \item Univariate integral functions.
 \end{itemize}
 
 \item Changed
-\label{sec:org134ce9f}
+\label{0-84-changed}
 \begin{itemize}
 \item Update to Stan version 2.17.1.
 \item Minor revisions to User Manual.
@@ -357,17 +357,17 @@ deprecated in the future.
 \end{itemize}
 
 \subsection{0.83 \textit{<2017-08-02 Wed>}}
-\label{sec:orgfc33bad}
+\label{sec:orgf9f3a31}
 \begin{itemize}
 \item Added
-\label{sec:orgcd6de5f}
+\label{0-83-added}
 \begin{itemize}
 \item Work with TorstenHeaders
 \item Each chain has a different initial estimate
 \end{itemize}
 
 \item Changed
-\label{sec:org1e9cdbb}
+\label{0-83-changed}
 \begin{itemize}
 \item User manual
 \item Fix misspecification in ODE system for TwoCpt example.
@@ -377,10 +377,10 @@ deprecated in the future.
 
 
 \subsection{0.82 \textit{<2017-01-29 Sun>}}
-\label{sec:org100dd59}
+\label{0-82-added}
 \begin{itemize}
 \item Added
-\label{sec:org648fb9c}
+\label{sec:orgbd207c7}
 \begin{itemize}
 \item Allow parameter arguments to be passed as 1D or 2D arrays
 \item More unit tests
@@ -388,7 +388,7 @@ deprecated in the future.
 \end{itemize}
 
 \item Changed
-\label{sec:org73ea413}
+\label{0-82-changed}
 \begin{itemize}
 \item Split the parameter argument into three arguments: pMatrix
 (parameters for the ODEs -- note: for \texttt{linOdeModel}, pMatrix
@@ -400,23 +400,23 @@ for the lag time).
 \end{itemize}
 
 \subsection{0.81 \textit{<2016-09-27 Tue>}}
-\label{sec:org15da614}
+\label{sec:orgd444b74}
 \begin{itemize}
 \item Added
-\label{sec:orgb1af4f9}
+\label{0-81-added}
 linCptModel (linear compartmental model) function
 \end{itemize}
 
 \subsection{0.80a \textit{<2016-09-21 Wed>}}
-\label{sec:orgec032b1}
+\label{sec:org86046cc}
 \begin{itemize}
 \item Added
-\label{sec:org2c201dc}
+\label{0-80a-added}
 check\_finite statements in pred\_1 and pred\_2 to reject metropolis proposal if initial conditions are not finite
 \end{itemize}
 
 \chapter{Installation}
-\label{sec:org25df9c2}
+\label{installation}
 We are working with Stan development team to create a
 system to add and share Stan packages. In the mean time,
 the current repo contains forked version of Stan with
@@ -426,7 +426,7 @@ Stan interface you use. Here we provide command line and R
 interfaces.
 
 \section{Command line interface}
-\label{sec:orgd35ef0a}
+\label{sec:orgb4bcd67}
 After downloading the project 
 
 \begin{itemize}
@@ -441,7 +441,7 @@ cd $TORSTEN_PATH/cmdstan; make model_path/model_name
 \end{minted}
 
 \subsection{MPI support}
-\label{sec:org8985373}
+\label{sec:org9e5e3d0}
 Torsten's MPI support is of a different flavour than
 \texttt{map\_rect} found in Stan. To be able to utilize MPI
 parallelisation, one first needs to ensure an MPI library
@@ -469,7 +469,7 @@ conflict on processes management and cannot be used in a
 same Stan model, and MPI support is only available through \texttt{cmdstan}
 interface.
 \section{R interface}
-\label{sec:orgf3bb012}
+\label{sec:org2f2ce52}
 The R interface is based on \href{https://cran.r-project.org/web/packages/rstan/index.html}{rstan}, the Stan's interface for
 R. To install R version of Torsten, at \texttt{\$TORSTEN\_PATH}, in R
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{r}
@@ -501,7 +501,7 @@ For more information of installation troubleshooting,
 please consult \href{https://github.com/stan-dev/rstan/wiki}{rstan wiki}.
 
 \section{Testing}
-\label{sec:orge9c172a}
+\label{sec:org4fd6af5}
 With project in \texttt{torsten\_path}, set the envionment variable
 \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{sh}{TORSTEN_PATH} as
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{sh}
@@ -519,7 +519,7 @@ To test the installation, run
 \end{minted}
 
 \chapter{Using Torsten}
-\label{sec:org9030f1f}
+\label{sec:orgf9edd85}
 The reader should have a basic understanding of how Stan works before
 reading this chapter. There are excellent resources online to get
 started with Stan
@@ -537,8 +537,8 @@ Stan. The code for the examples can be found at
 and also at the \texttt{example-models} foler of your \texttt{TORSTEN\_PATH}.
 
 \section{One Compartment Model}
-\label{sec:org2f7f7c3}
-\label{orgeb5775f}
+\label{sec:orge7897c9}
+\label{sec:onecpt}
 \index{One Compartment Model}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 matrix = pmx_solve_onecpt(real[] time, real[] amt, real[] rate,
@@ -550,12 +550,12 @@ matrix = pmx_solve_onecpt(real[] time, real[] amt, real[] rate,
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=2.0in]{./graphics/cptModels.png}
-\caption{\label{fig:org4ab8aae}
+\caption{\label{one_two_cpt_models}
 One and two compartment models with first order absorption implemented in Torsten.}
 \end{figure}
 
 Torsten function \texttt{pmx\_solve\_onecpt} solves one-compartment PK
-models(Figure \ref{fig:org4ab8aae}). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\)
+models(Figure \ref{one_two_cpt_models}). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\)
 by solving for the mass of drug in the central compartment
 \(y_2\) from ordinary differential equations(ODEs)
 \begin{subequations}
@@ -592,8 +592,8 @@ by \texttt{ncmt}, where \texttt{nt} is the number of time steps and
 \end{itemize}
 
 \section{Two Compartment Model}
-\label{sec:org43d47b7}
-\label{org0b3ebff}
+\label{sec:orgb9e3b1f}
+\label{sec:twocpt}
 \index{Two Compartment Model}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 matrix = pmx_solve_twocpt(real[] time, real[] amt, real[] rate,
@@ -602,7 +602,7 @@ matrix = pmx_solve_twocpt(real[] time, real[] amt, real[] rate,
                                real[] biovar, real[] tlag)
 \end{minted}
 
-Torsten function \texttt{pmx\_solve\_twocpt} (see also Figure \ref{fig:org4ab8aae}) solves two-compartment PK
+Torsten function \texttt{pmx\_solve\_twocpt} (see also Figure \ref{one_two_cpt_models}) solves two-compartment PK
 models. The model obtains plasma concentrations of parent drug \(c=y_2/V_2\)
 by solving for \(y_2\) and \(y_3\), the mass of drug in the central and peripheral compartments,
 respectively, from ODEs
@@ -619,7 +619,7 @@ respectively, from ODEs
 \item The event arguments \texttt{time}, \texttt{amt}, \texttt{rate}, \texttt{ii}, \texttt{evid}, \texttt{cmt}, \texttt{addl}, and
 \texttt{ss}, describe the event schedule of the clinical
 trial. All arrays have the same length corresponding to the number of events.
-\item See section \ref{orgeb5775f} regarding model arguments \texttt{theta}, \texttt{biovar}, and \texttt{tlag}.
+\item See section \ref{sec:onecpt} regarding model arguments \texttt{theta}, \texttt{biovar}, and \texttt{tlag}.
 \item Setting \(ka\) to 0 eliminates the first-order absorption.
 \item The function returns a two-dimensional array of size \texttt{nt}
 by \texttt{ncmt}, where \texttt{nt} is the number of time steps and
@@ -627,10 +627,10 @@ by \texttt{ncmt}, where \texttt{nt} is the number of time steps and
 \end{itemize}
 
 \section{General Linear ODE Model Function}
-\label{sec:orgb0b61b7}
+\label{sec:orgface0ea}
 \index{General linear model}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-real[nt, n] = pmx_solve_linode(real[] time, real[] amt, real[] rate,
+matrix = pmx_solve_linode(real[] time, real[] amt, real[] rate,
                      real[] ii, int[] evid, int[] cmt,
                      real[] addl, int[] ss,
                      matrix K, real[] biovar, real[] tlag)
@@ -660,7 +660,7 @@ the number of events and the \texttt{i} th element corresponds to the matrix at
 the interval \texttt{[time[i-1], time[i]]}.
 Note that \texttt{K} contains all the ODE parameters, so we no
 longer need \texttt{theta}.
-\item See section \ref{orgeb5775f} regarding model arguments \texttt{theta},
+\item See section \ref{sec:onecpt} regarding model arguments \texttt{theta},
 \texttt{biovar}, and \texttt{tlag}.
 \item The function returns a two-dimensional array of size \texttt{nt}
 by \texttt{n}, where \texttt{nt} is the number of time steps and
@@ -668,7 +668,7 @@ by \texttt{n}, where \texttt{nt} is the number of time steps and
 \end{itemize}
 
 \section{General ODE Model Function}
-\label{sec:orge54cf2f}
+\label{sec:orgd091799}
 \index{General ODE Model}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 matrix pmx_solve_adams(ODE_system, int nCmt,
@@ -742,13 +742,13 @@ values. For additional information, see the Stan User's
 Manual \cite{stan_team_2017}.
 \item In the case of a multiple truncated infusion rate dosing regimen
 The bioavailability \texttt{biovar} and the amount \texttt{amt} cannot be passed as parameters.
-\item See section \ref{orgeb5775f} regarding model arguments \texttt{theta},
+\item See section \ref{sec:onecpt} regarding model arguments \texttt{theta},
 \texttt{biovar}, and \texttt{tlag}.
 \end{itemize}
 
 \section{Coupled ODE Model Function}
-\label{sec:orgfa20fe9}
-\label{org05d7d98}
+\label{sec:org94934ef}
+\label{sec:mixed}
 \index{Mixed ODE Model}
 
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
@@ -829,7 +829,7 @@ mixed solvers.
 
 
 \section{General ODE-based Population Model Function}
-\label{sec:org262fe28}
+\label{sec:org4fab808}
 \index{General ODE Model}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 matrix pmx_solve_group_adams(ODE_system, int nCmt, int[] len,
@@ -872,7 +872,7 @@ number of rows equals to the number of compartments in the model.
 \end{itemize}
 
 \section{ODE  integrator Function}
-\label{sec:org02c806a}
+\label{sec:org1206140}
 \index{PMX ODE integrators}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 real[ , ] pmx_integrate_ode_adams(ODE_system, real[] y0, real t0, real[] ts,
@@ -896,7 +896,7 @@ signature as those in Stan.
 \end{itemize}
 
 \section{ODE group  integrator Function}
-\label{sec:org449e4d0}
+\label{sec:orge130626}
 \index{PMX ODE group integrators}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 matrix pmx_integrate_ode_group_adams(ODE_system, real[ , ] y0, real t0,
@@ -930,7 +930,7 @@ column-wise. The number of rows equals to the size of ODE system.
 \end{itemize}
 
 \section{Univariate integral}
-\label{sec:org4dc7686}
+\label{sec:org09517cd}
 \index{univariate integral}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 real univariate_integral_rk45(f, t0, t1, theta, x_r, x_i)
@@ -947,7 +947,7 @@ calculating the integral of a univariate function. The integrand function \(f\) 
 \end{minted}
 
 \section{Piecewise linear interpolation}
-\label{sec:org24d9e36}
+\label{sec:org7552ffc}
 \index{linear interpolation}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 real linear_interpolation(real xout, real[] x, real[] y)
@@ -974,9 +974,9 @@ pairs. Specifically, \texttt{linear\_interpolation} implements the following fun
 \end{itemize}
 
 \chapter{Examples}
-\label{sec:org8473a54}
+\label{sec:org0d44980}
 \section{Two-compartment model for single patient}
-\label{sec:org4bc1c89}
+\label{sec:org9126208}
 We model drug absorption in a single patient and simulate plasma drug concentrations:
 
 \begin{itemize}
@@ -987,7 +987,7 @@ PK is measured every 12 hours throughout the trial.
 \end{itemize}
 
 With the plasma concentration \(\hat{c}\) solved from
-two-compartment ODEs in \ref{org0b3ebff}, we simulate \(c\) according to:
+two-compartment ODEs in \ref{sec:twocpt}, we simulate \(c\) according to:
 \begin{align*}
   \log\left(c\right) &\sim N\left(\log\left(\widehat{c}\right),\sigma^2\right) \\
   \left(CL, Q, V_2, V_3, ka\right) &= \left(5\ {\rm L/h}, 8\  {\rm L/h}, 20\  {\rm L},  70\ {\rm L}, 1.2\ {\rm h^{-1}} \right) \\
@@ -1048,9 +1048,9 @@ parameters{
 
 transformed parameters{
   real theta[nTheta];  // ODE parameters
-  vector<lower = 0>[nt] cHat;
+  row_vector<lower = 0>[nt] cHat;
   vector<lower = 0>[nObs] cHatObs;
-  matrix<lower = 0>[nt, nCmt] x; 
+  matrix<lower = 0>[nCmt, nt] x;
 
   theta[1] = CL;
   theta[2] = Q;
@@ -1061,24 +1061,24 @@ transformed parameters{
   // PKModelTwoCpt takes in the NONMEM data, followed by the parameter
   // arrays abd returns a matrix with the predicted amount in each 
   // compartment at each event.
-  x = PKModelTwoCpt(time, amt, rate, ii, evid, cmt, addl, ss,
-                   theta, biovar, tlag);
+  x = pmx_solve_twocpt(time, amt, rate, ii, evid, cmt, addl, ss,
+                       theta, biovar, tlag);
 
-  cHat = col(x, 2) ./ V1; // we're interested in the amount in the second compartment 
+  cHat = x[2, :] ./ V1; // we're interested in the amount in the second compartment
 
-  cHatObs = cHat[iObs]; // predictions for observed data recors
+  cHatObs = cHat'[iObs]; // predictions for observed data recors
 \end{minted}
 
 Three MCMC chains of 2000 iterations are simulated. The first
 1000 iteration of each chain were discarded. Thus 1000 MCMC samples
 per chain were used for the subsequent analyses.
-The MCMC history plots(Figure \ref{fig:orgbcf03f6})
+The MCMC history plots(Figure \ref{twocpt_mcmc_history})
 suggest that the 3 chains have converged to common distributions for
 all of the key model parameters. The fit to the plasma concentration
-data (Figure \ref{fig:org1656001}) are in close agreement with the
+data (Figure \ref{twocpt_mcmc_predict}) are in close agreement with the
 data, which is not surprising since the fitted model is identical to
 the one used to simulate the data. Similarly the parameter estimates
-summarized in Table \ref{tab:orge6e3d33} and Figure \ref{fig:org378a873}
+summarized in Table \ref{tab:twocpt_summary} and Figure \ref{twocpt_mcmc_posterior}
 are consistent with the values used for simulation.
 
 \begin{table}[htbp]
@@ -1095,7 +1095,7 @@ ka & 1.231 & 0.004 & 0.177 & 0.907 & 1.107 & 1.221 & 1.344 & 1.599 & 1581.825 & 
 sigma & 0.109 & 0.000 & 0.012 & 0.089 & 0.100 & 0.108 & 0.116 & 0.134 & 2560.112 & 1.00\\
 \hline
 \end{tabular}
-\caption{\label{tab:orge6e3d33}
+\caption{\label{tab:twocpt_summary}
 Summary of the MCMC simulations of the marginal posterior distribu- tions of the model parameters}
 
 \end{table}
@@ -1103,33 +1103,33 @@ Summary of the MCMC simulations of the marginal posterior distribu- tions of the
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.6\linewidth]{../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots001.pdf}
-\caption{\label{fig:orgbcf03f6}
+\caption{\label{twocpt_mcmc_history}
 MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.6\linewidth]{../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots002.pdf}
-\caption{\label{fig:orgd9e02eb}
+\caption{\label{twocpt_mcmc_history}
 MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.6\linewidth]{../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots003.pdf}
-\caption{\label{fig:org378a873}
+\caption{\label{twocpt_mcmc_posterior}
 Posterior Marginal Densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.5\linewidth]{../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots006.pdf}
-\caption{\label{fig:org1656001}
+\caption{\label{twocpt_mcmc_predict}
 Predicted (posterior median and 90\% credible intervals) and observed plasma drug concentrations of a two compartment model with first order absorption}
 \end{figure}
 
 \section{Two-compartment model as a linear ODE model for single patient}
-\label{sec:orgdaa8959}
+\label{sec:orgc4cc7a5}
 Using \texttt{pmx\_solve\_linode}, the following example fits a two-compartment model
 with first order absorption.
 
@@ -1204,7 +1204,7 @@ transformed parameters{
 \end{minted}
 
 \section{Two-compartment model solved by numerical integrator for single patient}
-\label{sec:org0da4759}
+\label{sec:org0ea69fd}
 Using \texttt{pmx\_solve\_rk45}, the following example fits a two-compartment model
 with first order absorption. User-defined function
 \texttt{twoCptModelODE} describes the RHS of the ODEs.
@@ -1327,18 +1327,18 @@ transformed parameters{
 \end{minted}
 
 \section{Joint PK-PD model}
-\label{sec:org9246a4f}
+\label{sec:orga93b8c2}
 \index{Friberg-Karlsson Model}
 
 A Friberg-Karlsson Semi-Mechanistic model \cite{friberg_mechanistic_2003} couples
 a PK model with a PD
-effect. In the current example, we use the two compartment model in section \ref{org0b3ebff} for
+effect. In the current example, we use the two compartment model in section \ref{sec:twocpt} for
 PK model.
 
 Neutropenia is observed in patients receiving an ME-2 drug. Our goal
 is to model the relation between neutrophil counts and drug
 exposure. Using a feedback mechanism, the body maintains the number of
-neutrophils at a baseline value (Figure \ref{fig:orgd64b06d}). While in the
+neutrophils at a baseline value (Figure \ref{FK_model}). While in the
 patient's blood, the drug impedes the production of neutrophils. As a
 result, the neutrophil count goes down. After the drug clears out, the
 feedback mechanism kicks in and brings the neutrophil count back to
@@ -1376,7 +1376,7 @@ integrator.
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.8\textwidth]{./graphics/neutrophilModel.jpg}
-\caption{\label{fig:orgd64b06d}
+\caption{\label{FK_model}
 Friberg-Karlsson semi-mechanistic Model.}
 \end{figure}
 
@@ -1553,7 +1553,7 @@ model {
 
 
 \section{Two-compartment population model}
-\label{sec:org39f0fd0}
+\label{sec:org2b70a48}
 Using \texttt{pmx\_solve\_group\_bdf}, the following example fits a
 two-compartment population model.
 
@@ -1698,7 +1698,7 @@ model{
 \end{minted}
 
 \section{Lotka-Volterra group model}
-\label{sec:org2765f19}
+\label{sec:org7705119}
 Using \texttt{pmx\_integrate\_ode\_group\_rk45}, the following example fits
 a Lotka-Volterra group model, based on \href{https://mc-stan.org/users/documentation/case-studies/lotka-volterra-predator-prey.html}{Stan's case study}.
 
@@ -1762,7 +1762,7 @@ model {
 \end{minted}
 
 \section{Univariate integral of a quadratic function}
-\label{sec:org2e95825}
+\label{sec:orgc12de25}
 integral of a quadratic function.
 This example shows how to use \texttt{univariate\_integral\_rk45} to calculate the
 integral of a quadratic function.
@@ -1793,7 +1793,7 @@ transformed data {
 \end{minted}
 
 \section{Linear intepolation}
-\label{sec:orgf00c043}
+\label{sec:org07cab10}
 This example illustrates how to use \texttt{linear\_intepolationi}
 to fit a piecewise linear function to a data set consisting
 of \((x, y)\) pairs.
@@ -1847,14 +1847,14 @@ generated quantities{
 \end{minted}
 
 \section{Effect Compartment Population Model}
-\label{sec:org6e0694c}
-Here we expand the example in \ref{org0b3ebff} to a population model fitted to the
+\label{sec:orgf3817df}
+Here we expand the example in \ref{sec:twocpt} to a population model fitted to the
 combined data from phase I and phase IIa studies. The
 parameters exhibit inter-individual variations (IIV), due to
 both random effects and to the patients' body weight,
 treated as a covariate and denoted \(bw\).
 \subsection{Population Model for Plasma Drug Concentration \(c\)}
-\label{sec:org56edd8f}
+\label{sec:org9561286}
 \begin{gather*}
   \log\left(c_{ij}\right) \sim N\left(\log\left(\widehat{c}_{ij}\right),\sigma^2\right), \\
   \widehat{c}_{ij} = f_{2cpt}\left(t_{ij},D_j,\tau_j,CL_j,Q_j,V_{1j},V_{2j},k_{aj}\right), \\
@@ -1868,17 +1868,17 @@ treated as a covariate and denoted \(bw\).
 \end{gather*}
 
 Furthermore we add a fourth compartment in which we measure
-a PD effect(Figure \ref{fig:orgcef4b65}).
+a PD effect(Figure \ref{eff_model}).
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.5\textwidth]{./graphics/effCptModel.png}
-\caption{\label{fig:orgcef4b65}
+\caption{\label{eff_model}
 Effect Compartment Model}
 \end{figure}
 
 \subsection{Effect Compartment Model for PD response \(R\).}
-\label{sec:org2de192c}
+\label{sec:org21fb235}
 \begin{gather*}
 R_{ij} \sim N\left(\widehat{R}_{ij},\sigma_{R}^2\right), \\
 \widehat{R}_{ij} = \frac{E_{max}c_{eij}}{EC_{50j} + c_{eij}}, \\
@@ -1995,7 +1995,7 @@ transformed parameters{
 \end{minted}
 
 \subsection{Results}
-\label{sec:orga5daa4f}
+\label{sec:orgcc841a7}
 We use the same diagnosis tools as for the
 previous examples. The MCMC history plots (Figure \ref{effCptModelMCMC}) suggest the 4 chains have converged to common
 distributions. We note some minor auto-correlations for \(lp\_\) (the
@@ -2010,7 +2010,7 @@ to the PD data (Figure \ref{effCptModelPredictionsPD}) look good,
 though the data is more noisy. The model reflects the noise by
 producing larger credible intervals. The estimated values of the
 parameters are consistent with the values used to simulate the data
-(Table \ref{tab:org590c623}) and Figure \ref{effCptModelDens}).
+(Table \ref{effCptModelParms}) and Figure \ref{effCptModelDens}).
 
 \begin{table}[htbp]
 \centering
@@ -2046,7 +2046,7 @@ rho[2,5] & 0.119 & 0.011 & 0.160 & -0.188 & 0.008 & 0.118 & 0.224 & 0.438 & 226.
 rho[3,5] & -0.246 & 0.018 & 0.202 & -0.663 & -0.382 & -0.237 & -0.105 & 0.133 & 119.465 & 1.021\\
 rho[4,5] & -0.288 & 0.009 & 0.155 & -0.576 & -0.396 & -0.291 & -0.183 & 0.014 & 275.549 & 1.009\\
 \end{tabular}
-\caption{\label{tab:org590c623}
+\caption{\label{effCptModelParms}
 Summary of the MCMC simulations of the marginal posterior distributions of the model parameters for the effect compartment model example.}
 
 \end{table}
@@ -2095,8 +2095,8 @@ Summary of the MCMC simulations of the marginal posterior distributions of the m
 \end{figure}
 
 \section{Friberg-Karlsson Semi-Mechanistic Population Model}
-\label{sec:orgd9a6a97}
-We now return to the example in Section \ref{org05d7d98} and extend
+\label{sec:orgea2aef0}
+We now return to the example in Section \ref{sec:mixed} and extend
 it to a population model. While we recommend using the mixed
 solver, for completeness we show how to specify the model
 with the \texttt{generalOdeModel} function. We leave it
@@ -2104,7 +2104,7 @@ as an exercise to the reader to rewrite the model with
 \texttt{mixOde2CptModel}. 
 
 \subsection{Friberg-Karlsson Population Model for drug-induced myelosuppression (\(ANC\))}
-\label{sec:org40c55a8}
+\label{sec:orgf66bdd2}
 \begin{gather*}
 \log(ANC_{ij}) \sim N(Circ_{ij}, \sigma^2_{ANC}), \\
 \log\left(MTT_j, Circ_{0j}, \alpha_j\right) \sim N\left(\log\left(\widehat{MTT}, \widehat{Circ_0}, \widehat{\alpha}\right), \Omega_{ANC}\right), \\
@@ -2268,7 +2268,7 @@ efficient MCMC sampler, still does a reasonable job estimating the
 posterior distribution.
 
 \subsection{Results}
-\label{sec:orgec422ea}
+\label{sec:orgdbf9c1d}
 The MCMC history plots are not as convincing
 as in the previous examples, mostly because the number of iterations
 is small (100 versus 1000 in the previous example) (Figure \ref{FKMCMC}. It does however look as though the chains are converging
@@ -2277,7 +2277,7 @@ particular, we expect that if we had run the model for 1000
 iterations, we would obtain the desired "fuzzy caterpillar"
 look). The model fits the data, and the credible interval reflect the
 noise in the data (Figure \ref{FKPredictions}). The parameters
-estimation reflects the real value of the parameters (Table \ref{tab:org450850f} and Figure \ref{FKDens}).
+estimation reflects the real value of the parameters (Table \ref{FKParms} and Figure \ref{FKDens}).
 
 \begin{table}[htbp]
 \centering
@@ -2297,7 +2297,7 @@ circ0 & 5.014 & 0.009 & 0.172 & 4.711 & 4.888 & 5.000 & 5.138 & 5.334 & 400.000 
 gamma & 0.190 & 0.002 & 0.022 & 0.153 & 0.175 & 0.187 & 0.202 & 0.239 & 139.485 & 1.025\\
 sigmaNeut & 0.092 & 0.001 & 0.014 & 0.068 & 0.082 & 0.090 & 0.100 & 0.125 & 161.199 & 1.010\\
 \end{tabular}
-\caption{\label{tab:org450850f}
+\caption{\label{FKParms}
 Summary of the MCMC simulations of the marginal posterior distributions of the model parameters for the Friberg-Karlsson model example.}
 
 \end{table}
