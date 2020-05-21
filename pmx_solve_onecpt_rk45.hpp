@@ -1,22 +1,16 @@
-#ifndef STAN_MATH_TORSTEN_REFACTOR_MIXODE1CPTMODEL_RK45_HPP
-#define STAN_MATH_TORSTEN_REFACTOR_MIXODE1CPTMODEL_RK45_HPP
+#ifndef STAN_MATH_TORSTEN_ONECPT_RK45_HPP
+#define STAN_MATH_TORSTEN_ONECPT_RK45_HPP
 
 #include <Eigen/Dense>
 #include <stan/math/torsten/to_array_2d.hpp>
 #include <stan/math/torsten/is_std_vector.hpp>
-#include <stan/math/torsten/events_manager.hpp>
-#include <stan/math/torsten/PKModel/PKModel.hpp>
-#include <stan/math/torsten/PKModel/functors/mix1_functor.hpp>
-#include <stan/math/torsten/PKModel/Pred/Pred1_mix1.hpp>
-#include <stan/math/torsten/PKModel/Pred/PredSS_mix1.hpp>
-#include <boost/math/tools/promotion.hpp>
-#include <vector>
-#include <string>
-
-#include <stan/math/torsten/event_solver.hpp>
+#include <stan/math/torsten/ev_manager.hpp>
 #include <stan/math/torsten/pmx_ode_model.hpp>
 #include <stan/math/torsten/pmx_coupled_model.hpp>
 #include <stan/math/torsten/pmx_onecpt_model.hpp>
+#include <vector>
+#include <string>
+#include <stan/math/torsten/ev_solver.hpp>
 
 namespace torsten {
 
@@ -94,7 +88,6 @@ pmx_solve_onecpt_rk45(const F& f,
   using Eigen::Dynamic;
   using Eigen::Matrix;
   using boost::math::tools::promote_args;
-  using torsten::PKRec;
 
   // check arguments
   static const char* function("pmx_solve_onecpt_rk45");
@@ -105,36 +98,22 @@ pmx_solve_onecpt_rk45(const F& f,
   Matrix<T4, Dynamic, Dynamic> dummy_system;
   vector<Matrix<T4, Dynamic, Dynamic> > dummy_systems(1, dummy_system);
 
-  typedef mix1_functor<F> F0;
-
-  const int &nPK = torsten::PMXOneCptModel<double, double, double, double>::Ncmt;
+  const int &nPK = torsten::PMXOneCptModel<double>::Ncmt;
 
   PMXOdeIntegrator<StanRk45> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
-
-  Pred1_mix1<F0> pred1(F0(f), rel_tol, abs_tol, max_num_steps, msgs,
-                       "rk45");
-  PredSS_mix1<F0> predss(F0(f), rel_tol, abs_tol, max_num_steps, msgs,
-                         "rk45", nOde);
-
-#ifdef OLD_TORSTEN
-  return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-              theta, biovar, tlag, nPK + nOde, dummy_systems,
-              pred1, predss);
-#else
   const int nCmt = nPK + nOde;
 
-  using ER = NONMENEventsRecord<T0, T1, T2, T3, std::vector<T4>, T5, T6>;
+  using ER = NONMENEventsRecord<T0, T1, T2, T3, T4, T5, T6>;
   using EM = EventsManager<ER>;
   const ER events_rec(nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag);
 
   Matrix<typename EM::T_scalar, Dynamic, Dynamic> pred =
     Matrix<typename EM::T_scalar, Dynamic, Dynamic>::Zero(events_rec.num_event_times(), EM::nCmt(events_rec));
 
-  using model_type = torsten::PkOneCptOdeModel<typename EM::T_time, typename EM::T_scalar, typename EM::T_rate, typename EM::T_par, F>;
-  EventSolver<model_type, PMXOdeIntegrator<StanRk45>& > pr;
+  using model_type = torsten::PkOneCptOdeModel<typename EM::T_rate, typename EM::T_par, F>;
+  EventSolver<model_type> pr;
   pr.pred(0, events_rec, pred, integrator, f, nOde);
   return pred;
-#endif
 }
 
   /*

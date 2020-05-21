@@ -1,12 +1,12 @@
 #ifndef STAN_MATH_TORSTEN_TWOCPT_MODEL_HPP
 #define STAN_MATH_TORSTEN_TWOCPT_MODEL_HPP
 
+#include <stan/math/torsten/pmx_linode_model.hpp>
 #include <stan/math/rev/fun/sqrt.hpp>
 #include <stan/math/prim/fun/sqrt.hpp>
 #include <stan/math/rev/fun/exp.hpp>
 #include <stan/math/prim/fun/exp.hpp>
 #include <stan/math/torsten/PKModel/functors/check_mti.hpp>
-#include <stan/math/torsten/model_solve_d.hpp>
 #include <stan/math/torsten/pmx_ode_integrator.hpp>
 #include <stan/math/torsten/dsolve/pk_vars.hpp>
 #include <stan/math/torsten/pk_nvars.hpp>
@@ -72,15 +72,11 @@ namespace torsten {
    * using general ODE solvers, which makes testing easier.
    *
    * @tparam T_time t type
-   * @tparam T_init initial condition type
    * @tparam T_rate dosing rate type
    * @tparam T_par PK parameters type
    */
-  template<typename T_time, typename T_init, typename T_rate, typename T_par>
+  template<typename T_par>
   class PMXTwoCptModel {
-    const T_time &t0_;
-    const torsten::PKRec<T_init>& y0_;
-    const std::vector<T_rate> &rate_;
     const T_par &CL_;
     const T_par &Q_;
     const T_par &V2_;
@@ -98,17 +94,11 @@ namespace torsten {
     static constexpr int Npar = 5;
     static constexpr PMXTwoCptODE f_ = PMXTwoCptODE();
 
-    using scalar_type = typename stan::return_type<T_time, T_init, T_rate, T_par>::type;
-    using init_type   = T_init;
-    using time_type   = T_time;
     using par_type    = T_par;
-    using rate_type   = T_rate;
 
   /**
    * Two-compartment PK model constructor
    *
-   * @param t0 initial time
-   * @param y0 initial condition
    * @param rate dosing rate
    * @param par model parameters
    * @param CL clearance
@@ -117,17 +107,11 @@ namespace torsten {
    * @param V3 peri cpt vol
    * @param ka absorption
    */
-    PMXTwoCptModel(const T_time& t0,
-                  const torsten::PKRec<T_init>& y0,
-                  const std::vector<T_rate> &rate,
-                  const T_par& CL,
-                  const T_par& Q,
-                  const T_par& V2,
-                  const T_par& V3,
-                  const T_par& ka) :
-      t0_(t0),
-      y0_(y0),
-      rate_(rate),
+    PMXTwoCptModel(const T_par& CL,
+                   const T_par& Q,
+                   const T_par& V2,
+                   const T_par& V3,
+                   const T_par& ka) :
       CL_(CL),
       Q_(Q),
       V2_(V2),
@@ -158,133 +142,104 @@ namespace torsten {
    * @tparam T_mp parameters class
    * @tparam Ts parameter types
    * @param t0 initial time
-   * @param y0 initial condition
    * @param rate dosing rate
    * @param par model parameters
    * @param parameter ModelParameter type
    */
     template<template<typename...> class T_mp, typename... Ts>
-    PMXTwoCptModel(const T_time& t0,
-                  const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& y0,
-                  const std::vector<T_rate> &rate,
-                  const std::vector<T_par> & par,
-                  const T_mp<Ts...> &parameter) :
-      PMXTwoCptModel(t0, y0, rate, par[0], par[1], par[2], par[3], par[4])
+    PMXTwoCptModel(const std::vector<T_par> & par,
+                   const T_mp<Ts...> &parameter) :
+      PMXTwoCptModel(par[0], par[1], par[2], par[3], par[4])
     {}
 
   /**
    * two-compartment PK model constructor
    *
    * @param t0 initial time
-   * @param y0 initial condition
    * @param rate dosing rate
    * @param par model parameters
    */
-    PMXTwoCptModel(const T_time& t0,
-                  const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& y0,
-                  const std::vector<T_rate> &rate,
-                  const std::vector<T_par> & par) :
-      PMXTwoCptModel(t0, y0, rate, par[0], par[1], par[2], par[3], par[4])
+    PMXTwoCptModel(const std::vector<T_par> & par) :
+      PMXTwoCptModel(par[0], par[1], par[2], par[3], par[4])
     {}
 
-
-    /*
-     * calculate number of @c vars for transient dosing.
+    /**
+     * two-compartment PK model get methods
      */
-    static int nvars(int ncmt, int npar) {
-      using stan::is_var;
-      int n = 0;
-      if (is_var<T_time>::value) n++; // t0
-      if (is_var<T_init>::value) n += Ncmt; // y0 is fixed for twocpt model
-      if (is_var<T_rate>::value) n += Ncmt; // rate is fixed for twocpt model
-      if (is_var<T_par>::value) n += Npar; // par is fixed for twocpt model
-      return n;
-    }
-
-    /*
-     * calculate number of @c vars for steady-state dosing.
-     */
-    template<typename T_a, typename T_r, typename T_ii>
-    static int nvars(int npar) {
-      using stan::is_var;
-      int n = 0;
-      if (is_var<T_a>::value) n++; // amt
-      if (is_var<T_r>::value) n++; // rate
-      if (is_var<T_ii>::value) n++; // ii
-      if (is_var<T_par>::value) n += Npar; // par is fixed for twocpt model
-      return n;
-    }
-
-    /*
-     * return the number @c var that will be the parameters
-     * of the trasient dosing event's solution
-     */
-    template<typename T0>
-    int nvars(const T0& t0) {
-      return torsten::pk_nvars(t0, y0_, rate_, par_);
-    }
-
-    /*
-     * return the number @c var that will be the parameters
-     * of the stead-state dosing event's solution
-     */
-    template<typename T_a, typename T_r, typename T_ii>
-    int nvars(const T_a& a, const T_r& r, const T_ii& ii) {
-      return torsten::pk_nvars(a, r, ii, par_);
-    }
-
-    /*
-     * return @c vars that will be solution
-     */
-    template<typename T0>
-    std::vector<stan::math::var> vars(const T0 t1) {
-      return torsten::dsolve::pk_vars(t1, y0_, rate_, par_);
-    }
-
-    /*
-     * return @c vars that will be steady-state
-     * solution. For SS solution @c rate_ or @ y0_ will not
-     * be in the solution.
-     */
-    template<typename T_a, typename T_r, typename T_ii>
-    std::vector<stan::math::var> vars(const T_a& a, const T_r& r, const T_ii& ii) {
-      return torsten::dsolve::pk_vars(a, r, ii, par_);
-    }
-
-  /**
-   * two-compartment PK model get methods
-   */
-    const T_time              & t0()      const { return t0_;    }
-    const torsten::PKRec<T_init>    & y0()         const { return y0_;    }
-    const std::vector<T_rate> & rate()    const { return rate_;  }
-    const T_par               & CL()      const { return CL_;    }
-    const T_par               & Q()       const { return Q_;     }
-    const T_par               & V2()      const { return V2_;    }
-    const T_par               & V3()      const { return V3_;    }
-    const T_par               & ka()      const { return ka_;    }
-    const T_par               & k10()     const { return k10_;   }
-    const T_par               & k12()     const { return k12_;   }
-    const T_par               & k21()     const { return k21_;   }
     const std::vector<T_par>  & par()     const { return par_;   }
-    const std::vector<T_par>  & alpha()   const { return alpha_; }
     const PMXTwoCptODE         & f()       const { return f_;     }
     const int                 & ncmt ()   const { return Ncmt;   }
     const int                 & npar ()   const { return Npar;   }
 
+
+    Eigen::Matrix<T_par, -1, -1> to_linode_par() const {
+      Eigen::Matrix<T_par, -1, -1> linode_par(Ncmt, Ncmt);
+      linode_par << -ka_, 0.0, 0.0, ka_, -(k10_ + k12_), k21_, 0.0, k12_, -k21_;
+      return linode_par;
+    }
+
   /**
    * Solve two-cpt model: analytical solution
    */
-    Eigen::Matrix<scalar_type, Eigen::Dynamic, 1> 
-    solve(const T_time& t_next) const {
-      using Eigen::Matrix;
-      using Eigen::Dynamic;
-      using std::vector;
+    template<typename Tt0, typename Tt1, typename T, typename T1>
+    void solve(PKRec<T>& y,
+               const Tt0& t0, const Tt1& t1,
+               const std::vector<T1>& rate,
+               const PMXOdeIntegrator<Analytical>& integ) const {
       using stan::math::exp;
 
-      T_time dt = t_next - t0_;
+      typename stan::return_type_t<Tt0, Tt1> dt = t1 - t0;
 
-      std::vector<scalar_type> a(Ncmt, 0);
-      Matrix<scalar_type, -1, 1> pred = torsten::PKRec<scalar_type>::Zero(Ncmt);
+      std::vector<T> a(Ncmt, 0);
+      Eigen::Matrix<T, -1, 1> pred = torsten::PKRec<T>::Zero(Ncmt);
+
+      T_par s = stan::math::sqrt(-4.0 * k10_ * k21_ + (k10_ + k12_ + k21_) * (k10_ + k12_ + k21_));
+      T_par q = ka_ * ka_ - ka_ * k10_ - ka_ * k12_ - ka_ * k21_ + k10_ * k21_;
+      T_par w = k10_ + k12_ - k21_;
+      if (ka_ > 0.0) {
+        Eigen::Matrix<T_par, -1, -1> p(Ncmt, Ncmt), p_inv(Ncmt, Ncmt),
+          diag = Eigen::Matrix<T_par, -1, -1>::Zero(Ncmt, Ncmt);
+        p << q / (ka_ * k12_), 0, 0,
+          -(ka_ - k21_)/k12_, -0.5 * (w + s) / k12_, -0.5 * (w - s) / k12_, 
+          1, 1, 1;
+        p_inv << ka_ * k12_/q, 0, 0,
+          -ka_ * k12_ * ( 2.0 * ka_ - k10_ - k12_ - k21_ + s) / (2.0 * q * s), -k12_ / s, 0.5 * (s - w) / s,
+          -ka_ * k12_ * (-2.0 * ka_ + k10_ + k12_ + k21_ + s) / (2.0 * q * s),  k12_ / s, 0.5 * (s + w) / s;
+        diag(0, 0) = -ka_;
+        diag(1, 1) = -0.5 * (k10_ + k12_ + k21_ + s);
+        diag(2, 2) = -0.5 * (k10_ + k12_ + k21_ - s);
+        PMXLinOdeEigenDecompModel<T_par> linode_model(p, diag, p_inv, Ncmt);
+        linode_model.solve(y, t0, t1, rate, integ);
+      } else {
+        y(0) += rate[0] * dt;
+        Eigen::Matrix<T_par, -1, -1> p(Ncmt-1, Ncmt-1), p_inv(Ncmt-1, Ncmt-1),
+          diag = Eigen::Matrix<T_par, -1, -1>::Zero(Ncmt-1, Ncmt-1);
+        p << -0.5 * (w + s) / k12_, -0.5 * (w - s) / k12_, 1, 1;
+        p_inv << -k12_/s,  0.5 * (s - w) / s, k12_/s, 0.5 * (s + w) / s;
+        diag(0, 0) = -0.5 * (k12_ + k10_ + k21_ + s);
+        diag(1, 1) = -0.5 * (k12_ + k10_ + k21_ - s);
+        PMXLinOdeEigenDecompModel<T_par> linode_model(p, diag, p_inv, Ncmt - 1);
+        PKRec<T> y2 = y.tail(Ncmt - 1);
+        std::vector<T1> rate2(rate.begin() + 1, rate.end());
+        linode_model.solve(y2, t0, t1, rate2, integ);
+        y.tail(Ncmt - 1) = y2;
+      }
+    }
+
+  /**
+   * Solve two-cpt model: analytical solution for benchmarking & testing
+   */
+    template<typename Tt0, typename Tt1, typename T, typename T1>
+    void solve_analytical(PKRec<T>& y,
+                          const Tt0& t0, const Tt1& t1,
+                          const std::vector<T1>& rate,
+                          const PMXOdeIntegrator<Analytical>& integ) const {
+      using stan::math::exp;
+
+      typename stan::return_type_t<Tt0, Tt1> dt = t1 - t0;
+
+      std::vector<T> a(Ncmt, 0);
+      Eigen::Matrix<T, -1, 1> pred = torsten::PKRec<T>::Zero(Ncmt);
 
       // contribution from cpt 0
       {
@@ -297,16 +252,16 @@ namespace torsten {
           const T_par a6 = -(a4 + a5);
 
           // bolus
-          pred(0) += y0_[0] * exp(-ka_ * dt);
-          pred(1) += y0_[0] * (a1 * exp(-alpha_[0] * dt) + a2 * exp(-alpha_[1] * dt) + a3 * exp(-alpha_[2] * dt));
-          pred(2) += y0_[0] * (a4 * exp(-alpha_[0] * dt) + a5 * exp(-alpha_[1] * dt) + a6 * exp(-alpha_[2] * dt));
+          pred(0) += y(0) * exp(-ka_ * dt);
+          pred(1) += y(0) * (a1 * exp(-alpha_[0] * dt) + a2 * exp(-alpha_[1] * dt) + a3 * exp(-alpha_[2] * dt));
+          pred(2) += y(0) * (a4 * exp(-alpha_[0] * dt) + a5 * exp(-alpha_[1] * dt) + a6 * exp(-alpha_[2] * dt));
 
           // infusion
-          pred(0) += rate_[0] * (1 - exp(-ka_ * dt)) / ka_;
-          pred(1) += rate_[0] * (a1 * (1 - exp(-alpha_[0] * dt)) / alpha_[0] + a2 * (1 - exp(-alpha_[1] * dt)) / alpha_[1] + a3 * (1 - exp(-alpha_[2] * dt)) / alpha_[2]);
-          pred(2) += rate_[0] * (a4 * (1 - exp(-alpha_[0] * dt)) / alpha_[0] + a5 * (1 - exp(-alpha_[1] * dt)) / alpha_[1] + a6 * (1 - exp(-alpha_[2] * dt)) / alpha_[2]);
+          pred(0) += rate[0] * (1 - exp(-ka_ * dt)) / ka_;
+          pred(1) += rate[0] * (a1 * (1 - exp(-alpha_[0] * dt)) / alpha_[0] + a2 * (1 - exp(-alpha_[1] * dt)) / alpha_[1] + a3 * (1 - exp(-alpha_[2] * dt)) / alpha_[2]);
+          pred(2) += rate[0] * (a4 * (1 - exp(-alpha_[0] * dt)) / alpha_[0] + a5 * (1 - exp(-alpha_[1] * dt)) / alpha_[1] + a6 * (1 - exp(-alpha_[2] * dt)) / alpha_[2]);
         } else {
-          pred(0) += y0_[0] + rate_[0] * dt;
+          pred(0) += y(0) + rate[0] * dt;
         }
       }
 
@@ -316,12 +271,12 @@ namespace torsten {
         const T_par a2 = (k21_ - alpha_[1]) / (alpha_[0] - alpha_[1]);
 
         // bolus
-        pred(1) += y0_[1] * (a1 * exp(-alpha_[0] * dt) + a2 * exp(-alpha_[1] * dt));
-        pred(2) += y0_[1] * k12_ / (alpha_[1] - alpha_[0]) * (exp(-alpha_[0] * dt) - exp(-alpha_[1] * dt));
+        pred(1) += y(1) * (a1 * exp(-alpha_[0] * dt) + a2 * exp(-alpha_[1] * dt));
+        pred(2) += y(1) * k12_ / (alpha_[1] - alpha_[0]) * (exp(-alpha_[0] * dt) - exp(-alpha_[1] * dt));
 
         // infusion
-        pred(1) += rate_[1] * (a1 * (1 - exp(-alpha_[0] * dt)) / alpha_[0] + a2 * (1 - exp(-alpha_[1] * dt)) / alpha_[1]);
-        pred(2) += rate_[1] * k12_ / (alpha_[1] - alpha_[0]) * ((1 - exp(-alpha_[0] * dt)) / alpha_[0] - (1 - exp(-alpha_[1] * dt)) / alpha_[1]);
+        pred(1) += rate[1] * (a1 * (1 - exp(-alpha_[0] * dt)) / alpha_[0] + a2 * (1 - exp(-alpha_[1] * dt)) / alpha_[1]);
+        pred(2) += rate[1] * k12_ / (alpha_[1] - alpha_[0]) * ((1 - exp(-alpha_[0] * dt)) / alpha_[0] - (1 - exp(-alpha_[1] * dt)) / alpha_[1]);
       }
 
       // contribution from cpt 2
@@ -330,23 +285,36 @@ namespace torsten {
         const T_par a2 = (k10_ + k12_ - alpha_[1]) / (alpha_[0] - alpha_[1]);
 
         // bolus
-        pred(1) += y0_[2] * k21_ / (alpha_[1] - alpha_[0]) * (exp(-alpha_[0] * dt) - exp(-alpha_[1] * dt));
-        pred(2) += y0_[2] * (a1 * exp(-alpha_[0] * dt) + a2 * exp(-alpha_[1] * dt));
+        pred(1) += y(2) * k21_ / (alpha_[1] - alpha_[0]) * (exp(-alpha_[0] * dt) - exp(-alpha_[1] * dt));
+        pred(2) += y(2) * (a1 * exp(-alpha_[0] * dt) + a2 * exp(-alpha_[1] * dt));
 
         // infusion
-        pred(1) += rate_[2] * k21_ / (alpha_[1] - alpha_[0]) * ((1 - exp(-alpha_[0] * dt)) / alpha_[0] - (1 - exp(-alpha_[1] * dt)) / alpha_[1]);
-        pred(2) += rate_[2] * (a1 * (1 - exp(-alpha_[0] * dt)) / alpha_[0] + a2 * (1 - exp(-alpha_[1] * dt)) / alpha_[1]);
+        pred(1) += rate[2] * k21_ / (alpha_[1] - alpha_[0]) * ((1 - exp(-alpha_[0] * dt)) / alpha_[0] - (1 - exp(-alpha_[1] * dt)) / alpha_[1]);
+        pred(2) += rate[2] * (a1 * (1 - exp(-alpha_[0] * dt)) / alpha_[0] + a2 * (1 - exp(-alpha_[1] * dt)) / alpha_[1]);
       }
-
-      return pred;
+      y = pred;
     }
 
-    /*
-     * Solve the transient problem and return the result in
-     * form of data, arranged as (solution value, grad1, grad2...)
-     */
-    Eigen::VectorXd solve_d(const T_time& t_next) const {
-      return torsten::model_solve_d(*this, t_next);
+  /**
+   * Solve two-cpt model: analytical solution
+   */
+    template<typename Tt0, typename Tt1, typename T, typename T1>
+    void solve(PKRec<T>& y,
+               const Tt0& t0, const Tt1& t1,
+               const std::vector<T1>& rate) const {
+      const PMXOdeIntegrator<Analytical> integ;
+      solve(y, t0, t1, rate, integ);
+    }
+
+  /**
+   * Solve two-cpt model: analytical solution used for benchmarking & testing
+   */
+    template<typename Tt0, typename Tt1, typename T, typename T1>
+    void solve_analytical(PKRec<T>& y,
+               const Tt0& t0, const Tt1& t1,
+               const std::vector<T1>& rate) const {
+      const PMXOdeIntegrator<Analytical> integ;
+      solve_analytical(y, t0, t1, rate, integ);
     }
 
   /**
@@ -359,8 +327,64 @@ namespace torsten {
    * @param cmt dosing compartment
    */
     template<typename T_amt, typename T_r, typename T_ii>
-    Eigen::Matrix<typename stan::return_type<T_par, T_amt, T_r, T_ii>::type, Eigen::Dynamic, 1>
-    solve(const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt) const {
+    Eigen::Matrix<typename stan::return_type<T_par, T_amt, T_r, T_ii>::type, -1, 1>
+    solve(double t0, const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt) const {
+      using Eigen::Matrix;
+      using Eigen::Dynamic;
+      using std::vector;
+      using stan::math::exp;
+      using stan::math::matrix_exp;
+      using stan::math::value_of;
+      using stan::math::mdivide_left;
+      using stan::math::multiply;
+
+      using ss_scalar_type = typename stan::return_type<T_par, T_amt, T_r, T_ii>::type;
+
+      stan::math::check_positive_finite("steady state two-cpt solver", "cmt", cmt);
+      stan::math::check_less("steady state two-cpt solver", "cmt", cmt, 4);
+      stan::math::check_positive_finite("steady state two-cpt solver", "ka", ka_);
+
+      std::vector<ss_scalar_type> a(3, 0);
+      PKRec<ss_scalar_type> pred = PKRec<ss_scalar_type>::Zero(Ncmt);
+
+      T_par s = stan::math::sqrt(-4.0 * k10_ * k21_ + (k10_ + k12_ + k21_) * (k10_ + k12_ + k21_));
+      T_par q = ka_ * ka_ - ka_ * k10_ - ka_ * k12_ - ka_ * k21_ + k10_ * k21_;
+      T_par w = k10_ + k12_ - k21_;
+      
+      Eigen::Matrix<T_par, -1, -1> p(Ncmt, Ncmt), p_inv(Ncmt, Ncmt),
+        diag = Eigen::Matrix<T_par, -1, -1>::Zero(Ncmt, Ncmt);
+      p << q / (ka_ * k12_), 0, 0,
+        -(ka_ - k21_)/k12_, -0.5 * (w + s) / k12_, -0.5 * (w - s) / k12_, 
+        1, 1, 1;
+      p_inv << ka_ * k12_/q, 0, 0,
+        -ka_ * k12_ * ( 2.0 * ka_ - k10_ - k12_ - k21_ + s) / (2.0 * q * s), -k12_ / s, 0.5 * (s - w) / s,
+        -ka_ * k12_ * (-2.0 * ka_ + k10_ + k12_ + k21_ + s) / (2.0 * q * s),  k12_ / s, 0.5 * (s + w) / s;
+      diag(0, 0) = -ka_;
+      diag(1, 1) = -0.5 * (k10_ + k12_ + k21_ + s);
+      diag(2, 2) = -0.5 * (k10_ + k12_ + k21_ - s);
+      PMXLinOdeEigenDecompModel<T_par> linode_model(p, diag, p_inv, Ncmt);
+      pred = linode_model.solve(t0, amt, rate, ii, cmt);
+
+      return pred;
+    }
+
+    /*
+     * wrapper to fit @c PrepWrapper's call signature
+     */
+    template<typename T_amt, typename T_r, typename T_ii>
+    Eigen::Matrix<typename stan::return_type<T_par, T_amt, T_r, T_ii>::type, -1, 1>
+    solve(double t0, const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt,
+          const PMXOdeIntegrator<torsten::Analytical>& integrator) const {
+      return solve(t0, amt, rate, ii, cmt);
+    }
+
+    /**
+     * analytical solution used for testing
+     * 
+     */
+    template<typename T_amt, typename T_r, typename T_ii>
+    Eigen::Matrix<typename stan::return_type<T_par, T_amt, T_r, T_ii>::type, -1, 1>
+    solve_analytical(double t0, const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt) const {
       using Eigen::Matrix;
       using Eigen::Dynamic;
       using std::vector;
@@ -481,25 +505,6 @@ namespace torsten {
       return pred;
     }
 
-    /*
-     * Solve the transient problem and return the result in
-     * form of data, arranged as (solution value, grad1, grad2...)
-     */
-    template<typename T_amt, typename T_r, typename T_ii>
-    Eigen::VectorXd solve_d(const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt) const {
-      return torsten::model_solve_d(*this, amt, rate, ii, cmt);
-    }
-
-    /*
-     * wrapper to fit @c PrepWrapper's call signature
-     */
-    template<torsten::PMXOdeIntegratorId It, typename T_amt, typename T_r, typename T_ii>
-    Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
-    solve(const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt,
-          const PMXOdeIntegrator<It>& integrator) const {
-      return solve(amt, rate, ii, cmt);
-    }
-
     template<typename T1, typename T2>
     inline typename stan::return_type_t<T1, T2, T_par>
     trunc_infus_ss(const T_par& p, const T1& dt, const T2& ii) const {
@@ -507,14 +512,14 @@ namespace torsten {
     }
   };
 
-  template<typename T_time, typename T_init, typename T_rate, typename T_par>
-  constexpr int PMXTwoCptModel<T_time, T_init, T_rate, T_par>::Ncmt;
+  template<typename T_par>
+  constexpr int PMXTwoCptModel<T_par>::Ncmt;
 
-  template<typename T_time, typename T_init, typename T_rate, typename T_par>
-  constexpr int PMXTwoCptModel<T_time, T_init, T_rate, T_par>::Npar;
+  template<typename T_par>
+  constexpr int PMXTwoCptModel<T_par>::Npar;
 
-  template<typename T_time, typename T_init, typename T_rate, typename T_par>
-  constexpr PMXTwoCptODE PMXTwoCptModel<T_time, T_init, T_rate, T_par>::f_;
+  template<typename T_par>
+  constexpr PMXTwoCptODE PMXTwoCptModel<T_par>::f_;
 
 }
 

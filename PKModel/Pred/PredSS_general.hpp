@@ -1,6 +1,8 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_GENERAL_SOLVER_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PREDSS_GENERAL_SOLVER_HPP
 
+#include <stan/math/prim/fun/value_of.hpp>
+#include <stan/math/rev/fun/value_of.hpp>
 #include <stan/math/torsten/PKModel/integrator.hpp>
 #include <stan/math/torsten/PKModel/functors/functor.hpp>
 #include <stan/math/torsten/PKModel/functors/SS_system.hpp>
@@ -86,7 +88,7 @@ struct PredSS_general {
     Matrix<scalar, Dynamic, 1> pred;
 
     // Arguments for ODE integrator (and initial guess)
-    double ii_dbl = unpromote(ii);
+    double ii_dbl = stan::math::value_of(ii);
     Matrix<double, 1, Dynamic> init_dbl(nCmt_);
     for (int i = 0; i < nCmt_; i++) init_dbl(i) = 0;
     vector<double> x_r(nCmt_, 0);
@@ -109,7 +111,7 @@ struct PredSS_general {
     if (rate == 0) {  // bolus dose
       // compute initial guess
       init_dbl(cmt - 1) = amt;
-      y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r);
+      y = Pred1(ii_dbl, parameter.to_value(), init_dbl, x_r);
       x_r.push_back(amt);
       pred = algebra_solver_powell(system, y,
                             to_vector(parameter.get_RealParameters(false)),
@@ -120,7 +122,7 @@ struct PredSS_general {
     }  else if (ii > 0) {  // multiple truncated infusions
       x_r[cmt - 1] = rate;
       // compute initial guess
-      y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r);
+      y = Pred1(ii_dbl, parameter.to_value(), init_dbl, x_r);
       x_r.push_back(amt);
       pred = algebra_solver_powell(system, y,
                             to_vector(parameter.get_RealParameters(false)),
@@ -129,7 +131,7 @@ struct PredSS_general {
                                                                // use ftol
     } else {  // constant infusion
       x_r[cmt - 1] = rate;
-      y = Pred1(100.0, unpromote(parameter), init_dbl, x_r);
+      y = Pred1(100.0, parameter.to_value(), init_dbl, x_r);
 
       x_r.push_back(amt);
       pred = algebra_solver_powell(system, y,
@@ -174,7 +176,7 @@ struct PredSS_general {
     Matrix<scalar, Dynamic, 1> pred;
 
     // Arguments for the ODE integrator
-    double ii_dbl = unpromote(ii);
+    double ii_dbl = stan::math::value_of(ii);
     Matrix<double, 1, Dynamic> init_dbl(nCmt_);
     for (int i = 0; i < nCmt_; i++) init_dbl(i) = 0;
     vector<double> x_r(nCmt_, 0);
@@ -201,21 +203,21 @@ struct PredSS_general {
 
     if (rate == 0) {  // bolus dose
       // compute initial guess
-      init_dbl(cmt - 1) = unpromote(amt);
-      y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r);
+      init_dbl(cmt - 1) = stan::math::value_of(amt);
+      y = Pred1(ii_dbl, parameter.to_value(), init_dbl, x_r);
 
       pred = algebra_solver_powell(system, y, parms, x_r, x_i,
                             0, rel_tol, f_tol, max_num_steps);
     }  else if (ii > 0) {  // multiple truncated infusions
       // compute initial guess
       x_r[cmt - 1] = rate;
-      y = Pred1(ii_dbl, unpromote(parameter), init_dbl, x_r);
+      y = Pred1(ii_dbl, parameter.to_value(), init_dbl, x_r);
 
       pred = algebra_solver_powell(system, y, parms, x_r, x_i,
                             0, rel_tol, 1e-3, max_num_steps);  // use ftol
     } else {  // constant infusion
       x_r[cmt - 1] = rate;
-      y = Pred1(100.0, unpromote(parameter), init_dbl, x_r);
+      y = Pred1(100.0, parameter.to_value(), init_dbl, x_r);
 
       pred = algebra_solver_powell(system, y, parms, x_r, x_i,
                             0, rel_tol, f_tol, max_num_steps);

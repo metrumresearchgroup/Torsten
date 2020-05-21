@@ -83,7 +83,7 @@ struct PredSS_mix1 {
     typedef typename boost::math::tools::promote_args<T_ii,
       T_parameters>::type scalar;
 
-    double ii_dbl = unpromote(ii);
+    double ii_dbl = stan::math::value_of(ii);
 
     // Compute solution for base 1cpt PK
     Matrix<T_parameters, Dynamic, 1> predPK;
@@ -223,7 +223,7 @@ struct PredSS_mix1 {
     typedef typename boost::math::tools::promote_args<T_ii, T_amt,
       T_parameters>::type scalar;
 
-    double ii_dbl = unpromote(ii);
+    double ii_dbl = stan::math::value_of(ii);
 
     // Compute solution for base 1cpt PK
     Matrix<scalar, Dynamic, 1> predPK;

@@ -23,7 +23,7 @@ using torsten::NONMENEventsRecord;
 using torsten::EventsManager;
 
 TEST_F(TorstenPopulationPMXTwoCptTest, rk45_solver_multiple_bolus_doses_data_only) {
-  using model_t = torsten::PMXTwoCptModel<double, double, double, double>;
+  using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<double, Dynamic, Dynamic> x =
     torsten::pmx_solve_rk45(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag); // NOLINT
@@ -45,7 +45,7 @@ TEST_F(TorstenPopulationPMXTwoCptTest, rk45_solver_multiple_bolus_doses_data_onl
 }
 
 TEST_F(TorstenPopulationPMXTwoCptTest, bdf_solver_multiple_bolus_doses_data_only) {
-  using model_t = torsten::PMXTwoCptModel<double, double, double, double>;
+  using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<double, Dynamic, Dynamic> x =
     torsten::pmx_solve_bdf(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag); // NOLINT
@@ -67,7 +67,7 @@ TEST_F(TorstenPopulationPMXTwoCptTest, bdf_solver_multiple_bolus_doses_data_only
 }
 
 TEST_F(TorstenPopulationPMXTwoCptTest, adams_solver_multiple_bolus_doses_data_only) {
-  using model_t = torsten::PMXTwoCptModel<double, double, double, double>;
+  using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<double, Dynamic, Dynamic> x =
     torsten::pmx_solve_adams(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag); // NOLINT
@@ -96,7 +96,7 @@ TEST_F(TorstenPopulationPMXTwoCptTest, rk45_solver_multiple_IV_doses_data_only) 
     }
   }
 
-  using model_t = torsten::PMXTwoCptModel<double, double, double, double>;
+  using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<double, Dynamic, Dynamic> x =
     torsten::pmx_solve_rk45(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag); // NOLINT
@@ -125,7 +125,7 @@ TEST_F(TorstenPopulationPMXTwoCptTest, adams_solver_multiple_IV_doses_data_only)
     }
   }
 
-  using model_t = torsten::PMXTwoCptModel<double, double, double, double>;
+  using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<double, Dynamic, Dynamic> x =
     torsten::pmx_solve_adams(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag); // NOLINT
@@ -154,7 +154,7 @@ TEST_F(TorstenPopulationPMXTwoCptTest, bdf_solver_multiple_IV_doses_data_only) {
     }
   }
 
-  using model_t = torsten::PMXTwoCptModel<double, double, double, double>;
+  using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<double, Dynamic, Dynamic> x =
     torsten::pmx_solve_bdf(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag); // NOLINT
@@ -182,7 +182,7 @@ TEST_F(TorstenPopulationPMXTwoCptTest, rk45_solver_multiple_bolus_doses_par_var)
     pMatrix_m_v[i] = stan::math::to_var(pMatrix[0]);
   }
 
-  using model_t = torsten::PMXTwoCptModel<double, double, double, double>;
+  using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<var, Dynamic, Dynamic> x =
     torsten::pmx_solve_rk45(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag); // NOLINT
@@ -210,7 +210,7 @@ TEST_F(TorstenPopulationPMXTwoCptTest, adams_solver_multiple_bolus_doses_par_var
     pMatrix_m_v[i] = stan::math::to_var(pMatrix[0]);
   }
 
-  using model_t = torsten::PMXTwoCptModel<double, double, double, double>;
+  using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<var, Dynamic, Dynamic> x =
     torsten::pmx_solve_adams(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag); // NOLINT
@@ -238,7 +238,7 @@ TEST_F(TorstenPopulationPMXTwoCptTest, bdf_solver_multiple_bolus_doses_par_var) 
     pMatrix_m_v[i] = stan::math::to_var(pMatrix[0]);
   }
 
-  using model_t = torsten::PMXTwoCptModel<double, double, double, double>;
+  using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<var, Dynamic, Dynamic> x =
     torsten::pmx_solve_bdf(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag); // NOLINT
@@ -273,7 +273,7 @@ TEST_F(TorstenPopulationPMXTwoCptTest, rk45_solver_multiple_IV_doses_par_var) {
     pMatrix_m_v[i] = stan::math::to_var(pMatrix[0]);
   }
 
-  using model_t = torsten::PMXTwoCptModel<double, double, double, double>;
+  using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<var, Dynamic, Dynamic> x =
     torsten::pmx_solve_rk45(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag); // NOLINT
@@ -308,7 +308,7 @@ TEST_F(TorstenPopulationPMXTwoCptTest, adams_solver_multiple_IV_doses_par_var) {
     pMatrix_m_v[i] = stan::math::to_var(pMatrix[0]);
   }
 
-  using model_t = torsten::PMXTwoCptModel<double, double, double, double>;
+  using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<var, Dynamic, Dynamic> x =
     torsten::pmx_solve_adams(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag); // NOLINT
@@ -343,7 +343,7 @@ TEST_F(TorstenPopulationPMXTwoCptTest, bdf_solver_multiple_IV_doses_par_var) {
     pMatrix_m_v[i] = stan::math::to_var(pMatrix[0]);
   }
 
-  using model_t = torsten::PMXTwoCptModel<double, double, double, double>;
+  using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<var, Dynamic, Dynamic> x =
     torsten::pmx_solve_bdf(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag); // NOLINT
@@ -367,7 +367,7 @@ TEST_F(TorstenPopulationPMXTwoCptTest, bdf_solver_multiple_IV_doses_par_var) {
 #ifdef TORSTEN_MPI
 TEST_F(TorstenPopulationPMXTwoCptTest, exception_sync) {
   using torsten::pmx_solve_group_adams;
-  using model_t = torsten::PMXTwoCptModel<double, double, double, double>;
+  using model_t = torsten::PMXTwoCptModel<double>;
   using torsten::mpi::my_worker;
 
   torsten::mpi::Envionment::init();

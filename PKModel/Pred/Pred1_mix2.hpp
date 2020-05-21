@@ -2,9 +2,9 @@
 #define STAN_MATH_TORSTEN_PKMODEL_PRED_PRED1_MIX2_HPP
 
 #include <stan/math/torsten/PKModel/functors/functor.hpp>
-#include <stan/math/torsten/PKModel/Pred/unpromote.hpp>
 #include <stan/math/torsten/PKModel/Pred/fTwoCpt.hpp>
 #include <stan/math/torsten/PKModel/integrator.hpp>
+#include <stan/math/torsten/PKModel/ModelParameters.hpp>
 #include <iostream>
 #include <vector>
 #include<string>
@@ -78,8 +78,8 @@ struct Pred1_mix2 {
     // pass fixed times to the integrator. FIX ME - see issue #30
     T_time t = parameter.get_time();  // time of current event
     T_time t0 = t - dt;  // time of previous event
-    vector<double> t_dbl(1, unpromote(t));
-    double t0_dbl = unpromote(t0);
+    vector<double> t_dbl(1, stan::math::value_of(t));
+    double t0_dbl = stan::math::value_of(t0);
     vector<double> x_r = rate;
     x_r.push_back(t0_dbl);  // need to pass the initial time!
 
@@ -169,8 +169,8 @@ struct Pred1_mix2 {
     // pass fixed times to the integrator. FIX ME - see issue #30
     T_time t = parameter.get_time();
     T_time t0 = t - dt;
-    vector<double> t_dbl(1, unpromote(t));
-    double t0_dbl = unpromote(t0);
+    vector<double> t_dbl(1, stan::math::value_of(t));
+    double t0_dbl = stan::math::value_of(t0);
 
     vector<scalar> y0 = to_array_1d(init);
 

@@ -9,7 +9,7 @@ namespace torsten {
    */
   template<typename T0, typename T1, typename T2, typename T3>
   inline int pk_nvars(const T0& t0,
-                      const Eigen::Matrix<T1, 1, Eigen::Dynamic>& y0,
+                      const PKRec<T1>& y0,
                       const std::vector<T2> &rate,
                       const std::vector<T3> &par) {
       using stan::is_var;

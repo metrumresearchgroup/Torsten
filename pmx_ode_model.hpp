@@ -1,11 +1,13 @@
-#ifndef STAN_MATH_TORSTEN_REFACTOR_ODE_MODEL_HPP
-#define STAN_MATH_TORSTEN_REFACTOR_ODE_MODEL_HPP
+#ifndef STAN_MATH_TORSTEN_ODE_MODEL_HPP
+#define STAN_MATH_TORSTEN_ODE_MODEL_HPP
 
 #include <stan/math/prim/fun/to_vector.hpp>
+#include <stan/math/prim/fun/to_array_1d.hpp>
 #include <stan/math/rev/fun/to_var.hpp>
 #include <stan/math/rev/functor/algebra_solver_powell.hpp>
+#include <stan/math/rev/functor/algebra_solver_newton.hpp>
+#include <stan/math/rev/functor/algebra_solver_fp.hpp>
 #include <stan/math/prim/err/check_less_or_equal.hpp>
-#include <stan/math/torsten/model_solve_d.hpp>
 #include <stan/math/torsten/pk_nvars.hpp>
 #include <stan/math/torsten/PKModel/functors/check_mti.hpp>
 
@@ -114,7 +116,7 @@ namespace torsten {
     }
   };
 
-  namespace internal {
+  namespace {
     /*
      * depends on the type to be retrieved, we retrieve from
      * one of the two vectors. This happens when unpacking
@@ -161,14 +163,29 @@ namespace torsten {
     static constexpr bool is_var_amt = stan::is_var<T_amt>::value;
     static constexpr bool is_var_ii = stan::is_var<T_ii>::value;
 
+    /** 
+     * Formulate <code>var</code> vector for Steady state
+     * system. The vector should include <code>var</code> variables in
+     * ODE's params, along with SS system params. In particular, since
+     * the current template takes <code>T_rate</code> as
+     * <code>var</code>, the return vector contains SS dosing rate.
+     * 
+     * @param par ODE's params
+     * @param amt SS dosing amount
+     * @param rate SS dosing rate
+     * @param ii SS dosing inverval
+     * @param x_i integer vector that contains system & dosing information
+     * 
+     * @return <code>var</code> vector of params for SS system.
+     */
     template<typename T>
-    inline Eigen::Matrix<typename stan::return_type<T, T_amt, T_rate, T_ii>::type, -1, 1>
+    inline Eigen::Matrix<typename stan::return_type_t<T, T_amt, T_rate, T_ii>, -1, 1>
     adapted_param(const std::vector<T> &par, const T_amt& amt, const T_rate& rate, const T_ii& ii,
                   const std::vector<int>& x_i) const {
       int cmt_ = x_i[0];
       int ncmt_ = x_i[1];
       PMXOdeFunctorRateAdaptor<F, T_rate> f_;
-      using scalar_t = typename stan::return_type<T_amt, T_rate, T_ii>::type;
+      using scalar_t = typename stan::return_type_t<T_amt, T_rate, T_ii>;
       std::vector<scalar_t> vec(ncmt_, 0.0);
       vec[cmt_ - 1] = rate;
       if (is_var_amt) {
@@ -180,6 +197,22 @@ namespace torsten {
       return stan::math::to_vector(f_.adapted_param(par, vec));
     }
 
+    /** 
+     * Formulate <code>double</code> vector for Steady state
+     * system, to be passed into algebra solver. The vector should
+     * include data on
+     * ODE's params, along with SS system params. In particular, since
+     * the current template takes <code>T_rate</code> as
+     * <code>var</code>, the return vector does not contains SS dosing rate.
+     * 
+     * @param amt 
+     * @param rate 
+     * @param ii 
+     * @param x_i 
+     * @param integrator 
+     * 
+     * @return 
+     */
     template<typename integrator_t>
     inline const std::vector<double>
     adapted_x_r(const T_amt& amt, const T_rate& rate, const T_ii& ii,
@@ -198,6 +231,15 @@ namespace torsten {
       return res;
     }
     
+    /** 
+     * Get dosing rate out of param vector <code>y</code>
+     * 
+     * @param y param vector
+     * @param x_r real data
+     * @param x_i integer data
+     * 
+     * @return dosing rate
+     */
     template<typename T1>
     const T1& unpack_rate(const Eigen::Matrix<T1, Eigen::Dynamic, 1>& y,
                           const std::vector<double>& x_r,
@@ -207,6 +249,16 @@ namespace torsten {
       return y(npar_ + cmt_ - 1);
     }
 
+    /** 
+     * Get dosing amt out of param vector <code>y</code> 
+     * or <code>x_r</code>
+     * 
+     * @param y param vector
+     * @param x_r real data
+     * @param x_i integer data
+     * 
+     * @return dosing amt
+     */
     template<typename T1>
     const auto& unpack_amt(const Eigen::Matrix<T1, Eigen::Dynamic, 1>& y,
                          const std::vector<double>& x_r,
@@ -214,9 +266,19 @@ namespace torsten {
       int ncmt_ = x_i[1];
       int npar_ = x_i[2];
       int i = is_var_amt ? npar_ + ncmt_ : 0;
-      return internal::VectorUnpacker<T_amt>::get(y, x_r, i);
+      return VectorUnpacker<T_amt>::get(y, x_r, i);
     }
 
+    /** 
+     * Get dosing interval out of param vector <code>y</code>
+     * or <code>x_r</code>
+     * 
+     * @param y param vector
+     * @param x_r real data
+     * @param x_i integer data
+     * 
+     * @return dosing interval
+     */
     template<typename T1>
     const auto& unpack_ii(const Eigen::Matrix<T1, Eigen::Dynamic, 1>& y,
                           const std::vector<double>& x_r,
@@ -229,9 +291,20 @@ namespace torsten {
       } else {
         i = is_var_ii ? npar_ + ncmt_ : 1;
       }
-      return internal::VectorUnpacker<T_ii>::get(y, x_r, i);
+      return VectorUnpacker<T_ii>::get(y, x_r, i);
     }
 
+    /** 
+     * Get ODE param out of packed SS system param vector. Since here 
+     * <code>rate</code> is <code>var</code>, the return vector is
+     * original ODE param followed by dosing rates.
+     * 
+     * @param y packed SS system param vector generated 
+     * from <code>adapted_param</code>
+     * @param x_i integer data
+     * 
+     * @return ODE param vector including dosing rate
+     */
     template<typename T1>
     std::vector<T1> unpack_ode_theta(const Eigen::Matrix<T1, Eigen::Dynamic, 1>& y,
                                      const std::vector<int>& x_i) const {
@@ -254,6 +327,16 @@ namespace torsten {
       int npar_ = x_i[2];
       ode_theta[npar_ + cmt_ - 1] = 0.0;
     }    
+
+    template<typename T1>
+    void scale_rate(double n,
+                    std::vector<T1>& ode_theta,
+                    const std::vector<double>& ode_x_r,
+                    const std::vector<int>& x_i) const {
+      int cmt_ = x_i[0];
+      int npar_ = x_i[2];
+      ode_theta[npar_ + cmt_ - 1] *= n;
+    }
   };
 
   /**
@@ -328,7 +411,7 @@ namespace torsten {
       int npar_ = x_i[2];
       int ncmt_ = x_i[1];
       int i = is_var_amt ? npar_ : ncmt_;
-      return internal::VectorUnpacker<T_amt>::get(y, x_r, i);
+      return VectorUnpacker<T_amt>::get(y, x_r, i);
     }
 
     template<typename T1>
@@ -343,9 +426,20 @@ namespace torsten {
       } else {
         i = is_var_ii ? npar_ : ncmt_ + 1;
       }
-      return internal::VectorUnpacker<T_ii>::get(y, x_r, i);
+      return VectorUnpacker<T_ii>::get(y, x_r, i);
     }
     
+    /** 
+     * Get ODE param out of packed SS system param vector. Since here 
+     * <code>rate</code> is <code>double</code>, the return vector is
+     * just original ODE params.
+     * 
+     * @param y packed SS system param vector generated 
+     * from <code>adapted_param</code>
+     * @param x_i integer data
+     * 
+     * @return ODE param vector
+     */
     template<typename T1>
     std::vector<T1> unpack_ode_theta(const Eigen::Matrix<T1, Eigen::Dynamic, 1>& y,
                                      const std::vector<int>& x_i) const {
@@ -370,6 +464,15 @@ namespace torsten {
                                        const std::vector<int>& x_i) const {
       int cmt_ = x_i[0];
       ode_x_r[cmt_ - 1] = 0.0;
+    }
+
+    template<typename T1>
+    void scale_rate(double n,
+                    const std::vector<T1>& ode_theta,
+                    std::vector<double>& ode_x_r,
+                    const std::vector<int>& x_i) const {
+      int cmt_ = x_i[0];
+      ode_x_r[cmt_ - 1] *= n;
     }
   };
 
@@ -404,6 +507,7 @@ namespace torsten {
                std::ostream* msgs) const {
       using stan::math::to_array_1d;
       using stan::math::to_vector;
+      using stan::math::value_of;
 
       typedef typename stan::return_type<T0, T1>::type scalar_t;
       const PMXOdeFunctorSSAdaptorPacker<F, T_amt, T_rate, T_ii> packer_;
@@ -417,36 +521,58 @@ namespace torsten {
       const auto& rate = packer_.unpack_rate(y, x_r, x_i);
       const auto& amt = packer_.unpack_amt(y, x_r, x_i);
 
-      double t0 = 0;
+      double t0 = 0;            // FIXME: ODE explicitly depdends on time
 
       std::vector<scalar_t> x0(x.data(), x.data() + x.size());
-      std::vector<T1> ode_theta(packer_.unpack_ode_theta(y, x_i));
-      std::vector<double> ode_x_r(packer_.unpack_ode_x_r(x_r, x_i));
-
       Eigen::Matrix<scalar_t, Eigen::Dynamic, 1> result(x.size());
 
-      static const char* function("Steady State Event");
+      static const char* func("Steady State Event");
 
       if (rate == 0) {  // bolus dose
+        std::vector<T1> ode_theta(packer_.unpack_ode_theta(y, x_i));
+        std::vector<double> ode_x_r(packer_.unpack_ode_x_r(x_r, x_i));
+
         x0[cmt_ - 1] += amt;
         std::vector<scalar_t> pred = integrator_(f_, x0, t0, ii_, ode_theta, ode_x_r, x_i)[0];
         for (int i = 0; i < result.size(); i++) {
+#ifdef TORSTEN_AS_FP
+          result(i) = pred[i];
+#else
           result(i) = x(i) - pred[i];
+#endif
         }
       } else if (ii_ > 0) {  // multiple truncated infusions
         T1 dt = amt / rate;
-        torsten::check_mti(amt, dt, ii_, function);
+        int n = int(std::floor(value_of(dt) / value_of(ii_)) + 0.1);
 
-        x0 = integrator_(f_, to_array_1d(x), t0, dt, ode_theta, ode_x_r, x_i)[0];
+        auto dt1 = dt - n * ii_;
+        std::vector<T1> ode_theta1(packer_.unpack_ode_theta(y, x_i));
+        std::vector<double> ode_x_r1(packer_.unpack_ode_x_r(x_r, x_i));
+        packer_.scale_rate(n + 1, ode_theta1, ode_x_r1, x_i);
+        x0 = integrator_(f_, to_array_1d(x), t0, dt1, ode_theta1, ode_x_r1, x_i)[0];
 
-        dt = ii_ - dt;
-        packer_.nullify_truncated_rate(ode_theta, ode_x_r, x_i);
-        std::vector<scalar_t> pred = integrator_(f_, x0, t0, dt, ode_theta, ode_x_r, x_i)[0];
-        for (int i = 0; i < result.size(); i++) result(i) = x(i) - pred[i];
+        auto dt2 = (n + 1) * ii_ - dt;
+        std::vector<T1> ode_theta2(packer_.unpack_ode_theta(y, x_i));
+        std::vector<double> ode_x_r2(packer_.unpack_ode_x_r(x_r, x_i));
+        packer_.scale_rate(n, ode_theta2, ode_x_r2, x_i);
+        std::vector<scalar_t> pred = integrator_(f_, x0, t0, dt2, ode_theta2, ode_x_r2, x_i)[0];
+        for (int i = 0; i < result.size(); i++) {
+#ifdef TORSTEN_AS_FP
+          result(i) = pred[i];
+#else
+          result(i) = x(i) - pred[i];
+#endif
+        }
       } else {  // constant infusion
-        stan::math::check_less_or_equal(function, "AMT", amt, 0);
+        std::vector<T1> ode_theta(packer_.unpack_ode_theta(y, x_i));
+        std::vector<double> ode_x_r(packer_.unpack_ode_x_r(x_r, x_i));
+        stan::math::check_less_or_equal(func, "AMT", amt, 0);
         std::vector<scalar_t> derivative = f_(0, to_array_1d(x), ode_theta, ode_x_r, x_i, 0);
+#ifdef TORSTEN_AS_FP
+        stan::math::throw_domain_error(func, "algebra_solver_fp used for ", 1, "constant infusion");
+#else
         result = to_vector(derivative);
+#endif
       }
 
       return result;
@@ -457,46 +583,33 @@ namespace torsten {
    * ODE-based PKPD models.
    *
    * @tparam T_time t type
-   * @tparam T_init initial condition type
    * @tparam T_rate dosing rate type
    * @tparam T_par PK parameters type
    * @tparam F ODE functor
    * @tparam Ti ODE additional parameter type, usually the ODE size
    */
-  template<typename T_time, typename T_init, typename T_rate, typename T_par, typename F> // NOLINT
+  template<typename T_par, typename F> // NOLINT
   class PKODEModel {
-    const T_time &t0_;
-    const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& y0_;
-    const std::vector<T_rate> &rate_;
     const std::vector<T_par> &par_;
     const F &f_;
-    const PMXOdeFunctorRateAdaptor<F, T_rate> f1;
     const int ncmt_;
   public:
-    using scalar_type = typename stan::return_type_t<T_time, T_rate, T_par, T_init>; // NOLINT
-    using aug_par_type = typename stan::return_type_t<T_rate, T_par, T_init>;
-    using init_type   = T_init;
-    using time_type   = T_time;
     using par_type    = T_par;
-    using rate_type   = T_rate;
     using f_type      = F;
 
     /**
      * Constructor
      *
      * @param t0 initial time
-     * @param y0 initial condition
      * @param rate dosing rate
      * @param par model parameters
      * @param f ODE functor
      * @param ncmt the ODE size.
      */
-    PKODEModel(const T_time& t0,
-               const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& y0,
-               const std::vector<T_rate> &rate,
-               const std::vector<T_par> &par,
+    PKODEModel(const std::vector<T_par> &par,
+               int ncmt,
                const F& f) :
-      t0_(t0), y0_(y0), rate_(rate), par_(par), f_(f), f1(), ncmt_(y0.size()) // NOLINT
+      par_(par), f_(f), ncmt_(ncmt)
     {}
 
     /**
@@ -509,59 +622,14 @@ namespace torsten {
      */
     template<template<typename...> class T_model, typename... Ts>    
     PKODEModel(const T_model<Ts...>& m) :
-      t0_(m.t0()),
-      y0_(m.y0()),
-      rate_(m.rate()),
       par_(m.par()),
       f_(m.f()),
-      f1(),
       ncmt_(m.ncmt())
     {}
     
-    /*
-     * The number of @c var that will be in the ODE
-     * integrator. Note that not all @c var will be
-     * explicitly in an integrator's call signature.
-     * Since we only step one time-step, if @c t0_ is @c var
-     * it only adds one(because @c ts will be of size one). Also note that regardless if @c
-     * par_ is @c var or not, when @c rate_ is @c var we
-     * generate a new @c theta of @c var vector to pass to ODE integrator that
-     * contains both @c par_ and @c rate_.
-     */
-
-    /*
-     * calculate number of @c vars for transient dosing.
-     */
-    static int nvars(int ncmt, int npar) {
-      using stan::is_var;
-      int n = 0;
-      if (is_var<T_time>::value) n++; // t0
-      if (is_var<T_init>::value) n += ncmt;
-      if (is_var<T_rate>::value) {
-        n += ncmt + npar;
-      } else if (is_var<T_par>::value) {
-        n += npar;
-      }
-      return n;
-    }
-
-    /*
-     * calculate number of @c vars for steady-state dosing.
-     */
-    template<typename T_a, typename T_r, typename T_ii>
-    static int nvars(int npar) {
-      using stan::is_var;
-      int n = 0;
-      if (is_var<T_a>::value) n++; // amt
-      if (is_var<T_r>::value) n++; // rate
-      if (is_var<T_ii>::value) n++; // ii
-      if (is_var<T_par>::value) n += npar;
-      return n;
-    }
-
     template<typename T0, typename T1, typename T2, typename T3>
     static int nvars(const T0& t0,
-                     const Eigen::Matrix<T1, 1, Eigen::Dynamic>& y0,
+                     const PKRec<T1>& y0,
                      const std::vector<T2> &rate,
                      const std::vector<T3> &par) {
       using stan::is_var;
@@ -583,7 +651,7 @@ namespace torsten {
      */
     template<typename T0, typename T1, typename T2, typename T3>
     static std::vector<stan::math::var> vars(const T0& t1,
-                                             const Eigen::Matrix<T1, 1, Eigen::Dynamic>& y0,
+                                             const PKRec<T1>& y0,
                                              const std::vector<T2> &rate,
                                              const std::vector<T3> &par) {
       using stan::math::to_var;      
@@ -616,74 +684,6 @@ namespace torsten {
       return res;
     }
 
-    /*
-     * Calculate the size of the entire system, with ODe
-     * solutions and their gradients w.r.t. the parameters.
-     */
-    template<typename T0, typename T1, typename T2, typename T3>
-    static int n_sys(const T0& t0,
-                     const Eigen::Matrix<T1, 1, Eigen::Dynamic>& y0,
-                     const std::vector<T2> &rate,
-                     const std::vector<T3> &par) {
-      using stan::is_var;
-      int n = nvars(t0, y0, rate, par);
-      return y0.size() * (n + 1);
-    }
-
-    /*
-     * calculate number of vars with constructed data
-     */
-    template<typename T0>
-    int nvars(const T0& t1) {
-      return nvars(t1, y0_, rate_, par_);
-    }
-
-    /*
-     * return the number @c var that will be the parameters
-     * of the stead-state dosing event's solution
-     */
-    template<typename T_a, typename T_r, typename T_ii>
-    int nvars(const T_a& a, const T_r& r, const T_ii& ii) {
-      return torsten::pk_nvars(a, r, ii, par_);
-    }
-
-    /*
-     * return @c vars that will be in integrator calls
-     */
-    template<typename T0>
-    std::vector<stan::math::var> vars(const T0 t1) {
-      return vars(t1, y0_, rate_, par_);
-    }
-
-    /*
-     * return @c vars that will be steady-state
-     * solution. For SS solution @c rate_ or @ y0_ will not
-     * be in the solution.
-     */
-    template<typename T_a, typename T_r, typename T_ii>
-    std::vector<stan::math::var> vars(const T_a& a, const T_r& r, const T_ii& ii) {
-      return torsten::dsolve::pk_vars(a, r, ii, par_);
-    }
-
-    /*
-     * calculate size of the entire system
-     */
-    int n_sys() const {
-      return n_sys(t0_, y0_, rate_, par_);
-    }
-
-    /**
-     * @return initial time
-     */
-    const T_time              & t0()       const { return t0_; }
-    /**
-     * @return initial condition
-     */
-    const PKRec<T_init>    & y0()       const { return y0_; }
-    /**
-     * @return dosing rate
-     */
-    const std::vector<T_rate> & rate()     const { return rate_; }
     /**
      * @return model parameters
      */
@@ -702,15 +702,17 @@ namespace torsten {
      * When time is param, the time step needs to
      * incorporate information of initial time.
      */
-    std::vector<stan::math::var> time_step(const stan::math::var& t_next) const {
-      return {stan::math::value_of(t0_) + t_next - t0_};
+    template<typename Tt0>
+    std::vector<stan::math::var> time_step(const Tt0& t0, const stan::math::var& t1) const {
+      return {stan::math::value_of(t0) + t1 - t0};
     }
 
     /*
      * When time is data, the time step is trivial
      */
-    std::vector<double> time_step(const double t_next) const {
-      return {t_next};
+    template<typename Tt0>
+    std::vector<double> time_step(const Tt0& t0, const double t1) const {
+      return {t1};
     }
 
     /*
@@ -719,14 +721,17 @@ namespace torsten {
      */
     template<PMXOdeIntegratorId It>
     Eigen::Matrix<double, Eigen::Dynamic, 1>
-    integrate(const std::vector<double> &rate,
+    integrate(double t1,
+              const std::vector<double> &rate,
               const Eigen::Matrix<double, 1, Eigen::Dynamic>& y0,
               const double& dt,
               const PMXOdeIntegrator<It>& integrator) const {
       using stan::math::value_of;
 
-      const double t0 = value_of(t0_) - dt;
-      std::vector<double> ts{value_of(t0_)};
+      const double t0 = t1 - dt;
+      std::vector<double> ts{t1};
+      // const double t0 = value_of(t0_) - dt;
+      // std::vector<double> ts{value_of(t0_)};
       Eigen::Matrix<double, Eigen::Dynamic, 1> res;
       if (ts[0] == t0) {
         res = y0;
@@ -757,77 +762,56 @@ namespace torsten {
      *         solution at certain time step. Hence the returned
      *         matrix is of dim (numer of time steps) x (siez of ODE system).
      */
-    template<PMXOdeIntegratorId It>
-    Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
-    solve(const T_time& t_next,
-          const PMXOdeIntegrator<It>& integrator) const {
-      const double t0 = stan::math::value_of(t0_);
-      std::vector<T_time> ts(time_step(t_next));
-      Eigen::Matrix<scalar_type, Eigen::Dynamic, 1> res;
-      if (ts[0] == t0_) {
-        res = y0_;
-      } else {
-        auto y = stan::math::to_array_1d(y0_);
+    template<typename Tt0, typename Tt1, typename T, typename T1, PMXOdeIntegratorId It>
+    void solve(Eigen::Matrix<T, -1, 1>& y,
+               const Tt0& t0, const Tt1& t1,
+               const std::vector<T1>& rate,
+               const PMXOdeIntegrator<It>& integrator) const {
+      const double t0_d = stan::math::value_of(t0);
+      std::vector<Tt1> ts(time_step(t0, t1));
+      PMXOdeFunctorRateAdaptor<F, T1> f_rate;
+      if (t1 > t0) {
+        auto y_vec = stan::math::to_array_1d(y);
         std::vector<int> x_i;
-        std::vector<std::vector<scalar_type> > res_v =
-          integrator(f1, y, t0, ts,
-                     f1.adapted_param(par_, rate_),
-                     f1.adapted_x_r(rate_),
+        std::vector<std::vector<T> > res_v =
+          integrator(f_rate, y_vec, t0_d, ts,
+                     f_rate.adapted_param(par_, rate),
+                     f_rate.adapted_x_r(rate),
                      x_i);
-        res = stan::math::to_vector(res_v[0]);
+        y = stan::math::to_vector(res_v[0]);
       }
-      return res;
     }
 
     /*
-     * Solve the ODE but return the results in form of data.
-     * The default behavior is defined in function template
-     * @c model_solve_d(), using autodiff to recalculate gradients.
-     * Some integrators, such as @c PkBdf, have their own implementation
-     * that can return data directly, so we skip them.
-     */
-    template<PMXOdeIntegratorId It,
-             typename std::enable_if_t<It == torsten::StanBdf || It == torsten::StanAdams || It == torsten::StanRk45>* = nullptr>
-    Eigen::VectorXd solve_d(const T_time& t_next,
-                            const PMXOdeIntegrator<It>& integrator) const
-    {
-      static const char* caller = "PKODEModel::solve";
-      stan::math::check_greater(caller, "time step", t_next, t0_);
-
-      return torsten::model_solve_d(*this, t_next, integrator);
-    }
-
-    /*
-     * @c PkBdf can return results in form of data directly,
+     * <code>PKBdf, PKAdams, PKRk45</code> integrators can return 
+     * results in form of data directly,
      * thanks to @c pk_cvodes_integrator implementation.
      */
-    template<PMXOdeIntegratorId It,
+    template<typename T0, typename T, typename T1, PMXOdeIntegratorId It,
              typename std::enable_if_t<It == torsten::PkBdf || It == torsten::PkAdams || It == torsten::PkRk45>* = nullptr>
-    Eigen::VectorXd solve_d(const T_time& t_next,
-                            const PMXOdeIntegrator<It>& integrator) const {
-      static const char* caller = "PMXOdeModel::solve_d";
-      stan::math::check_greater(caller, "next time", t_next, t0_);
+    void solve_d(Eigen::VectorXd& yd,
+                 const PKRec<T>& y,
+                 const T0& t0, const T0& t1,
+                 const std::vector<T1>& rate,
+                 const PMXOdeIntegrator<It>& integrator) const {
+      // static const char* caller = "PMXOdeModel::solve_d";
+      // stan::math::check_greater(caller, "next time", t1, t0);
 
-      // return integrate_d(rate_, t_next, integrator);
       using stan::math::var;
       using stan::math::value_of;
       using stan::math::to_var;
 
-      const double t0 = value_of(t0_);
-      std::vector<T_time> ts(time_step(t_next));
-      Eigen::VectorXd res(n_sys());
-      if (ts[0] == t0_) {
-        res = stan::math::value_of(y0_);
-        res.resize(n_sys());
-      } else {
-        auto y = stan::math::to_array_1d(y0_);
+      const double t0_d = value_of(t0);
+      std::vector<T0> ts(time_step(t0, t1));
+      PMXOdeFunctorRateAdaptor<F, T1> f_rate;
+      if (t1 > t0) {
+        auto y1d = stan::math::to_array_1d(y);
         std::vector<int> x_i;
-        res = integrator.solve_d(f1, y, t0, ts,
-                                 f1.adapted_param(par_, rate_),
-                                 f1.adapted_x_r(rate_),
-                                 x_i).col(0);
+        yd = integrator.solve_d(f_rate, y1d, t0_d, ts,
+                                f_rate.adapted_param(par_, rate),
+                                f_rate.adapted_x_r(rate),
+                                x_i).col(0);
       }
-      return res;
     }
 
     /**
@@ -870,10 +854,12 @@ namespace torsten {
      */
     template<PMXOdeIntegratorId It, typename T_amt, typename T_r, typename T_ii>
     Eigen::Matrix<typename stan::return_type_t<T_amt, T_r, T_par, T_ii>, Eigen::Dynamic, 1> // NOLINT
-    solve(const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt,
+    solve(double t0, const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt,
           const PMXOdeIntegrator<It>& integrator) const {
       using stan::math::value_of;
       using stan::math::algebra_solver_powell;
+      using stan::math::algebra_solver_newton;
+      using stan::math::algebra_solver_fp;
 
       typedef typename stan::return_type_t<T_amt, T_r, T_par, T_ii> scalar;
 
@@ -891,24 +877,27 @@ namespace torsten {
       const double init_dt = (rate == 0.0 || ii > 0) ? ii_dbl : 24.0;
       PMXOdeFunctorSSAdaptor<It, T_amt, T_r, T_ii, F> fss;
       PMXOdeFunctorSSAdaptorPacker<F, T_amt, T_r, T_ii> packer;
-      return algebra_solver_powell(fss, integrate(rate_vec, init_dbl, init_dt, integrator),
-                            packer.adapted_param(par_, amt, rate, ii, x_i),
-                            packer.adapted_x_r(amt, rate, ii, x_i, integrator),
-                            x_i, 0,
-                            integrator.as_rtol, integrator.as_atol, integrator.as_max_num_step);
-    }
-
-    /*
-     * return steady state solution in form of data, use
-     * default behavior, namely take gradients using autodiff.
-     */
-    template<PMXOdeIntegratorId It, typename T_amt, typename T_r, typename T_ii>
-    Eigen::VectorXd solve_d(const T_amt& amt,
-                            const T_r& rate,
-                            const T_ii& ii,
-                            const int& cmt,
-                            const PMXOdeIntegrator<It>& integrator) const {
-      return torsten::model_solve_d(*this, amt, rate, ii, cmt, integrator);
+#ifdef TORSTEN_AS_POWELL
+      return algebra_solver_powell(fss, integrate(t0, rate_vec, init_dbl, init_dt, integrator),
+                                   packer.adapted_param(par_, amt, rate, ii, x_i),
+                                   packer.adapted_x_r(amt, rate, ii, x_i, integrator),
+                                   x_i, 0,
+                                   integrator.as_rtol, integrator.as_atol, integrator.as_max_num_step);
+#elif defined(TORSTEN_AS_FP)
+      std::vector<double> u_scale(ncmt_, 1.0);
+      std::vector<double> f_scale(ncmt_, 1.0);
+      return algebra_solver_fp(fss, integrate(t0, rate_vec, init_dbl, init_dt, integrator),
+                               packer.adapted_param(par_, amt, rate, ii, x_i),
+                               packer.adapted_x_r(amt, rate, ii, x_i, integrator),
+                               x_i, u_scale, f_scale, 0,
+                               integrator.as_atol, integrator.as_max_num_step);
+#else
+      return algebra_solver_newton(fss, integrate(t0, rate_vec, init_dbl, init_dt, integrator),
+                                   packer.adapted_param(par_, amt, rate, ii, x_i),
+                                   packer.adapted_x_r(amt, rate, ii, x_i, integrator),
+                                   x_i, 0,
+                                   integrator.as_rtol, integrator.as_atol, integrator.as_max_num_step);
+#endif
     }
   };
 }

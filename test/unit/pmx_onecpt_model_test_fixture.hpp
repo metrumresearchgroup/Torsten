@@ -14,7 +14,7 @@
 struct TorstenOneCptModelTest : public testing::Test {
   double t0;
   std::vector<double> ts;
-  Eigen::Matrix<double, 1, Eigen::Dynamic> y0;
+  torsten::PKRec<double> y0;
   std::vector<double> rate;
   double CL;
   double V2;

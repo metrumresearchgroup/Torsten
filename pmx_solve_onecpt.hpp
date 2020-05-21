@@ -1,16 +1,14 @@
-#ifndef STAN_MATH_TORSTEN_REFACTOR_PKMODELONECPT_HPP
-#define STAN_MATH_TORSTEN_REFACTOR_PKMODELONECPT_HPP
+#ifndef STAN_MATH_TORSTEN_ONECTP_HPP
+#define STAN_MATH_TORSTEN_ONECTP_HPP
 
 #include <Eigen/Dense>
 #include <boost/math/tools/promotion.hpp>
 #include <stan/math/torsten/to_array_2d.hpp>
 #include <stan/math/torsten/is_std_vector.hpp>
 #include <stan/math/prim/err/check_positive_finite.hpp>
-#include <stan/math/torsten/event_solver.hpp>
-#include <stan/math/torsten/events_manager.hpp>
-#include <stan/math/torsten/PKModel/PKModel.hpp>
-#include <stan/math/torsten/PKModel/Pred/Pred1_oneCpt.hpp>
-#include <stan/math/torsten/PKModel/Pred/PredSS_oneCpt.hpp>
+#include <stan/math/torsten/ev_solver.hpp>
+#include <stan/math/torsten/ev_manager.hpp>
+#include <stan/math/torsten/pmx_check.hpp>
 #include <stan/math/torsten/pmx_onecpt_model.hpp>
 #include <string>
 #include <vector>
@@ -65,7 +63,6 @@ pmx_solve_onecpt(const std::vector<T0>& time,
   using Eigen::Matrix;
   using boost::math::tools::promote_args;
   using stan::math::check_positive_finite;
-  using torsten::PKRec;
 
   int nCmt = 2;
   int nParm = 3;
@@ -73,7 +70,7 @@ pmx_solve_onecpt(const std::vector<T0>& time,
   // Check arguments -- FIX ME: handle the new parameter arguments
   static const char* function("pmx_solve_onecpt");
   torsten::pmx_check(time, amt, rate, ii, evid, cmt, addl, ss,
-                pMatrix, biovar, tlag, function);
+                     pMatrix, biovar, tlag, function);
   for (size_t i = 0; i < pMatrix.size(); i++) {
     check_positive_finite(function, "PK parameter CL", pMatrix[i][0]);
     check_positive_finite(function, "PK parameter V2", pMatrix[i][1]);
@@ -102,29 +99,17 @@ pmx_solve_onecpt(const std::vector<T0>& time,
                                  "The number of lag times parameters per event (length of a vector in the eleventh argument) is", // NOLINT
                                  tlag[0].size(), "", length_error5);
 
-  // Construct dummy matrix for last argument of pred
-  Eigen::Matrix<T4, Eigen::Dynamic, Eigen::Dynamic> dummy_system;
-  std::vector<Eigen::Matrix<T4, Eigen::Dynamic, Eigen::Dynamic> >
-    dummy_systems(1, dummy_system);
-
-#ifdef OLD_TORSTEN
-  return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-              pMatrix, biovar, tlag,
-              nCmt, dummy_systems,
-              Pred1_oneCpt(), PredSS_oneCpt());
-#else
-  using ER = NONMENEventsRecord<T0, T1, T2, T3, std::vector<T4>, T5, T6>;
+  using ER = NONMENEventsRecord<T0, T1, T2, T3, T4, T5, T6>;
   using EM = EventsManager<ER>;
   const ER events_rec(nCmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag);
 
   Matrix<typename EM::T_scalar, Dynamic, Dynamic> pred =
     Matrix<typename EM::T_scalar, Dynamic, Dynamic>::Zero(events_rec.num_event_times(), EM::nCmt(events_rec));
 
-  using model_type = torsten::PMXOneCptModel<typename EM::T_time, typename EM::T_scalar, typename EM::T_rate, typename EM::T_par>;
+  using model_type = torsten::PMXOneCptModel<typename EM::T_par>;
   EventSolver<model_type> pr;
-  pr.pred(0, events_rec, pred);
+  pr.pred(0, events_rec, pred, PMXOdeIntegrator<Analytical>());
   return pred;
-#endif
 }
 
 /**

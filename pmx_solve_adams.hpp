@@ -1,16 +1,12 @@
-#ifndef STAN_MATH_TORSTEN_REFACTOR_GENERALODEMODEL_ADAMS_HPP
-#define STAN_MATH_TORSTEN_REFACTOR_GENERALODEMODEL_ADAMS_HPP
+#ifndef STAN_MATH_TORSTEN_SOLVE_ADAMS_HPP
+#define STAN_MATH_TORSTEN_SOLVE_ADAMS_HPP
 
 #include <Eigen/Dense>
 #include <stan/math/torsten/to_array_2d.hpp>
-#include <stan/math/torsten/events_manager.hpp>
+#include <stan/math/torsten/ev_manager.hpp>
 #include <stan/math/torsten/pmx_population_check.hpp>
-#include <stan/math/torsten/PKModel/functors/general_functor.hpp>
-#include <stan/math/torsten/PKModel/PKModel.hpp>
-#include <stan/math/torsten/PKModel/Pred/Pred1_general.hpp>
-#include <stan/math/torsten/PKModel/Pred/PredSS_general.hpp>
 #include <stan/math/torsten/pmx_ode_model.hpp>
-#include <stan/math/torsten/event_solver.hpp>
+#include <stan/math/torsten/ev_solver.hpp>
 #include <boost/math/tools/promotion.hpp>
 #include <vector>
 
@@ -88,52 +84,31 @@ pmx_solve_adams(const F& f,
   using Eigen::Dynamic;
   using Eigen::Matrix;
   using boost::math::tools::promote_args;
-  using torsten::PKRec;
 
   // check arguments
   static const char* function("pmx_solve_adams");
   torsten::pmx_check(time, amt, rate, ii, evid, cmt, addl, ss,
                 pMatrix, biovar, tlag, function);
 
-  // Construct dummy matrix for last argument of pred
-  Matrix<T4, Dynamic, Dynamic> dummy_system;
-  vector<Matrix<T4, Dynamic, Dynamic> >
-    dummy_systems(1, dummy_system);
-
-  typedef general_functor<F> F0;
-
-  const Pred1_general<F0> pred1(F0(f), rel_tol, abs_tol,
-                                max_num_steps, msgs, "adams");
-  const PredSS_general<F0> predss (F0(f), rel_tol, abs_tol,
-                                   max_num_steps, msgs, "adams", nCmt);
-
-#ifdef OLD_TORSTEN
-  return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-              pMatrix, biovar, tlag, nCmt, dummy_systems,
-              pred1, predss);
-#else
-  using ER = NONMENEventsRecord<T0, T1, T2, T3, std::vector<T4>, T5, T6>;
+  using ER = NONMENEventsRecord<T0, T1, T2, T3, T4, T5, T6>;
   using EM = EventsManager<ER>;
   const ER events_rec(nCmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag);
 
   Matrix<typename EM::T_scalar, Dynamic, Dynamic> pred =
     Matrix<typename EM::T_scalar, Dynamic, Dynamic>::Zero(events_rec.num_event_times(), EM::nCmt(events_rec));
 
-  using model_type = torsten::PKODEModel<typename EM::T_time, typename EM::T_scalar, typename EM::T_rate, typename EM::T_par, F>;
+  using model_type = torsten::PKODEModel<typename EM::T_par, F>;
 
 #ifdef TORSTEN_USE_STAN_ODE
   PMXOdeIntegrator<StanAdams> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
-  EventSolver<model_type, PMXOdeIntegrator<StanAdams>&> pr;
+  EventSolver<model_type> pr;
 #else
   PMXOdeIntegrator<PkAdams> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
-  EventSolver<model_type, PMXOdeIntegrator<PkAdams>&> pr;
+  EventSolver<model_type> pr;
 #endif
 
-  pr.pred(0, events_rec, pred, integrator, f);
+  pr.pred(0, events_rec, pred, integrator, nCmt, f);
   return pred;
-
-#endif
-
 }
 
 /*
@@ -360,7 +335,7 @@ pmx_solve_adams(const F& f,
    */
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6, typename F>
-Eigen::Matrix<typename EventsManager<NONMENEventsRecord<T0, T1, T2, T3, std::vector<T4>, T5, T6> >::T_scalar, // NOLINT
+Eigen::Matrix<typename EventsManager<NONMENEventsRecord<T0, T1, T2, T3, T4, T5, T6> >::T_scalar, // NOLINT
               Eigen::Dynamic, Eigen::Dynamic>
 pmx_solve_group_adams(const F& f,
                       const int nCmt,
@@ -387,23 +362,23 @@ pmx_solve_group_adams(const F& f,
   torsten::pmx_population_check(len, time, amt, rate, ii, evid, cmt, addl, ss,
                                 pMatrix, biovar, tlag, caller);
 
-  using ER = NONMENEventsRecord<T0, T1, T2, T3, std::vector<T4>, T5, T6>;
+  using ER = NONMENEventsRecord<T0, T1, T2, T3, T4, T5, T6>;
   using EM = EventsManager<ER>;
-  using model_type = torsten::PKODEModel<typename EM::T_time, typename EM::T_scalar, typename EM::T_rate, typename EM::T_par, F>;
+  using model_type = torsten::PKODEModel<typename EM::T_par, F>;
 
   ER events_rec(nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag);
 
 #ifdef TORSTEN_USE_STAN_ODE
   PMXOdeIntegrator<StanAdams> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
-  EventSolver<model_type, PMXOdeIntegrator<StanAdams>&> pr;
+  EventSolver<model_type> pr;
 #else
   PMXOdeIntegrator<PkAdams> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
-  EventSolver<model_type, PMXOdeIntegrator<PkAdams>&> pr;
+  EventSolver<model_type> pr;
 #endif
 
   Eigen::Matrix<typename EM::T_scalar, -1, -1> pred(nCmt, events_rec.total_num_event_times);
 
-  pr.pred(events_rec, pred, integrator, f);
+  pr.pred(events_rec, pred, integrator, nCmt, f);
 
   return pred;
 }
@@ -413,7 +388,7 @@ pmx_solve_group_adams(const F& f,
    */
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6, typename F>
-Eigen::Matrix<typename EventsManager<NONMENEventsRecord<T0, T1, T2, T3, std::vector<T4>, T5, T6> >::T_scalar, // NOLINT
+Eigen::Matrix<typename EventsManager<NONMENEventsRecord<T0, T1, T2, T3, T4, T5, T6> >::T_scalar, // NOLINT
               Eigen::Dynamic, Eigen::Dynamic>
 pmx_solve_group_adams(const F& f,
                       const int nCmt,
@@ -443,7 +418,7 @@ pmx_solve_group_adams(const F& f,
    */
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6, typename F>
-Eigen::Matrix<typename EventsManager<NONMENEventsRecord<T0, T1, T2, T3, std::vector<T4>, T5, T6> >::T_scalar, // NOLINT
+Eigen::Matrix<typename EventsManager<NONMENEventsRecord<T0, T1, T2, T3, T4, T5, T6> >::T_scalar, // NOLINT
               Eigen::Dynamic, Eigen::Dynamic>
 pmx_solve_group_adams(const F& f,
                       const int nCmt,

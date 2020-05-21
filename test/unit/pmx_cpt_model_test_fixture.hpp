@@ -17,7 +17,7 @@
 struct TorstenTwoCptModelTest : public TorstenOdeTest {
 
   std::vector<double> ts;
-  Eigen::Matrix<double, 1, Eigen::Dynamic> y0;
+  torsten::PKRec<double> y0;
   std::vector<double> rate;
   double CL;
   double Q;
@@ -51,9 +51,7 @@ struct TorstenTwoCptModelTest : public TorstenOdeTest {
        * |  ka    -(k10 + k12)     k21 |
        * |   0            k12     -k21 |
        */
-      // std::vector<double> v_par
-      // {-ka, ka, 0.0, 0.0, -(k10 + k12), k12, 0.0, k21, -k21};
-      linode_par << -ka, ka, 0.0, 0.0, -(k10 + k12), k12, 0.0, k21, -k21;
+      linode_par << -ka, 0.0, 0.0, ka, -(k10 + k12), k21, 0.0, k12, -k21;
   }
 };
 

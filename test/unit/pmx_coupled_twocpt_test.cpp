@@ -329,7 +329,7 @@ TEST_F(TorstenCoupledTwoCptTest, ss_constant_infusion) {
                                             time, amt, rate, ii, evid, cmt, addl, ss,
                                             parameters, biovar, tlag,
                                             rel_tol_rk, abs_tol_rk, max_num_steps_rk,
-                                            1.e-10, 1.e-3, 100);
+                                            1.e-10, 1.e-5, 100);
 
   double rel_tol_bdf = 1e-10, abs_tol_bdf = 1e-10;
   double max_num_steps_bdf = 1e8;
@@ -338,7 +338,7 @@ TEST_F(TorstenCoupledTwoCptTest, ss_constant_infusion) {
                                           time, amt, rate, ii, evid, cmt, addl, ss,
                                           parameters, biovar, tlag,
                                           rel_tol_bdf, abs_tol_bdf, max_num_steps_bdf,
-                                          1.e-10, 1.e-3, 100);
+                                          1.e-10, 1.e-8, 100);
 
   // can't do constant rate in mrgsolve. Comparing to result obtained
   // with generalOdeModel, as a provisional test.
@@ -347,7 +347,7 @@ TEST_F(TorstenCoupledTwoCptTest, ss_constant_infusion) {
                                 time, amt, rate, ii, evid, cmt, addl, ss,
                                 parameters, biovar, tlag,
                                 rel_tol_bdf, abs_tol_bdf, max_num_steps_bdf,
-                                1.e-10, 1.e-3, 100);
+                                1.e-10, 1.e-8, 100);
 
   torsten::test::test_val(x, x_rk45, 1.e-5, 1.e-8);
   torsten::test::test_val(x, x_bdf,  1.e-5, 1.e-8);
@@ -356,18 +356,20 @@ TEST_F(TorstenCoupledTwoCptTest, ss_constant_infusion) {
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               parameters, biovar, tlag,
                               rel_tol_rk, abs_tol_rk, max_num_steps_rk,
-                              2e-5, 1e-6, 1e-5, 1e-5);
+                              2e-5, 1e-6, 1e-4, 1e-5);
   // FIXME: steady state exception
   // TORSTEN_ODE_GRAD_BIOVAR_TEST(pmx_solve_onecpt_rk45, f, nPD,
   //                              time, amt, rate, ii, evid, cmt, addl, ss,
   //                              parameters, biovar, tlag,
   //                              rel_tol, abs_tol, max_num_steps,
   //                              2e-5, 1e-6, 1e-5, 1e-5)
+
   TORSTEN_ODE_GRAD_THETA_TEST(pmx_solve_twocpt_bdf, f, nPD,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               parameters, biovar, tlag,
                               rel_tol_bdf, abs_tol_bdf, max_num_steps_bdf,
                               2e-5, 1e-6, 1e-3, 1e-5);
+
   // FIXME: steady state exception
   // TORSTEN_ODE_GRAD_BIOVAR_TEST(pmx_solve_onecpt_bdf, f, nPD,
   //                              time, amt, rate, ii, evid, cmt, addl, ss,

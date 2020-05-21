@@ -1,10 +1,12 @@
-#ifndef STAN_MATH_TORSTEN_PKMODEL_REFACTOR_PRED_HPP
-#define STAN_MATH_TORSTEN_PKMODEL_REFACTOR_PRED_HPP
+#ifndef STAN_MATH_TORSTEN_EVENT_SOLVER_HPP
+#define STAN_MATH_TORSTEN_EVENT_SOLVER_HPP
 
 #include <stan/math/prim/fun/multiply.hpp>
 #include <stan/math/rev/fun/multiply.hpp>
 #include <stan/math/torsten/dsolve/pk_vars.hpp>
-#include <stan/math/torsten/events_manager.hpp>
+#include <stan/math/torsten/pmx_ode_integrator.hpp>
+#include <stan/math/torsten/ev_manager.hpp>
+#include <stan/math/torsten/event.hpp>
 #include <stan/math/torsten/mpi/session.hpp>
 #include <stan/math/torsten/mpi/my_worker.hpp>
 #include <stan/math/torsten/mpi/precomputed_gradients.hpp>
@@ -16,7 +18,7 @@ namespace torsten{
    * the solver wrapper is aware of @c T_model so it build model
    * accordingly.
    */
-  template<typename T_model, typename... T_pred>
+  template<typename T_model>
   struct EventSolver {
 
     /*
@@ -36,8 +38,14 @@ namespace torsten{
     static int system_size(int id, const T_er& rec) {
       const int ncmt = rec.ncmt;
       const int npar = rec.parameter_size();
-      const int nvar = T_model::nvars(ncmt, npar);
-      const int nvar_ss = T_model::template nvars<typename T_er::T_amt, typename T_er::T_par_rate, typename T_er::T_par_ii>(npar); //NOLINT
+      const int nvar = pmx_model_nvars<T_model,
+                                       typename T_er::T_time,
+                                       typename T_er::T_scalar,
+                                       typename T_er::T_rate>::nvars(ncmt, npar);
+      const int nvar_ss = pmx_model_nvars_ss<T_model,
+                                             typename T_er::T_amt,
+                                             typename T_er::T_par_rate,
+                                             typename T_er::T_par_ii>::nvars(npar);
       return rec.has_ss_dosing(id) ? pk_nsys(ncmt, nvar, nvar_ss) : pk_nsys(ncmt, nvar);
     }
 
@@ -83,11 +91,11 @@ namespace torsten{
      * @return a matrix with predicted amount in each compartment
      * at each event.
      */
-    template<typename T_events_record, typename... Ts>
+    template<typename T_events_record, PMXOdeIntegratorId It, typename... Ts>
     void pred(int id,
               const T_events_record& events_rec,
               Eigen::Matrix<typename EventsManager<T_events_record>::T_scalar, -1, -1>& res,
-              const T_pred... pred_pars,
+              const PMXOdeIntegrator<It> integrator,
               const Ts... model_pars) {
       using Eigen::Matrix;
       using Eigen::Dynamic;
@@ -108,7 +116,7 @@ namespace torsten{
         auto events = em.events();
         int ikeep = 0, iev = 0;
         while(ikeep < em.nKeep) {
-          stepper(iev, init, em, pred_pars..., model_pars...);
+          stepper(iev, init, em, integrator, model_pars...);
           if(events.keep(iev)) {
             res.col(ikeep) = init;
             ikeep++;
@@ -123,52 +131,25 @@ namespace torsten{
     /*
      * Step through a range of events.
      */
-    template<typename T_em, typename... Ts>
-    void stepper(int i, torsten::PKRec<typename T_em::T_scalar>& init,
-                        const T_em& em, const T_pred... pred_pars, const Ts... model_pars) {
+    template<typename T_em, PMXOdeIntegratorId It, typename... Ts>
+    void stepper(int i, PKRec<typename T_em::T_scalar>& init,
+                 const T_em& em, const PMXOdeIntegrator<It> integrator, const Ts... model_pars) {
       auto events = em.events();
 
       using scalar = typename T_em::T_scalar;
       typename T_em::T_time tprev = i == 0 ? events.time(0) : events.time(i-1);
 
-      Eigen::Matrix<scalar, -1, 1> pred1;
-
-      if (events.is_reset(i)) {
-        init.setZero();
-      } else if (events.is_ss_dosing(i)) {  // steady state event
-        typename T_em::T_time model_time = events.time(i); // FIXME: time is not t0 but for adjust within SS solver
-        std::vector<typename T_em::T_rate> dummy_rate;
-        T_model pkmodel {model_time, init, dummy_rate, events.model_param(i), model_pars...};
-        auto curr_amt = events.fractioned_amt(i);
-        pred1 = stan::math::multiply(pkmodel.solve(curr_amt,
-                                                   events.rate(i),
-                                                   events.ii(i),
-                                                   events.cmt(i),
-                                                   pred_pars...),
-                                     scalar(1.0));
-
-        if (events.ss(i) == 2)
-          init += pred1;  // steady state without reset
-        else
-          init = pred1;  // steady state with reset (ss = 1)
-      } else if (events.time(i) > tprev) {           // non-steady dosing event
-        typename T_em::T_time model_time = tprev;
-        auto curr_rates = events.fractioned_rates(i);
-        T_model pkmodel {model_time, init, curr_rates, events.model_param(i), model_pars...};
-        pred1 = pkmodel.solve(events.time(i), pred_pars...);
-        init = pred1;
-      }
-
-      if (events.is_bolus_dosing(i)) {
-        init(0, events.cmt(i) - 1) += events.fractioned_amt(i);
-      }
-      tprev = events.time(i);
+      typename T_em::T_time model_time = tprev;
+      auto curr_rates = events.fractioned_rates(i);
+      T_model pkmodel {events.model_param(i), model_pars...};
+      auto ev = em.event(i);
+      ev(init, pkmodel, integrator);
     }
 
-    template<typename T_em, typename... Ts>
+    template<typename T_em, PMXOdeIntegratorId It, typename... Ts>
     void stepper_solve(int i, torsten::PKRec<typename T_em::T_scalar>& init,
                         torsten::PKRec<double>& sol_d,
-                        const T_em& em, const T_pred... pred_pars, const Ts... model_pars) {
+                        const T_em& em, const PMXOdeIntegrator<It> integrator, const Ts... model_pars) {
       using std::vector;
       using stan::math::var;
 
@@ -176,38 +157,17 @@ namespace torsten{
 
       typename T_em::T_time tprev = i == 0 ? events.time(0) : events.time(i-1);
 
-      if (events.is_reset(i)) {
-        init.setZero();
-      } else if (events.is_ss_dosing(i)) {  // steady state event
-        typename T_em::T_time model_time = events.time(i);
-        std::vector<typename T_em::T_rate> dummy_rate;
-        T_model pkmodel {model_time, init, dummy_rate, events.model_param(i), model_pars...};
-        auto curr_amt = events.fractioned_amt(i);
-        vector<var> v_i = pkmodel.vars(curr_amt, events.rate(i), events.ii(i));
-        sol_d = pkmodel.solve_d(curr_amt, events.rate(i), events.ii(i), events.cmt(i), pred_pars...);
-        if (events.ss(i) == 2)
-          init += torsten::mpi::precomputed_gradients(sol_d, v_i);  // steady state without reset
-        else
-          init = torsten::mpi::precomputed_gradients(sol_d, v_i);  // steady state with reset (ss = 1)
-      } else if (events.time(i) > tprev) {
-          typename T_em::T_time model_time = tprev;
-          auto curr_rates = events.fractioned_rates(i);
-          T_model pkmodel {model_time, init, curr_rates, events.model_param(i), model_pars...};
-          vector<var> v_i = pkmodel.vars(events.time(i));
-          sol_d = pkmodel.solve_d(events.time(i), pred_pars...);
-          init = torsten::mpi::precomputed_gradients(sol_d, v_i);
-      }
-
-      if (events.is_bolus_dosing(i)) {
-        init(0, events.cmt(i) - 1) += events.fractioned_amt(i);
-      }
-      tprev = events.time(i);
+      typename T_em::T_time model_time = tprev;
+      auto curr_rates = events.fractioned_rates(i);
+      T_model pkmodel {events.model_param(i), model_pars...};
+      auto ev = em.event(i);
+      ev(sol_d, init, pkmodel, integrator, model_pars...);
     }
 
-    template<typename T_em, typename... Ts>
+    template<typename T_em, PMXOdeIntegratorId It, typename... Ts>
     void stepper_sync(int i, torsten::PKRec<typename T_em::T_scalar>& init,
                       torsten::PKRec<double>& sol_d,
-                      const T_em& em, const T_pred... pred_pars, const Ts... model_pars) {
+                      const T_em& em, const PMXOdeIntegrator<It> integrator, const Ts... model_pars) {
       using std::vector;
       using stan::math::var;
 
@@ -219,10 +179,9 @@ namespace torsten{
         init.setZero();
       } else if (events.is_ss_dosing(i)) {  // steady state event
         typename T_em::T_time model_time = events.time(i);
-        std::vector<typename T_em::T_rate> dummy_rate;
-        T_model pkmodel {model_time, init, dummy_rate, events.model_param(i), model_pars...};
+        T_model pkmodel {events.model_param(i), model_pars...};
         auto curr_amt = events.fractioned_amt(i);
-        vector<var> v_i = pkmodel.vars(curr_amt, events.rate(i), events.ii(i));
+        vector<var> v_i(dsolve::pk_vars(curr_amt, events.rate(i), events.ii(i), pkmodel.par()));
         int nsys = torsten::pk_nsys(em.ncmt, v_i.size());
         if (events.ss(i) == 2)
           init += torsten::mpi::precomputed_gradients(sol_d.segment(0, nsys), v_i);  // steady state without reset
@@ -231,8 +190,9 @@ namespace torsten{
       } else if (events.time(i) > tprev) {
           typename T_em::T_time model_time = tprev;
           auto curr_rates = events.fractioned_rates(i);
-          T_model pkmodel {model_time, init, curr_rates, events.model_param(i), model_pars...};
-          vector<var> v_i = pkmodel.vars(events.time(i));
+          T_model pkmodel {events.model_param(i), model_pars...};
+          vector<var> v_i =
+            pmx_model_vars<T_model>::vars(events.time(i), init, curr_rates, pkmodel.par());
           int nsys = torsten::pk_nsys(em.ncmt, v_i.size());
           init = torsten::mpi::precomputed_gradients(sol_d.segment(0, nsys), v_i);
       }
@@ -249,11 +209,11 @@ namespace torsten{
      * information passed in as ragged arrays.
      *
      */
-    template<typename T_events_record, typename... Ts,
+    template<typename T_events_record, PMXOdeIntegratorId It, typename... Ts,
              typename std::enable_if_t<stan::is_var<typename EventsManager<T_events_record>::T_scalar>::value >* = nullptr> //NOLINT
     void pred(const T_events_record& events_rec,
               Eigen::Matrix<typename EventsManager<T_events_record>::T_scalar, -1, -1>& res,
-              const T_pred... pred_pars,
+              const PMXOdeIntegrator<It> integrator,
               const Ts... model_pars) {
       using Eigen::Matrix;
       using Eigen::MatrixXd;
@@ -311,7 +271,7 @@ namespace torsten{
 
               int ikeep = 0, iev = 0;
               while(ikeep < em.nKeep) {
-                stepper_solve(iev, init, pred1, em, pred_pars..., model_pars...);
+                stepper_solve(iev, init, pred1, em, integrator, model_pars...);
                 res_d[id].col(iev).segment(0, pred1.size()) = pred1;
                 if(events.keep(iev)) {
                   res.col(EM::begin(id, events_rec) + ikeep) = init;
@@ -349,7 +309,7 @@ namespace torsten{
       //     int ikeep = 0, iev = 0;
       //     while(ikeep < em.nKeep) {
       //       pred1 = res_d[id].col(iev);
-      //       stepper_sync(iev, init, pred1, em, pred_pars..., model_pars...);
+      //       stepper_sync(iev, init, pred1, em, integrator, model_pars...);
       //       if(events.keep(iev)) {
       //         res.col(EM::begin(id, events_rec) + ikeep) = init;
       //         ikeep++;
@@ -382,7 +342,7 @@ namespace torsten{
             int ikeep = 0, iev = 0;
             while(ikeep < em.nKeep) {
               pred1 = res_d[id].col(iev);
-              stepper_sync(iev, init, pred1, em, pred_pars..., model_pars...);
+              stepper_sync(iev, init, pred1, em, integrator, model_pars...);
               if(events.keep(iev)) {
                 res.col(EM::begin(id, events_rec) + ikeep) = init;
                 ikeep++;
@@ -403,9 +363,9 @@ namespace torsten{
     /*
      * Data-only MPI solver that takes ragged arrays as input.
      */
-    template<typename T_events_record, typename... Ts>
+    template<typename T_events_record, PMXOdeIntegratorId It, typename... Ts>
     void pred(const T_events_record& events_rec, Eigen::MatrixXd& res,
-                     const T_pred... pred_pars,
+                     const PMXOdeIntegrator<It> integrator,
                      const Ts... model_pars) {
       using Eigen::Matrix;
       using Eigen::MatrixXd;
@@ -415,7 +375,7 @@ namespace torsten{
       using::stan::math::var;
       using torsten::PKRec;
 
-      using ER = NONMENEventsRecord<double, double, double, double, std::vector<double>, double, double>;
+      using ER = NONMENEventsRecord<double, double, double, double, double, double, double>;
       using EM = EventsManager<ER>;
 
       const int nCmt = EM::nCmt(events_rec);
@@ -451,7 +411,7 @@ namespace torsten{
             init.setZero();
             int ikeep = 0, iev = 0;
             while(ikeep < em.nKeep) {
-              stepper(iev, init, em, pred_pars..., model_pars...);
+              stepper(iev, init, em, integrator, model_pars...);
               if(events.keep(iev)) {
                 res.col(EM::begin(id, events_rec) + ikeep) = init;
                 ikeep++;
@@ -500,10 +460,10 @@ namespace torsten{
      * addional information of the size of each individual
      * is required to locate the data in a single array for population.
      */
-    template<typename T_events_record, typename... Ts> //NOLINT
+    template<typename T_events_record, PMXOdeIntegratorId It, typename... Ts> //NOLINT
     void pred(const T_events_record& events_rec,
                      Eigen::Matrix<typename EventsManager<T_events_record>::T_scalar, -1, -1>& res,
-                     const T_pred... pred_pars,
+                     const PMXOdeIntegrator<It> integrator,
                      const Ts... model_pars) {
       using ER = T_events_record;
       using EM = EventsManager<ER>;
@@ -522,7 +482,7 @@ namespace torsten{
       for (int id = 0; id < np; ++id) {
         const int nKeep = events_rec.num_event_times(id);
         Eigen::Matrix<typename EventsManager<T_events_record>::T_scalar, -1, -1> res_id(nCmt, nKeep);
-        pred(id, events_rec, res_id, pred_pars..., model_pars...);
+        pred(id, events_rec, res_id, integrator, model_pars...);
         for (int j = 0; j < nKeep; ++j) {
           res.col(EM::begin(id, events_rec) + j) = res_id.col(j);
         }
@@ -531,7 +491,7 @@ namespace torsten{
 #endif
   };
 
-  template<typename T_model, typename... T_pred>
-  constexpr double EventSolver<T_model, T_pred...>::invalid_res_d;
+  template<typename T_model>
+  constexpr double EventSolver<T_model>::invalid_res_d;
 }
 #endif

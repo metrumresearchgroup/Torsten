@@ -1,10 +1,10 @@
 #ifndef STAN_MATH_TORSTEN_EVENTS_MANAGER_HPP
 #define STAN_MATH_TORSTEN_EVENTS_MANAGER_HPP
 
-// #include <stan/math/torsten/PKModel/PKModel.hpp>
 #include <stan/math/torsten/dsolve/pk_vars.hpp>
-#include <stan/math/torsten/event_history.hpp>
-#include <stan/math/torsten/events_record.hpp>
+#include <stan/math/torsten/ev_history.hpp>
+#include <stan/math/torsten/ev_record.hpp>
+#include <stan/math/torsten/event.hpp>
 #include <boost/math/tools/promotion.hpp>
 #include <Eigen/Dense>
 #include <string>
@@ -14,9 +14,11 @@ namespace torsten {
   template <typename T_event_record>
   struct EventsManager;
 
-  template <typename T0, typename T1, typename T2, typename T3, typename T4_container, typename T5, typename T6>
-    struct EventsManager<NONMENEventsRecord<T0, T1, T2, T3, T4_container, T5, T6> > {
-    using ER = NONMENEventsRecord<T0, T1, T2, T3, T4_container, T5, T6>;
+  template <typename T0, typename T1, typename T2, typename T3, typename T4, typename T5, typename T6,
+            template<class...> class theta_container>
+  struct EventsManager<NONMENEventsRecord<T0, T1, T2, T3, T4, T5, T6,
+                                          theta_container> > {
+    using ER = NONMENEventsRecord<T0, T1, T2, T3, T4, T5, T6, theta_container>;
     using T_scalar = typename ER::T_scalar;
     using T_time   = typename ER::T_time;
     using T_rate   = typename ER::T_rate;
@@ -24,9 +26,8 @@ namespace torsten {
     using T_par    = typename ER::T_par;
     using T_par_rate = typename ER::T_par_rate;
     using T_par_ii   = typename ER::T_par_ii;
-    using T4 = typename stan::value_type<T4_container>::type;
 
-    EventHistory<T0, T1, T2, T3, T4_container, T5, T6> event_his;
+    EventHistory<T0, T1, T2, T3, T4, T5, T6, theta_container> event_his;
 
     const int nKeep;
     const int ncmt;
@@ -67,7 +68,7 @@ namespace torsten {
       ncmt(rec.ncmt)
     {}
 
-    const EventHistory<T0, T1, T2, T3, T4_container, T5, T6>& events() const {
+    const EventHistory<T0, T1, T2, T3, T4, T5, T6, theta_container>& events() const {
       return event_his;
     }
 
@@ -76,6 +77,63 @@ namespace torsten {
      */
     static int num_events(const ER& rec) {
       return num_events(0, rec);
+    }
+
+    Event<T_time, T3, T_amt, T_rate, T2> event(int i) const {
+      int id;
+      switch (event_his.evid(i)) {
+      case 2:                   // "other" type given "-cmt" indicates turn-off/reset
+        if (event_his.cmt(i) < 0) {
+            id = 5;
+        } else {
+          id = 0;
+        }
+        break;
+      case 3:                   // reset
+        id = 1;
+        break;
+      case 4:                   // reset + dosing
+        if (event_his.is_ss_dosing(i)) {
+          // since it's reset, SS reset is irrelevant 
+          id = 4;
+        } else {
+          id = 2;
+        }
+        break;
+      case 8:                   // mrgsolve: "evid=9" overwrite cmt
+        if (event_his.cmt(i) > 0) {
+          id = 6;
+        }
+        break;
+      default:
+        if (event_his.is_ss_dosing(i)) {
+          if (event_his.ss(i) == 2) {
+            id = 3;
+          } else {
+            id = 4;
+          }
+        } else {
+          id = 0;
+        }
+      }
+
+      T_time t0, t1;
+      if (event_his.is_ss_dosing(i)) {
+        // t0 = event_his.time(i);
+        // t1 = event_his.ii(i);
+        t0 = i == 0 ? event_his.time(0) : event_his.time(i-1);
+        t1 = event_his.time(i);
+      } else {
+        t0 = i == 0 ? event_his.time(0) : event_his.time(i-1);
+        t1 = event_his.time(i);
+      }
+      PKRec<T_amt> amt = PKRec<T_amt>::Zero(ncmt);
+      if (event_his.is_bolus_dosing(i) || event_his.is_ss_dosing(i)) {
+        amt(event_his.cmt(i) - 1) = event_his.fractioned_amt(i);
+      }
+      std::vector<T_rate> rate(event_his.fractioned_rates(i));
+      return {id, t0, t1, event_his.ii(i),
+              amt, rate, event_his.rate(i), event_his.cmt(i)};
     }
 
     /*

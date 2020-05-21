@@ -1,20 +1,23 @@
-#ifndef STAN_MATH_TORSTEN_REFACTOR_LINODEMODEL_HPP
-#define STAN_MATH_TORSTEN_REFACTOR_LINODEMODEL_HPP
+#ifndef STAN_MATH_TORSTEN_LINODE_HPP
+#define STAN_MATH_TORSTEN_LINODE_HPP
 
 #include <Eigen/Dense>
-#include <stan/math/torsten/events_manager.hpp>
+#include <stan/math/torsten/ev_manager.hpp>
 #include <boost/math/tools/promotion.hpp>
-#include <stan/math/torsten/event_solver.hpp>
+#include <stan/math/torsten/ev_solver.hpp>
 #include <stan/math/torsten/is_std_vector.hpp>
 #include <stan/math/torsten/to_array_2d.hpp>
 #include <stan/math/torsten/pmx_linode_model.hpp>
-#include <stan/math/torsten/PKModel/PKModel.hpp>
-#include <stan/math/torsten/PKModel/Pred/Pred1_linOde.hpp>
-#include <stan/math/torsten/PKModel/Pred/PredSS_linOde.hpp>
+#include <stan/math/torsten/pmx_check.hpp>
 #include <stan/math/prim/err/check_square.hpp>
 #include <vector>
 
 namespace torsten {
+
+  namespace {
+    template<typename T>
+    using torsten_matrix_dyn_t = Eigen::Matrix<T,-1,-1>;    
+  }
 
 /**
  * Computes the predicted amounts in each compartment at each event
@@ -54,50 +57,38 @@ template <typename T0, typename T1, typename T2, typename T3,
 Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4, T5, T6>,
                Eigen::Dynamic, Eigen::Dynamic>
 pmx_solve_linode(const std::vector<T0>& time,
-            const std::vector<T1>& amt,
-            const std::vector<T2>& rate,
-            const std::vector<T3>& ii,
-            const std::vector<int>& evid,
-            const std::vector<int>& cmt,
-            const std::vector<int>& addl,
-            const std::vector<int>& ss,
-            const std::vector< Eigen::Matrix<T4, Eigen::Dynamic, Eigen::Dynamic> >& system,
-            const std::vector<std::vector<T5> >& biovar,
-            const std::vector<std::vector<T6> >& tlag) {
+                 const std::vector<T1>& amt,
+                 const std::vector<T2>& rate,
+                 const std::vector<T3>& ii,
+                 const std::vector<int>& evid,
+                 const std::vector<int>& cmt,
+                 const std::vector<int>& addl,
+                 const std::vector<int>& ss,
+                 const std::vector< Eigen::Matrix<T4, -1, -1> >& system,
+                 const std::vector<std::vector<T5> >& biovar,
+                 const std::vector<std::vector<T6> >& tlag) {
   using std::vector;
   using Eigen::Dynamic;
   using Eigen::Matrix;
   using boost::math::tools::promote_args;
-  using torsten::PKRec;
 
   static const char* function("pmx_solve_linode");
   for (size_t i = 0; i < system.size(); i++)
     stan::math::check_square(function, "system matrix", system[i]);
   int nCmt = system[0].cols();
 
-  std::vector<T4> parameters_dummy(0);
-  std::vector<std::vector<T4> > pMatrix_dummy(1, parameters_dummy);
-  torsten::pmx_check(time, amt, rate, ii, evid, cmt, addl, ss,
-                pMatrix_dummy, biovar, tlag, function);
-
-#ifdef OLD_TORSTEN
-  return Pred(time, amt, rate, ii, evid, cmt, addl, ss,
-              pMatrix_dummy, biovar, tlag, nCmt, system,
-              Pred1_linOde(), PredSS_linOde());
-#else
-  using ER = NONMENEventsRecord<T0, T1, T2, T3, Eigen::Matrix<T4,-1,-1>, T5, T6>;
+  using ER = NONMENEventsRecord<T0, T1, T2, T3, T4, T5, T6,
+                                torsten_matrix_dyn_t>;
   using EM = EventsManager<ER>;
   const ER events_rec(nCmt, time, amt, rate, ii, evid, cmt, addl, ss, system, biovar, tlag);
 
   Matrix<typename EM::T_scalar, Dynamic, Dynamic> pred =
     Matrix<typename EM::T_scalar, Dynamic, Dynamic>::Zero(events_rec.num_event_times(), EM::nCmt(events_rec));
 
-  using model_type = torsten::PMXLinODEModel<typename EM::T_time, typename EM::T_scalar, typename EM::T_rate, typename EM::T_par>;
+  using model_type = torsten::PMXLinODEModel<typename EM::T_par>;
   EventSolver<model_type> pr;
-  pr.pred(0, events_rec, pred);
+  pr.pred(0, events_rec, pred, PMXOdeIntegrator<Analytical>(), nCmt);
   return pred;
-
-#endif
 }
 
 /**

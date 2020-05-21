@@ -1,7 +1,8 @@
 #ifndef STAN_MATH_TORSTEN_PKMODEL_FUNCTORS_CHECK_MTI_HPP
 #define STAN_MATH_TORSTEN_PKMODEL_FUNCTORS_CHECK_MTI_HPP
 
-#include <stan/math/torsten/PKModel/Pred/unpromote.hpp>
+#include <stan/math/prim/fun/value_of.hpp>
+#include <stan/math/rev/fun/value_of.hpp>
 #include <string>
 
 namespace torsten {
@@ -27,12 +28,12 @@ void check_mti(const T0& amt,
                const char* function) {
   using stan::math::invalid_argument;
 
-  if (!(unpromote(amt) > 0)) {
+  if (!(stan::math::value_of(amt) > 0)) {
     invalid_argument(function, "Amount (amt)", amt, "is ",
                      " but must be stricly positive when ii > 0!");
   }
 
-  if (unpromote(delta) > unpromote(ii)) {
+  if (stan::math::value_of(delta) > stan::math::value_of(ii)) {
     std::string msg = " but must be less than the interdose interval (ii): "  // NOLINT
     + boost::lexical_cast<std::string>(ii) + "!";
     const char* msg2 = msg.c_str();

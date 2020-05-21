@@ -104,7 +104,7 @@ struct PredSS_twoCpt {
         pred(0, 2) = PolyExp(ii, amt, 0, 0, ii, true, a, alpha, 2);
       }
     } else if (ii > 0) {  // multiple truncated infusions
-      double delta = unpromote(amt / rate);
+      double delta = stan::math::value_of(amt / rate);
       static const char* function("Steady State Event");
       check_mti(amt, delta, ii, function);
 

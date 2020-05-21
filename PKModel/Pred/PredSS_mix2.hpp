@@ -83,7 +83,7 @@ struct PredSS_mix2 {
     typedef typename boost::math::tools::promote_args<T_ii,
       T_parameters>::type scalar;
 
-    double ii_dbl = unpromote(ii);
+    double ii_dbl = stan::math::value_of(ii);
 
     // Compute solution for base 1cpt PK
     Matrix<T_parameters, Dynamic, 1> predPK;
@@ -132,7 +132,7 @@ struct PredSS_mix2 {
       predPD_guess = to_vector(integrator_(ode_rate_dbl_functor<F>(f_),
                                         to_array_1d(init_dbl),
                                         0.0, std::vector<double>(1, ii_dbl),
-                                        unpromote(theta.get_RealParameters(false)),
+                                        stan::math::value_of(theta.get_RealParameters(false)),
                                         x_r, x_i)[0]);
 
       x_r.push_back(amt);
@@ -156,7 +156,7 @@ struct PredSS_mix2 {
       predPD_guess = to_vector(integrator_(ode_rate_dbl_functor<F>(f_),
                                          to_array_1d(init_dbl),
                                          0.0, std::vector<double>(1, ii_dbl),
-                                         unpromote(theta.get_RealParameters(false)),
+                                         stan::math::value_of(theta.get_RealParameters(false)),
                                          x_r, x_i)[0]);
 
       x_r.push_back(amt);  // needed?
@@ -175,7 +175,7 @@ struct PredSS_mix2 {
       predPD_guess = to_vector(integrator_(ode_rate_dbl_functor<F>(f_),
                                          to_array_1d(init_dbl),
                                          0.0, std::vector<double>(1, 100),
-                                         unpromote(theta.get_RealParameters(false)),
+                                         stan::math::value_of(theta.get_RealParameters(false)),
                                          x_r, x_i)[0]);
 
       x_r.push_back(amt);
@@ -223,7 +223,7 @@ struct PredSS_mix2 {
     typedef typename boost::math::tools::promote_args<T_ii, T_amt,
       T_parameters>::type scalar;
 
-    double ii_dbl = unpromote(ii);
+    double ii_dbl = stan::math::value_of(ii);
 
     // Compute solution for base 1cpt PK
     Matrix<scalar, Dynamic, 1> predPK;
@@ -266,7 +266,7 @@ struct PredSS_mix2 {
       predPD_guess = to_vector(integrator_(ode_rate_dbl_functor<F>(f_),
                                         to_array_1d(init_dbl),
                                         0.0, std::vector<double>(1, ii_dbl),
-                                        unpromote(theta.get_RealParameters(false)),
+                                        stan::math::value_of(theta.get_RealParameters(false)),
                                         x_r, x_i)[0]);
 
       predPD = algebra_solver_powell(system, predPD_guess,
@@ -286,7 +286,7 @@ struct PredSS_mix2 {
       predPD_guess = to_vector(integrator_(ode_rate_dbl_functor<F>(f_),
                                          to_array_1d(init_dbl),
                                          0.0, std::vector<double>(1, 100),
-                                         unpromote(theta.get_RealParameters(false)),
+                                         stan::math::value_of(theta.get_RealParameters(false)),
                                          x_r, x_i)[0]);
 
       predPD = algebra_solver_powell(system, predPD_guess,

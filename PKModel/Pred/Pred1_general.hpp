@@ -4,7 +4,6 @@
 #include <stan/math/rev/core.hpp>
 #include <stan/math/prim/fun/to_matrix.hpp>
 #include <stan/math/torsten/PKModel/integrator.hpp>
-#include <stan/math/torsten/PKModel/Pred/unpromote.hpp>
 #include <stan/math/torsten/PKModel/functors/functor.hpp>
 #include <stan/math/prim/fun/to_array_1d.hpp>
 #include <iostream>
@@ -85,8 +84,8 @@ struct Pred1_general {
 
     // Convert time parameters to fixed data for ODE integrator
     // FIX ME - see issue #30
-    vector<double> EventTime_d(1, unpromote(EventTime));
-    double InitTime_d = unpromote(InitTime);
+    vector<double> EventTime_d(1, stan::math::value_of(EventTime));
+    double InitTime_d = stan::math::value_of(InitTime);
 
     vector<T_parameters> theta = parameter.get_RealParameters(false);
     vector<scalar> init_vector = to_array_1d(init);
@@ -141,8 +140,8 @@ struct Pred1_general {
 
     // Convert time parameters to fixed data for ODE integrator
     // FIX ME - see issue #30
-    vector<double> EventTime_d(1, unpromote(EventTime));
-    double InitTime_d = unpromote(InitTime);
+    vector<double> EventTime_d(1, stan::math::value_of(EventTime));
+    double InitTime_d = stan::math::value_of(InitTime);
 
     // Construct theta with ode parameters and rates.
     vector<T_parameters> odeParameters = parameter.get_RealParameters(false);

@@ -1,9 +1,9 @@
 #ifndef TEST_UNIT_TORSTEN_PK_FRIBERG_KARLSSON_MODEL_TEST_FIXTURE
 #define TEST_UNIT_TORSTEN_PK_FRIBERG_KARLSSON_MODEL_TEST_FIXTURE
 
-//
 #include <gtest/gtest.h>
 #include <boost/numeric/odeint.hpp>
+#include <stan/math/rev/fun/pow.hpp>
 #include <stan/math/torsten/pmx_onecpt_model.hpp>
 #include <stan/math/torsten/pmx_ode_model.hpp>
 #include <iostream>
@@ -25,10 +25,10 @@ struct FribergKarlsson {
              std::ostream* pstream__) const {
     using Eigen::Matrix;
     using Eigen::Dynamic;
-    typedef typename boost::math::tools::promote_args<T0, T1, T2, T3>::type scalar;
+    using scalar = typename stan::return_type_t<T0, T1, T2, T3>;
 
     // PK variables
-    scalar
+    T2
       CL = parms[0],
       Q = parms[1],
       VC = parms[2],
@@ -39,17 +39,18 @@ struct FribergKarlsson {
       k21 = Q / VP;
 
     // PD variables
-    scalar
+    T2
       MTT = parms[5],
       circ0 = parms[6],
-      alpha = parms[7],
-      gamma = parms[8],
-      ktr = 4 / MTT,
+      gamma = parms[7],
+      alpha = parms[8],
+      ktr = 4 / MTT;
+    typename stan::return_type_t<T1, T2>
       prol = x[3] + circ0,
       transit1 = x[4] + circ0,
       transit2 = x[5] + circ0,
       transit3 = x[6] + circ0,
-      circ = x[7] + circ0;
+      circ = stan::math::fmax(stan::math::machine_precision(), x[7] + circ0);
 
     std::vector<scalar> dxdt(8);
     dxdt[0] = -ka * x[0];
@@ -59,7 +60,7 @@ struct FribergKarlsson {
     scalar conc = x[1] / VC;
     scalar Edrug = alpha * conc;
 
-    dxdt[3] = ktr * prol * ((1 - Edrug) * pow((circ0 / circ), gamma) - 1);
+    dxdt[3] = ktr * prol * (((1 - Edrug) * pow((circ0 / circ), gamma)) - 1);
     dxdt[4] = ktr * (prol - transit1);
     dxdt[5] = ktr * (transit1 - transit2);
     dxdt[6] = ktr * (transit2 - transit3);
@@ -95,7 +96,7 @@ struct FribergKarlssonTest : public testing::Test {
     nCmt(8),
     nt(10),
     // CL , Q , Vc , Vp , ka , MTT , Circ0 , alpha , gamma
-    theta(1, {10, 15, 35, 105, 2.0, 125, 5, 3e-4, 0.17}),
+    theta(1, {10, 15, 35, 105, 2.0, 125, 5, 0.17, 3e-4}),
     biovar(1, {1, 1, 1, 1, 1, 1, 1, 1}),
     tlag(1, {0, 0, 0, 0, 0, 0, 0, 0}),
     time(nt),

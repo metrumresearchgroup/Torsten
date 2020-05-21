@@ -6,6 +6,7 @@
 #include <stan/math/rev/meta.hpp>
 #include <stan/math/prim/fun/Eigen.hpp>
 #include <stan/math/torsten/finite_diff_gradient.hpp>
+#include <stan/math/torsten/torsten_def.hpp>
 #include <stan/math/torsten/mpi/precomputed_gradients.hpp>
 #include <stan/math/torsten/to_var.hpp>
 #include <iostream>
@@ -555,14 +556,14 @@ namespace torsten {
      * @param sens_esp tolerance of gradients
      */
     void test_grad(std::vector<stan::math::var>& theta1,
-                   Eigen::Matrix<stan::math::var, 1, -1>& theta2,
+                   PKRec<stan::math::var>& theta2,
                    stan::math::vector_v& y1,
                    stan::math::vector_v& y2,
                    double fval_eps,
                    double sens_eps) {
       // grad() only accepts std::vector
       std::vector<stan::math::var> theta(theta2.size());
-      Eigen::Matrix<stan::math::var, 1, -1>::Map(theta.data(), theta2.size()) = theta2;
+      PKRec<stan::math::var>::Map(theta.data(), theta2.size()) = theta2;
 
       test_grad(theta1, theta, y1, y2, fval_eps, sens_eps);
     }

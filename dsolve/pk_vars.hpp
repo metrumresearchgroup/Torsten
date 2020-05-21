@@ -26,7 +26,7 @@ namespace torsten {
      */
     template<typename T0, typename T1, typename T2, typename T3>
     inline std::vector<stan::math::var>
-    pk_vars(const T0& x0, const Eigen::Matrix<T1, 1, -1>& m1, const std::vector<T2>& v2, const std::vector<T3>& v3) // NOLINT
+    pk_vars(const T0& x0, const PKRec<T1>& m1, const std::vector<T2>& v2, const std::vector<T3>& v3) // NOLINT
     {
       using stan::is_var;
       std::vector<stan::math::var> res;
@@ -42,7 +42,7 @@ namespace torsten {
 
     template<typename T0, typename T1, typename T2, typename T3>
     inline std::vector<stan::math::var>
-    pk_vars(const T0& x0, const Eigen::Matrix<T1, 1, -1>& m1, const std::vector<T2>& v2, const Eigen::Matrix<T3,-1,-1>& m3) // NOLINT
+    pk_vars(const T0& x0, const PKRec<T1>& m1, const std::vector<T2>& v2, const Eigen::Matrix<T3,-1,-1>& m3) // NOLINT
     {
       using stan::is_var;
       std::vector<stan::math::var> res;

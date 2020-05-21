@@ -3,12 +3,12 @@
 
 #include <stan/math/prim/fun/get.hpp>
 
-#include <stan/math/torsten/PKModel/pmx_check.hpp>
+#include <stan/math/torsten/pmx_check.hpp>
 #include <stan/math/torsten/PKModel/functions.hpp>
 #include <stan/math/torsten/PKModel/SearchReal.hpp>
 #include <stan/math/torsten/PKModel/ExtractVector.hpp>
 #include <stan/math/torsten/PKModel/pmxModel.hpp>
-#include <stan/math/torsten/event_history.hpp>
+#include <stan/math/torsten/ev_history.hpp>
 #include <stan/math/torsten/PKModel/ModelParameters.hpp>
 #include <stan/math/torsten/PKModel/integrator.hpp>
 #include <stan/math/torsten/PKModel/Pred/PolyExp.hpp>

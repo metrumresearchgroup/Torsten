@@ -143,6 +143,13 @@ namespace torsten {
     DEF_STAN_SINGLE_STEP_INTEGRATOR
   };
 
+  /**
+   * specialization to a dummy integrator used for
+   * analytical solutions such as one-cpt & two-cpt
+   */
+  template<>
+  struct PMXOdeIntegrator<Analytical> {};
+
   /*
    * specialization for @c PkBdf
    */

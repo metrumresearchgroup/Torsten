@@ -14,8 +14,8 @@
 #include <stan/math/torsten/test/unit/util_generalOdeModel.hpp>
 #include <gtest/gtest.h>
 
-auto f_onecpt = torsten::PMXOneCptModel<double,double,double,double>::f_;
-auto f_twocpt = torsten::PMXTwoCptModel<double,double,double,double>::f_;
+auto f_onecpt = torsten::PMXOneCptModel<double>::f_;
+auto f_twocpt = torsten::PMXTwoCptModel<double>::f_;
 
 using stan::math::var;
 using std::vector;
@@ -79,7 +79,7 @@ TEST_F(TorstenOneCptTest, ss_zero_rate) {
   TORSTEN_ODE_GRAD_THETA_TEST(pmx_solve_bdf, f_onecpt, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag,
                               rel_tol, abs_tol, max_num_steps,
-                              2e-5, 1e-6, 5e-5, 1e-5);
+                              2e-5, 1e-6, 5.5e-5, 1e-5);
 
   TORSTEN_ODE_GRAD_THETA_TEST(pmx_solve_adams, f_onecpt, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag,
@@ -290,9 +290,9 @@ TEST_F(TorstenOneCptTest, ss_multiple_infusion_tlag) {
       std::vector<std::vector<double> > tlag1(nt);
       for (int i = 0; i < nt; ++i) tlag1[i] = tlag[i];
       tlag1[3] = x;
-      NONMENEventsRecord<double, double, double, double, std::vector<double>, double, double>
+      NONMENEventsRecord<double, double, double, double, double, double, double>
       events_rec(nCmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag1);
-      torsten::EventsManager<NONMENEventsRecord<double, double, double, double, std::vector<double>, double, double>>
+      torsten::EventsManager<NONMENEventsRecord<double, double, double, double, double, double, double>>
       em(events_rec);
       return torsten::pmx_solve_bdf(f_onecpt, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag1,
                                           rel_tol, abs_tol, max_num_steps);
@@ -301,9 +301,9 @@ TEST_F(TorstenOneCptTest, ss_multiple_infusion_tlag) {
       std::vector<std::vector<var> > tlag1(nt);
       for (int i = 0; i < nt; ++i) tlag1[i] = stan::math::to_var(tlag[i]);
       tlag1[3] = x;
-      NONMENEventsRecord<double, double, double, double, std::vector<double>, double, var>
+      NONMENEventsRecord<double, double, double, double, double, double, var>
       events_rec(nCmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag1);
-      torsten::EventsManager<NONMENEventsRecord<double, double, double, double, std::vector<double>, double, var>>
+      torsten::EventsManager<NONMENEventsRecord<double, double, double, double, double, double, var>>
       em(events_rec);
       return torsten::pmx_solve_bdf(f_onecpt, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag1,
                                           rel_tol, abs_tol, max_num_steps);
@@ -475,7 +475,7 @@ TEST_F(TorstenOneCptTest, ss_multiple_infusion) {
   TORSTEN_ODE_GRAD_BIOVAR_TEST(pmx_solve_adams, f_onecpt, nCmt,
                                time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag,
                                rel_tol, abs_tol, max_num_steps,
-                               2e-5, 1e-10, 1e-6, 1e-8);
+                               2e-5, 1e-10, 8e-6, 1e-8);
 }
 
 TEST_F(TorstenOneCptTest, multiple_bolus) {
@@ -1022,7 +1022,7 @@ TEST_F(TorstenOdeTest, exception) {
   pMatrix[0][3] = 1.0E+80;
   pMatrix[0][4] = 1.0E+70;
 
-  int ncmt = torsten::PMXTwoCptModel<double, double, double, double>::Ncmt;
+  int ncmt = torsten::PMXTwoCptModel<double>::Ncmt;
 
   EXPECT_NO_THROW(torsten::pmx_solve_bdf(f_twocpt, ncmt, time, amt, rate, ii,
                                                evid, cmt, addl, ss, pMatrix,
@@ -1214,7 +1214,7 @@ TEST_F(TorstenTwoCptTest, multiple_bolus_amt) {
 
   double rel_tol = 1e-8, abs_tol = 1e-8;
   long int max_num_steps = 1e8;
-  auto& f_twocpt = torsten::PMXTwoCptModel<double,double,double,double>::f_;
+  auto& f_twocpt = torsten::PMXTwoCptModel<double>::f_;
 
   TORSTEN_ODE_GRAD_AMT_TEST(pmx_solve_bdf, f_twocpt,
                             nCmt,

@@ -2,7 +2,7 @@
 #define STAN_MATH_TORSTEN_PKMODEL_MODELPARAMETERS_HPP
 
 #include <stan/math/prim/fun/to_array_1d.hpp>
-#include <stan/math/torsten/event_history.hpp>
+#include <stan/math/torsten/ev_history.hpp>
 #include <stan/math/torsten/PKModel/ExtractVector.hpp>
 #include <stan/math/torsten/PKModel/SearchReal.hpp>
 #include <Eigen/Dense>
@@ -96,6 +96,14 @@ struct ModelParameters {
     Eigen::Matrix<T_parameters, -1, -1> res(nrow, ncol);
     res = Eigen::Matrix<T_parameters, -1, -1>::Map(theta_.data(), nrow, ncol);
     return res;
+  }
+
+  inline ModelParameters<double, double, double, double> to_value() const {
+    return ModelParameters<double, double, double, double>
+      (time_, 
+       stan::math::value_of(theta_),
+       stan::math::value_of(biovar_),
+       stan::math::value_of(tlag_));
   }
 };
 
@@ -250,7 +258,7 @@ struct ModelParameterHistory {
    * @return - modified parameters and events.
    */
   template<typename T0, typename T_p1, typename T_p2, typename T_p3>
-  void CompleteParameterHistory(torsten::EventHistory<T0, T_p1, T_p2, T_p3, T4_container, T5, T6>& events) {
+  void CompleteParameterHistory(torsten::EventHistory<T0, T_p1, T_p2, T_p3, T4, T5, T6, std::vector>& events) {
     int nEvent = events.size();
     assert(nEvent > 0);
     int len_Parameters = index.size();  // numbers of events for which parameters are determined

@@ -1,18 +1,19 @@
 #ifndef STAN_MATH_TORSTEN_ONECPT_MODEL_HPP
 #define STAN_MATH_TORSTEN_ONECPT_MODEL_HPP
 
+#include <stan/math/torsten/pmx_linode_model.hpp>
 #include <stan/math/torsten/PKModel/functors/check_mti.hpp>
 #include <stan/math/torsten/model_solve_d.hpp>
 #include <stan/math/torsten/pmx_ode_integrator.hpp>
 #include <stan/math/torsten/dsolve/pk_vars.hpp>
 #include <stan/math/torsten/pk_nvars.hpp>
+#include <stan/math/rev/fun/exp.hpp>
+#include <stan/math/prim/fun/exp.hpp>
 #include <stan/math/prim/err/check_positive_finite.hpp>
 #include <stan/math/prim/err/check_finite.hpp>
 #include <stan/math/prim/err/check_nonnegative.hpp>
 
 namespace torsten {
-
-  using boost::math::tools::promote_args;
 
   /**
    * standard one compartment with 1st order absorption PK ODE functor
@@ -57,15 +58,10 @@ namespace torsten {
    * nb. of parameters, and the RHS functor.
    *
    * @tparam T_time t type
-   * @tparam T_init initial condition type
-   * @tparam T_rate dosing rate type
    * @tparam T_par PK parameters type
    */
-  template<typename T_time, typename T_init, typename T_rate, typename T_par>
+  template<typename T_par>
   class PMXOneCptModel {
-    const T_time &t0_;
-    const torsten::PKRec<T_init>& y0_;
-    const std::vector<T_rate> &rate_;
     const T_par &CL_;
     const T_par &V2_;
     const T_par &ka_;
@@ -78,32 +74,22 @@ namespace torsten {
     static constexpr int Npar = 3;
     static constexpr PMXOneCptODE f_ = PMXOneCptODE();
 
-    using scalar_type = typename stan::return_type<T_time, T_init, T_rate, T_par>::type;
-    using init_type   = T_init;
-    using time_type   = T_time;
     using par_type    = T_par;
-    using rate_type   = T_rate;
 
-  /**
-   * One-compartment PK model constructor
-   *
-   * @param t0 initial time
-   * @param y0 initial condition
-   * @param rate dosing rate
-   * @param par model parameters
-   * @param CL clearance
-   * @param V2 central cpt vol
-   * @param ka absorption
-   */
-    PMXOneCptModel(const T_time& t0,
-                   const torsten::PKRec<T_init>& y0,
-                   const std::vector<T_rate> &rate,
-                   const T_par& CL,
+    /**
+     * One-compartment PK model constructor
+     *
+     * @param t0 initial time
+     * @param y0 initial condition
+     * @param rate dosing rate
+     * @param par model parameters
+     * @param CL clearance
+     * @param V2 central cpt vol
+     * @param ka absorption
+     */
+    PMXOneCptModel(const T_par& CL,
                    const T_par& V2,
                    const T_par& ka) :
-      t0_(t0),
-      y0_(y0),
-      rate_(rate),
       CL_(CL),
       V2_(V2),
       ka_(ka),
@@ -118,94 +104,35 @@ namespace torsten {
       stan::math::check_finite(fun, "ka", ka_);
     }
 
-  /**
-   * One-compartment PK model constructor
-   * FIXME need to remove parameter as this is for linode only.
-   *
-   * @tparam T_mp parameters class
-   * @tparam Ts parameter types
-   * @param t0 initial time
-   * @param y0 initial condition
-   * @param rate dosing rate
-   * @param par model parameters
-   * @param parameter ModelParameter type
-   */
+    /**
+     * One-compartment PK model constructor
+     * FIXME need to remove parameter as this is for linode only.
+     *
+     * @tparam T_mp parameters class
+     * @tparam Ts parameter types
+     * @param t0 initial time
+     * @param y0 initial condition
+     * @param rate dosing rate
+     * @param par model parameters
+     * @param parameter ModelParameter type
+     */
     template<template<typename...> class T_mp, typename... Ts>
-    PMXOneCptModel(const T_time& t0,
-                  const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& y0,
-                  const std::vector<T_rate> &rate,
-                  const std::vector<T_par> & par,
-                  const T_mp<Ts...> &parameter) :
-      PMXOneCptModel(t0, y0, rate, par.at(0), par.at(1), par.at(2))
+    PMXOneCptModel(const std::vector<T_par> & par,
+                   const T_mp<Ts...> &parameter) :
+      PMXOneCptModel(par.at(0), par.at(1), par.at(2))
     {}
 
-  /**
-   * One-compartment PK model constructor
-   *
-   * @param t0 initial time
-   * @param y0 initial condition
-   * @param rate dosing rate
-   * @param par model parameters
-   */
-    PMXOneCptModel(const T_time& t0,
-                  const Eigen::Matrix<T_init, 1, Eigen::Dynamic>& y0,
-                  const std::vector<T_rate> &rate,
-                  const std::vector<T_par> & par) :
-      PMXOneCptModel(t0, y0, rate, par.at(0), par.at(1), par.at(2))
+    /**
+     * One-compartment PK model constructor
+     *
+     * @param t0 initial time
+     * @param y0 initial condition
+     * @param rate dosing rate
+     * @param par model parameters
+     */
+    PMXOneCptModel(const std::vector<T_par> & par) :
+      PMXOneCptModel(par.at(0), par.at(1), par.at(2))
     {}
-
-    /*
-     * calculate number of @c vars for transient dosing.
-     */
-    static int nvars(int ncmt, int npar) {
-      using stan::is_var;
-      int n = 0;
-      if (is_var<T_time>::value) n++; // t0
-      if (is_var<T_init>::value) n += Ncmt; // y0 is fixed for onecpt model
-      if (is_var<T_rate>::value) n += Ncmt; // rate is fixed for onecpt model
-      if (is_var<T_par>::value) n += Npar; // par is fixed for onecpt model
-      return n;
-    }
-
-    /*
-     * calculate number of @c vars for steady-state dosing.
-     */
-    template<typename T_a, typename T_r, typename T_ii>
-    static int nvars(int npar) {
-      using stan::is_var;
-      int n = 0;
-      if (is_var<T_a>::value) n++; // amt
-      if (is_var<T_r>::value) n++; // rate
-      if (is_var<T_ii>::value) n++; // ii
-      if (is_var<T_par>::value) n += Npar; // par is fixed for onecpt model
-      return n;
-    }
-
-    /*
-     * return the number @c var that will be the parameters
-     * of the trasient dosing event's solution
-     */
-    template<typename T0>
-    int nvars(const T0& t0) {
-      return torsten::pk_nvars(t0, y0_, rate_, par_);
-    }
-
-    /*
-     * return the number @c var that will be the parameters
-     * of the stead-state dosing event's solution
-     */
-    template<typename T_a, typename T_r, typename T_ii>
-    int nvars(const T_a& a, const T_r& r, const T_ii& ii) {
-      return torsten::pk_nvars(a, r, ii, par_);
-    }
-
-    /*
-     * return @c vars that will be solution
-     */
-    template<typename T0>
-    std::vector<stan::math::var> vars(const T0 t1) {
-      return torsten::dsolve::pk_vars(t1, y0_, rate_, par_);
-    }
 
     /*
      * return @c vars that will be steady-state
@@ -217,85 +144,169 @@ namespace torsten {
       return torsten::dsolve::pk_vars(a, r, ii, par_);
     }
 
-  /**
-   * One-compartment PK model get methods
-   */
-    const T_time              & t0()      const { return t0_;    }
-    const torsten::PKRec<T_init>       & y0()      const { return y0_;    }
-    const std::vector<T_rate> & rate()    const { return rate_;  }
-    const std::vector<T_par>  & alpha()   const { return alpha_; }
+    /**
+     * One-compartment PK model get methods
+     */
     const std::vector<T_par>  & par()     const { return par_;   }
     const PMXOneCptODE         & f()       const { return f_;     }
     const int                 & ncmt ()   const { return Ncmt;   }
 
+    template<typename Tt0, typename Tt1, typename T, typename T1>
+    void solve(Eigen::Matrix<T, -1, 1>& y,
+               const Tt0& t0, const Tt1& t1,
+               const std::vector<T1>& rate,
+               const PMXOdeIntegrator<Analytical>& integ) const {
+      using stan::math::exp;
+
+      typename stan::return_type_t<Tt0, Tt1> dt = t1 - t0;
+      Eigen::Matrix<T, -1, 1> pred = torsten::PKRec<T>::Zero(Ncmt);
+
+      if (ka_ > 0.0) {
+        Eigen::Matrix<T_par, -1, -1> p(Ncmt, Ncmt), p_inv(Ncmt, Ncmt),
+          diag = Eigen::Matrix<T_par, -1, -1>::Zero(Ncmt, Ncmt);
+        p << -(ka_ - k10_)/ka_, 0, 1, 1;
+        p_inv << -ka_ / (ka_ - k10_), 0, ka_ / (ka_ - k10_), 1;
+        diag(0, 0) = -ka_;
+        diag(1, 1) = -k10_;
+        PMXLinOdeEigenDecompModel<T_par> linode_model(p, diag, p_inv, Ncmt);
+        linode_model.solve(y, t0, t1, rate, integ);
+      } else {
+        typename stan::return_type_t<T_par, Tt0, Tt1> exp1 = exp(-k10_ * dt);
+
+        // contribution from cpt 1 bolus dose
+        pred(1) += y(1) * exp1;
+
+        // contribution from cpt 1 infusion dose
+        pred(1) += rate[1] * (1 - exp1) / k10_;
+
+        pred(0) += y(0) + rate[0] * dt;
+        y = pred;
+      }
+    }
+
     /**
-     * Solve one-cpt model using analytical solution.
-     *
-     * @tparam T_time time type
-     * @tparam T_model ODE model type
+     * Solve two-cpt model: analytical solution for benchmarking & testing
      */
-    Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
-    solve(const T_time& t_next) const {
-      using Eigen::Matrix;
-      using Eigen::Dynamic;
+    template<typename Tt0, typename Tt1, typename T, typename T1>
+    void solve_analytical(Eigen::Matrix<T, -1, 1>& y,
+                          const Tt0& t0, const Tt1& t1,
+                          const std::vector<T1>& rate,
+                          const PMXOdeIntegrator<Analytical>& integ) const {
+      using stan::math::exp;
 
-      T_time dt = t_next - t0_;
-      Matrix<scalar_type, -1, 1> pred = torsten::PKRec<scalar_type>::Zero(Ncmt);
+      typename stan::return_type_t<Tt0, Tt1> dt = t1 - t0;
+      Eigen::Matrix<T, -1, 1> pred = torsten::PKRec<T>::Zero(Ncmt);
 
-      typename stan::return_type_t<T_par, T_time> exp1 = exp(-k10_ * dt);
-      typename stan::return_type_t<T_par, T_time> exp2 = exp(-ka_ * dt);
+      typename stan::return_type_t<T_par, Tt0, Tt1> exp1 = exp(-k10_ * dt);
+      typename stan::return_type_t<T_par, Tt0, Tt1> exp2 = exp(-ka_ * dt);
 
       // contribution from cpt 1 bolus dose
-      pred(1) += y0_[1] * exp1;
+      pred(1) += y(1) * exp1;
 
       // contribution from cpt 1 infusion dose
-      pred(1) += rate_[1] * (1 - exp1) / k10_;
+      pred(1) += rate[1] * (1 - exp1) / k10_;
 
       if (ka_ > 0.0) {
         // contribution from cpt 0 bolus dose
-        pred(0) += y0_[0] * exp2;
-        pred(1) += y0_[0] * ka_ / (ka_ - k10_) * (exp1 - exp2);
+        pred(0) += y(0) * exp2;
+        pred(1) += y(0) * ka_ / (ka_ - k10_) * (exp1 - exp2);
 
         // contribution from cpt 0 infusion dose
-        pred(0) += rate_[0] * (1 - exp2) / ka_;
-        pred(1) += rate_[0] * ka_ / (ka_ - k10_) * ((1 - exp1) / k10_ - (1 - exp2) / ka_);
+        pred(0) += rate[0] * (1 - exp2) / ka_;
+        pred(1) += rate[0] * ka_ / (ka_ - k10_) * ((1 - exp1) / k10_ - (1 - exp2) / ka_);
       } else {
         // no absorption, GUT is accumulating dosages.
-        pred(0) += y0_[0] + rate_[0] * dt;
+        pred(0) += y(0) + rate[0] * dt;
       }
 
-      return pred;
+      y = pred;
     }
 
-    /*
-     * Solve the transient problem and return the result in
-     * form of data, arranged as (solution value, grad1, grad2...)
+    /**
+     * Solve two-cpt model: analytical solution
      */
-    Eigen::VectorXd solve_d(const T_time& t_next) const {
-      return torsten::model_solve_d(*this, t_next);
+    template<typename Tt0, typename Tt1, typename T, typename T1>
+    void solve(Eigen::Matrix<T, -1, 1>& y,
+               const Tt0& t0, const Tt1& t1,
+               const std::vector<T1>& rate) const {
+      const PMXOdeIntegrator<Analytical> integ;
+      solve(y, t0, t1, rate, integ);
     }
 
-  /**
-   * Solve one-cpt model: steady state solution
-   *
-   * @tparam T_time dosing interval time type
-   * @tparam T_model ODE model type
-   * @tparam T_amt dosing amount type
-   */
+    /**
+     * Solve two-cpt model: analytical solution for bencharmking & testing
+     */
+    template<typename Tt0, typename Tt1, typename T, typename T1>
+    void solve_analytical(Eigen::Matrix<T, -1, 1>& y,
+                          const Tt0& t0, const Tt1& t1,
+                          const std::vector<T1>& rate) const {
+      const PMXOdeIntegrator<Analytical> integ;
+      solve_analytical(y, t0, t1, rate, integ);
+    }
+
+    /**
+     * Solve one-cpt model: steady state solution
+     *
+     * @tparam T_time dosing interval time type
+     * @tparam T_model ODE model type
+     * @tparam T_amt dosing amount type
+     */
     template<typename T_amt, typename T_r, typename T_ii>
     Eigen::Matrix<typename stan::return_type<T_par, T_amt, T_r, T_ii>::type, Eigen::Dynamic, 1>
-    solve(const T_amt& amt, const T_r& rate, const T_ii& ii, int cmt) const { //NOLINT
+    solve(double t0, const T_amt& amt, const T_r& rate, const T_ii& ii, int cmt) const { //NOLINT
       using Eigen::Matrix;
       using Eigen::Dynamic;
       using std::vector;
-
-      using ss_scalar_type = typename stan::return_type<T_par, T_amt, T_r, T_ii>::type;
 
       const double inf = std::numeric_limits<double>::max();  // "infinity"
 
       stan::math::check_positive_finite("steady state one-cpt solver", "cmt", cmt);
       stan::math::check_less("steady state one-cpt solver", "cmt", cmt, 3);
       stan::math::check_positive_finite("steady state one-cpt solver", "ka", ka_);
+
+      using ss_scalar_type = typename stan::return_type_t<T_par, T_amt, T_r, T_ii>;
+      PKRec<ss_scalar_type> pred = PKRec<ss_scalar_type>::Zero(Ncmt);
+
+      Eigen::Matrix<T_par, -1, -1> p(Ncmt, Ncmt), p_inv(Ncmt, Ncmt),
+        diag = Eigen::Matrix<T_par, -1, -1>::Zero(Ncmt, Ncmt);
+      p << -(ka_ - k10_)/ka_, 0, 1, 1;
+      p_inv << -ka_ / (ka_ - k10_), 0, ka_ / (ka_ - k10_), 1;
+      diag(0, 0) = -ka_;
+      diag(1, 1) = -k10_;
+      PMXLinOdeEigenDecompModel<T_par> linode_model(p, diag, p_inv, Ncmt);
+      pred = linode_model.solve(t0, amt, rate, ii, cmt);
+
+      return pred;
+    }
+
+    /*
+     * wrapper to fit @c PrepWrapper's call signature
+     */
+    template<torsten::PMXOdeIntegratorId It, typename T_amt, typename T_r, typename T_ii>
+    Eigen::Matrix<typename stan::return_type_t<T_amt, T_r, T_ii, T_par>, -1, 1>
+    solve(double t0, const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt,
+          const torsten::PMXOdeIntegrator<It>& integrator) const {
+      return solve(t0, amt, rate, ii, cmt);
+    }
+
+    /**
+     * analytical solution for SS case, for testing 
+     * 
+     */
+    template<typename T_amt, typename T_r, typename T_ii>
+    Eigen::Matrix<typename stan::return_type<T_par, T_amt, T_r, T_ii>::type, Eigen::Dynamic, 1>
+    solve_analytical(double t0, const T_amt& amt, const T_r& rate, const T_ii& ii, int cmt) const {
+      using Eigen::Matrix;
+      using Eigen::Dynamic;
+      using std::vector;
+
+      const double inf = std::numeric_limits<double>::max();  // "infinity"
+
+      stan::math::check_positive_finite("steady state one-cpt solver", "cmt", cmt);
+      stan::math::check_less("steady state one-cpt solver", "cmt", cmt, 3);
+      stan::math::check_positive_finite("steady state one-cpt solver", "ka", ka_);
+
+      using ss_scalar_type = typename stan::return_type<T_par, T_amt, T_r, T_ii>::type;
 
       std::vector<ss_scalar_type> a(2, 0);
       Matrix<ss_scalar_type, -1, 1> pred = Matrix<ss_scalar_type, -1, 1>::Zero(2);
@@ -339,37 +350,18 @@ namespace torsten {
       }
       return pred;
     }
-
-    /*
-     * Solve the steady-state problem and return the result in
-     * form of data, arranged as (solution value, grad1, grad2...)
-     */
-    template<typename T_amt, typename T_r, typename T_ii>
-    Eigen::VectorXd solve_d(const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt) const {
-      return torsten::model_solve_d(*this, amt, rate, ii, cmt);
-    }
-
-    /*
-     * wrapper to fit @c PrepWrapper's call signature
-     */
-    template<torsten::PMXOdeIntegratorId It, typename T_amt, typename T_r, typename T_ii>
-    Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
-    solve(const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt,
-          const torsten::PMXOdeIntegrator<It>& integrator) const {
-      return solve(amt, rate, ii, cmt);
-    }
   };
 
-  template<typename T_time, typename T_init, typename T_rate, typename T_par>
-  constexpr int PMXOneCptModel<T_time, T_init, T_rate, T_par>::Ncmt;
-
-  template<typename T_time, typename T_init, typename T_rate, typename T_par>
-  constexpr int PMXOneCptModel<T_time, T_init, T_rate, T_par>::Npar;
-
-  template<typename T_time, typename T_init, typename T_rate, typename T_par>
-  constexpr PMXOneCptODE PMXOneCptModel<T_time, T_init, T_rate, T_par>::f_;
 
 
+  template<typename T_par>
+  constexpr int PMXOneCptModel<T_par>::Ncmt;
+
+  template<typename T_par>
+  constexpr int PMXOneCptModel<T_par>::Npar;
+
+  template<typename T_par>
+  constexpr PMXOneCptODE PMXOneCptModel<T_par>::f_;
 
 }
 
