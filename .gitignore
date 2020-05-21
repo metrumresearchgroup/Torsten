@@ -1,7 +1,19 @@
+# mac os x hidden file
+.DS_Store
+
 *~
+*.tmp
 _minted*
 *.tex#
 *.rds
 *.aux
 *.el
+*.o
+*.d
+
+# doc
+docs/torsten_manual.*
+!docs/torsten_manual.pdf
+!docs/torsten_manual.org
+!docs/torsten_manual.tex
 docs/auto
