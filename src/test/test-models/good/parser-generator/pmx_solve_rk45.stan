@@ -118,6 +118,10 @@ generated quantities {
   }
 
   /* data args */
-  x = generalOdeModel_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data);  cHat = col(x, 2) ./ V2;  cHatDat1 = cHat[iObs];
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data, biovar_data, tlag_data);  cHat = col(x, 2) ./ V2;  cHatDat1 = cHat[iObs];
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data, biovar_data, tlag_data,
+                     1.e-5, 1.e-6, 1000);  cHat = col(x, 2) ./ V2;  cHatDat1 = cHat[iObs];
+  x = pmx_solve_rk45(twoCptModelODE, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data, biovar_data, tlag_data,
+                     1.e-5, 1.e-6, 1000, 1.e-5, 1.e-6, 100);  cHat = col(x, 2) ./ V2;  cHatDat1 = cHat[iObs];
 }
 

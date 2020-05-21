@@ -1006,6 +1006,6 @@ extern boost::phoenix::function<deprecate_pound_comment>
     deprecate_pound_comment_f;
 
 #include <stan/torsten/semantic_actions.hpp>
-  }
-}
+}  // namespace lang
+}  // namespace stan
 #endif

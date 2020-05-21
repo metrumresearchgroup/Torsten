@@ -88,36 +88,28 @@ TEST(unitLang, univariate_integral) {
   test_pg_count("univariate_integral", expected, 1);
 }
 
-TEST(unitLang, generalOdeModel) {
+TEST(unitLang, pmx_solve_rk45) {
   std::string expected;
-  expected = "stan::math::assign(x, "
-    "generalOdeModel_rk45(twoCptModelODE_functor__(), "
-    "nCmt, time, amt, rate, ii, evid, cmt, addl, ss, "
-    "theta_data, biovar_data, tlag_data, pstream__, rtol, atol, max_step));";
-  test_pg("generalOdeModel_control", expected);
-  test_pg_count("generalOdeModel_control", expected, 1);
+  expected = "stan::math::assign(x, pmx_solve_rk45(twoCptModelODE_functor__(), nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data, biovar_data, tlag_data, pstream__));";
+  test_pg("pmx_solve_rk45", expected);
+  test_pg_count("pmx_solve_rk45", expected, 1);
 
-  expected = "stan::math::assign(x, "
-    "generalOdeModel_rk45(twoCptModelODE_functor__(), "
-    "nCmt, time, amt, rate, ii, evid, cmt, addl, ss, "
-    "theta_data, biovar_data, tlag_data, pstream__));";
-  test_pg("generalOdeModel", expected);
-  test_pg_count("generalOdeModel", expected, 1);
+  expected = "stan::math::assign(x, pmx_solve_rk45(twoCptModelODE_functor__(), nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data, biovar_data, tlag_data, 1.e-5, 1.e-6, 1000, pstream__));";
+  test_pg("pmx_solve_rk45", expected);
+  test_pg_count("pmx_solve_rk45", expected, 1);
+
+  expected = "stan::math::assign(x, pmx_solve_rk45(twoCptModelODE_functor__(), nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta_data, biovar_data, tlag_data, 1.e-5, 1.e-6, 1000, 1.e-5, 1.e-6, 100, pstream__));";
+  test_pg("pmx_solve_rk45", expected);
+  test_pg_count("pmx_solve_rk45", expected, 1);
 }
 
-TEST(unitLang, mixOdeModel) {
+TEST(unitLang, pmx_solve_group) {
   std::string expected;
-  expected = "stan::math::assign(x, "
-    "mixOde2CptModel_bdf(foo_functor__(), "
-    "nCmt, time, amt, rate, ii, evid, cmt, addl, ss, "
-    "theta, biovar_data, tlag_data, pstream__));";
-  test_pg("mixOdeModel", expected);
-  test_pg_count("mixOdeModel", expected, 1);
+  expected = "stan::math::assign(x, pmx_solve_group_bdf(twoCptModelODE_functor__(), 3, len, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag, pstream__));";
+  test_pg("pmx_solve_group", expected);
+  test_pg_count("pmx_solve_group", expected, 2);
 
-  expected = "stan::math::assign(x, "
-    "mixOde2CptModel_bdf(foo_functor__(), "
-    "nCmt, time, amt, rate, ii, evid, cmt, addl, ss, "
-    "theta, biovar_data, tlag_data, pstream__, rtol, atol, max_step));";
-  test_pg("mixOdeModel_control", expected);
-  test_pg_count("mixOdeModel_control", expected, 1);
+  expected = "stan::math::assign(x, pmx_solve_group_bdf(twoCptModelODE_functor__(), 3, len, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag, 1.e-5, 1.e-5, 1000, pstream__));";
+  test_pg("pmx_solve_group", expected);
+  test_pg_count("pmx_solve_group", expected, 2);
 }
