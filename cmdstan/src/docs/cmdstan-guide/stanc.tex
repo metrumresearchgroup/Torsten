@@ -61,7 +61,7 @@ For Linux and Mac:
 \begin{quote}
 \begin{Verbatim}[fontshape=sl]
 > cd <cmdstan-home>
-> bin/stanc --name=bernoulli --o=bernoulli.hpp \
+> bin/stanc --o=bernoulli.hpp \
   examples/bernoulli/bernoulli.stan 
 \end{Verbatim}
 \end{quote}
@@ -74,7 +74,7 @@ For Windows:
 \begin{quote}
 \begin{Verbatim}[fontshape=sl]
 > cd <cmdstan-home>
-> bin\stanc.exe --name=bernoulli --o=bernoulli.hpp ^
+> bin\stanc.exe --o=bernoulli.hpp ^
     examples/bernoulli/bernoulli.stan 
 \end{Verbatim}
 \end{quote}
@@ -201,7 +201,7 @@ to see the full set.
 The stanc2 compiler has the following command-line syntax:
 %
 \begin{quote}
-\code{> stanc [options] {\slshape model\_file}}
+\code{> stanc2 [options] {\slshape model\_file}}
 \end{quote}
 %
 The argument \code{\slshape model\_file} is a path to a Stan model
