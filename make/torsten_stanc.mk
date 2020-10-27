@@ -1,1 +1,3 @@
-STANC3=../stanc3
+ifeq ($(STANC2),)
+  STANC3=../stanc3
+endif
