@@ -1,1 +1,0 @@
-data { unit_vector[ T~normal(0,1)] x;}
