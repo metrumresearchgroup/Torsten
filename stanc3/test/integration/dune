@@ -1,4 +1,0 @@
-(executable
- (name run_bin_on_args)
- (public_name run_bin_on_args)
- (libraries core_kernel))
