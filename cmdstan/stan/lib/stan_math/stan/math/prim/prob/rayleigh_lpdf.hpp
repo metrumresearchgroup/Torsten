@@ -1,0 +1,90 @@
+#ifndef STAN_MATH_PRIM_PROB_RAYLEIGH_LPDF_HPP
+#define STAN_MATH_PRIM_PROB_RAYLEIGH_LPDF_HPP
+
+#include <stan/math/prim/meta.hpp>
+#include <stan/math/prim/err.hpp>
+#include <stan/math/prim/fun/constants.hpp>
+#include <stan/math/prim/fun/log.hpp>
+#include <stan/math/prim/fun/max_size.hpp>
+#include <stan/math/prim/fun/size.hpp>
+#include <stan/math/prim/fun/size_zero.hpp>
+#include <stan/math/prim/fun/to_ref.hpp>
+#include <stan/math/prim/fun/value_of.hpp>
+#include <stan/math/prim/functor/operands_and_partials.hpp>
+#include <cmath>
+
+namespace stan {
+namespace math {
+
+template <bool propto, typename T_y, typename T_scale>
+return_type_t<T_y, T_scale> rayleigh_lpdf(const T_y& y, const T_scale& sigma) {
+  using T_partials_return = partials_return_t<T_y, T_scale>;
+  using T_y_ref = ref_type_if_t<!is_constant<T_y>::value, T_y>;
+  using T_sigma_ref = ref_type_if_t<!is_constant<T_scale>::value, T_scale>;
+  static const char* function = "rayleigh_lpdf";
+  check_consistent_sizes(function, "Random variable", y, "Scale parameter",
+                         sigma);
+
+  T_y_ref y_ref = y;
+  T_sigma_ref sigma_ref = sigma;
+
+  const auto& y_col = as_column_vector_or_scalar(y_ref);
+  const auto& sigma_col = as_column_vector_or_scalar(sigma_ref);
+
+  const auto& y_arr = as_array_or_scalar(y_col);
+  const auto& sigma_arr = as_array_or_scalar(sigma_col);
+
+  ref_type_t<decltype(value_of(y_arr))> y_val = value_of(y_arr);
+  ref_type_t<decltype(value_of(sigma_arr))> sigma_val = value_of(sigma_arr);
+
+  check_positive(function, "Scale parameter", sigma_val);
+  check_positive(function, "Random variable", y_val);
+
+  if (size_zero(y, sigma)) {
+    return 0.0;
+  }
+  if (!include_summand<propto, T_y, T_scale>::value) {
+    return 0.0;
+  }
+
+  operands_and_partials<T_y_ref, T_sigma_ref> ops_partials(y_ref, sigma_ref);
+
+  const auto& inv_sigma
+      = to_ref_if<!is_constant_all<T_y, T_scale>::value>(inv(sigma_val));
+  const auto& y_over_sigma
+      = to_ref_if<!is_constant_all<T_y, T_scale>::value>(y_val * inv_sigma);
+
+  size_t N = max_size(y, sigma);
+  T_partials_return logp = -0.5 * sum(square(y_over_sigma));
+  if (include_summand<propto, T_scale>::value) {
+    logp -= 2.0 * sum(log(sigma_val)) * N / size(sigma);
+  }
+  if (include_summand<propto, T_y>::value) {
+    logp += sum(log(y_val)) * N / size(y);
+  }
+
+  if (!is_constant_all<T_y, T_scale>::value) {
+    const auto& scaled_diff = to_ref_if<(!is_constant_all<T_y>::value
+                                         && !is_constant_all<T_scale>::value)>(
+        inv_sigma * y_over_sigma);
+    if (!is_constant_all<T_y>::value) {
+      ops_partials.edge1_.partials_ = inv(y_val) - scaled_diff;
+    }
+    if (!is_constant_all<T_scale>::value) {
+      ops_partials.edge2_.partials_
+          = y_over_sigma * scaled_diff - 2.0 * inv_sigma;
+    }
+  }
+
+  return ops_partials.build(logp);
+}
+
+template <typename T_y, typename T_scale>
+inline return_type_t<T_y, T_scale> rayleigh_lpdf(const T_y& y,
+                                                 const T_scale& sigma) {
+  return rayleigh_lpdf<false>(y, sigma);
+}
+
+}  // namespace math
+}  // namespace stan
+#endif
