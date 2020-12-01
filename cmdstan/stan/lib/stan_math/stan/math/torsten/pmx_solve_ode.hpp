@@ -13,17 +13,23 @@
 namespace torsten {
 
   /** 
-   * helper expression used for actual ODE solver functions to
+   * helper type trait used for actual ODE solver functions to
    * detect if the last arg is <code>ostream*</code>
    * 
    * @tparam Ts all of the args for pmx solvers
    */
-template<typename... Ts>
-bool constexpr last_is_ostream_ptr =
-  std::is_same<NthTypeOf<(sizeof...(Ts) - 1), Ts...>, std::ostream*>::value;
+  template<typename... Ts>
+  struct last_is_ostream_ptr;
 
-template<>
-bool constexpr last_is_ostream_ptr<> = false;
+  template<typename T>
+  struct last_is_ostream_ptr<T> {
+    static const bool value = std::is_same<T, std::ostream*>::value;
+  };
+
+  template<typename T, typename... Ts>
+  struct last_is_ostream_ptr<T, Ts...> {
+    static const bool value = last_is_ostream_ptr<Ts...>::value;
+  };
 
 /**
  * simpily pmx function declare
