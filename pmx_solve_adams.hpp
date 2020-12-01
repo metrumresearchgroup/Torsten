@@ -33,7 +33,7 @@ namespace torsten {
  *
  */
   template <typename F, typename... Ts,
-            typename std::enable_if_t<last_is_ostream_ptr<Ts...> >* = nullptr>
+            typename std::enable_if_t<last_is_ostream_ptr<Ts...>::value >* = nullptr>
   auto pmx_solve_adams(const F& f, const int nCmt,
                       Ts... args) {
     return PMXSolveODE<PkAdams>::solve(f, nCmt, args...);
@@ -58,7 +58,7 @@ namespace torsten {
  *
  */
   template <typename F, typename... Ts,
-            typename std::enable_if_t<!last_is_ostream_ptr<Ts...> >* = nullptr>
+            typename std::enable_if_t<!last_is_ostream_ptr<Ts...>::value >* = nullptr>
   auto pmx_solve_adams(const F& f, const int nCmt,
                       Ts... args) {
     return PMXSolveODE<PkAdams>::solve(f, nCmt, args..., nullptr);
@@ -109,14 +109,14 @@ namespace torsten {
    * vector is the size of the population.
    */
   template <typename F, typename... Ts,
-            typename std::enable_if_t<last_is_ostream_ptr<Ts...> >* = nullptr>
+            typename std::enable_if_t<last_is_ostream_ptr<Ts...>::value >* = nullptr>
   auto pmx_solve_group_adams(const F& f, const int nCmt,
                             const std::vector<int>& len, Ts... args) {
     return PMXSolveGroupODE<PkAdams>::solve(f, nCmt, len, args...);
   }
 
   template <typename F, typename... Ts,
-            typename std::enable_if_t<!last_is_ostream_ptr<Ts...> >* = nullptr>
+            typename std::enable_if_t<!last_is_ostream_ptr<Ts...>::value >* = nullptr>
   auto pmx_solve_group_adams(const F& f, const int nCmt,
                             const std::vector<int>& len, Ts... args) {
     return PMXSolveGroupODE<PkAdams>::solve(f, nCmt, len, args..., nullptr);
