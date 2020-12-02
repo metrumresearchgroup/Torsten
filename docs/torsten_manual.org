@@ -1,5 +1,5 @@
 #+TITLE: Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan
-#+SUBTITLE: User Manual @@latex:\\@@ @@html:<br>@@ (Torsten Version 0.87, Stan version 2.19.1)
+#+SUBTITLE: User Manual @@latex:\\@@ @@html:<br>@@ (Torsten Version 0.88, Stan version 2.25.0)
 #+LATEX_CLASS: amsbook
 #+LATEX_CLASS_OPTIONS: [11pt, reqno, oneside]
 
@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
 #+LATEX_HEADER: \newcommand\mrgproject{Torsten}
 #+LATEX_HEADER: \newcommand\mrgtitle{Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan}
-#+LATEX_HEADER: \newcommand\mrgsubtitle{\Large{User Manual} \linebreak (Torsten Version 0.87, Stan version 2.19.1)}
+#+LATEX_HEADER: \newcommand\mrgsubtitle{\Large{User Manual} \linebreak (Torsten Version 0.88, Stan version 2.25.0)}
 #+LATEX_HEADER: \include{mrgtitlepage}
 
 # make index
@@ -25,6 +25,7 @@
 #+LATEX_HEADER: \definecolor{MRGGreen}{rgb}{0, 0.350, 0.200}
 #+LATEX_HEADER: \usepackage[colorlinks=true, citecolor=MRGGreen, urlcolor=MRGGreen, linkcolor=MRGGreen]{hyperref}
 
+#+LATEX_HEADER: \usepackage{bold-extra}
 #+LATEX_HEADER: \usepackage{courier}
 #+LATEX_HEADER: \usepackage{listings}
 #+LATEX_HEADER: \usepackage{siunitx}
@@ -47,10 +48,10 @@
 #+LATEX_HEADER: \newtheorem{example}{Example}
 #+LATEX_HEADER: \newtheorem{remark}{Remark}
 
-#+MACRO: torsten_ver v0.87
-#+MACRO: stan_ver v2.19.1
+#+MACRO: torsten_src @@latex:{\small \color{MRGGreen} \texttt{\textbf{$1}}}@@
+#+MACRO: torsten_ver v0.88
+#+MACRO: stan_ver v2.25.0
 #+MACRO: newline @@latex:\\@@ @@html:<br>@@ @@ascii:|@@
-#+MACRO: torsten_path /Users/yiz/Work/Torsten
 
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://www.pirilampo.org/styles/readtheorg/css/htmlize.css"/>
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://www.pirilampo.org/styles/readtheorg/css/readtheorg.css"/>
@@ -190,9 +191,7 @@ in each compartment, given an event schedule and an ODE system.
 - One and two compartment models are based on analytical solutions of governing ODEs.
 - General linear compartment models are based on semi-analytical solutions using the built-in matrix exponential function
 - General compartment models are solved numerically using built-in ODE integrators in Stan. The tuning parameters of the solver are adjustable. The steady state solution is calculated using a numerical algebraic solver.
-- A mix compartment model's PK forcing function is solved
-  analytically, and its forced ODE system is solved
-  numerically.
+- A mix compartment model's PK forcing function is solved analytically, and its forced ODE system is solved numerically.
 
 ** Development plans
     :PROPERTIES:
@@ -203,17 +202,16 @@ Our current plans for future development of Torsten include the
 following:
 - Build a system to easily share packages of Stan functions
   (written in C++ or in the Stan language)
-- Allow numerical methods to handle
-  bioavailability fraction (F) as parameters in all cases.
 - Optimize Matrix exponential functions
   + Function for the action of Matrix Exponential on a vector
   + Hand-coded gradients
   + Special algorithm for matrices with special properties
+- Develop new method for large-scale hierarchical models with costly
+  ODE solving.
 - Fix issue that arises when computing the adjoint of the lag time
   parameter (in a dosing compartment) evaluated at $t_{\text{lag}} = 0$.
 - Extend formal tests
-  + We want more C++ Google unit tests to address cases users may
-    encounter
+  + More unit tests and better CD/CI support.
   + Comparison with simulations from the R package
     =mrgsolve= and the software NONMEM\textregistered{}
   + Recruit non-developer users to conduct beta testing
@@ -221,8 +219,26 @@ following:
 ** Changelog
 :PROPERTIES:
 :CUSTOM_ID: changelog
+:UNNUMBERED: t
 :END:
-*** 0.87 <2019-07-26 Fri>
+*** Version 0.88 <2020-12-01 Tue>
+**** Added
+     :PROPERTIES:
+     :CUSTOM_ID: 0-85-added
+     :END:
+  - Experimental feature of cross-chain warmup
+  - Bioavailability, lag time, ODE real & integer data are optional in PMX function signatures.
+  - Support all EVID options from NM-TRAN and mrgsolve.
+**** Changed
+     :PROPERTIES:
+     :CUSTOM_ID: 0-85-changed
+     :END:
+  - More efficient memory management of COVDES implenmentation.
+  - Update of MPI framework to adapt multilevel paralleism.
+  - Update to Stan version 2.25.0.
+  - Use cmdstanr as R interface.
+  - Stop supporting rstan as R interface.
+*** Version 0.87 <2019-07-26 Fri>
 **** Added
      :PROPERTIES:
      :CUSTOM_ID: 0-85-added
@@ -242,7 +258,7 @@ following:
   - Some fixes on steady-state solvers
   - Update to rstan version 2.19.2.
 
-*** 0.86 <2019-05-15 Wed>
+*** Version 0.86 <2019-05-15 Wed>
 **** Added
      :PROPERTIES:
      :CUSTOM_ID: 0-85-added
@@ -285,7 +301,7 @@ following:
     deprecated in the future. 
   - Update to Stan version 2.19.1.
       
-*** 0.85 <2018-12-04 Tue>
+*** Version 0.85 <2018-12-04 Tue>
 **** Added
      :PROPERTIES:
      :CUSTOM_ID: 0-85-added
@@ -297,7 +313,7 @@ following:
      :END:
   - Update to Stan version 2.18.0.
 
-*** 0.84 <2018-02-24>
+*** Version 0.84 <2018-02-24>
 **** Added
      :PROPERTIES:
      :CUSTOM_ID: 0-84-added
@@ -313,7 +329,7 @@ following:
   - Minor revisions to User Manual.
   - Bugfixes.
 
-*** 0.83 <2017-08-02>
+*** Version 0.83 <2017-08-02>
 **** Added
      :PROPERTIES:
      :CUSTOM_ID: 0-83-added
@@ -330,7 +346,7 @@ following:
   - Other bugfixes
 
 
-*** 0.82 <2017-01-29>
+*** Version 0.82 <2017-01-29>
     :PROPERTIES:
     :CUSTOM_ID: 0-82-added
     :END:
@@ -350,14 +366,14 @@ following:
     for the lag time).
   - bugfixes
 
-*** 0.81 <2016-09-27>
+*** Version 0.81 <2016-09-27>
 **** Added
      :PROPERTIES:
      :CUSTOM_ID: 0-81-added
      :END:
   linCptModel (linear compartmental model) function
 
-*** 0.80a <2016-09-21 Wed>
+*** Version 0.80a <2016-09-21 Wed>
 **** Added
      :PROPERTIES:
      :CUSTOM_ID: 0-80a-added
@@ -368,13 +384,10 @@ following:
    :PROPERTIES:
    :CUSTOM_ID: installation
    :END:
-We are working with Stan development team to create a
-system to add and share Stan packages. In the mean time,
-the current repo contains forked version of Stan with
-Torsten. The latest version of Torsten ({{{torsten_ver}}}) is
-compatible with Stan {{{stan_ver}}}. Torsten is agnostic to which
-Stan interface you use. Here we provide command line and R
-interfaces.
+Currently Torsten is based on a forked version of Stan. The latest
+{{{torsten_ver}}} is
+compatible with Stan {{{stan_ver}}}. Torsten can be accessed from
+command line for cmdstan interface and =cmdstanr=(https://mc-stan.org/cmdstanr/) for R interface.
 
 ** Command line interface
  After downloading the project 
@@ -385,20 +398,32 @@ The command line interface ~cmdstan~ is available to use without
 installation. The following command
 builds a Torsten model ~model_name~ in ~model_path~
 #+BEGIN_SRC sh
-  cd $TORSTEN_PATH/cmdstan; make model_path/model_name
+  cd Torsten/cmdstan; make model_path/model_name
 #+END_SRC
+
+** R interface
+ After installing cmdstanr from https://mc-stan.org/cmdstanr/, use the
+ following command to set path 
+ #+BEGIN_SRC r
+   cmdstanr::set_cmdstan_path("Torsten/cmdstan")
+ #+END_SRC
+ Then one can follow 
+
+https://mc-stan.org/cmdstanr/articles/cmdstanr.html
+
+to compile and run Torsten models.
 
 *** MPI support
 Torsten's MPI support is of a different flavour than
-=map_rect= found in Stan. To be able to utilize MPI
+=reduce_sum= found in Stan. To be able to utilize MPI
 parallelisation, one first needs to ensure an MPI library
 such as 
 - https://www.mpich.org/downloads/
 - https://www.open-mpi.org/software/ompi/
-is available in the OS. Torsen's implementation is tested on
+is available. Torsen's implementation is tested on
 both =MPICH= and =OpenMPI=.
 
-Then, to use MPI-supported population/group solvers,
+To use MPI-supported population/group solvers,
 add/edit =make/local=
 #+BEGIN_SRC sh
   TORSTEN_MPI=1
@@ -413,51 +438,41 @@ Note that currently =TORSTEN_MPI= and =STAN_MPI= flags
 conflict on processes management and cannot be used in a
 same Stan model, and MPI support is only available through =cmdstan=
 interface.
-** R interface
-   The R interface is based on [[https://cran.r-project.org/web/packages/rstan/index.html][rstan]], the Stan's interface for
-   R. To install R version of Torsten, at ~$TORSTEN_PATH~, in R
-#+BEGIN_SRC R
-  source('install.R')
-#+END_SRC    
-
-Please ensure the R toolchain includes a C++ compiler with
-C++14 support. In particular, R 3.4.0 and later is
-recommended as it contains toolchain based on gcc 4.9.3. On
-Windows platform, such a toolchain can be found in Rtools34 and later.
-
-Please ensure =.R/Makevars= constains the following flags
-#+BEGIN_SRC sh
-  CXX14 = g++ -fPIC               # or CXX14 = clang++ -fPIC
-
-  CXXFLAGS=-O3 -std=c++1y -mtune=native -march=native -Wno-unused-variable -Wno-unused-function
-  CXXFLAGS += -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS -DBOOST_MPL_LIMIT_LIST_SIZE=30
-
-  CXX14FLAGS=-O3 -std=c++1y -mtune=native -march=native -Wno-unused-variable -Wno-unused-function
-  CXX14FLAGS += -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS -DBOOST_MPL_LIMIT_LIST_SIZE=30
-#+END_SRC
-
-Fore more information of setting up =makevar= and its
-functionality, see 
-- [[http://dirk.eddelbuettel.com/code/rcpp/Rcpp-package.pdf]]
-For more information of installation troubleshooting,
-please consult [[https://github.com/stan-dev/rstan/wiki][rstan wiki]].
 
 ** Testing
-With project in ~torsten_path~, set the envionment variable
-src_sh[:exports code]{TORSTEN_PATH} as
-#+BEGIN_SRC sh
-  # in bash
-  export TORSTEN_PATH=torsten_path
-  # in csh
-  setenv TORSTEN_PATH torsten_path
+Models in =example-models= directory are for tutorial and demonstration.
+The following shows how to build and run the two-compartment model
+using =cmdstanr=, and use =bayesplot= to examine posterior density of =CL=.
+#+BEGIN_SRC r
+  library("cmdstanr")
+  set_cmdstan_path("Torsten/cmdstan")
+  file.dir <- file.path("Torsten", "example-models", "pk2cpt")
+  file  <- file.path(file.dir, "pk2cpt.stan")
+  model <- cmdstan_model(file)
+  fit <- model$sample(data = file.path(file.dir, "pk2cpt.data.R"),
+                      init = file.path(file.dir, "pk2cpt.init.R"),
+                      seed = 123,
+                      chains = 4,
+                      parallel_chains = 2,
+                      refresh = 500)
+  bayesplot::mcmc_dens_overlay(fit$draws("CL"))
 #+END_SRC
 
-To test the installation, run
-#+BEGIN_SRC sh
-  ./test-torsten.sh --unit        # math unit test
-  ./test-torsten.sh --signature   # stan function # signature test
-  ./test-torsten.sh --model       # R model test, takes long time to finish
-#+END_SRC
+# With project in ~torsten_path~, set the envionment variable
+# src_sh[:exports code]{TORSTEN_PATH} as
+# #+BEGIN_SRC sh
+#   # in bash
+#   export TORSTEN_PATH=torsten_path
+#   # in csh
+#   setenv TORSTEN_PATH torsten_path
+# #+END_SRC
+
+# To test the installation, run
+# #+BEGIN_SRC sh
+#   ./test-torsten.sh --unit        # math unit test
+#   ./test-torsten.sh --signature   # stan function # signature test
+#   ./test-torsten.sh --model    # R model test, takes long time to finish
+# #+END_SRC
 
 * Using Torsten
 The reader should have a basic understanding of how Stan works before
@@ -465,22 +480,24 @@ reading this chapter. There are excellent resources online to get
 started with Stan
 - [[http://mc-stan.org/documentation][http://mc-stan.org/documentation]]
 
-
 In this section we go through the different functions Torsten adds to
 Stan. The code for the examples can be found at
 - [[https://github.com/metrumresearchgroup/example-models][https://github.com/metrumresearchgroup/example-models]]
 
-and also at the =example-models= foler of your =TORSTEN_PATH=.
+and also at the =example-models= folder. 
+
+Torsten's functions are prefixed with =pmx_=. Many Torsten functions
+have multiple signatures and support optional arguments. 
+We indicate arguments that are optional by putting them in square bracket =[]=.
+Torsten also adopts NM-TRAN format by using arguments {{{torsten_src(time)}}}, {{{torsten_src(amt)}}}, {{{torsten_src(rate)}}}, {{{torsten_src(ii)}}}, {{{torsten_src(evid)}}}, {{{torsten_src(cmt)}}}, {{{torsten_src(addl)}}}, and
+ {{{torsten_src(ss)}}} for events specification.
 
 ** One Compartment Model
 <<sec:onecpt>>
 #+LABEL: sec:OneCpt
 #+INDEX: One Compartment Model
 #+BEGIN_SRC stan
-  matrix = pmx_solve_onecpt(real[] time, real[] amt, real[] rate,
-                                 real[] ii, int[] evid, int[] cmt,
-                                 real[] addl, int[] ss, real[] theta,
-                                 real[] biovar, real[] tlag)
+  matrix = pmx_solve_onecpt(real[] time, real[] amt, real[] rate, real[] ii, int[] evid, int[] cmt, real[] addl, int[] ss, real[] theta [, biovar, tlag ] )
 #+END_SRC
 
 #+CAPTION: One and two compartment models with first order absorption implemented in Torsten.
@@ -488,7 +505,7 @@ and also at the =example-models= foler of your =TORSTEN_PATH=.
 #+ATTR_LATEX: :width 2.0in
 [[file:./graphics/cptModels.png]]
 
-Torsten function =pmx_solve_onecpt= solves one-compartment PK
+Function {{{torsten_src(pmx\_solve\_onecpt)}}} solves one-compartment PK
 models(Figure [[one_two_cpt_models]]). The model obtains plasma concentrations of parent drug $c=y_2/V_2$
 by solving for the mass of drug in the central compartment
 $y_2$ from ordinary differential equations(ODEs)
@@ -500,14 +517,14 @@ $y_2$ from ordinary differential equations(ODEs)
 \label{eq:onecpt}
 \end{subequations}
 
-- ODE Parameters ~theta~ consists of $CL$, $V_2$, $k_a$, in that order.
-- The event arguments ~time~, ~amt~, ~rate~, ~ii~, ~evid~, ~cmt~, ~addl~, and
-  ~ss~, describe the event schedule of the clinical
+- ODE Parameters {{{torsten_src(theta)}}} consists of $CL$, $V_2$, $k_a$, in that order.
+- The event arguments {{{torsten_src(time)}}}, {{{torsten_src(amt)}}}, {{{torsten_src(rate)}}}, {{{torsten_src(ii)}}}, {{{torsten_src(evid)}}}, {{{torsten_src(cmt)}}}, {{{torsten_src(addl)}}}, and
+  {{{torsten_src(ss)}}}, describe the event schedule of the clinical
   trial. All arrays have the same length corresponding to the number of events.
-- The model arguments, other than ~theta~, include
-  + ~biovar~, the bioavailability fraction in each compartment
-  + ~tlag~, the lag time in each compartment. 
-- ~theta~, ~biovar~, ~tlag~ may be either 
+- The model arguments, other than {{{torsten_src(theta)}}}, include
+  + {{{torsten_src(biovar)}}}, the bioavailability fraction in each compartment
+  + {{{torsten_src(tlag)}}}, the lag time in each compartment. 
+- {{{torsten_src(theta)}}}, {{{torsten_src(biovar)}}}, {{{torsten_src(tlag)}}} may be either 
   + one-dimensional array src_stan[:exports code ]{real[]}
     for constants of all events, or
   + two-dimensional array src_stan[:exports code ]{real[ , ]}
@@ -541,11 +558,11 @@ respectively, from ODEs
   \end{align}
 \end{subequations}
 
-- ODE Parameters ~theta~ consists of $CL$, $Q$, $V_2$, $V_3$, $k_a$.
-- The event arguments ~time~, ~amt~, ~rate~, ~ii~, ~evid~, ~cmt~, ~addl~, and
-  ~ss~, describe the event schedule of the clinical
+- ODE Parameters {{{torsten_src(theta)}}} consists of $CL$, $Q$, $V_2$, $V_3$, $k_a$.
+- The event arguments {{{torsten_src(time)}}}, {{{torsten_src(amt)}}}, {{{torsten_src(rate)}}}, {{{torsten_src(ii)}}}, {{{torsten_src(evid)}}}, {{{torsten_src(cmt)}}}, {{{torsten_src(addl)}}}, and
+  {{{torsten_src(ss)}}}, describe the event schedule of the clinical
   trial. All arrays have the same length corresponding to the number of events.
-- See section [[sec:onecpt]] regarding model arguments ~theta~, ~biovar~, and ~tlag~.
+- See section [[sec:onecpt]] regarding model arguments {{{torsten_src(theta)}}}, {{{torsten_src(biovar)}}}, and {{{torsten_src(tlag)}}}.
 - Setting $ka$ to 0 eliminates the first-order absorption. 
 - The function returns a two-dimensional array of size =nt=
   by =ncmt=, where =nt= is the number of time steps and
@@ -576,15 +593,15 @@ model with first order absorption, $K$ would be
 \end{equation}
 where $k_{10}=CL/V_2$, $k_{12}=Q/V_2$, and $k_{21}=Q/V_3$.
 
-- ~K~ contains system parameters. In the case of constant rate,
+- {{{torsten_src(K)}}} contains system parameters. In the case of constant rate,
   =K= is the same for all events or an array of constant rate
   matrices. The length of the array is
-  the number of events and the ~i~ th element corresponds to the matrix at
+  the number of events and the {{{torsten_src(i)}}} th element corresponds to the matrix at
   the interval ~[time[i-1], time[i]]~.
-  Note that ~K~ contains all the ODE parameters, so we no
-  longer need ~theta~.
-- See section [[sec:onecpt]] regarding model arguments ~theta~,
-  ~biovar~, and ~tlag~.
+  Note that {{{torsten_src(K)}}} contains all the ODE parameters, so we no
+  longer need {{{torsten_src(theta)}}}.
+- See section [[sec:onecpt]] regarding model arguments {{{torsten_src(theta)}}},
+  {{{torsten_src(biovar)}}}, and {{{torsten_src(tlag)}}}.
 - The function returns a two-dimensional array of size =nt=
   by =n=, where =nt= is the number of time steps and
   =n= is the size of the square matrix =K=.
@@ -624,12 +641,12 @@ y'(t) = f(t, y(t)) + r
 \end{equation*}
 
 - User specifies $f(t, y(t))$ by defining =ODE_system=
-  inside the ~functions~ block (see section 19.2 of the
+  inside the {{{torsten_src(functions)}}} block (see section 19.2 of the
   Stan reference manual for details and code below
   for an example). The user does NOT include the rates in their
   definition of $f$. Torsten automatically corrects the derivatives when
   the rates are non-zero.
-- ~nCmt~ is the number of compartments (or, equivalently, the
+- {{{torsten_src(nCmt)}}} is the number of compartments (or, equivalently, the
   number of ODEs) in the model. 
 - ~rel_tol~, ~abs_tol~,
   and ~max_step~ are tuning parameters for the ODE integrator:
@@ -657,9 +674,9 @@ y'(t) = f(t, y(t)) + r
   values. For additional information, see the Stan User's
   Manual cite:stan_team_2017.
 - In the case of a multiple truncated infusion rate dosing regimen
-  The bioavailability ~biovar~ and the amount ~amt~ cannot be passed as parameters.
-- See section [[sec:onecpt]] regarding model arguments ~theta~,
-  ~biovar~, and ~tlag~.
+  The bioavailability {{{torsten_src(biovar)}}} and the amount {{{torsten_src(amt)}}} cannot be passed as parameters.
+- See section [[sec:onecpt]] regarding model arguments {{{torsten_src(theta)}}},
+  {{{torsten_src(biovar)}}}, and {{{torsten_src(tlag)}}}.
 # These restrictions also apply to ~mixOdeCpt_*~ functions, discussed in the next section.
 
 ** Coupled ODE Model Function
@@ -718,7 +735,7 @@ with a first-order absorption.
 
 The ~reduced_ODE_system~ specifies the system we
 numerically solve ($y_2$ in the above discussion, also called the
-/reduced system/ and ~nOde~ the number of equations in
+/reduced system/ and {{{torsten_src(nOde)}}} the number of equations in
 the \underline{reduced} system. The function that defines a reduced
 system has an almost identical signature to that used for a full
 system, but takes one additional argument: $y_1$, the PK states,
@@ -769,16 +786,16 @@ mixed solvers.
 Similar to their single-subject counterparts, Torsten function =pmx_solve_group_adams=, =pmx_solve_group_rk45= and
 =pmx_solve_group_bdf= solve a population ODE model. These
 solvers support MPI parallelization.
-- The ragged array arguments ~time~, ~amt~, ~rate~, ~ii~,
-  ~evid~, ~cmt~, ~addl~, ~ss~ describe data record for the
+- The ragged array arguments {{{torsten_src(time)}}}, {{{torsten_src(amt)}}}, {{{torsten_src(rate)}}}, {{{torsten_src(ii)}}},
+  {{{torsten_src(evid)}}}, {{{torsten_src(cmt)}}}, {{{torsten_src(addl)}}}, {{{torsten_src(ss)}}} describe data record for the
   entire population.
-- ~len~ specifies the length of data for each subject within
-  the above ragged arrays, and the size of ~len~ is the size
+- {{{torsten_src(len)}}} specifies the length of data for each subject within
+  the above ragged arrays, and the size of {{{torsten_src(len)}}} is the size
   of the population.
 - ~rel_tol~, ~abs_tol~,
   and ~max_step~ have same meaning and default values as in
   corresponding single-subject solvers.
-- In ~cmdstan~, define ~TORSTEN_MPI=1~ in ~make/local~ to
+- In {{{torsten_src(cmdstan)}}}, define ~TORSTEN_MPI=1~ in ~make/local~ to
   activate MPI solution for these population solvers.
 - The solvers return a single matrix ragged column-wise. The
   number of rows equals to the number of compartments in the model.
@@ -802,7 +819,7 @@ solvers support MPI parallelization.
 #+END_SRC
 Torsten's own implementation of ODE integrators. They have same
 signature as those in Stan.
-- ~ts~ can be parameters in Torsten's ODE integrators.
+- {{{torsten_src(ts)}}} can be parameters in Torsten's ODE integrators.
 
 ** ODE group  integrator Function
 #+INDEX: PMX ODE group integrators
@@ -826,12 +843,12 @@ signature as those in Stan.
 #+END_SRC
 Torsten provides group solvers for a population of subjects with different parameters/data but
 governed by a same ODE. These solvers support MPI parallelization.
-- The ragged array arguments ~y0~, ~ts~, ~theta~, ~x_r~, ~x_i~ describe data record for the
+- The ragged array arguments {{{torsten_src(y0)}}}, {{{torsten_src(ts)}}}, {{{torsten_src(theta)}}}, {{{torsten_src(x\_r)}}}, {{{torsten_src(x\_i)}}} describe data record for the
   entire ODE group.
-- ~len~ specifies the length of data for each subject within
-  the above ragged arrays, and the size of ~len~ is the size
+- {{{torsten_src(len)}}} specifies the length of data for each subject within
+  the above ragged arrays, and the size of {{{torsten_src(len)}}} is the size
   of the population.
-- ~ts~ can only be data in the group integrators.
+- {{{torsten_src(ts)}}} can only be data in the group integrators.
 - The group integrators return a single matrix ragged
   column-wise. The number of rows equals to the size of ODE system.
 

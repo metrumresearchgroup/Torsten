@@ -32,7 +32,7 @@ This library provides Stan language functions that calculate amounts in each com
 
 ## Installation
 
-We are working with Stan development team to create a system to add and share Stan packages. In the mean time, the current repo contains forked version of Stan with Torsten. The latest version of Torsten (v0.87) is compatible with Stan v2.19.1. Torsten is agnostic to which Stan interface you use. Here we provide command line and R interfaces.
+Currently Torsten is based on a forked version of Stan. The latest v0.88 is compatible with Stan v2.25.0. Torsten can be accessed from command line for cmdstan interface and =cmdstanr=(<https://mc-stan.org/cmdstanr/>) for R interface.
 
 
 ### Command line interface
@@ -44,19 +44,34 @@ After downloading the project
 The command line interface `cmdstan` is available to use without installation. The following command builds a Torsten model `model_name` in `model_path`
 
 ```sh
-cd $TORSTEN_PATH/cmdstan; make model_path/model_name
+cd Torsten/cmdstan; make model_path/model_name
 ```
+
+
+### R interface
+
+After installing cmdstanr from <https://mc-stan.org/cmdstanr/>, use the following command to set path
+
+```r
+cmdstanr::set_cmdstan_path("Torsten/cmdstan")
+```
+
+Then one can follow
+
+<https://mc-stan.org/cmdstanr/articles/cmdstanr.html>
+
+to compile and run Torsten models.
 
 -   MPI support
 
-    Torsten's MPI support is of a different flavour than `map_rect` found in Stan. To be able to utilize MPI parallelisation, one first needs to ensure an MPI library such as
+    Torsten's MPI support is of a different flavour than `reduce_sum` found in Stan. To be able to utilize MPI parallelisation, one first needs to ensure an MPI library such as
     
     -   <https://www.mpich.org/downloads/>
     -   <https://www.open-mpi.org/software/ompi/>
     
-    is available in the OS. Torsen's implementation is tested on both `MPICH` and `OpenMPI`.
+    is available. Torsen's implementation is tested on both `MPICH` and `OpenMPI`.
     
-    Then, to use MPI-supported population/group solvers, add/edit `make/local`
+    To use MPI-supported population/group solvers, add/edit `make/local`
     
     ```sh
     TORSTEN_MPI=1
@@ -71,52 +86,23 @@ cd $TORSTEN_PATH/cmdstan; make model_path/model_name
     Note that currently `TORSTEN_MPI` and `STAN_MPI` flags conflict on processes management and cannot be used in a same Stan model, and MPI support is only available through `cmdstan` interface.
 
 
-### R interface
-
-The R interface is based on [rstan](https://cran.r-project.org/web/packages/rstan/index.html), the Stan's interface for R. To install R version of Torsten, at `$TORSTEN_PATH`, in R
-
-```R
-source('install.R')
-```
-
-Please ensure the R toolchain includes a C++ compiler with C++14 support. In particular, R 3.4.0 and later is recommended as it contains toolchain based on gcc 4.9.3. On Windows platform, such a toolchain can be found in Rtools34 and later.
-
-Please ensure `.R/Makevars` constains the following flags
-
-```sh
-CXX14 = g++ -fPIC               # or CXX14 = clang++ -fPIC
-
-CXXFLAGS=-O3 -std=c++1y -mtune=native -march=native -Wno-unused-variable -Wno-unused-function
-CXXFLAGS += -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS -DBOOST_MPL_LIMIT_LIST_SIZE=30
-
-CXX14FLAGS=-O3 -std=c++1y -mtune=native -march=native -Wno-unused-variable -Wno-unused-function
-CXX14FLAGS += -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS -DBOOST_MPL_LIMIT_LIST_SIZE=30
-```
-
-Fore more information of setting up `makevar` and its functionality, see
-
--   <http://dirk.eddelbuettel.com/code/rcpp/Rcpp-package.pdf>
-
-For more information of installation troubleshooting, please consult [rstan wiki](https://github.com/stan-dev/rstan/wiki).
-
-
 ### Testing
 
-With project in `torsten_path`, set the envionment variable `TORSTEN_PATH` as
+Models in `example-models` directory are for tutorial and demonstration. The following shows how to build and run the two-compartment model using `cmdstanr`, and use `bayesplot` to examine posterior density of `CL`.
 
-```sh
-# in bash
-export TORSTEN_PATH=torsten_path
-# in csh
-setenv TORSTEN_PATH torsten_path
-```
-
-To test the installation, run
-
-```sh
-./test-torsten.sh --unit        # math unit test
-./test-torsten.sh --signature   # stan function # signature test
-./test-torsten.sh --model       # R model test, takes long time to finish
+```r
+library("cmdstanr")
+set_cmdstan_path("Torsten/cmdstan")
+file.dir <- file.path("Torsten", "example-models", "pk2cpt")
+file  <- file.path(file.dir, "pk2cpt.stan")
+model <- cmdstan_model(file)
+fit <- model$sample(data = file.path(file.dir, "pk2cpt.data.R"),
+                    init = file.path(file.dir, "pk2cpt.init.R"),
+                    seed = 123,
+                    chains = 4,
+                    parallel_chains = 2,
+                    refresh = 500)
+bayesplot::mcmc_dens_overlay(fit$draws("CL"))
 ```
 
 
@@ -125,14 +111,14 @@ To test the installation, run
 Our current plans for future development of Torsten include the following:
 
 -   Build a system to easily share packages of Stan functions (written in C++ or in the Stan language)
--   Allow numerical methods to handle bioavailability fraction (F) as parameters in all cases.
 -   Optimize Matrix exponential functions
     -   Function for the action of Matrix Exponential on a vector
     -   Hand-coded gradients
     -   Special algorithm for matrices with special properties
+-   Develop new method for large-scale hierarchical models with costly ODE solving.
 -   Fix issue that arises when computing the adjoint of the lag time parameter (in a dosing compartment) evaluated at \(t_{\text{lag}} = 0\).
 -   Extend formal tests
-    -   We want more C++ Google unit tests to address cases users may encounter
+    -   More unit tests and better CD/CI support.
     -   Comparison with simulations from the R package `mrgsolve` and the software NONMEM\textregistered{}
     -   Recruit non-developer users to conduct beta testing
 
@@ -140,7 +126,24 @@ Our current plans for future development of Torsten include the following:
 ## Changelog
 
 
-### 0.87 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-07-26 Fri&gt;</span></span>
+### Version 0.88 <span class="timestamp-wrapper"><span class="timestamp">&lt;2020-12-01 Tue&gt;</span></span>
+
+-   Added
+
+    -   Experimental feature of cross-chain warmup
+    -   Bioavailability, lag time, ODE real & integer data are optional in PMX function signatures.
+    -   Support all EVID options from NM-TRAN and mrgsolve.
+
+-   Changed
+
+    -   More efficient memory management of COVDES implenmentation.
+    -   Update of MPI framework to adapt multilevel paralleism.
+    -   Update to Stan version 2.25.0.
+    -   Use cmdstanr as R interface.
+    -   Stop supporting rstan as R interface.
+
+
+### Version 0.87 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-07-26 Fri&gt;</span></span>
 
 -   Added
 
@@ -159,7 +162,7 @@ Our current plans for future development of Torsten include the following:
     -   Update to rstan version 2.19.2.
 
 
-### 0.86 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-05-15 Wed&gt;</span></span>
+### Version 0.86 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-05-15 Wed&gt;</span></span>
 
 -   Added
 
@@ -199,7 +202,7 @@ Our current plans for future development of Torsten include the following:
     -   Update to Stan version 2.19.1.
 
 
-### 0.85 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-12-04 Tue&gt;</span></span>
+### Version 0.85 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-12-04 Tue&gt;</span></span>
 
 -   Added
 
@@ -210,7 +213,7 @@ Our current plans for future development of Torsten include the following:
     -   Update to Stan version 2.18.0.
 
 
-### 0.84 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-02-24 Sat&gt;</span></span>
+### Version 0.84 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-02-24 Sat&gt;</span></span>
 
 -   Added
 
@@ -224,7 +227,7 @@ Our current plans for future development of Torsten include the following:
     -   Bugfixes.
 
 
-### 0.83 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-08-02 Wed&gt;</span></span>
+### Version 0.83 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-08-02 Wed&gt;</span></span>
 
 -   Added
 
@@ -238,7 +241,7 @@ Our current plans for future development of Torsten include the following:
     -   Other bugfixes
 
 
-### 0.82 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-29 Sun&gt;</span></span>
+### Version 0.82 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-29 Sun&gt;</span></span>
 
 -   Added
 
@@ -252,20 +255,20 @@ Our current plans for future development of Torsten include the following:
     -   bugfixes
 
 
-### 0.81 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-27 Tue&gt;</span></span>
+### Version 0.81 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-27 Tue&gt;</span></span>
 
 -   Added
 
     linCptModel (linear compartmental model) function
 
 
-### 0.80a <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-21 Wed&gt;</span></span>
+### Version 0.80a <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-21 Wed&gt;</span></span>
 
 -   Added
 
     check_finite statements in pred_1 and pred_2 to reject metropolis proposal if initial conditions are not finite
     
-    \bibliography{./doc/torsten}
+    \bibliography{./docs/torsten}
 
 ## Footnotes
 

@@ -4,8 +4,8 @@
 #+EMAIL: mailto:billg@metrumrg.com mailto:yiz@metrumrg.com
 #+OPTIONS: title:t, toc:nil, num:nil
 
-#+MACRO: torsten_ver v0.87
-#+MACRO: stan_ver v2.19.1
+#+MACRO: torsten_ver v0.88
+#+MACRO: stan_ver v2.25.0
 
 * Torsten
 #+include: ./docs/torsten_manual.org::#overview :minlevel 2
@@ -13,5 +13,5 @@
 #+include: ./docs/torsten_manual.org::#dev_plans :minlevel 2
 #+include: ./docs/torsten_manual.org::#changelog
 
-\bibliography{./doc/torsten}
+\bibliography{./docs/torsten}
 bibliographystyle:plain

@@ -24,20 +24,6 @@ transformed data{
   vector[nObs] logCObs = log(cObs);
   int nTheta = 5;  // number of ODE parameters in Two Compartment Model
   int nCmt = 3;  // number of compartments in model
-
-  // Since we're not trying to evaluate the bio-variability (F) and 
-  // the lag times, we declare them as data.
-  real biovar[nCmt];
-  real tlag[nCmt];
-
-  biovar[1] = 1;
-  biovar[2] = 1;
-  biovar[3] = 1;
-
-  tlag[1] = 0;
-  tlag[2] = 0;
-  tlag[3] = 0;
-  
 }
 
 parameters{
@@ -49,7 +35,6 @@ parameters{
   real<lower = 0> sigma;
 
 }
-
 transformed parameters{
   real theta[nTheta];  // ODE parameters
   row_vector<lower = 0>[nt] cHat;
@@ -65,8 +50,7 @@ transformed parameters{
   // PKModelTwoCpt takes in the NONMEM data, followed by the parameter
   // arrays abd returns a matrix with the predicted amount in each 
   // compartment at each event.
-  x = pmx_solve_twocpt(time, amt, rate, ii, evid, cmt, addl, ss,
-                       theta, biovar, tlag);
+  x = pmx_solve_twocpt(time, amt, rate, ii, evid, cmt, addl, ss, theta);
 
   cHat = x[2, :] ./ V1; // we're interested in the amount in the second compartment
 
