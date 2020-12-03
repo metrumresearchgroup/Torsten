@@ -1,7 +1,7 @@
 #+TITLE: Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan
 #+SUBTITLE: User Manual @@latex:\\@@ @@html:<br>@@ (Torsten Version 0.88, Stan version 2.25.0)
 #+LATEX_CLASS: amsbook
-#+LATEX_CLASS_OPTIONS: [11pt, reqno, oneside]
+#+LATEX_CLASS_OPTIONS: [10pt, reqno, oneside]
 
 # title page
 #+LATEX_HEADER: \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
@@ -475,6 +475,7 @@ using =cmdstanr=, and use =bayesplot= to examine posterior density of =CL=.
 # #+END_SRC
 
 * Using Torsten
+#+label: sec:using_torsten
 The reader should have a basic understanding of how Stan works before
 reading this chapter. There are excellent resources online to get
 started with Stan
@@ -486,27 +487,44 @@ Stan. The code for the examples can be found at
 
 and also at the =example-models= folder. 
 
-Torsten's functions are prefixed with =pmx_=. Many Torsten functions
-have multiple signatures and support optional arguments. 
-We indicate arguments that are optional by putting them in square bracket =[]=.
-Torsten also adopts NM-TRAN format by using arguments {{{torsten_src(time)}}}, {{{torsten_src(amt)}}}, {{{torsten_src(rate)}}}, {{{torsten_src(ii)}}}, {{{torsten_src(evid)}}}, {{{torsten_src(cmt)}}}, {{{torsten_src(addl)}}}, and
- {{{torsten_src(ss)}}} for events specification.
+Torsten's functions are prefixed with =pmx_=. 
+For some of their arguments we adopt NM-TRAN format for events
+specification(Table [[ref:tab:event_args]]).
+#+CAPTION: NM-TRAN compatible event specification arguments. All arrays should have the same length corresponding to the number of events.
+#+label: tab:event_args
+#+NAME: tab:event_args
+| Argument Name           | Definition                  | Stan data type            |
+|-------------------------+-----------------------------+---------------------------|
+| {{{torsten_src(time)}}} | Time                        | {{{torsten_src(real[])}}} |
+| {{{torsten_src(amt)}}}  | Amount                      | {{{torsten_src(real[])}}} |
+| {{{torsten_src(rate)}}} | Infusion rate               | {{{torsten_src(real[])}}} |
+| {{{torsten_src(ii)}}}   | interdose interval          | {{{torsten_src(real[])}}} |
+| {{{torsten_src(evid)}}} | Event ID                    | {{{torsten_src(int[])}}}  |
+| {{{torsten_src(cmt)}}}  | Event compartment           | {{{torsten_src(int[])}}}  |
+| {{{torsten_src(addl)}}} | Additionial identical doses | {{{torsten_src(int[])}}}  |
+| {{{torsten_src(ss)}}}   | steady-state dosing flag    | {{{torsten_src(int[])}}}  |
+|-------------------------+-----------------------------+---------------------------|
+All the src_stan[:exports code]{real[]} arguments above are allowed to
+be src_stan[:exports code]{parameters} in a Stan model.
+In addtion, Torsten functions
+support optional arguments and overloaded signatures.
+Optional arguments are indicated by surrounding square bracket =[]=.
+We point out three commonly used PMX model arguments that support
+overloading. In the rest of this document we assume the convention above unless indicated otherwise.
+#+CAPTION: PMX model parameter overloadings. One can use 1d array src_stan[:exports code ]{real[]} to indicate constants of all events, or 2d array src_stan[:exports code ]{real[ , ]} so that the \(i\)th row of the array describes the model arguments for time interval $(t_{i-1}, t_i)$, and the number of the rows equals to the size of {{{torsten_src(time)}}}.
+#+NAME: tab:event_params
+| Argument Name             | Definition               | Stan data type                                             | Optional           |
+|---------------------------+--------------------------+------------------------------------------------------------+--------------------|
+| {{{torsten_src(theta)}}}  | Model parameters         | {{{torsten_src(real[])}}} or {{{torsten_src(real[ \, ])}}} | N                  |
+| {{{torsten_src(biovar)}}} | bioavailability fraction | {{{torsten_src(real[])}}} or {{{torsten_src(real[ \, ])}}} | Y (default to 1.0) |
+| {{{torsten_src(tlag)}}}   | Lag time                 | {{{torsten_src(real[])}}} or {{{torsten_src(real[ \, ])}}} | Y (default to 0.0) |
+|---------------------------+--------------------------+------------------------------------------------------------+--------------------|
 
 ** One Compartment Model
 <<sec:onecpt>>
-#+LABEL: sec:OneCpt
-#+INDEX: One Compartment Model
-#+BEGIN_SRC stan
-  matrix = pmx_solve_onecpt(real[] time, real[] amt, real[] rate, real[] ii, int[] evid, int[] cmt, real[] addl, int[] ss, real[] theta [, biovar, tlag ] )
-#+END_SRC
-
-#+CAPTION: One and two compartment models with first order absorption implemented in Torsten.
-#+NAME: one_two_cpt_models
-#+ATTR_LATEX: :width 2.0in
-[[file:./graphics/cptModels.png]]
-
-Function {{{torsten_src(pmx\_solve\_onecpt)}}} solves one-compartment PK
-models(Figure [[one_two_cpt_models]]). The model obtains plasma concentrations of parent drug $c=y_2/V_2$
+*** Description
+Function {{{torsten_src(pmx\_solve\_onecpt)}}} solves a one-compartment PK
+model (Figure [[one_two_cpt_models]]). The model obtains plasma concentrations of parent drug $c=y_2/V_2$
 by solving for the mass of drug in the central compartment
 $y_2$ from ordinary differential equations(ODEs)
 \begin{subequations}
@@ -516,40 +534,39 @@ $y_2$ from ordinary differential equations(ODEs)
 \end{align}
 \label{eq:onecpt}
 \end{subequations}
+#+CAPTION: One and two compartment models with first order absorption implemented in Torsten.
+#+NAME: one_two_cpt_models
+#+ATTR_LATEX: :width 1.5in
+[[file:./graphics/cptModels.png]]
 
-- ODE Parameters {{{torsten_src(theta)}}} consists of $CL$, $V_2$, $k_a$, in that order.
-- The event arguments {{{torsten_src(time)}}}, {{{torsten_src(amt)}}}, {{{torsten_src(rate)}}}, {{{torsten_src(ii)}}}, {{{torsten_src(evid)}}}, {{{torsten_src(cmt)}}}, {{{torsten_src(addl)}}}, and
-  {{{torsten_src(ss)}}}, describe the event schedule of the clinical
-  trial. All arrays have the same length corresponding to the number of events.
-- The model arguments, other than {{{torsten_src(theta)}}}, include
-  + {{{torsten_src(biovar)}}}, the bioavailability fraction in each compartment
-  + {{{torsten_src(tlag)}}}, the lag time in each compartment. 
-- {{{torsten_src(theta)}}}, {{{torsten_src(biovar)}}}, {{{torsten_src(tlag)}}} may be either 
-  + one-dimensional array src_stan[:exports code ]{real[]}
-    for constants of all events, or
-  + two-dimensional array src_stan[:exports code ]{real[ , ]}
-    so that the \(i\)th row of the array describes
-    the model arguments for time interval $(t_{i-1}, t_i)$,
-    and the number of the rows euqals to the number of events.
+*** Usage
+#+LABEL: sec:OneCpt
+#+INDEX: One Compartment Model
+#+BEGIN_SRC stan
+  matrix = pmx_solve_onecpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, biovar, tlag ] )
+#+END_SRC
+
+*** Arguments
+    See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]].
+*** Return value
+    An =ncmt=-by-=nt= matrix, where =nt= is the number of time steps and =ncmt=2= is the number of compartments.    
+*** Note
+- ODE Parameters {{{torsten_src(theta)}}} should consist of $CL$, $V_2$, $k_a$, in that order.
+- {{{torsten_src(biovar)}}} and {{{torsten_src(tlag)}}} are optional, so that the following are allowed:
+#+BEGIN_SRC stan
+  pmx_solve_onecpt(..., theta);
+  pmx_solve_onecpt(..., theta, biovar);
+  pmx_solve_onecpt(..., theta, biovar, tlag);
+#+END_SRC
 - Setting $k_a = 0$ eliminates the first-order absorption.
-- The function returns a two-dimensional array of size =nt=
-  by =ncmt=, where =nt= is the number of time steps and
-  =ncmt=2= is the number of compartments.
 
 ** Two Compartment Model
 <<sec:twocpt>>
-#+INDEX: Two Compartment Model
-#+BEGIN_SRC stan
-  matrix = pmx_solve_twocpt(real[] time, real[] amt, real[] rate,
-                                 real[] ii, int[] evid, int[] cmt,
-                                 real[] addl, int[] ss, real[] theta,
-                                 real[] biovar, real[] tlag)
-#+END_SRC
-
-Torsten function =pmx_solve_twocpt= (see also Figure [[one_two_cpt_models]]) solves two-compartment PK
-models. The model obtains plasma concentrations of parent drug $c=y_2/V_2$
-by solving for $y_2$ and $y_3$, the mass of drug in the central and peripheral compartments,
-respectively, from ODEs
+*** Description
+Function {{{torsten_src(pmx\_solve\_twocpt)}}} solves a two-compartment PK
+model (Figure [[one_two_cpt_models]]). The model obtains plasma concentrations of parent drug $c=y_2/V_2$
+by solving for the mass of drug in the central compartment
+$y_2$ from ordinary differential equations(ODEs)
 \begin{subequations}
   \begin{align} \label{eq:twocpt}
     y_1' &= -k_a y_1 \\
@@ -558,32 +575,37 @@ respectively, from ODEs
   \end{align}
 \end{subequations}
 
+*** Usage
+#+LABEL: sec:TwoCpt
+#+INDEX: Two Compartment Model
+#+BEGIN_SRC stan
+  matrix = pmx_solve_twocpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, biovar, tlag ] )
+#+END_SRC
+
+*** Arguments
+    See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]].
+
+*** Return value
+    An =ncmt=-by-=nt= matrix, where =nt= is the number of time steps and =ncmt=3= is the number of compartments.
+
+*** Note
 - ODE Parameters {{{torsten_src(theta)}}} consists of $CL$, $Q$, $V_2$, $V_3$, $k_a$.
-- The event arguments {{{torsten_src(time)}}}, {{{torsten_src(amt)}}}, {{{torsten_src(rate)}}}, {{{torsten_src(ii)}}}, {{{torsten_src(evid)}}}, {{{torsten_src(cmt)}}}, {{{torsten_src(addl)}}}, and
-  {{{torsten_src(ss)}}}, describe the event schedule of the clinical
-  trial. All arrays have the same length corresponding to the number of events.
-- See section [[sec:onecpt]] regarding model arguments {{{torsten_src(theta)}}}, {{{torsten_src(biovar)}}}, and {{{torsten_src(tlag)}}}.
-- Setting $ka$ to 0 eliminates the first-order absorption. 
-- The function returns a two-dimensional array of size =nt=
-  by =ncmt=, where =nt= is the number of time steps and
-  =ncmt=3= is the number of compartments.
+- {{{torsten_src(biovar)}}} and {{{torsten_src(tlag)}}} are optional, so that the following are allowed:
+#+BEGIN_SRC stan
+  pmx_solve_twocpt(..., theta);
+  pmx_solve_twocpt(..., theta, biovar);
+  pmx_solve_twocpt(..., theta, biovar, tlag);
+#+END_SRC
+- Setting $k_a = 0$ eliminates the first-order absorption.
 
 ** General Linear ODE Model Function
-#+INDEX: General linear model 
-#+BEGIN_SRC stan
-  matrix = pmx_solve_linode(real[] time, real[] amt, real[] rate,
-                       real[] ii, int[] evid, int[] cmt,
-                       real[] addl, int[] ss,
-                       matrix K, real[] biovar, real[] tlag)
-#+END_SRC
-Torsten function =pmx_solve_linode= 
-solves a (piecewise) linear ODEs model with coefficients
+*** Description
+Function {{{torsten_src(pmx\_solve\_linode)}}} solves a (piecewise) linear ODEs model with coefficients
 in form of matrix $K$
 \begin{equation}
 y^\prime\left(t\right) = Ky\left(t\right)
 \end{equation}
-For example, for a two-compartment
-model with first order absorption, $K$ would be
+For example, in a two-compartment model with first order absorption, $K$ is
 \begin{equation}
   K = \left[\begin{array}{ccc}
               -k_a & 0 & 0 \\
@@ -593,91 +615,110 @@ model with first order absorption, $K$ would be
 \end{equation}
 where $k_{10}=CL/V_2$, $k_{12}=Q/V_2$, and $k_{21}=Q/V_3$.
 
-- {{{torsten_src(K)}}} contains system parameters. In the case of constant rate,
-  =K= is the same for all events or an array of constant rate
-  matrices. The length of the array is
-  the number of events and the {{{torsten_src(i)}}} th element corresponds to the matrix at
-  the interval ~[time[i-1], time[i]]~.
-  Note that {{{torsten_src(K)}}} contains all the ODE parameters, so we no
-  longer need {{{torsten_src(theta)}}}.
-- See section [[sec:onecpt]] regarding model arguments {{{torsten_src(theta)}}},
-  {{{torsten_src(biovar)}}}, and {{{torsten_src(tlag)}}}.
-- The function returns a two-dimensional array of size =nt=
-  by =n=, where =nt= is the number of time steps and
-  =n= is the size of the square matrix =K=.
+*** Usage
+#+INDEX: General linear model 
+#+BEGIN_SRC stan
+  matrix = pmx_solve_linode(time, amt, rate, ii, evid, cmt, addl, ss, K, biovar, tlag )
+#+END_SRC
+
+*** Arguments
+**** {{{torsten_src(K)}}} 
+      System parameters. {{{torsten_src(K)}}} can be either
+      - a src_stan[:exports code ]{matrix} for constant parameters in all events, or
+      - an array of matrices src_stan[:exports code ]{matrix K[nt]} so that the \(i\)th entry of the array describes
+        the model parameters for time interval $(t_{i-1}, t_i)$,
+        and the number of the rows equals to the number of event time {{{torsten_src(nt)}}}.
+**** See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]] for the rest of arguments.
+
+*** Return value
+    An =n=-by-=nt= matrix, where =nt= is the number of time steps and =n= is the number of rows(columns) of square matrix {{{torsten_src(K)}}}.
 
 ** General ODE Model Function
+*** Description
+    Function {{{torsten_src(pmx\_solve\_adams)}}}, {{{torsten_src(pmx\_solve\_bdf)}}}, and {{{torsten_src(pmx\_solve\_rk45)}}} solve a first-order ODE system
+    specified by user-specified right-hand-side function {{{torsten_src(ODE\_rhs)}}} $f$
+    \begin{equation*}
+    y'(t) = f(t, y(t))
+    \end{equation*}
+    In the case where the {{{torsten_src(rate)}}} vector $r$ is non-zero, this equation becomes:
+    \begin{equation*}
+    y'(t) = f(t, y(t)) + r
+    \end{equation*}
+*** Usage
 #+INDEX: General ODE Model
 #+BEGIN_SRC stan
-  matrix pmx_solve_adams(ODE_system, int nCmt,
-                             real[] time, real[] amt, real[] rate, real[] ii,
-                             int[] evid, int[] cmt, real[] addl, int[] ss,
-                             real[] theta, real[] biovar, real[] tlag,                      
-                             real rel_tol, real abs_tol, int max_step);
+  matrix pmx_solve_[adams || rk45 || bdf](ODE_rhs, int nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta, [ biovar, tlag, real[,] x_r, int [,] x_i, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
 #+END_SRC
-#+BEGIN_SRC stan
-  matrix pmx_solve_rk45(ODE_system, int nCmt,
-                              real[] time, real[] amt, real[] rate, real[] ii,
-                              int[] evid, int[] cmt, real[] addl, int[] ss,
-                              real[] theta, real[] biovar, real[] tlag,                      
-                              real rel_tol, real abs_tol, int max_step);
-#+END_SRC
-#+BEGIN_SRC stan
-  matrix pmx_solve_bdf(ODE_system, int nCmt,
-                             real[] time, real[] amt, real[] rate, real[] ii,
-                             int[] evid, int[] cmt, real[] addl, int[] ss,
-                             real[] theta, real[] biovar, real[] tlag,                      
-                             real rel_tol, real abs_tol, int max_step);
-#+END_SRC
-Torsten function =pmx_solve_adams=, =pmx_solve_rk45= and
-=pmx_solve_bdf= solve first ODEs with
-user-specified first-order right-hand-side(RHS)
-\begin{equation*}
-y'(t) = f(t, y(t))
-\end{equation*}
-In the case where the =rate= vector $r$ is non-zero, this equation becomes:
-\begin{equation*}
-y'(t) = f(t, y(t)) + r
-\end{equation*}
+Here src_stan[:exports code]{[adams || rk45 || bdf]} indicates the
+function name can be of any of the three. See below.
 
-- User specifies $f(t, y(t))$ by defining =ODE_system=
-  inside the {{{torsten_src(functions)}}} block (see section 19.2 of the
-  Stan reference manual for details and code below
-  for an example). The user does NOT include the rates in their
-  definition of $f$. Torsten automatically corrects the derivatives when
-  the rates are non-zero.
-- {{{torsten_src(nCmt)}}} is the number of compartments (or, equivalently, the
-  number of ODEs) in the model. 
-- ~rel_tol~, ~abs_tol~,
-  and ~max_step~ are tuning parameters for the ODE integrator:
-  respectively the relative tolerance, the absolute tolerance, and the
-  maximum number of steps.
-- =pmx_solve_rk45= solves ODE with Stan's Runge-Kutta
-  ODE solver function.
-- =pmx_solve_adams= solves ODE with Torsten's Adams-Moulton ODE solver function =pmx_integrate_ode_adams=.
-- =pmx_solve_bdf= solves ODE with Torsten's Backward
-  Differentiation(BDF) ODE solver function =pmx_integrate_ode_bdf=, 
-- The values to use for the tuning parameters depends on the integrator and
-  the specifics of the ODE system. Reducing the tolerance parameters and
-  increasing the number of steps make for a more robust integrator but
-  can significantly slow down the algorithm. The following can be used
-  as a starting point: 
-  + ~rel_tol = 1e-6~
-  + ~abs_tol = 1e-6~
-  + ~max_step = 1e+6~
-  for rk45 integrator and
-  + ~rel_tol = 1e-10~
-  + ~abs_tol = 1e-10~
-  + ~max_step = 1e+8~
-  for the BDF integrator [fn::These are the default tuning parameters the integrators. Torsten functions do not have a default values for these parameters. The user must explicitly pass the tuning parameters to ~generalOdeModel_*()~ .].
-  Users should be prepared to adjust these
-  values. For additional information, see the Stan User's
-  Manual cite:stan_team_2017.
-- In the case of a multiple truncated infusion rate dosing regimen
-  The bioavailability {{{torsten_src(biovar)}}} and the amount {{{torsten_src(amt)}}} cannot be passed as parameters.
-- See section [[sec:onecpt]] regarding model arguments {{{torsten_src(theta)}}},
-  {{{torsten_src(biovar)}}}, and {{{torsten_src(tlag)}}}.
-# These restrictions also apply to ~mixOdeCpt_*~ functions, discussed in the next section.
+*** Arguments
+**** {{{torsten_src(ODE\_rhs)}}}
+     ODE right-hand-side $f$. It should be defined in
+     src_stan[:exports code]{functions} block and has the following format
+#+BEGIN_SRC stan
+  real[] = f(real t, real[] y, real[] param, real[] dat_r, int[] dat_i) {...}
+#+END_SRC
+     Here {{{torsten_src(t)}}} is time, {{{torsten_src(y)}}} the unknowns of ODE, {{{torsten_src(param)}}} the parameters, {{{torsten_src(dat\_r)}}} the real data, {{{torsten_src(dat\_i)}}}
+     the integer data. {{{torsten_src(param)}}},
+     {{{torsten_src(dat\_r)}}}, and {{{torsten_src(dat\_i)}}} are from
+     the entry of {{{torsten_src(theta)}}}, {{{torsten_src(x\_r)}}},
+     and {{{torsten_src(x\_i)}}} corresponding to
+     {{{torsten_src(t)}}}, respectively.
+     $f$ should not include dosing rates in its
+     definition, as Torsten automatically update $f$
+     when the corresponding event indicates infusion dosage.
+**** {{{torsten_src(nCmt)}}} 
+     The number of compartments. Equivalently, the dimension of the ODE system.
+**** {{{torsten_src(x\_r)}}}
+     2d arary real data to be passed to ODE RHS. If specified, its 1st
+     dimension should have the same size as {{{torsten_src(time)}}}.
+**** {{{torsten_src(x\_i)}}}
+     2d arary integer data to be passed to ODE RHS. If specified, its 1st
+     dimension should have the same size as {{{torsten_src(time)}}}.
+**** {{{torsten_src(rel\_tol)}}} 
+     The relative tolerance for numerical integration, default to 1.0E-6.
+**** {{{torsten_src(abs\_tol)}}}
+     The absolute tolerance for numerical integration, default to 1.0E-6.
+**** {{{torsten_src(max\_step)}}}
+     The maximum number of steps in numerical integration, default to $10^6$.
+**** {{{torsten_src(as\_rel\_tol)}}}
+     The relative tolerance for algebra solver for steady state solution, default to 1.0E-6.     
+**** {{{torsten_src(as\_abs\_tol)}}}
+     The absolute tolerance for algebra solver for steady state solution, default to 1.0E-6.
+**** {{{torsten_src(as\_max\_step)}}}
+     The maximum number of interations in algebra solver for steady state solution, default to $10^2$.
+****   See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]] for the rest of arguments.
+
+*** Note
+    - Three numerical integrator are provided:
+      + {{{torsten_src(pmx\_solve\_adams)}}}: Adams-Moulton method,
+      + {{{torsten_src(pmx\_solve\_bdf)}}}: Backward-differentiation formular,
+      + {{{torsten_src(pmx\_solve\_rk45)}}}: Runge-Kutta 4/5 method.
+      When not equipped with further understanding of the ODE system, as a
+      rule of thumb we suggest user try
+      {{{torsten_src(rk45)}}} integrator first, {{{torsten_src(bdf)}}}
+      integrator when the system is suspected to be stiff, and
+      {{{torsten_src(adams)}}} when a non-stiff system needs to be solved
+      with higher accuracy/smaller tolerance.
+    - With optional arguments indicated by square bracket, the following calls are allowed:
+#+BEGIN_SRC stan
+  pmx_solve_[adams || rk45 || bdf](..., theta);
+  pmx_solve_[adams || rk45 || bdf](..., theta, rel_tol, abs_tol, max_step);
+  pmx_solve_[adams || rk45 || bdf](..., theta, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
+  pmx_solve_[adams || rk45 || bdf](..., theta, biovar);
+  pmx_solve_[adams || rk45 || bdf](..., theta, biovar, rel_tol, abs_tol, max_step);
+  pmx_solve_[adams || rk45 || bdf](..., theta, biovar, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
+  pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag);
+  pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, rel_tol, abs_tol, max_step);
+  pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
+  pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r);
+  pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, rel_tol, abs_tol, max_step);
+  pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
+  pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, x_i);
+  pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, x_i, rel_tol, abs_tol, max_step);
+  pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, x_i, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
+#+END_SRC
 
 ** Coupled ODE Model Function
 <<sec:mixed>>
@@ -685,7 +726,7 @@ y'(t) = f(t, y(t)) + r
 
 #+BEGIN_SRC stan
   matrix pmx_solve_onecpt_rk45(reduced_ODE_system, int nOde,
-                              real[] time, real[] amt, real[] rate,
+                              time, real[] amt, real[] rate,
                               real[] ii, int[] evid, int[] cmt, real[]
                               addl, int[] ss,
                               real[] theta, real[] biovar, real[] tlag,
