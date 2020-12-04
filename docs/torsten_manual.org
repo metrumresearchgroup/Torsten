@@ -165,9 +165,8 @@ conventions including:
 - Recursive calculation of model predictions
   + This permits piecewise constant covariate values
 - Bolus or constant rate inputs into any compartment
-- Handles single dose and multiple dose histories
-- Handles steady state dosing histories
-  + Note: The infusion time must be shorter than the inter-dose interval.
+- Single dose and multiple dose events
+- Handles steady state dosing events
 - Implemented NMTRAN data items include: TIME, EVID, CMT, AMT, RATE, ADDL, II, SS
 
 In general, all real variables may be passed as model parameters. A
@@ -221,14 +220,15 @@ following:
 :CUSTOM_ID: changelog
 :UNNUMBERED: t
 :END:
-*** Version 0.88 <2020-12-01 Tue>
+*** Version 0.88 <2020-12-18 Fri>
 **** Added
      :PROPERTIES:
      :CUSTOM_ID: 0-85-added
      :END:
-  - Experimental feature of cross-chain warmup
+  - Experimental feature of cross-chain warmup and multilevel MPI paralleism.
   - Bioavailability, lag time, ODE real & integer data are optional in PMX function signatures.
   - Support all EVID options from NM-TRAN and mrgsolve.
+  - Support steady-state infusion through multiple interdose intervals.
 **** Changed
      :PROPERTIES:
      :CUSTOM_ID: 0-85-changed
@@ -723,39 +723,7 @@ function name can be of any of the three. See below.
 ** Coupled ODE Model Function
 <<sec:mixed>>
 #+INDEX: Mixed ODE Model
-
-#+BEGIN_SRC stan
-  matrix pmx_solve_onecpt_rk45(reduced_ODE_system, int nOde,
-                              time, real[] amt, real[] rate,
-                              real[] ii, int[] evid, int[] cmt, real[]
-                              addl, int[] ss,
-                              real[] theta, real[] biovar, real[] tlag,
-                              real rel_tol, real abs_tol, real max_step)
-#+END_SRC
-#+BEGIN_SRC stan
-  matrix pmx_solve_onecpt_bdf(reduced_ODE_system, int nOde,
-                              real[] time, real[] amt, real[] rate,
-                              real[] ii, int[] evid, int[] cmt, real[]
-                              addl, int[] ss,
-                              real[] theta, real[] biovar, real[] tlag,
-                              real rel_tol, real abs_tol, real max_step)
-#+END_SRC
-#+BEGIN_SRC stan
-  matrix pmx_solve_twocpt_rk45(reduced_ODE_system, int nOde,
-                              real[] time, real[] amt, real[] rate,
-                              real[] ii, int[] evid, int[] cmt, real[]
-                              addl, int[] ss,
-                              real[] theta, real[] biovar, real[] tlag,
-                              real rel_tol, real abs_tol, real max_step)
-#+END_SRC
-#+BEGIN_SRC stan
-  matrix pmx_solve_twocpt_bdf(reduced_ODE_system, int nOde,
-                              real[] time, real[] amt, real[] rate,
-                              real[] ii, int[] evid, int[] cmt, real[]
-                              addl, int[] ss,
-                              real[] theta, real[] biovar, real[] tlag,
-                              real rel_tol, real abs_tol, real max_step)
-#+END_SRC
+*** Description
 When the ODE system consists of two subsystems in form of
 \begin{align*}
   y_1^\prime &= f_1(t, y_1), \\
@@ -770,35 +738,34 @@ models, where $y_1$ describes a forcing PK function and $y_2$ the PD
 effects. In the example of a Friberg-Karlsson
 semi-mechanistic model(see below), we observe an average speedup of
 $\sim 47 \pm 18 \%$ when using the mix solver in lieu of the numerical
-integrator. Torsten supports the mixed solver for
-cases where $y_1$ solves the ODEs for a One or Two Compartment model
-with a first-order absorption.
-
-The ~reduced_ODE_system~ specifies the system we
-numerically solve ($y_2$ in the above discussion, also called the
-/reduced system/ and {{{torsten_src(nOde)}}} the number of equations in
-the \underline{reduced} system. The function that defines a reduced
-system has an almost identical signature to that used for a full
-system, but takes one additional argument: $y_1$, the PK states,
-i.e. solution to the PK ODEs.
+integrator. In the context, currently the couple solver supports one-
+& two-compartment for PK model, and {{{torsten_src(rk45)}}} &
+{{{torsten_src(bdf)}}} integrator for nonlinear PD model.
+*** Usage
 #+BEGIN_SRC stan
-  real[] reducedODE(real t,       // time
-                    real[] y,     // reduced state
-                    real[] y1,    // PK states
-                    real[] theta, // parameters
-                    real[] x_r,   // data (real)
-                    int[] x_int)  // data (integer)
+  matrix pmx_solve_[onecpt || twocpt]_[rk45 || bdf](reduced_ODE_system, int nOde, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag [, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
 #+END_SRC
+*** Arguments
+**** {{{torsten_src(reduced\_ODE\_rhs)}}}
+     The system  numerically solve ($y_2$ in the above discussion, also called the
+     /reduced system/ and {{{torsten_src(nOde)}}} the number of equations in
+     the \underline{reduced} system. The function that defines a reduced
+     system has an almost identical signature to that used for a full
+     system, but takes one additional argument: $y_1$, the PK states,
+     i.e. solution to the PK ODEs.
+     #+BEGIN_SRC stan
+       real[] reduced_ODE_rhs(real t, real[] y2, real[] y1, real[] theta, real[] x_r, int[] x_i) 
+     #+END_SRC
+**** {{{torsten_src(nCmt)}}} 
+     The number of compartments. Equivalently, the dimension of the ODE system.
+**** {{{torsten_src(rel\_tol)}}} 
+     The relative tolerance for numerical integration, default to 1.0E-6.
+**** {{{torsten_src(abs\_tol)}}}
+     The absolute tolerance for numerical integration, default to 1.0E-6.
+**** {{{torsten_src(max\_step)}}}
+     The maximum number of steps in numerical integration, default to $10^6$.
+****   See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]] for the rest of arguments.
 
-The four functions of mixed solver correspond to all the permutations Torsten
-provides when using a forcing One or Two Compartment function, and the
-Runge-Kutta 4th/5th order (=rk45=) or Backward Differentiation (=bdf=)
-integration scheme. The mixed ODE functions can be used to compute the
-steady state solutions supported by the general ODE model functions.
-
-Restrictions regarding which arguments may be passed as parameters for
-general ODE solvers also apply to
-mixed solvers.
 
 
 ** General ODE-based Population Model Function

@@ -1,4 +1,27 @@
-# 0.87 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-07-26 Fri&gt;</span></span>
+:UNNUMBERED: t
+
+
+# Version 0.88 <span class="timestamp-wrapper"><span class="timestamp">&lt;2020-12-18 Fri&gt;</span></span>
+
+
+## Added
+
+-   Experimental feature of cross-chain warmup and multilevel MPI paralleism.
+-   Bioavailability, lag time, ODE real & integer data are optional in PMX function signatures.
+-   Support all EVID options from NM-TRAN and mrgsolve.
+-   Support steady-state infusion through multiple interdose intervals.
+
+
+## Changed
+
+-   More efficient memory management of COVDES implenmentation.
+-   Update of MPI framework to adapt multilevel paralleism.
+-   Update to Stan version 2.25.0.
+-   Use cmdstanr as R interface.
+-   Stop supporting rstan as R interface.
+
+
+# Version 0.87 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-07-26 Fri&gt;</span></span>
 
 
 ## Added
@@ -19,7 +42,7 @@
 -   Update to rstan version 2.19.2.
 
 
-# 0.86 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-05-15 Wed&gt;</span></span>
+# Version 0.86 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-05-15 Wed&gt;</span></span>
 
 
 ## Added
@@ -61,7 +84,7 @@
 -   Update to Stan version 2.19.1.
 
 
-# 0.85 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-12-04 Tue&gt;</span></span>
+# Version 0.85 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-12-04 Tue&gt;</span></span>
 
 
 ## Added
@@ -74,7 +97,7 @@
 -   Update to Stan version 2.18.0.
 
 
-# 0.84 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-02-24 Sat&gt;</span></span>
+# Version 0.84 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-02-24 Sat&gt;</span></span>
 
 
 ## Added
@@ -90,7 +113,7 @@
 -   Bugfixes.
 
 
-# 0.83 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-08-02 Wed&gt;</span></span>
+# Version 0.83 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-08-02 Wed&gt;</span></span>
 
 
 ## Added
@@ -106,7 +129,7 @@
 -   Other bugfixes
 
 
-# 0.82 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-29 Sun&gt;</span></span>
+# Version 0.82 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-29 Sun&gt;</span></span>
 
 
 ## Added
@@ -122,7 +145,7 @@
 -   bugfixes
 
 
-# 0.81 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-27 Tue&gt;</span></span>
+# Version 0.81 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-27 Tue&gt;</span></span>
 
 
 ## Added
@@ -130,7 +153,7 @@
 linCptModel (linear compartmental model) function
 
 
-# 0.80a <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-21 Wed&gt;</span></span>
+# Version 0.80a <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-21 Wed&gt;</span></span>
 
 
 ## Added

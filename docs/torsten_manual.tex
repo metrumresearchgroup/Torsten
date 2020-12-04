@@ -1,4 +1,4 @@
-% Created 2020-12-02 Wed 21:52
+% Created 2020-12-03 Thu 22:10
 % Intended LaTeX compiler: pdflatex
 \documentclass[10pt, reqno, oneside]{amsbook}
               \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
@@ -69,36 +69,36 @@
 
 
 \section*{Development team}
-\label{sec:org32b99c4}
+\label{sec:org590b2c8}
 \subsection*{Bill Gillespie}
-\label{sec:orga0564fa}
+\label{sec:org40a1017}
 \href{mailto:billg@metrumrg.com}{\texttt{billg@metrumrg.com}},
 Metrum Research Group, LLC
 \subsection*{Yi Zhang}
-\label{sec:org2c6b7ad}
+\label{sec:org3321e12}
 \href{mailto:yiz@metrumrg.com}{\texttt{yiz@metrumrg.com}}, Metrum Research Group, LLC
 \subsection*{Charles Margossian}
-\label{sec:org602aeb6}
+\label{sec:orge9960d3}
 \href{mailto:charles.margossian@columbia.edu}{\texttt{charles.margossian@columbia.edu}}, Columbia University, Department of Statistics(formerly Metrum Research Group, LLC)
 
 \chapter*{Acknowledgements}
-\label{sec:org24e5489}
+\label{sec:orga9bb5e9}
 \section*{Institutions}
-\label{sec:org3d9417a}
+\label{sec:org3cf2a85}
 We thank Metrum Research Group, Columbia University, and AstraZeneca.
 \section*{Funding}
-\label{sec:orgcefc525}
+\label{sec:org0fe68e2}
 This work was funded in part by the following organizations:
 \subsection*{Office of Naval Research (ONR) contract N00014-16-P-2039}
-\label{sec:org5bb656c}
+\label{sec:org4b77751}
 provided as part of the Small Business Technology Transfer (STTR)
 program. The content of the information presented in this document
 does not necessarily reflect the position or policy of the
 Government and no official endorsement should be inferred.
 \subsection*{Bill \& Melinda Gates Foundation.}
-\label{sec:orgb1f2edb}
+\label{sec:org24d548f}
 \section*{Individuals}
-\label{sec:org364700b}
+\label{sec:orgb65a5d8}
 We thank the Stan Development Team for giving us guidance on how to
 create new Stan functions and adding features to Stan's core language
 that facilitate building ODE-based models.
@@ -108,7 +108,7 @@ in C++ and using GitHub, Curtis Johnston for reviewing the User
 Manual, and Yaming Su for using Torsten and giving us feedback.
 
 \chapter{Introduction}
-\label{sec:orga6d0fca}
+\label{sec:org9a821ff}
 Stan is an open source probabilistic programing language designed
 primarily to do Bayesian data analysis
 \cite{carpenter17_stan}. 
@@ -242,7 +242,7 @@ parameter (in a dosing compartment) evaluated at \(t_{\text{lag}} = 0\).
 \section*{Changelog}
 \label{changelog}
 \subsection*{Version 0.88 \textit{<2020-12-01 Tue>}}
-\label{sec:org072fa74}
+\label{sec:org9e4d94f}
 \begin{itemize}
 \item Added
 \label{0-85-added}
@@ -262,7 +262,7 @@ parameter (in a dosing compartment) evaluated at \(t_{\text{lag}} = 0\).
 \end{itemize}
 \end{itemize}
 \subsection*{Version 0.87 \textit{<2019-07-26 Fri>}}
-\label{sec:org4a63e9b}
+\label{sec:org9b94e46}
 \begin{itemize}
 \item Added
 \label{0-85-added}
@@ -287,7 +287,7 @@ functions.
 \end{itemize}
 
 \subsection*{Version 0.86 \textit{<2019-05-15 Wed>}}
-\label{sec:orgc636d60}
+\label{sec:org60e6d94}
 \begin{itemize}
 \item Added
 \label{0-85-added}
@@ -341,7 +341,7 @@ deprecated in the future.
 \end{itemize}
 
 \subsection*{Version 0.85 \textit{<2018-12-04 Tue>}}
-\label{sec:orgd1f5109}
+\label{sec:org374ede7}
 \begin{itemize}
 \item Added
 \label{0-85-added}
@@ -356,7 +356,7 @@ deprecated in the future.
 \end{itemize}
 
 \subsection*{Version 0.84 \textit{<2018-02-24 Sat>}}
-\label{sec:orgbf86d10}
+\label{sec:orgaaa9ccd}
 \begin{itemize}
 \item Added
 \label{0-84-added}
@@ -375,7 +375,7 @@ deprecated in the future.
 \end{itemize}
 
 \subsection*{Version 0.83 \textit{<2017-08-02 Wed>}}
-\label{sec:org269e77d}
+\label{sec:org82bc831}
 \begin{itemize}
 \item Added
 \label{0-83-added}
@@ -398,7 +398,7 @@ deprecated in the future.
 \label{0-82-added}
 \begin{itemize}
 \item Added
-\label{sec:org9209b1d}
+\label{sec:orge3b99b3}
 \begin{itemize}
 \item Allow parameter arguments to be passed as 1D or 2D arrays
 \item More unit tests
@@ -418,7 +418,7 @@ for the lag time).
 \end{itemize}
 
 \subsection*{Version 0.81 \textit{<2016-09-27 Tue>}}
-\label{sec:org21977ae}
+\label{sec:org9b1cbd7}
 \begin{itemize}
 \item Added
 \label{0-81-added}
@@ -426,7 +426,7 @@ linCptModel (linear compartmental model) function
 \end{itemize}
 
 \subsection*{Version 0.80a \textit{<2016-09-21 Wed>}}
-\label{sec:org1b72199}
+\label{sec:orge8e67ad}
 \begin{itemize}
 \item Added
 \label{0-80a-added}
@@ -441,7 +441,7 @@ compatible with Stan v2.25.0. Torsten can be accessed from
 command line for cmdstan interface and =cmdstanr=(\url{https://mc-stan.org/cmdstanr/}) for R interface.
 
 \section{Command line interface}
-\label{sec:org2b41234}
+\label{sec:org466ccc2}
 After downloading the project 
 
 \begin{itemize}
@@ -456,7 +456,7 @@ cd Torsten/cmdstan; make model_path/model_name
 \end{minted}
 
 \section{R interface}
-\label{sec:orgecb1c21}
+\label{sec:org80b42d9}
 After installing cmdstanr from \url{https://mc-stan.org/cmdstanr/}, use the
 following command to set path 
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{r}
@@ -469,7 +469,7 @@ Then one can follow
 to compile and run Torsten models.
 
 \subsection{MPI support}
-\label{sec:org2a3ba72}
+\label{sec:orgb8dc2b0}
 Torsten's MPI support is of a different flavour than
 \texttt{reduce\_sum} found in Stan. To be able to utilize MPI
 parallelisation, one first needs to ensure an MPI library
@@ -498,7 +498,7 @@ same Stan model, and MPI support is only available through \texttt{cmdstan}
 interface.
 
 \section{Testing}
-\label{sec:org37ad2b6}
+\label{sec:org15611ce}
 Models in \texttt{example-models} directory are for tutorial and demonstration.
 The following shows how to build and run the two-compartment model
 using \texttt{cmdstanr}, and use \texttt{bayesplot} to examine posterior density of \texttt{CL}.
@@ -518,7 +518,7 @@ bayesplot::mcmc_dens_overlay(fit$draws("CL"))
 \end{minted}
 
 \chapter{Using Torsten}
-\label{sec:org682f353}
+\label{sec:org39c7cb6}
 The reader should have a basic understanding of how Stan works before
 reading this chapter. There are excellent resources online to get
 started with Stan
@@ -579,10 +579,10 @@ PMX model parameter overloadings. One can use 1d array \mintinline[breaklines=tr
 \end{table}
 
 \section{One Compartment Model}
-\label{sec:orgfed6e92}
+\label{sec:org0ed5c47}
 \label{sec:onecpt}
 \subsection{Description}
-\label{sec:org5fb03e4}
+\label{sec:org645f096}
 Function {\small \color{MRGGreen} \texttt{\textbf{pmx\_solve\_onecpt}}} solves a one-compartment PK
 model (Figure \ref{one_two_cpt_models}). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\)
 by solving for the mass of drug in the central compartment
@@ -602,20 +602,20 @@ One and two compartment models with first order absorption implemented in Torste
 \end{figure}
 
 \subsection{Usage}
-\label{sec:org772c66e}
+\label{sec:org0e314e6}
 \index{One Compartment Model}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 matrix = pmx_solve_onecpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, biovar, tlag ] )
 \end{minted}
 
 \subsection{Arguments}
-\label{sec:org73f556d}
+\label{sec:org31ea685}
 See Table \ref{tab:event_args} and Table \ref{tab:event_params}.
 \subsection{Return value}
-\label{sec:org473be29}
+\label{sec:orge257b41}
 An \texttt{ncmt}-by-\texttt{nt} matrix, where \texttt{nt} is the number of time steps and \texttt{ncmt=2} is the number of compartments.    
 \subsection{Note}
-\label{sec:org002f7fa}
+\label{sec:orgdf352cd}
 \begin{itemize}
 \item ODE Parameters {\small \color{MRGGreen} \texttt{\textbf{theta}}} should consist of \(CL\), \(V_2\), \(k_a\), in that order.
 \item {\small \color{MRGGreen} \texttt{\textbf{biovar}}} and {\small \color{MRGGreen} \texttt{\textbf{tlag}}} are optional, so that the following are allowed:
@@ -630,10 +630,10 @@ pmx_solve_onecpt(..., theta, biovar, tlag);
 \end{itemize}
 
 \section{Two Compartment Model}
-\label{sec:org177d5db}
+\label{sec:orga7da676}
 \label{sec:twocpt}
 \subsection{Description}
-\label{sec:orgb48339d}
+\label{sec:orga0040d9}
 Function {\small \color{MRGGreen} \texttt{\textbf{pmx\_solve\_twocpt}}} solves a two-compartment PK
 model (Figure \ref{one_two_cpt_models}). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\)
 by solving for the mass of drug in the central compartment
@@ -647,22 +647,22 @@ by solving for the mass of drug in the central compartment
 \end{subequations}
 
 \subsection{Usage}
-\label{sec:org9946e1b}
+\label{sec:orge08292c}
 \index{Two Compartment Model}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 matrix = pmx_solve_twocpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, biovar, tlag ] )
 \end{minted}
 
 \subsection{Arguments}
-\label{sec:org22fd79e}
+\label{sec:org54e5e92}
 See Table \ref{tab:event_args} and Table \ref{tab:event_params}.
 
 \subsection{Return value}
-\label{sec:org91bd0ab}
+\label{sec:org9867038}
 An \texttt{ncmt}-by-\texttt{nt} matrix, where \texttt{nt} is the number of time steps and \texttt{ncmt=3} is the number of compartments.
 
 \subsection{Note}
-\label{sec:orgae05f3c}
+\label{sec:org0f86bd4}
 \begin{itemize}
 \item ODE Parameters {\small \color{MRGGreen} \texttt{\textbf{theta}}} consists of \(CL\), \(Q\), \(V_2\), \(V_3\), \(k_a\).
 \item {\small \color{MRGGreen} \texttt{\textbf{biovar}}} and {\small \color{MRGGreen} \texttt{\textbf{tlag}}} are optional, so that the following are allowed:
@@ -677,9 +677,9 @@ pmx_solve_twocpt(..., theta, biovar, tlag);
 \end{itemize}
 
 \section{General Linear ODE Model Function}
-\label{sec:org3ab18a4}
+\label{sec:org7f89692}
 \subsection{Description}
-\label{sec:org6ec0ae6}
+\label{sec:org1bf5c5e}
 Function {\small \color{MRGGreen} \texttt{\textbf{pmx\_solve\_linode}}} solves a (piecewise) linear ODEs model with coefficients
 in form of matrix \(K\)
 \begin{equation}
@@ -696,17 +696,17 @@ For example, in a two-compartment model with first order absorption, \(K\) is
 where \(k_{10}=CL/V_2\), \(k_{12}=Q/V_2\), and \(k_{21}=Q/V_3\).
 
 \subsection{Usage}
-\label{sec:orgb8d15f4}
+\label{sec:orgaa210de}
 \index{General linear model}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 matrix = pmx_solve_linode(time, amt, rate, ii, evid, cmt, addl, ss, K, biovar, tlag )
 \end{minted}
 
 \subsection{Arguments}
-\label{sec:org2e164c8}
+\label{sec:org7f5fe07}
 \begin{itemize}
 \item {\small \color{MRGGreen} \texttt{\textbf{K}}}
-\label{sec:org8cfcf18}
+\label{sec:org95f4ae8}
 System parameters. {\small \color{MRGGreen} \texttt{\textbf{K}}} can be either
 \begin{itemize}
 \item a \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}{matrix} for constant parameters in all events, or
@@ -715,17 +715,17 @@ the model parameters for time interval \((t_{i-1}, t_i)\),
 and the number of the rows equals to the number of event time {\small \color{MRGGreen} \texttt{\textbf{nt}}}.
 \end{itemize}
 \item See Table \ref{tab:event_args} and Table \ref{tab:event_params} for the rest of arguments.
-\label{sec:orgde6a739}
+\label{sec:orgf6cdbb1}
 \end{itemize}
 
 \subsection{Return value}
-\label{sec:org1051bec}
+\label{sec:org54dc506}
 An \texttt{n}-by-\texttt{nt} matrix, where \texttt{nt} is the number of time steps and \texttt{n} is the number of rows(columns) of square matrix {\small \color{MRGGreen} \texttt{\textbf{K}}}.
 
 \section{General ODE Model Function}
-\label{sec:orgbce5ca0}
+\label{sec:orga1486e9}
 \subsection{Description}
-\label{sec:orgbe77f70}
+\label{sec:orga7a3086}
 Function {\small \color{MRGGreen} \texttt{\textbf{pmx\_solve\_adams}}}, {\small \color{MRGGreen} \texttt{\textbf{pmx\_solve\_bdf}}}, and {\small \color{MRGGreen} \texttt{\textbf{pmx\_solve\_rk45}}} solve a first-order ODE system
 specified by user-specified right-hand-side function {\small \color{MRGGreen} \texttt{\textbf{ODE\_rhs}}} \(f\)
 \begin{equation*}
@@ -736,7 +736,7 @@ In the case where the {\small \color{MRGGreen} \texttt{\textbf{rate}}} vector \(
 y'(t) = f(t, y(t)) + r
 \end{equation*}
 \subsection{Usage}
-\label{sec:org5b3721e}
+\label{sec:org9a1ada4}
 \index{General ODE Model}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 matrix pmx_solve_[adams || rk45 || bdf](ODE_rhs, int nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta, [ biovar, tlag, real[,] x_r, int [,] x_i, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
@@ -745,10 +745,10 @@ Here \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan
 function name can be of any of the three. See below.
 
 \subsection{Arguments}
-\label{sec:org67c0bbc}
+\label{sec:orgaad68f3}
 \begin{itemize}
 \item {\small \color{MRGGreen} \texttt{\textbf{ODE\_rhs}}}
-\label{sec:orgce29f22}
+\label{sec:org6a0bbfa}
 ODE right-hand-side \(f\). It should be defined in
 \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}{functions} block and has the following format
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
@@ -764,40 +764,40 @@ and {\small \color{MRGGreen} \texttt{\textbf{x\_i}}} corresponding to
 definition, as Torsten automatically update \(f\)
 when the corresponding event indicates infusion dosage.
 \item {\small \color{MRGGreen} \texttt{\textbf{nCmt}}}
-\label{sec:org6895681}
+\label{sec:org38b570f}
 The number of compartments. Equivalently, the dimension of the ODE system.
 \item {\small \color{MRGGreen} \texttt{\textbf{x\_r}}}
-\label{sec:org86389c3}
+\label{sec:org9bab5a7}
 2d arary real data to be passed to ODE RHS. If specified, its 1st
 dimension should have the same size as {\small \color{MRGGreen} \texttt{\textbf{time}}}.
 \item {\small \color{MRGGreen} \texttt{\textbf{x\_i}}}
-\label{sec:org89260b6}
+\label{sec:orgec0c226}
 2d arary integer data to be passed to ODE RHS. If specified, its 1st
 dimension should have the same size as {\small \color{MRGGreen} \texttt{\textbf{time}}}.
 \item {\small \color{MRGGreen} \texttt{\textbf{rel\_tol}}}
-\label{sec:orgb571ff4}
+\label{sec:org0bccd9c}
 The relative tolerance for numerical integration, default to 1.0E-6.
 \item {\small \color{MRGGreen} \texttt{\textbf{abs\_tol}}}
-\label{sec:org0257eee}
+\label{sec:org6425fb9}
 The absolute tolerance for numerical integration, default to 1.0E-6.
 \item {\small \color{MRGGreen} \texttt{\textbf{max\_step}}}
-\label{sec:orgc4aa9fb}
+\label{sec:org176e899}
 The maximum number of steps in numerical integration, default to \(10^6\).
 \item {\small \color{MRGGreen} \texttt{\textbf{as\_rel\_tol}}}
-\label{sec:orgafb26d5}
+\label{sec:orgd4f4e58}
 The relative tolerance for algebra solver for steady state solution, default to 1.0E-6.     
 \item {\small \color{MRGGreen} \texttt{\textbf{as\_abs\_tol}}}
-\label{sec:org2ce0951}
+\label{sec:org9773a96}
 The absolute tolerance for algebra solver for steady state solution, default to 1.0E-6.
 \item {\small \color{MRGGreen} \texttt{\textbf{as\_max\_step}}}
-\label{sec:org3aae626}
+\label{sec:org7855d27}
 The maximum number of interations in algebra solver for steady state solution, default to \(10^2\).
 \item See Table \ref{tab:event_args} and Table \ref{tab:event_params} for the rest of arguments.
-\label{sec:org5186ba1}
+\label{sec:orgee12b67}
 \end{itemize}
 
 \subsection{Note}
-\label{sec:org67e9ba8}
+\label{sec:org2cff2bf}
 \begin{itemize}
 \item Three numerical integrator are provided:
 \begin{itemize}
@@ -832,42 +832,11 @@ pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, x_i, rel_tol, ab
 \end{minted}
 
 \section{Coupled ODE Model Function}
-\label{sec:org3856d38}
+\label{sec:org83425e6}
 \label{sec:mixed}
 \index{Mixed ODE Model}
-
-\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-matrix pmx_solve_onecpt_rk45(reduced_ODE_system, int nOde,
-                            time, real[] amt, real[] rate,
-                            real[] ii, int[] evid, int[] cmt, real[]
-                            addl, int[] ss,
-                            real[] theta, real[] biovar, real[] tlag,
-                            real rel_tol, real abs_tol, real max_step)
-\end{minted}
-\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-matrix pmx_solve_onecpt_bdf(reduced_ODE_system, int nOde,
-                            real[] time, real[] amt, real[] rate,
-                            real[] ii, int[] evid, int[] cmt, real[]
-                            addl, int[] ss,
-                            real[] theta, real[] biovar, real[] tlag,
-                            real rel_tol, real abs_tol, real max_step)
-\end{minted}
-\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-matrix pmx_solve_twocpt_rk45(reduced_ODE_system, int nOde,
-                            real[] time, real[] amt, real[] rate,
-                            real[] ii, int[] evid, int[] cmt, real[]
-                            addl, int[] ss,
-                            real[] theta, real[] biovar, real[] tlag,
-                            real rel_tol, real abs_tol, real max_step)
-\end{minted}
-\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-matrix pmx_solve_twocpt_bdf(reduced_ODE_system, int nOde,
-                            real[] time, real[] amt, real[] rate,
-                            real[] ii, int[] evid, int[] cmt, real[]
-                            addl, int[] ss,
-                            real[] theta, real[] biovar, real[] tlag,
-                            real rel_tol, real abs_tol, real max_step)
-\end{minted}
+\subsection{Description}
+\label{sec:org61c6218}
 When the ODE system consists of two subsystems in form of
 \begin{align*}
   y_1^\prime &= f_1(t, y_1), \\
@@ -882,39 +851,48 @@ models, where \(y_1\) describes a forcing PK function and \(y_2\) the PD
 effects. In the example of a Friberg-Karlsson
 semi-mechanistic model(see below), we observe an average speedup of
 \(\sim 47 \pm 18 \%\) when using the mix solver in lieu of the numerical
-integrator. Torsten supports the mixed solver for
-cases where \(y_1\) solves the ODEs for a One or Two Compartment model
-with a first-order absorption.
-
-The \texttt{reduced\_ODE\_system} specifies the system we
-numerically solve (\(y_2\) in the above discussion, also called the
+integrator. In the context, currently the couple solver supports one-
+\& two-compartment for PK model, and {\small \color{MRGGreen} \texttt{\textbf{rk45}}} \&
+{\small \color{MRGGreen} \texttt{\textbf{bdf}}} integrator for nonlinear PD model.
+\subsection{Usage}
+\label{sec:org286f9e7}
+\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
+matrix pmx_solve_[onecpt || twocpt]_[rk45 || bdf](reduced_ODE_system, int nOde, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag [, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
+\end{minted}
+\subsection{Arguments}
+\label{sec:orgd1010ec}
+\begin{itemize}
+\item {\small \color{MRGGreen} \texttt{\textbf{reduced\_ODE\_rhs}}}
+\label{sec:org1da08d8}
+The system  numerically solve (\(y_2\) in the above discussion, also called the
 \emph{reduced system} and {\small \color{MRGGreen} \texttt{\textbf{nOde}}} the number of equations in
 the \underline{reduced} system. The function that defines a reduced
 system has an almost identical signature to that used for a full
 system, but takes one additional argument: \(y_1\), the PK states,
 i.e. solution to the PK ODEs.
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-real[] reducedODE(real t,       // time
-                  real[] y,     // reduced state
-                  real[] y1,    // PK states
-                  real[] theta, // parameters
-                  real[] x_r,   // data (real)
-                  int[] x_int)  // data (integer)
+real[] reduced_ODE_rhs(real t, real[] y2, real[] y1, real[] theta, real[] x_r, int[] x_i) 
 \end{minted}
+\item {\small \color{MRGGreen} \texttt{\textbf{nCmt}}}
+\label{sec:orgccca891}
+The number of compartments. Equivalently, the dimension of the ODE system.
+\item {\small \color{MRGGreen} \texttt{\textbf{rel\_tol}}}
+\label{sec:org0cf3565}
+The relative tolerance for numerical integration, default to 1.0E-6.
+\item {\small \color{MRGGreen} \texttt{\textbf{abs\_tol}}}
+\label{sec:orgb27f6d5}
+The absolute tolerance for numerical integration, default to 1.0E-6.
+\item {\small \color{MRGGreen} \texttt{\textbf{max\_step}}}
+\label{sec:org1e4c221}
+The maximum number of steps in numerical integration, default to \(10^6\).
+\item See Table \ref{tab:event_args} and Table \ref{tab:event_params} for the rest of arguments.
+\label{sec:org88cde9b}
+\end{itemize}
 
-The four functions of mixed solver correspond to all the permutations Torsten
-provides when using a forcing One or Two Compartment function, and the
-Runge-Kutta 4th/5th order (\texttt{rk45}) or Backward Differentiation (\texttt{bdf})
-integration scheme. The mixed ODE functions can be used to compute the
-steady state solutions supported by the general ODE model functions.
-
-Restrictions regarding which arguments may be passed as parameters for
-general ODE solvers also apply to
-mixed solvers.
 
 
 \section{General ODE-based Population Model Function}
-\label{sec:orgd9f8b8a}
+\label{sec:org84f88fc}
 \index{General ODE Model}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 matrix pmx_solve_group_adams(ODE_system, int nCmt, int[] len,
@@ -957,7 +935,7 @@ number of rows equals to the number of compartments in the model.
 \end{itemize}
 
 \section{ODE  integrator Function}
-\label{sec:orgab47041}
+\label{sec:orge918bdb}
 \index{PMX ODE integrators}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 real[ , ] pmx_integrate_ode_adams(ODE_system, real[] y0, real t0, real[] ts,
@@ -981,7 +959,7 @@ signature as those in Stan.
 \end{itemize}
 
 \section{ODE group  integrator Function}
-\label{sec:org2463df7}
+\label{sec:orgfe7a022}
 \index{PMX ODE group integrators}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 matrix pmx_integrate_ode_group_adams(ODE_system, real[ , ] y0, real t0,
@@ -1015,7 +993,7 @@ column-wise. The number of rows equals to the size of ODE system.
 \end{itemize}
 
 \section{Univariate integral}
-\label{sec:orgcc2462a}
+\label{sec:orgfcf9e30}
 \index{univariate integral}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 real univariate_integral_rk45(f, t0, t1, theta, x_r, x_i)
@@ -1032,7 +1010,7 @@ calculating the integral of a univariate function. The integrand function \(f\) 
 \end{minted}
 
 \section{Piecewise linear interpolation}
-\label{sec:org3ce71ee}
+\label{sec:orgba54747}
 \index{linear interpolation}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 real linear_interpolation(real xout, real[] x, real[] y)
@@ -1059,9 +1037,9 @@ pairs. Specifically, \texttt{linear\_interpolation} implements the following fun
 \end{itemize}
 
 \chapter{Examples}
-\label{sec:org980ef50}
+\label{sec:org431f2cf}
 \section{Two-compartment model for single patient}
-\label{sec:orgbbbfd59}
+\label{sec:orgd073ebd}
 We model drug absorption in a single patient and simulate plasma drug concentrations:
 
 \begin{itemize}
@@ -1214,7 +1192,7 @@ Predicted (posterior median and 90\% credible intervals) and observed plasma dru
 \end{figure}
 
 \section{Two-compartment model as a linear ODE model for single patient}
-\label{sec:orgcc46493}
+\label{sec:org6d4a380}
 Using \texttt{pmx\_solve\_linode}, the following example fits a two-compartment model
 with first order absorption.
 
@@ -1289,7 +1267,7 @@ transformed parameters{
 \end{minted}
 
 \section{Two-compartment model solved by numerical integrator for single patient}
-\label{sec:orgf81d956}
+\label{sec:org109b3f7}
 Using \texttt{pmx\_solve\_rk45}, the following example fits a two-compartment model
 with first order absorption. User-defined function
 \texttt{twoCptModelODE} describes the RHS of the ODEs.
@@ -1412,7 +1390,7 @@ transformed parameters{
 \end{minted}
 
 \section{Joint PK-PD model}
-\label{sec:orge256349}
+\label{sec:orgc47693b}
 \index{Friberg-Karlsson Model}
 
 A Friberg-Karlsson Semi-Mechanistic model \cite{friberg_mechanistic_2003} couples
@@ -1638,7 +1616,7 @@ model {
 
 
 \section{Two-compartment population model}
-\label{sec:orgce25174}
+\label{sec:orgfe3b6c0}
 Using \texttt{pmx\_solve\_group\_bdf}, the following example fits a
 two-compartment population model.
 
@@ -1783,7 +1761,7 @@ model{
 \end{minted}
 
 \section{Lotka-Volterra group model}
-\label{sec:org53571cd}
+\label{sec:org16b4e61}
 Using \texttt{pmx\_integrate\_ode\_group\_rk45}, the following example fits
 a Lotka-Volterra group model, based on \href{https://mc-stan.org/users/documentation/case-studies/lotka-volterra-predator-prey.html}{Stan's case study}.
 
@@ -1847,7 +1825,7 @@ model {
 \end{minted}
 
 \section{Univariate integral of a quadratic function}
-\label{sec:org2c918ec}
+\label{sec:org3d33898}
 integral of a quadratic function.
 This example shows how to use \texttt{univariate\_integral\_rk45} to calculate the
 integral of a quadratic function.
@@ -1878,7 +1856,7 @@ transformed data {
 \end{minted}
 
 \section{Linear intepolation}
-\label{sec:orgd1123ab}
+\label{sec:org502b7b9}
 This example illustrates how to use \texttt{linear\_intepolationi}
 to fit a piecewise linear function to a data set consisting
 of \((x, y)\) pairs.
@@ -1932,14 +1910,14 @@ generated quantities{
 \end{minted}
 
 \section{Effect Compartment Population Model}
-\label{sec:orgae56255}
+\label{sec:orgef57b92}
 Here we expand the example in \ref{sec:twocpt} to a population model fitted to the
 combined data from phase I and phase IIa studies. The
 parameters exhibit inter-individual variations (IIV), due to
 both random effects and to the patients' body weight,
 treated as a covariate and denoted \(bw\).
 \subsection{Population Model for Plasma Drug Concentration \(c\)}
-\label{sec:org93529be}
+\label{sec:orgcddbd71}
 \begin{gather*}
   \log\left(c_{ij}\right) \sim N\left(\log\left(\widehat{c}_{ij}\right),\sigma^2\right), \\
   \widehat{c}_{ij} = f_{2cpt}\left(t_{ij},D_j,\tau_j,CL_j,Q_j,V_{1j},V_{2j},k_{aj}\right), \\
@@ -1963,7 +1941,7 @@ Effect Compartment Model}
 \end{figure}
 
 \subsection{Effect Compartment Model for PD response \(R\).}
-\label{sec:orga479228}
+\label{sec:orgf820285}
 \begin{gather*}
 R_{ij} \sim N\left(\widehat{R}_{ij},\sigma_{R}^2\right), \\
 \widehat{R}_{ij} = \frac{E_{max}c_{eij}}{EC_{50j} + c_{eij}}, \\
@@ -2080,7 +2058,7 @@ transformed parameters{
 \end{minted}
 
 \subsection{Results}
-\label{sec:orgda9c1ad}
+\label{sec:orgd3fa17f}
 We use the same diagnosis tools as for the
 previous examples. The MCMC history plots (Figure \ref{effCptModelMCMC}) suggest the 4 chains have converged to common
 distributions. We note some minor auto-correlations for \(lp\_\) (the
@@ -2180,7 +2158,7 @@ Summary of the MCMC simulations of the marginal posterior distributions of the m
 \end{figure}
 
 \section{Friberg-Karlsson Semi-Mechanistic Population Model}
-\label{sec:orgd934ab7}
+\label{sec:org755e887}
 We now return to the example in Section \ref{sec:mixed} and extend
 it to a population model. While we recommend using the mixed
 solver, for completeness we show how to specify the model
@@ -2189,7 +2167,7 @@ as an exercise to the reader to rewrite the model with
 \texttt{mixOde2CptModel}. 
 
 \subsection{Friberg-Karlsson Population Model for drug-induced myelosuppression (\(ANC\))}
-\label{sec:orgd58ab6b}
+\label{sec:org7cbfddd}
 \begin{gather*}
 \log(ANC_{ij}) \sim N(Circ_{ij}, \sigma^2_{ANC}), \\
 \log\left(MTT_j, Circ_{0j}, \alpha_j\right) \sim N\left(\log\left(\widehat{MTT}, \widehat{Circ_0}, \widehat{\alpha}\right), \Omega_{ANC}\right), \\
@@ -2353,7 +2331,7 @@ efficient MCMC sampler, still does a reasonable job estimating the
 posterior distribution.
 
 \subsection{Results}
-\label{sec:orgf81dd78}
+\label{sec:orgfa053d2}
 The MCMC history plots are not as convincing
 as in the previous examples, mostly because the number of iterations
 is small (100 versus 1000 in the previous example) (Figure \ref{FKMCMC}. It does however look as though the chains are converging
