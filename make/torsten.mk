@@ -3,6 +3,15 @@ CXXFLAGS += -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS -DBOOST_MPL_LIMIT_LIST_SIZE=
 
 ifdef MPI_ADAPTED_WARMUP
 
+CROSS_CHAIN_BOOST_TARGETS ?= $(addsuffix $(LIBRARY_SUFFIX),$(BOOST)/stage/lib/libboost_filesystem $(BOOST)/stage/lib/libboost_regex)
+BOOST_LIBRARY_ABSOLUTE_PATH=$(abspath $(BOOST)/stage/lib)
+LDFLAGS_CROSS_CHAIN ?= -Wl,-L,"$(BOOST_LIBRARY_ABSOLUTE_PATH)" -Wl,-rpath,"$(BOOST_LIBRARY_ABSOLUTE_PATH)"
+
+CXXFLAGS += -DSTAN_LANG_MPI -DMPI_ADAPTED_WARMUP
+LDFLAGS += $(LDFLAGS_CROSS_CHAIN)
+CC=mpicxx
+CXX=mpicxx
+
 ##
 # Boost build options
 BOOST_PARALLEL_JOBS ?= 2
@@ -27,6 +36,13 @@ clean-cross-chain-boost-libs:
 
 else
 
+CROSS_CHAIN_BOOST_TARGETS ?=
+
 clean-cross-chain-boost-libs:
 
 endif
+
+.PHONY: build-cross-chain-deps
+build-cross-chain-deps: $(CROSS_CHAIN_BOOST_TARGETS)
+	@echo '$(CROSS_CHAIN_BOOST_TARGETS)'
+	@echo '--- boost cross-chain warmup bindings built ---'

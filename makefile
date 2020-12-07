@@ -19,7 +19,6 @@ help:
 -include $(HOME)/.config/stan/make.local  # user-defined variables
 -include make/local                       # user-defined variables
 -include make/torsten_stanc.mk
--include make/mpi_warmup.mk
 
 STAN ?= stan/
 MATH ?= $(STAN)lib/stan_math/
@@ -126,11 +125,11 @@ endif
 -include $(MATH)make/compiler_flags
 -include $(MATH)make/dependencies
 -include $(MATH)make/libraries
+include make/torsten.mk
 include make/stanc
 include make/program
 include make/tests
 include make/command
-include make/torsten.mk
 
 CMDSTAN_VERSION := 2.25.0
 
