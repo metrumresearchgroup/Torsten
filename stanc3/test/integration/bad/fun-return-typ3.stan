@@ -1,3 +1,0 @@
-functions {
-  real foo() reject("");
-}
