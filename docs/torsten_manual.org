@@ -690,6 +690,8 @@ function name can be of any of the three. See below.
      The maximum number of interations in algebra solver for steady state solution, default to $10^2$.
 ****   See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]] for the rest of arguments.
 
+*** Return value
+    An =nCmt=-by-=nt= matrix, where =nt= is the size of {{{torsten_src(time)}}}.
 *** Note
     - Three numerical integrator are provided:
       + {{{torsten_src(pmx\_solve\_adams)}}}: Adams-Moulton method,
@@ -766,8 +768,11 @@ integrator. In the context, currently the couple solver supports one-
 **** {{{torsten_src(max\_step)}}}
      The maximum number of steps in numerical integration, default to $10^6$.
 ****   See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]] for the rest of arguments.
-
-
+*** Return value
+    An =nPk + nOde=-by-=nt= matrix, where =nt= is the size of
+    {{{torsten_src(time)}}}, and =nPk= equals to 2 in
+    {{{torsten_src(pmx\_solve\_onecpt\_)}}} functions
+    and 3 in {{{torsten_src(pmx\_solve\_twocpt\_)}}} functions.
 
 ** General ODE-based Population Model Function
 *** Description
@@ -787,7 +792,7 @@ population, one subject after another.
 #+END_SRC
 Here src_stan[:exports code]{[adams || rk45 || bdf]} indicates the
 function name can be of any of the three. See below.
-
+*** Arguments
 **** {{{torsten_src(time)}}}, {{{torsten_src(amt)}}}, {{{torsten_src(rate)}}}, {{{torsten_src(ii)}}}, {{{torsten_src(evid)}}}, {{{torsten_src(cmt)}}}, {{{torsten_src(addl)}}}, {{{torsten_src(ss)}}}
      2d-array arguments that describe data record for the
      entire population (see also Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]]). They must have same size in the first
@@ -799,7 +804,7 @@ function name can be of any of the three. See below.
      being the number of events for subject $i$, $i=1, 2, \dots, N$, the
      size of {{{torsten_src(evid)}}}'s first dimension is $\sum_{i}n_i$.
 **** {{{torsten_src(len)}}} 
-     specifies the length of data for each subject within
+     The length of data for each subject within
      the above events arrays. The size of {{{torsten_src(len)}}} equals
      to population size $N$.
 **** {{{torsten_src(ODE\_rhs)}}}
@@ -837,12 +842,14 @@ function name can be of any of the three. See below.
      The absolute tolerance for algebra solver for steady state solution, default to 1.0E-6.
 **** {{{torsten_src(as\_max\_step)}}}
      The maximum number of interations in algebra solver for steady state solution, default to $10^2$.
-
+*** Return value
+    An =nCmt=-by-=nt= matrix, where =nt= is the total size of
+    events $\sum_{i}n_i$.
 *** Note
     - Similar to single-subject solvers, three numerical integrator are provided:
-      + {{{torsten_src(pmx\_solve_group\_adams)}}}: Adams-Moulton method,
-      + {{{torsten_src(pmx\_solve_group\_bdf)}}}: Backward-differentiation formular,
-      + {{{torsten_src(pmx\_solve_group\_rk45)}}}: Runge-Kutta 4/5 method.
+      + {{{torsten_src(pmx\_solve\_group\_adams)}}}: Adams-Moulton method,
+      + {{{torsten_src(pmx\_solve\_group\_bdf)}}}: Backward-differentiation formular,
+      + {{{torsten_src(pmx\_solve\_group\_rk45)}}}: Runge-Kutta 4/5 method.
     - With optional arguments indicated by square bracket, the following calls are allowed:
 #+BEGIN_SRC stan
   pmx_solve_group_[adams || rk45 || bdf](..., theta);
@@ -882,28 +889,30 @@ function name can be of any of the three. See below.
 #+END_SRC
   Here $n$ denotes number of MPI processes, so that $N$
   ODE systems (each specified by a same RHS function and
-  subject-dependent events) are distributed to and solved by $n$ processes evenly.
-
+  subject-dependent events) are distributed to and solved by $n$
+  processes evenly. Note that to access this feature user must have
+  MPI installed, and some MPI installation may require set additional
+  compiler arguments, such as =CXXLFAGS= and =LDFLAGS=.
 ** ODE  integrator Function
+*** Description
+Torsten provides its own implementation of ODE solvers that solves
+\begin{equation*}
+  y'(t) = f(t, y(t)), \quad y(t_0) = y_0
+\end{equation*}
+for $y$. These solvers
+are customized for Torsten applications and different from those found
+in Stan. The general ODE PMX solvers in previous sections are internally powered
+by these functions.
+*** Usage
 #+INDEX: PMX ODE integrators
 #+BEGIN_SRC stan
-  real[ , ] pmx_integrate_ode_adams(ODE_system, real[] y0, real t0, real[] ts,
-                                    real[] theta, real[] x_r, int[] x_i,
-                                    real rtol, real atol, int max_step);
+  real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]);
 #+END_SRC
-#+BEGIN_SRC stan
-  real[ , ] pmx_integrate_ode_bdf(ODE_system, real[] y0, real t0, real[] ts,
-                                  real[] theta, real[] x_r, int[] x_i,
-                                  real rtol, real atol, int max_step);
-#+END_SRC
-#+BEGIN_SRC stan
-  real[ , ] pmx_integrate_ode_rk45(ODE_system, real[] y0, real t0, real[] ts,
-                                   real[] theta, real[] x_r, int[] x_i,
-                                   real rtol, real atol, int max_step);
-#+END_SRC
-Torsten's own implementation of ODE integrators. They have same
-signature as those in Stan.
-- {{{torsten_src(ts)}}} can be parameters in Torsten's ODE integrators.
+*** Arguments
+**** {{{torsten_src(ODE\_rhs)}}}
+     Function that specifies the right-hand-side $f$.
+**** {{{torsten_src(y0)}}}
+     Initial condition $y_0$
 
 ** ODE group  integrator Function
 #+INDEX: PMX ODE group integrators
