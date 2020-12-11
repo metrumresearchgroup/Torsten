@@ -627,15 +627,16 @@ namespace torsten {
    * @tparam T_par PK parameters type
    * @tparam F ODE functor
    */
-  template<typename T_par, typename F> // NOLINT
+  template<typename T_par, typename F>
   class PKODEModel {
-    const std::vector<double> x_r_dummy;
-    const std::vector<int> x_i_dummy;
-    const std::vector<T_par> &par_;
-    const std::vector<double>& x_r_;
-    const std::vector<int>& x_i_;
-    const F &f_;
-    const int ncmt_;
+    static const double dt_min; /**< min step to move ode solution */
+    const std::vector<double> x_r_dummy; /**< dummy data to point to*/
+    const std::vector<int> x_i_dummy; /**< dummy data to point to */
+    const std::vector<T_par> &par_; /**< parameters */
+    const std::vector<double>& x_r_; /**< real data */
+    const std::vector<int>& x_i_; /**< integer data */
+    const F &f_;                /**< ODE functor */
+    const int ncmt_;            /**< dim of ODE system */
   public:
     using par_type    = T_par;
     using f_type      = F;
@@ -834,7 +835,8 @@ namespace torsten {
       const double t0_d = stan::math::value_of(t0);
       std::vector<Tt1> ts(time_step(t0, t1));
       PMXOdeFunctorRateAdaptor<F, T_par, T1> f_rate(par_, rate);
-      if (t1 > t0) {
+
+      if (t1 - t0 > dt_min) {
         auto y_vec = stan::math::to_array_1d(y);
         std::vector<std::vector<T> > res_v =
           integrator(f_rate, y_vec, t0_d, ts,
@@ -855,9 +857,6 @@ namespace torsten {
                  const T0& t0, const T0& t1,
                  const std::vector<T1>& rate,
                  const PMXOdeIntegrator<It>& integrator) const {
-      // static const char* caller = "PMXOdeModel::solve_d";
-      // stan::math::check_greater(caller, "next time", t1, t0);
-
       using stan::math::var;
       using stan::math::value_of;
       using stan::math::to_var;
@@ -865,7 +864,8 @@ namespace torsten {
       const double t0_d = value_of(t0);
       std::vector<T0> ts(time_step(t0, t1));
       PMXOdeFunctorRateAdaptor<F, T_par, T1> f_rate(par_, rate);
-      if (t1 > t0) {
+
+      if (t1 - t0 > dt_min) {
         auto y1d = stan::math::to_array_1d(y);
         yd = integrator.solve_d(f_rate, y1d, t0_d, ts,
                                 f_rate.adaptor.adapted_param(), x_r_, x_i_).col(0);
@@ -965,6 +965,8 @@ namespace torsten {
     }
   };
 
+  template<typename T_par, typename F>
+  const double PKODEModel<T_par, F>::dt_min = 1.e-12;
 }
 
 #endif
