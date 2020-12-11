@@ -310,7 +310,7 @@ namespace torsten{
           } else {
             try {
               EM em(id, events_rec, theta, array_2d_tuple_pars..., array_2d_pars...);
-              auto events = em.events();
+              auto& events = em.events();
               assert(nev == events.size());
               assert(nKeep == em.nKeep);
               init.setZero();

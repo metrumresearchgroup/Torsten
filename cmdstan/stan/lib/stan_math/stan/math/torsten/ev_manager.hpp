@@ -109,9 +109,9 @@ namespace torsten {
       int iEvent = nEvent - 1;
       while (iEvent >= 0) {
         if (event_his.is_dosing(iEvent)) {
-          if (params.GetValueTlag(iEvent, event_his.cmt(iEvent) - 1) != 0) {
+          if (params.lag_time(iEvent, event_his.cmt(iEvent) - 1) > ER::lag_time_min) {
             event_his.insert_event(iEvent);
-            event_his.gen_time.back() += params.GetValueTlag(iEvent, event_his.cmt(iEvent) - 1);
+            event_his.gen_time.back() += params.lag_time(iEvent, event_his.cmt(iEvent) - 1);
             event_his.idx[iEvent][2] = 9;
           }
         }
@@ -166,7 +166,7 @@ namespace torsten {
             newParameter = lower == (it_param_end) ? params.pars[len_Parameters-1] : *lower;
             newParameter.first = t;
             params.pars[len_Parameters + j] = newParameter;
-            event_his.idx[iEvent][3] = 0;
+            event_his.idx[iEvent][3] = 0; /**< item is "new" no more, set "isnew" false */
             j++;
           }
         }

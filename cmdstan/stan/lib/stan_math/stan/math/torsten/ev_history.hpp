@@ -227,7 +227,7 @@ namespace torsten {
                                                                        event_array_2d_params);
     }
 
-    inline const T6 GetValueTlag(int iEvent, int iParameter) const {
+    inline const T6 lag_time(int iEvent, int iParameter) const {
       return NonEventParameters_Impl<tuple_pars_t...>::lag_time(get_par_array(iEvent)[2], iParameter,
                                                                 event_array_2d_params);
     }
@@ -560,7 +560,6 @@ namespace torsten {
     inline int ss (int i) const { return ss  (idx[i]); }
 
     inline size_t size() const { return idx.size(); }
-
 
     std::vector<int> unique_times() {
       std::vector<int> t(idx.size());

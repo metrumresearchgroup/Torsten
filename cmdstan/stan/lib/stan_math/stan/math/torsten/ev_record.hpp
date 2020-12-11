@@ -45,6 +45,8 @@ namespace torsten {
     const std::vector<int> len_1_;
 
   public:
+    static const double lag_time_min; /**< minimum lag time allowed */
+
     /// nb. of compartments
     const int ncmt;
     /// begin id for each subject in concat vector <code>time_</code>, etc
@@ -237,7 +239,7 @@ namespace torsten {
       return std::any_of(params.begin() + begin_param(id, params),
                          params.begin() + begin_param(id, params) + len_param(id, params),
                          [](const std::vector<T>& v) {
-                           return std::any_of(v.begin(), v.end(), [](const T& x) { return std::abs(value_of(x)) > 1.E-12; });
+                           return std::any_of(v.begin(), v.end(), [](const T& x) { return std::abs(value_of(x)) > lag_time_min; });
                          });
     }
 
@@ -275,6 +277,9 @@ namespace torsten {
       return len_.size();
     }
   };
+
+  template <typename T0, typename T1, typename T2, typename T3>
+  const double NONMENEventsRecord<T0, T1, T2, T3>::lag_time_min = 1.e-12;
 
 }
 

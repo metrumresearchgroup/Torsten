@@ -106,24 +106,6 @@ namespace torsten {
 
     /**
      * One-compartment PK model constructor
-     * FIXME need to remove parameter as this is for linode only.
-     *
-     * @tparam T_mp parameters class
-     * @tparam Ts parameter types
-     * @param t0 initial time
-     * @param y0 initial condition
-     * @param rate dosing rate
-     * @param par model parameters
-     * @param parameter ModelParameter type
-     */
-    template<template<typename...> class T_mp, typename... Ts>
-    PMXOneCptModel(const std::vector<T_par> & par,
-                   const T_mp<Ts...> &parameter) :
-      PMXOneCptModel(par.at(0), par.at(1), par.at(2))
-    {}
-
-    /**
-     * One-compartment PK model constructor
      *
      * @param t0 initial time
      * @param y0 initial condition
