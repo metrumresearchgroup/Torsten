@@ -74,8 +74,8 @@ transformed parameters {
   theta[5] = ka;
 
   x = pmx_solve_rk45(ode_rhs, 3,
-                    time, amt, rate, ii, evid, cmt, addl, ss,
-                    theta, 1e-5, 1e-8, 1e5);
+                     time, amt, rate, ii, evid, cmt, addl, ss,
+                     theta, 1e-5, 1e-8, 1e5);
 
   cHat = x[2, ] ./ V1;
 
