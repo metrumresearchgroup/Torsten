@@ -65,12 +65,12 @@ transformed parameters{
   real k10;
   real k12;
   real k21;
-  vector<lower = 0>[nt] cHat;
-  vector<lower = 0>[nObs] cHatObs;
-  vector<lower = 0>[nt] respHat;
-  vector<lower = 0>[nObs] respHatObs;
-  vector<lower = 0>[nt] ceHat;
-  matrix[nt, nCmt] x;
+  row_vector<lower = 0>[nt] cHat;
+  row_vector<lower = 0>[nObs] cHatObs;
+  row_vector<lower = 0>[nt] respHat;
+  row_vector<lower = 0>[nObs] respHatObs;
+  row_vector<lower = 0>[nt] ceHat;
+  matrix[nCmt, nt] x;
   
   thetaHat[1] = CLHat;
   thetaHat[2] = QHat;
@@ -78,7 +78,7 @@ transformed parameters{
   thetaHat[4] = V2Hat;
   thetaHat[5] = kaHat;
 
-  Omega = quad_form_diag(rho, omega); ## diag_matrix(omega) * rho * diag_matrix(omega)
+  Omega = quad_form_diag(rho, omega); // diag_matrix(omega) * rho * diag_matrix(omega)
 
   for(j in 1:nSubjects){
     CL[j] = exp(logtheta[j, 1]) * (weight[j] / 70)^0.75;
@@ -104,18 +104,18 @@ transformed parameters{
     K[4, 2] = ke0[j];
     K[4, 4] = -ke0[j];
     
-    x[start[j]:end[j],] = linOdeModel(time[start[j]:end[j]],
-                                      amt[start[j]:end[j]],
-                                      rate[start[j]:end[j]],
-                                      ii[start[j]:end[j]],
-                                      evid[start[j]:end[j]],
-                                      cmt[start[j]:end[j]],
-                                      addl[start[j]:end[j]],
-                                      ss[start[j]:end[j]],
-                                      K, biovar, tlag);
+    x[, start[j]:end[j] ] = pmx_solve_linode(time[start[j]:end[j]],
+                                           amt[start[j]:end[j]],
+                                           rate[start[j]:end[j]],
+                                           ii[start[j]:end[j]],
+                                           evid[start[j]:end[j]],
+                                           cmt[start[j]:end[j]],
+                                           addl[start[j]:end[j]],
+                                           ss[start[j]:end[j]],
+                                           K, biovar, tlag);
 
-    cHat[start[j]:end[j]] = 1000 * x[start[j]:end[j], 2] ./ V1[j];
-    ceHat[start[j]:end[j]] = 1000 * x[start[j]:end[j], 4] ./ V1[j];
+    cHat[start[j]:end[j]] = 1000 * x[2, start[j]:end[j]] ./ V1[j];
+    ceHat[start[j]:end[j]] = 1000 * x[4, start[j]:end[j]] ./ V1[j];
     respHat[start[j]:end[j]] = 100 * ceHat[start[j]:end[j]] ./ 
        (EC50[j] + ceHat[start[j]:end[j]]);
   }
@@ -126,7 +126,7 @@ transformed parameters{
 }
 
 model{
-    ## Prior
+    // Prior
     CLHat ~ normal(0, 20);
     QHat ~ normal(0, 40);
     V1Hat ~ normal(0, 150);
@@ -141,12 +141,12 @@ model{
     sigma ~ cauchy(0, 2);
     sigmaResp ~ cauchy(0, 5);
 
-    ## Inter-individual variability
+    // Inter-individual variability
     logtheta ~ multi_normal(log(thetaHat), Omega);
     logKe0 ~ normal(log(ke0Hat), omegaKe0);
     logEC50 ~ normal(log(EC50Hat), omegaEC50);
 
-    ## Likelihood
+    // Likelihood
     logCObs ~ normal(log(cHatObs), sigma); 
     respObs ~ normal(respHatObs, sigmaResp); 
 }
@@ -155,11 +155,11 @@ generated quantities{
   vector[nRandom] logthetaPred[nSubjects];
   real logKe0Pred[nSubjects];
   real logEC50Pred[nSubjects];
-  vector<lower = 0>[nt] cHatPred;
+  row_vector<lower = 0>[nt] cHatPred;
   vector<lower = 0>[nt] cObsCond;
   vector<lower = 0>[nt] cObsPred;
-  vector<lower = 0>[nt] respHatPred;
-  vector<lower = 0>[nt] ceHatPred;
+  row_vector<lower = 0>[nt] respHatPred;
+  row_vector<lower = 0>[nt] ceHatPred;
   vector[nt] respObsCond;
   vector[nt] respObsPred;
   real<lower = 0> CLPred[nSubjects];
@@ -169,7 +169,7 @@ generated quantities{
   real<lower = 0> kaPred[nSubjects];
   real<lower = 0> ke0Pred[nSubjects];
   real<lower = 0> EC50Pred[nSubjects];
-  matrix[nt, nCmt] xPred;
+  matrix[nCmt, nt] xPred;
   matrix[nCmt, nCmt] KPred;
   real k10Pred;
   real k12Pred;
@@ -202,18 +202,18 @@ generated quantities{
     KPred[4, 2] = ke0Pred[j];
     KPred[4, 4] = -ke0Pred[j];
     
-    xPred[start[j]:end[j],] = linOdeModel(time[start[j]:end[j]],
-                                          amt[start[j]:end[j]],
-                                          rate[start[j]:end[j]],
-                                          ii[start[j]:end[j]],
-                                          evid[start[j]:end[j]],
-                                          cmt[start[j]:end[j]],
-                                          addl[start[j]:end[j]],
-                                          ss[start[j]:end[j]],
-                                          KPred, biovar, tlag);    
+    xPred[, start[j]:end[j] ] = pmx_solve_linode(time[start[j]:end[j]],
+                                               amt[start[j]:end[j]],
+                                               rate[start[j]:end[j]],
+                                               ii[start[j]:end[j]],
+                                               evid[start[j]:end[j]],
+                                               cmt[start[j]:end[j]],
+                                               addl[start[j]:end[j]],
+                                               ss[start[j]:end[j]],
+                                               KPred, biovar, tlag);
 
-    cHatPred[start[j]:end[j]] = 1000 * xPred[start[j]:end[j], 2] ./ V1Pred[j];
-    ceHatPred[start[j]:end[j]] = 1000 * xPred[start[j]:end[j], 4] ./ V1Pred[j];
+    cHatPred[start[j]:end[j]] = 1000 * xPred[2, start[j]:end[j]] ./ V1Pred[j];
+    ceHatPred[start[j]:end[j]] = 1000 * xPred[4, start[j]:end[j]] ./ V1Pred[j];
     respHatPred[start[j]:end[j]] = 100 * ceHatPred[start[j]:end[j]] ./
       (EC50Pred[j] + ceHatPred[start[j]:end[j]]);
   }
