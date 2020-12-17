@@ -1,4 +1,4 @@
-modelName <- "pk2cpt"
+modelName <- "pk3cpt_linode"
 scriptName <- paste(modelName, "Rmd", sep = ".")
 fitModel <- FALSE
 
@@ -38,14 +38,13 @@ nsample = nIter - nBurnin
 mod <- cmdstan_model(paste0(modelName, ".stan"), quiet=FALSE)
 
 ## run MCMC
-fit <- mod$sample(data = "pk2cpt.data.R", init="pk2cpt.init.R", seed = 3191951,
+fit <- mod$sample(data = "pk3cpt_linode.data.R", init="pk3cpt_linode.init.R", seed = 3191951,
                   chains=nChains,
                   parallel_chains = min(nChains, detectCores()),
                   iter_warmup = nBurnin,
                   iter_sampling = nsample,
                   thin = nThin,
-                  output_dir = file.path(outDir),
-                  adapt_delta = 0.95)
+                  output_dir = file.path(outDir))
 
 ## figures
 fit.summary <- fit$summary()

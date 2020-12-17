@@ -89,6 +89,6 @@ generated quantities{
   real cObsPred[nObs];
 
   for(i in 1:nObs){
-      cObsPred[i] = exp(normal_rng(log(cHatObs[i]), sigma));
-
+    cObsPred[i] = exp(normal_rng(log(cHatObs[i]), sigma));
+  }
 }
