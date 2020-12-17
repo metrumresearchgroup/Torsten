@@ -10,7 +10,7 @@ figDir <- file.path(projectDir, "deliv", "figure")
 tabDir <- file.path(projectDir, "deliv", "table")
 dataDir <- file.path(projectDir, "data", "derived")
 outDir <- file.path(projectDir, "output")
-toolsDir <- file.path(scriptDir, "tools")
+toolsDir <- file.path(dirname(projectDir), "R", "tools")
 invisible(dir.create(figDir, recursive = TRUE))
 invisible(dir.create(tabDir, recursive = TRUE))
 invisible(dir.create(outDir, recursive = TRUE))
@@ -20,7 +20,7 @@ suppressMessages(library(bayesplot))
 suppressMessages(library(parallel))
 library(cmdstanr)
 
-set_cmdstan_path(path = file.path("..", "..", "cmdstan"))
+set_cmdstan_path(path = file.path(dirname(dirname(scriptDir)), "cmdstan"))
 
 ## reproducibility
 set.seed(10271998)
@@ -35,16 +35,14 @@ nBurnin <- nBurn * nThin
 nsample = nIter - nBurnin
 
 ## compile model
-mod <- cmdstan_model(paste0(modelName, ".stan"),
-                     quiet=FALSE,
-                     compiler_flags = c("STANC2=true"))
+mod <- cmdstan_model(paste0(modelName, ".stan"), quiet=FALSE)
 
 ## run MCMC
 fit <- mod$sample(data = "pk2cpt.data.R", init="pk2cpt.init.R", seed = 3191951,
-                  num_chains=nChains,
-                  num_cores = min(nChains, detectCores()),
-                  num_warmup = nBurnin,
-                  num_samples = nsample,
+                  chains=nChains,
+                  parallel_chains = min(nChains, detectCores()),
+                  iter_warmup = nBurnin,
+                  iter_sampling = nsample,
                   thin = nThin,
                   refresh = 10,
                   output_dir = file.path(outDir),

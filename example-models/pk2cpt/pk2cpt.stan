@@ -79,5 +79,4 @@ generated quantities{
   for(i in 1:nObs){
       cObsPred[i] = exp(normal_rng(log(cHatObs[i]), sigma));
     }
-			 
 }

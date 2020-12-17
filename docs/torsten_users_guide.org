@@ -695,6 +695,12 @@ function name can use any of the three suffixes. See below.
 *** Note
     - See section [[ref:sec:ode_func_note]] for different types of integrator and general guidance.
     - See section [[ref:sec:ode_func_note]] for comments on accuracy and tolerance.
+    - The default values of {{{torsten_src(atol)}}},
+      {{{torsten_src(rtol)}}}, and {{{torsten_src(max\_step)}}} are
+      based on a limited amount of PKPD test problems and should not be considered as
+      universally applicable. We strongly recommend user to set these values
+      according to physical intuition and numerical tests. See also Secion
+      [[ref:sec:ode_func_note]].
     - With optional arguments indicated by square bracket, the following calls are allowed:
 #+BEGIN_SRC stan
   pmx_solve_[adams || rk45 || bdf](..., theta);
@@ -925,11 +931,12 @@ by these functions.
 **** {{{torsten_src(x\_i)}}}
      Integer data to be passed to {{{torsten_src(ODE\_rhs)}}} function.
 **** {{{torsten_src(rtol)}}}
-     Relative tolerance.
+     Relative tolerance, default to 1.e-6({{{torsten_src(rk45)}}}) and 1.e-8({{{torsten_src(adams)}}} and {{{torsten_src(bdf)}}}).
 **** {{{torsten_src(atol)}}}
-     Absolute tolerance.
+     Absolute tolerance, default to 1.e-6({{{torsten_src(rk45)}}}) and 1.e-8({{{torsten_src(adams)}}} and {{{torsten_src(bdf)}}}).
 **** {{{torsten_src(max\_step)}}}
-     Maximum number of steps allowed between neighboring time in {{{torsten_src(ts)}}}.
+     Maximum number of steps allowed between neighboring time in {{{torsten_src(ts)}}},
+     default to 100000.
 *** Return value
     An =n=-by-=nd= 2d-array, where =n= is the size of {{{torsten_src(ts)}}}
     and =nd= the dimension of the system.
@@ -953,16 +960,21 @@ by these functions.
         e_i < \Vert\text{rtol} \times \tilde{y} + \text{atol}\Vert
       \end{equation}
       Here $\tilde{y}$ is the numerical solution of $y$ at current
-      step and $\Vert \cdot \Vert$ indicates certain norm. Wehn the above check fails, the solver attempts
-      to reduce step size and retry. User should make problem-dependent
+      step and $\Vert \cdot \Vert$ indicates certain norm. When the above check fails, the solver attempts
+      to reduce step size and retry. The default values of {{{torsten_src(atol)}}},
+      {{{torsten_src(rtol)}}}, and {{{torsten_src(max\_step)}}} are
+      based on Stan's ODE functions and should not be considered as
+      optimal. User should make problem-dependent
       decision on {{{torsten_src(rtol)}}} and {{{torsten_src(atol)}}},
       according to estimated scale of the unknowns, so that the error
       would not affect inference on statistical variance of quantities
-      that enter the Stan model. In particular, when an unknown is
-      believed to be ignorable below certain threshold, setting
+      that enter the Stan model. In particular, when an unknown can be neglected
+      below certain threshold without affecting the rest of
+      the dynamic system, setting
       {{{torsten_src(atol)}}} greater than that threshold will avoid
       spurious and error-prone computation. See
-      cite:hindmarsh_cvodes_2020 for details.
+      cite:hindmarsh_cvodes_2020 and
+      1.4 of cite:shampine_solving_2003 for details.
 
     - With optional arguments indicated by square bracket, the following calls are allowed:
 #+BEGIN_SRC stan
@@ -1110,9 +1122,9 @@ pairs. Specifically, =linear_interpolation= implements the following function
   \end{align*}
   The data are generated using the R package =mrgsolve= cite:Baron000.
 
-Code below shows how Torsten function ~pmx_solve_twocpt~ can be used to fit the above model.
+Code below shows how Torsten function {{{torsten_src(pmx\_solve\_twocpt)}}} can be used to fit the above model.
 
-#+include: "../example-models/pk2cpt/pk2cpt.stan" :lines "5-74" src stan
+#+include: "../example-models/pk2cpt/pk2cpt.stan" :lines "5-75" src stan
 
 #+BEGIN_SRC R :results output silent :exports none
   setwd("~/Work/Torsten_debug/example-models/R")
@@ -1166,17 +1178,17 @@ are consistent with the values used for simulation.
 [[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots006.pdf]]
 
 ** Two-compartment model as a linear ODE model for single patient 
-Using =pmx_solve_linode=, the following example fits a two-compartment model
+Using {{{torsten_src(pmx\_solve\_linode)}}}, the following example fits a two-compartment model
 with first order absorption.
 
-#+include: "../example-models/pk3cpt_linode/pk3cpt_linode.stan" :lines "1-86" src stan
+#+include: "../example-models/pk3cpt_linode/pk3cpt_linode.stan" :lines "1-87" src stan
 
 ** Two-compartment model solved by numerical integrator for single patient 
 Using =pmx_solve_rk45=, the following example fits a two-compartment model
 with first order absorption. User-defined function
 =twoCptModelODE= describes the RHS of the ODEs.
 
-#+include: "../example-models/pk2cpt_ode/pk2cpt_ode.stan" :lines "1-105" src stan
+#+include: "../example-models/pk2cpt_ode/pk2cpt_ode.stan" :lines "1-98" src stan
 
 ** Joint PK-PD model
 #+INDEX: Friberg-Karlsson Model
