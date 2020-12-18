@@ -173,7 +173,8 @@ namespace torsten{
      * @param sol_d data solution
      * @param em event manager
      * @param integrator numerical integrator for ODE
-     * @param scalar_pars params needed to construst the PMX model.
+     * @param scalar_pars params needed to construst the PMX model,
+     *        such as functor & dimension of ODE system
      */
     template<PMXOdeIntegratorId It, typename... scalar_pars_type>
     void stepper_solve(int i, torsten::PKRec<typename EM::T_scalar>& init,
@@ -205,7 +206,8 @@ namespace torsten{
      * @param sol_d data solution
      * @param em event manager
      * @param integrator numerical integrator for ODE
-     * @param scalar_pars params needed to construst the PMX model.
+     * @param scalar_pars params needed to construst the PMX model,
+     *        such as functor & dimension of ODE system
      */
     void stepper_sync(int i, torsten::PKRec<typename EM::T_scalar>& init,
                       torsten::PKRec<double>& sol_d,
@@ -255,6 +257,14 @@ namespace torsten{
      * information passed in as ragged arrays. The overloading occurs
      * on <code>res</code> arg for results. Here the result is <code>var</code>.
      *
+     * @param events_rec event record
+     * @param res solution 
+     * @param integrator ODE integrator
+     * @param theta PMX parameters passed into ODE function
+     * @param array_2d_tuple_pars optional PMX parameters: bioavailability & tlag
+     * @param array_2d_pars optional ODE parameters: real & integer data
+     * @param scalar_pars params needed to construst the PMX model,
+     *        such as functor & dimension of ODE system
      */
     template<PMXOdeIntegratorId It, typename... scalar_pars_type>
     void pred(const T_event_record& events_rec,
@@ -296,7 +306,7 @@ namespace torsten{
 
         const int nKeep = events_rec.num_event_times(id);
 
-        int nev = EM::num_events(id, events_rec, theta, array_2d_tuple_pars...);
+        int nev = EM::num_events(id, events_rec, theta, array_2d_tuple_pars..., array_2d_pars...);
         res_d[id].resize(system_size(id, events_rec, theta), nev);
         res_d[id].setConstant(0.0);
 

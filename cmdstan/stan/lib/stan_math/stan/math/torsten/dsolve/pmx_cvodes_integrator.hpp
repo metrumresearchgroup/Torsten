@@ -174,7 +174,7 @@ namespace dsolve {
         CHECK_SUNDIALS_CALL(CVodeSetMaxErrTestFails(mem, 20));
         CHECK_SUNDIALS_CALL(CVodeSetMaxConvFails(mem, 20));
 #ifdef TORSTEN_CVS_JAC_AD
-        CHECK_SUNDIALS_CALL(CVDlsSetJacFn(mem, ode.serv.user_data.cvodes_jac()));
+        CHECK_SUNDIALS_CALL(CVodeSetJacFn(mem, ode.serv.user_data.cvodes_jac()));
 #endif
 
         /** if y0 is parameter, the first n sensitivity vector
