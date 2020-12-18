@@ -1159,18 +1159,13 @@ are consistent with the values used for simulation.
 
 #+CAPTION: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
 #+NAME: twocpt_mcmc_history
-#+ATTR_LATEX: :width 0.6\linewidth
-[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots001.pdf]]
-
-#+CAPTION: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
-#+NAME: twocpt_mcmc_history
-#+ATTR_LATEX: :width 0.6\linewidth
-[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots002.pdf]]
+#+ATTR_LATEX: :width \linewidth
+[[../example-models/pk2cpt/deliv/figure/history.pdf]]
 
 #+CAPTION: Posterior Marginal Densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
 #+NAME: twocpt_mcmc_posterior
-#+ATTR_LATEX: :width 0.6\linewidth
-[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots003.pdf]]
+#+ATTR_LATEX: :width \linewidth
+[[../example-models/pk2cpt/deliv/figure/density.pdf]]
 
 #+CAPTION: Predicted (posterior median and 90% credible intervals) and observed plasma drug concentrations of a two compartment model with first order absorption
 #+NAME: twocpt_mcmc_predict
