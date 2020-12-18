@@ -50,6 +50,16 @@ namespace torsten {
       force(force_), force0(force0_), cmt(cmt_)
     {}
 
+    /** 
+     * Solve the event using given model and numerical integrator.
+     *
+     * @tparam T solution type
+     * @tparam model_t PMX model type
+     * @tparam It integrator type
+     * @param[in, out] y initial condition and output solution
+     * @param[in] model PMX model with model parameters
+     * @param[in] integ numerical integrator with control parameters
+     */
     template<typename T, typename model_t, PMXOdeIntegratorId It>
     inline void operator()(PKRec<T>& y,
                            const model_t& model,
@@ -88,8 +98,22 @@ namespace torsten {
       }
     }
 
-    template<typename T, typename model_t, PMXOdeIntegratorId It,
-             typename... Ts>
+    /** 
+     * Solve the event using given model and numerical integrator and
+     * save the results in both @<code>var</code> format and data-only
+     * format for MPI communication.
+     *
+     * @tparam T solution type
+     * @tparam model_t PMX model type
+     * @tparam It integrator type
+     * @tparam Ts scalar model parameters for <code>nCmt</code> and <code>f</code>.
+     * @param[in, out] yd data-only solution
+     * @param[in, out] y initial condition and output solution
+     * @param[in] model PMX model
+     * @param[in] integ numerical integrator with control parameters
+     * @param[in] model_pars int & <code>F</code> functor type params for model construction
+     */
+    template<typename T, typename model_t, PMXOdeIntegratorId It, typename... Ts>
     inline void operator()(Eigen::VectorXd& yd,
                            PKRec<T>& y,
                            const model_t& model,
