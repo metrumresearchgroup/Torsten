@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
 #+LATEX_HEADER: \newcommand\mrgproject{Torsten}
 #+LATEX_HEADER: \newcommand\mrgtitle{Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan}
-#+LATEX_HEADER: \newcommand\mrgsubtitle{\Large{User's Guide} \linebreak (Torsten Version 0.88, Stan version 2.25.0)}
+#+LATEX_HEADER: \newcommand\mrgsubtitle{\Large{User's Guide} \linebreak (Torsten Version 0.88rc, Stan version 2.25.0)}
 #+LATEX_HEADER: \include{mrgtitlepage}
 
 # make index
@@ -1124,7 +1124,7 @@ pairs. Specifically, =linear_interpolation= implements the following function
 
 Code below shows how Torsten function {{{torsten_src(pmx\_solve\_twocpt)}}} can be used to fit the above model.
 
-#+include: "../example-models/pk2cpt/pk2cpt.stan" :lines "5-75" src stan
+#+include: "../example-models/pk2cpt/pk2cpt.stan" :lines "5-71" src stan
 
 #+BEGIN_SRC R :results output silent :exports none
   setwd("~/Work/Torsten_debug/example-models/R")
@@ -1159,12 +1159,12 @@ are consistent with the values used for simulation.
 
 #+CAPTION: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
 #+NAME: twocpt_mcmc_history
-#+ATTR_LATEX: :width \linewidth
+#+ATTR_LATEX: :width 0.8\linewidth
 [[../example-models/pk2cpt/deliv/figure/history.pdf]]
 
 #+CAPTION: Posterior Marginal Densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
 #+NAME: twocpt_mcmc_posterior
-#+ATTR_LATEX: :width \linewidth
+#+ATTR_LATEX: :width 0.8\linewidth
 [[../example-models/pk2cpt/deliv/figure/density.pdf]]
 
 #+CAPTION: Predicted (posterior median and 90% credible intervals) and observed plasma drug concentrations of a two compartment model with first order absorption

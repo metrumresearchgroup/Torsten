@@ -55,10 +55,6 @@ transformed parameters{
   cHat = x[2, :] ./ V1; // we're interested in the amount in the second compartment
 
   cHatObs = cHat'[iObs]; // predictions for observed data recors
-
-  // for(i in 1:nObs){
-  //   cHatObs[i] = cHat[iObs[i]]; //// predictions for observed data records
-  // }
 }
 
 model{
