@@ -48,8 +48,8 @@ transformed parameters{
   real<lower = 0> ka[nSubjects];
   vector<lower = 0>[nt] cHat;
   vector<lower = 0>[nObs] cHatObs;
-  matrix<lower = 0>[nt, 3] x;
-  vector[11] parms[nSubjects,1];
+  matrix<lower = 0>[3, nt] x;
+  real parms[nSubjects,11];
 
   thetaHat[1] = CLHat;
   thetaHat[2] = QHat;
@@ -57,7 +57,7 @@ transformed parameters{
   thetaHat[4] = V2Hat;
   thetaHat[5] = kaHat;
 
-  Omega = quad_form_diag(rho, omega); ## diag_matrix(omega) * rho * diag_matrix(omega)
+  Omega = quad_form_diag(rho, omega); //// diag_matrix(omega) * rho * diag_matrix(omega)
 
   for(j in 1:nSubjects){
     CL[j] = exp(logtheta[j, 1]) * (weight[j] / 70)^0.75;
@@ -66,32 +66,33 @@ transformed parameters{
     V2[j] = exp(logtheta[j, 4]) * weight[j] / 70;
     ka[j] = exp(logtheta[j, 5]);
     
-    parms[j, 1][1] = CL[j];
-    parms[j, 1][2] = Q[j];
-    parms[j, 1][3] = V1[j];
-    parms[j, 1][4] = V2[j];
-    parms[j, 1][5] = ka[j];
-    parms[j, 1][6] = 1; # F1
-    parms[j, 1][7] = 1; # F2
-    parms[j, 1][8] = 1; # F3
-    parms[j, 1][9] = 0; # tlag1
-    parms[j, 1][10] = 0; # tlag2
-    parms[j, 1][11] = 0; # tlag3
+    parms[j, 1] = CL[j];
+    parms[j, 2] = Q[j];
+    parms[j, 3] = V1[j];
+    parms[j, 4] = V2[j];
+    parms[j, 5] = ka[j];
+    parms[j, 6] = 1; // F1
+    parms[j, 7] = 1; // F2
+    parms[j, 8] = 1; // F3
+    parms[j, 9] = 0; // tlag1
+    parms[j, 10] = 0; // tlag2
+    parms[j, 11] = 0; // tlag3
 
-    x[start[j]:end[j],] = PKModelTwoCpt(parms[j],
-					 time[start[j]:end[j]],
-					 amt[start[j]:end[j]],
-					 rate[start[j]:end[j]],
-					 ii[start[j]:end[j]],
-					 evid[start[j]:end[j]],
-					 cmt[start[j]:end[j]],
-					 addl[start[j]:end[j]],
-					 ss[start[j]:end[j]]);
+    x[, start[j]:end[j]] = pmx_solve_twocpt(time[start[j]:end[j]],
+                                            amt[start[j]:end[j]],
+                                            rate[start[j]:end[j]],
+                                            ii[start[j]:end[j]],
+                                            evid[start[j]:end[j]],
+                                            cmt[start[j]:end[j]],
+                                            addl[start[j]:end[j]],
+                                            ss[start[j]:end[j]],
+                                            parms[j]);
+                                           
     for(i in start[j]:end[j])
-      cHat[i] = x[i, 2] / V1[j];
+      cHat[i] = x[2, i] / V1[j];
   }
 
-  cHatObs = cHat[iObs]; ## predictions for observed data records
+  cHatObs = cHat[iObs]; //// predictions for observed data records
 
 }
 
@@ -105,10 +106,10 @@ model{
     rho ~ lkj_corr(1); 
     sigma ~ cauchy(0, 5);
 
-    ## Inter-individual variability
+    //// Inter-individual variability
     logtheta ~ multi_normal(log(thetaHat), Omega);
 
-    logCObs ~ normal(log(cHatObs), sigma); ## observed data likelihood
+    logCObs ~ normal(log(cHatObs), sigma); //// observed data likelihood
 }
 
 generated quantities{
@@ -121,8 +122,8 @@ generated quantities{
   real<lower = 0> V1Pred[nSubjects];
   real<lower = 0> V2Pred[nSubjects];
   real<lower = 0> kaPred[nSubjects];
-  matrix[nt, 3] xPred;
-  vector[11] parmsPred[nSubjects,1];
+  matrix[3, nt] xPred;
+  real parmsPred[nSubjects,11];
 
   for(j in 1:nSubjects){
     logthetaPred[j] = multi_normal_rng(log(thetaHat), Omega);
@@ -132,30 +133,30 @@ generated quantities{
     V2Pred[j] = exp(logthetaPred[j, 4]) * weight[j] / 70;
     kaPred[j] = exp(logthetaPred[j, 5]);
 
-    parmsPred[j, 1][1] = CLPred[j];
-    parmsPred[j, 1][2] = QPred[j];
-    parmsPred[j, 1][3] = V1Pred[j];
-    parmsPred[j, 1][4] = V2Pred[j];
-    parmsPred[j, 1][5] = kaPred[j];
-    parmsPred[j, 1][6] = 1; # F1
-    parmsPred[j, 1][7] = 1; # F2
-    parmsPred[j, 1][8] = 1; # F3
-    parmsPred[j, 1][9] = 0; # tlag1
-    parmsPred[j, 1][10] = 0; # tlag2
-    parmsPred[j, 1][11] = 0; # tlag3
+    parmsPred[j, 1] = CLPred[j];
+    parmsPred[j, 2] = QPred[j];
+    parmsPred[j, 3] = V1Pred[j];
+    parmsPred[j, 4] = V2Pred[j];
+    parmsPred[j, 5] = kaPred[j];
+    parmsPred[j, 6] = 1; // F1
+    parmsPred[j, 7] = 1; // F2
+    parmsPred[j, 8] = 1; // F3
+    parmsPred[j, 9] = 0; // tlag1
+    parmsPred[j, 10] = 0; // tlag2
+    parmsPred[j, 11] = 0; // tlag3
 
-    xPred[start[j]:end[j],] = PKModelTwoCpt(parmsPred[j],
-					 time[start[j]:end[j]],
-					 amt[start[j]:end[j]],
-					 rate[start[j]:end[j]],
-					 ii[start[j]:end[j]],
-					 evid[start[j]:end[j]],
-					 cmt[start[j]:end[j]],
-					 addl[start[j]:end[j]],
-					 ss[start[j]:end[j]]);
+    xPred[, start[j]:end[j]] = pmx_solve_twocpt(time[start[j]:end[j]],
+                                                amt[start[j]:end[j]],
+                                                rate[start[j]:end[j]],
+                                                ii[start[j]:end[j]],
+                                                evid[start[j]:end[j]],
+                                                cmt[start[j]:end[j]],
+                                                addl[start[j]:end[j]],
+                                                ss[start[j]:end[j]],
+                                                parmsPred[j]);
 
     for(i in start[j]:end[j])
-      cHatPred[i] = xPred[i, 2] / V1Pred[j];
+      cHatPred[i] = xPred[2, i] / V1Pred[j];
   }
 
   for(i in 1:nt){
