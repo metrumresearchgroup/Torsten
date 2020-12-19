@@ -44,6 +44,9 @@
 
 #+LATEX_HEADER: \usepackage[section]{placeins}
 
+# section numbering begins with chapter
+#+LATEX_HEADER: \renewcommand{\thesection}{\thechapter.\arabic{section}}
+
 #+LATEX_HEADER: \theoremstyle{remark}
 #+LATEX_HEADER: \newtheorem{example}{Example}
 #+LATEX_HEADER: \newtheorem{remark}{Remark}
@@ -1105,7 +1108,8 @@ pairs. Specifically, =linear_interpolation= implements the following function
 - All three arguments may be data or parameters.
 
 * Examples
-** Two-compartment model for single patient 
+** Two-compartment model for single patient
+\label{sec:pk2cpt}
   We model drug absorption in a single patient and simulate plasma drug concentrations:
 
   - Multiple Doses: 1250 mg, every 12 hours, for a total of 15 doses
@@ -1124,66 +1128,72 @@ pairs. Specifically, =linear_interpolation= implements the following function
 
 Code below shows how Torsten function {{{torsten_src(pmx\_solve\_twocpt)}}} can be used to fit the above model.
 
-#+include: "../example-models/pk2cpt/pk2cpt.stan" :lines "5-71" src stan
+#+include: "../example-models/pk2cpt/pk2cpt.stan" :lines "5-68" src stan
 
 #+BEGIN_SRC R :results output silent :exports none
   setwd("~/Work/Torsten_debug/example-models/R")
   source("TwoCpt.R")                      #
 #+END_SRC
 
-Three MCMC chains of 2000 iterations are simulated. The first
-1000 iteration of each chain were discarded. Thus 1000 MCMC samples
-per chain were used for the subsequent analyses.
+Four MCMC chains of 2000 iterations (1000 warmup iterations and 1000
+sampling iterations) are simulated. 1000 samples per chain were used for the subsequent analyses.
 The MCMC history plots(Figure [[twocpt_mcmc_history]])
-suggest that the 3 chains have converged to common distributions for
+suggest that the 4 chains have converged to common distributions for
 all of the key model parameters. The fit to the plasma concentration
 data (Figure [[twocpt_mcmc_predict]]) are in close agreement with the
 data, which is not surprising since the fitted model is identical to
-the one used to simulate the data. Similarly the parameter estimates
-summarized in Table [[tab:twocpt_summary]] and Figure [[twocpt_mcmc_posterior]]
-are consistent with the values used for simulation.
+the one used to simulate the data. Similarly the parameter posterior
+density can be examined in Figure [[twocpt_mcmc_posterior]] and shows
+consistency with the values used for simulation. Another way to
+summarize the posterior is through =cmdstanr='s =summary= method.
 
-#+CAPTION: Summary of the MCMC simulations of the marginal posterior distribu- tions of the model parameters
-#+NAME: tab:twocpt_summary
-|-------+--------+---------+-------+--------+--------+--------+--------+--------+----------+------|
-|       |   mean | se_mean |    sd |   2.5% |    25% |    50% |    75% |  97.5% |    n_eff | Rhat |
-|-------+--------+---------+-------+--------+--------+--------+--------+--------+----------+------|
-| CL    |  4.823 |   0.002 | 0.092 |  4.647 |  4.762 |  4.823 |  4.883 |  5.012 | 2392.155 | 1.00 |
-| Q     |  7.596 |   0.013 | 0.586 |  6.479 |  7.201 |  7.594 |  7.977 |  8.785 | 1923.939 | 1.00 |
-| V1    | 21.073 |   0.069 | 2.573 | 16.017 | 19.352 | 21.046 | 22.817 | 26.097 | 1385.883 | 1.00 |
-| V2    | 76.365 |   0.105 | 5.611 | 65.805 | 72.623 | 76.172 | 79.916 | 87.971 | 2862.184 | 1.00 |
-| ka    |  1.231 |   0.004 | 0.177 |  0.907 |  1.107 |  1.221 |  1.344 |  1.599 | 1581.825 | 1.00 |
-| sigma |  0.109 |   0.000 | 0.012 |  0.089 |  0.100 |  0.108 |  0.116 |  0.134 | 2560.112 | 1.00 |
-|-------+--------+---------+-------+--------+--------+--------+--------+--------+----------+------|
-#+TBLFM: $2=$0;%0.3f::$3=$0;%0.3f::$4=$0;%0.3f::$5=$0;%0.3f::$6=$0;%0.3f::$7=$0;%0.3f::$8=$0;%0.3f::$9=$0;%0.3f::$10=$0;%0.3f::$11=$0;%0.3f
+#+BEGIN_SRC r
+## fit is a CmdStanMCMC object returned by sampling. See cmdstanr reference.
+> pars = c("CL", "Q", "V1", "V2", "ka", "sigma")
+> fit$summary(pars)
+# A tibble: 6 x 10
+  variable   mean median     sd    mad      q5    q95  rhat ess_bulk ess_tail
+  <chr>     <dbl>  <dbl>  <dbl>  <dbl>   <dbl>  <dbl> <dbl>    <dbl>    <dbl>
+1 CL        4.82   4.83  0.0910 0.0870  4.68    4.97   1.00    1439.    1067.
+2 Q         7.56   7.55  0.588  0.586   6.61    8.56   1.00    1256.    1235.
+3 V1       21.1   21.1   2.50   2.45   17.1    25.3    1.00    1057.    1177.
+4 V2       76.1   76.1   5.33   4.93   67.5    84.9    1.01    1585.    1372.
+5 ka        1.23   1.23  0.175  0.174   0.958   1.52   1.00    1070.    1122.
+6 sigma     0.109  0.108 0.0117 0.0111  0.0911  0.130  1.01    1414.     905.
+#+END_SRC
 
 #+CAPTION: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
 #+NAME: twocpt_mcmc_history
-#+ATTR_LATEX: :width 0.8\linewidth
+#+ATTR_LATEX: :width \linewidth
 [[../example-models/pk2cpt/deliv/figure/history.pdf]]
 
 #+CAPTION: Posterior Marginal Densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
 #+NAME: twocpt_mcmc_posterior
-#+ATTR_LATEX: :width 0.8\linewidth
+#+ATTR_LATEX: :width \linewidth
 [[../example-models/pk2cpt/deliv/figure/density.pdf]]
 
-#+CAPTION: Predicted (posterior median and 90% credible intervals) and observed plasma drug concentrations of a two compartment model with first order absorption
+#+CAPTION: Predicted ($y_{\text{rep}}$) and observed ($y$) plasma drug concentrations of a two compartment model with first order absorption. $y_{\text{rep}}$ is shown with posterior median, 50%, 90% credible intervals.
 #+NAME: twocpt_mcmc_predict
 #+ATTR_LATEX: :width 0.5\linewidth
-[[../example-models/R/deliv/figure/TwoCptModel/TwoCptModelPlots006.pdf]]
+[[../example-models/pk2cpt/deliv/figure/ppc_ribbon.pdf]]
 
 ** Two-compartment model as a linear ODE model for single patient 
 Using {{{torsten_src(pmx\_solve\_linode)}}}, the following example fits a two-compartment model
-with first order absorption.
+with first order absorption. We omit src_stan[:exports code]{data} and
+src_stan[:exports code]{model} block as they are identical to Section [[ref:sec:pk2cpt]].
 
-#+include: "../example-models/pk3cpt_linode/pk3cpt_linode.stan" :lines "1-87" src stan
+#+include: "../example-models/pk3cpt_linode/pk3cpt_linode.stan" :lines "23-70" src stan
 
 ** Two-compartment model solved by numerical integrator for single patient 
 Using =pmx_solve_rk45=, the following example fits a two-compartment model
 with first order absorption. User-defined function
-=twoCptModelODE= describes the RHS of the ODEs.
+=ode_rhs= describes the RHS of the ODEs. 
+#+include: "../example-models/pk2cpt_ode/pk2cpt_ode.stan" :lines "1-22" src stan
 
-#+include: "../example-models/pk2cpt_ode/pk2cpt_ode.stan" :lines "1-98" src stan
+We omit src_stan[:exports code]{data} and
+src_stan[:exports code]{model} block as they are identical to Section [[ref:sec:pk2cpt]].
+
+#+include: "../example-models/pk2cpt_ode/pk2cpt_ode.stan" :lines "41-78" src stan
 
 ** Joint PK-PD model
 #+INDEX: Friberg-Karlsson Model

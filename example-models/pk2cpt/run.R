@@ -77,14 +77,21 @@ ggsave(file.path(figDir, "diag_neff_tail_ratio.pdf"))
 
 p <- mcmc_trace(fit$draws(),  pars = c("CL", "Q", "V1", "V2", "ka", "sigma"), n_warmup = 0,
                 facet_args = list(nrow = 2, labeller = label_parsed))
-p + facet_text(size = 12)
+p <- p + facet_text(size = 12)
 ggsave(file.path(figDir, "history.pdf"))
 
 mcmc_dens_overlay(fit$draws(), pars = c("CL", "Q", "V1", "V2", "ka", "sigma"),
                   facet_args = list(nrow = 2)) +
-                  facet_text(size = 14)
+                  facet_text(size = 12)
 ggsave(file.path(figDir, "density.pdf"))
 
 p <- mcmc_pairs(fit$draws(), pars = c("CL", "Q", "V1", "V2", "ka", "sigma"),
                 off_diag_args = list(size = 1, alpha = 0.5))
 ggsave(file.path(figDir, "pair.pdf"), p, width = 10, height = 8)
+
+## ppc plot
+## yrep <- as.matrix(posterior::as_draws_df(fit$draws(variables = c("cObsPred"))))[, -(52:54)]
+## yobs <- cObs (read from data)
+## t <- time (read from data)
+## p <- bayesplot::ppc_ribbon(y = yobs, yrep = yrep, x = t) + ggplot2::xlab("time (h)") + ggplot2::ylab("plasma concentration (mg/L)")
+## ggsave(file.path(figDir, "ppc_ribbon.pdf"), p, width = 10, height = 8)

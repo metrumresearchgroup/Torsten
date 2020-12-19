@@ -33,8 +33,8 @@ parameters{
   real<lower = 0> V2;
   real<lower = 0> ka;
   real<lower = 0> sigma;
-
 }
+
 transformed parameters{
   real theta[nTheta];  // ODE parameters
   row_vector<lower = 0>[nt] cHat;
@@ -47,9 +47,6 @@ transformed parameters{
   theta[4] = V2;
   theta[5] = ka;
 
-  // PKModelTwoCpt takes in the NONMEM data, followed by the parameter
-  // arrays abd returns a matrix with the predicted amount in each 
-  // compartment at each event.
   x = pmx_solve_twocpt(time, amt, rate, ii, evid, cmt, addl, ss, theta);
 
   cHat = x[2, :] ./ V1; // we're interested in the amount in the second compartment

@@ -39,7 +39,6 @@ parameters{
   real<lower = 0> V2;
   real<lower = 0> ka;
   real<lower = 0> sigma;
-
 }
 
 transformed parameters{
@@ -60,11 +59,7 @@ transformed parameters{
   K[3, 2] = k12;
   K[3, 3] = -k21;
 
-  // linModel takes in the constant rate matrix, the object theta which
-  // contains the biovariability fraction and the lag time of each compartment,
-  // and the NONMEM data.
-  x = pmx_solve_linode(time, amt, rate, ii, evid, cmt, addl, ss,
-                       K, biovar, tlag);
+  x = pmx_solve_linode(time, amt, rate, ii, evid, cmt, addl, ss, K, biovar, tlag);
 
   cHat = row(x, 2) ./ V1;
 

@@ -1,5 +1,5 @@
 functions{
-  real[] ode_rhs(real t, real[] x, real[] parms, real[] rate, int[] dummy){
+  real[] ode_rhs(real t, real[] x, real[] parms, real[] x_r, int[] x_i){
     real CL = parms[1];
     real Q = parms[2];
     real V1 = parms[3];
@@ -42,14 +42,6 @@ transformed data {
   row_vector[nObs] logCObs = log(cObs);
   int nTheta = 5;   // number of parameters
   int nCmt = 3;   // number of compartments
-
-  // real biovar[nCmt];
-  // real tlag[nCmt];
-
-  // for (i in 1:nCmt) {
-  //   biovar[i] = 1;
-  //   tlag[i] = 0;
-  // }
 }
 
 parameters {
@@ -73,9 +65,7 @@ transformed parameters {
   theta[4] = V2;
   theta[5] = ka;
 
-  x = pmx_solve_rk45(ode_rhs, 3,
-                     time, amt, rate, ii, evid, cmt, addl, ss,
-                     theta, 1e-5, 1e-8, 1e5);
+  x = pmx_solve_rk45(ode_rhs, 3, time, amt, rate, ii, evid, cmt, addl, ss, theta, 1e-5, 1e-8, 1e5);
 
   cHat = x[2, ] ./ V1;
 
