@@ -1,4 +1,3 @@
-
 data{
   int<lower = 1> nSubjects;
   int<lower = 1> nt;
@@ -23,13 +22,8 @@ transformed data{
   vector[nObs] logCObs = log(cObs);
   int<lower = 1> nRandom = 5;
   int nCmt = 4;
-  real biovar[nCmt];
-  real tlag[nCmt];
-  
-  for (i in 1:nCmt) {
-    biovar[i] = 1;
-    tlag[i] = 0;
-  }
+  real biovar[nCmt] = rep_array(1.0, nCmt);
+  real tlag[nCmt] = rep_array(0.0, nCmt);
 }
 
 parameters{
@@ -104,15 +98,10 @@ transformed parameters{
     K[4, 2] = ke0[j];
     K[4, 4] = -ke0[j];
     
-    x[, start[j]:end[j] ] = pmx_solve_linode(time[start[j]:end[j]],
-                                           amt[start[j]:end[j]],
-                                           rate[start[j]:end[j]],
-                                           ii[start[j]:end[j]],
-                                           evid[start[j]:end[j]],
-                                           cmt[start[j]:end[j]],
-                                           addl[start[j]:end[j]],
-                                           ss[start[j]:end[j]],
-                                           K, biovar, tlag);
+    x[, start[j]:end[j] ] = pmx_solve_linode(time[start[j]:end[j]], amt[start[j]:end[j]],
+                                             rate[start[j]:end[j]], ii[start[j]:end[j]],
+                                             evid[start[j]:end[j]], cmt[start[j]:end[j]],
+                                             addl[start[j]:end[j]], ss[start[j]:end[j]], K, biovar, tlag);
 
     cHat[start[j]:end[j]] = 1000 * x[2, start[j]:end[j]] ./ V1[j];
     ceHat[start[j]:end[j]] = 1000 * x[4, start[j]:end[j]] ./ V1[j];
@@ -122,7 +111,6 @@ transformed parameters{
 
   cHatObs = cHat[iObs];
   respHatObs = respHat[iObs];
-
 }
 
 model{
@@ -202,15 +190,10 @@ generated quantities{
     KPred[4, 2] = ke0Pred[j];
     KPred[4, 4] = -ke0Pred[j];
     
-    xPred[, start[j]:end[j] ] = pmx_solve_linode(time[start[j]:end[j]],
-                                               amt[start[j]:end[j]],
-                                               rate[start[j]:end[j]],
-                                               ii[start[j]:end[j]],
-                                               evid[start[j]:end[j]],
-                                               cmt[start[j]:end[j]],
-                                               addl[start[j]:end[j]],
-                                               ss[start[j]:end[j]],
-                                               KPred, biovar, tlag);
+    xPred[, start[j]:end[j] ] = pmx_solve_linode(time[start[j]:end[j]], amt[start[j]:end[j]],
+                                                 rate[start[j]:end[j]], ii[start[j]:end[j]],
+                                                 evid[start[j]:end[j]], cmt[start[j]:end[j]],
+                                                 addl[start[j]:end[j]], ss[start[j]:end[j]], KPred, biovar, tlag);
 
     cHatPred[start[j]:end[j]] = 1000 * xPred[2, start[j]:end[j]] ./ V1Pred[j];
     ceHatPred[start[j]:end[j]] = 1000 * xPred[4, start[j]:end[j]] ./ V1Pred[j];
@@ -231,5 +214,4 @@ generated quantities{
       respObsPred[i] = normal_rng(respHatPred[i], sigmaResp);
     }
   }
-
 }

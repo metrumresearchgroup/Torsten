@@ -1417,7 +1417,7 @@ function. Thus the Stan model shows the call to =pmx_solve_linode=
 within a loop over the individual subjects rather than over
 the individual observations.
 
-#+include: "../example-models/effCpt/effCpt.stan" :lines "54-127" src stan
+#+include: "../example-models/effCpt/effCpt.stan" src stan
 
 *** Results
 We use the same diagnosis tools as for the
