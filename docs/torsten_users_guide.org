@@ -417,6 +417,7 @@ https://mc-stan.org/cmdstanr/articles/cmdstanr.html
 to compile and run Torsten models.
 
 ** MPI support
+\label{sec:mpi_support}
 Torsten's MPI support is of a different flavour than
 =reduce_sum= found in Stan. To be able to utilize MPI
 parallelisation, one first needs to ensure an MPI library
@@ -1253,6 +1254,18 @@ Using =pmx_solve_group_bdf=, the following example fits a
 two-compartment population model.
 
 #+include: "../example-models/twocpt_population/twocpt_population.stan" :lines "1-145" src stan
+
+When the above model is compiled with MPI support(see Section
+[[ref:sec:mpi_support]]), one can run it with within-chain
+parallelization:
+#+BEGIN_SRC bash
+mpiexec -n nproc ./twocpt_population sample data file=twocpt_population.data.R init=twocpt_population.init.R
+#+END_SRC
+Here src_sh[:exports code]{nproc} indicates the number of parallel
+processes participating ODE solution. For example, with
+src_stan[:exports code]{np=8} for a population of 8,
+src_sh[:exports code]{nproc=4} indicates solving 8 subjects' ODEs in
+parallel, with each process solving 2 subjects.
 
 ** Lotka-Volterra group model
 Using =pmx_integrate_ode_group_rk45=, the following example fits
