@@ -28,15 +28,9 @@ The AST intends to keep very close to Stan-level semantics and syntax in every w
 ## Getting development on stanc3 up and running locally
 
 ### Using Opam+Make+Dune to build, test, and run
-To be able to build the project, make sure you have `GNU make`.
+To be able to build the project, make sure you have GNU make installed.
 
-To install OCaml and the dependencies we need to build and do development run the following from the stanc3 directory:
-
-```
-cd scripts
-bash -x setup_dev_env.sh
-```
-Note that `curl` and `m4` are prerequisites to run the install script.
+To install OCaml and the dependencies we need to build and do development, run `scripts/setup_dev_env.sh`.
 
 To build `stanc.exe`, run `make`. The binary will be built in `_build/default`.
 
