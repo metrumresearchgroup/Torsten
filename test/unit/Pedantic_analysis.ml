@@ -3,7 +3,12 @@ open Frontend
 open Analysis_and_optimization.Pedantic_analysis
 
 let build_program prog =
-  Frontend_utils.typed_ast_of_string_exn prog |> Ast_to_Mir.trans_prog ""
+  Ast_to_Mir.trans_prog ""
+    (Option.value_exn
+       (Result.ok
+          (Semantic_check.semantic_check_program
+             (Option.value_exn
+                (Result.ok (Parse.parse_string Parser.Incremental.program prog))))))
 
 let sigma_example =
   {|
@@ -25,8 +30,6 @@ let sigma_example =
           x ~ normal (0, z);
         }
       |}
-
-let print_warn_pedantic = Fn.compose print_endline sprint_warn_pedantic
 
 let%expect_test "Unbounded sigma warning" =
   print_warn_pedantic (build_program sigma_example) ;

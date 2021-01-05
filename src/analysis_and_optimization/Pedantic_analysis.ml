@@ -319,8 +319,13 @@ let pp_warning ppf (loc, msg) =
    Fmt.flush and various other hacks to no avail. So now I use Fmt to build a
    string, and Out_channel to write it.
 *)
-let sprint_warning_set (warnings : (Location_span.t * string) Set.Poly.t) =
-  Fmt.strf "%a" (Fmt.list ~sep:Fmt.nop pp_warning) (Set.Poly.to_list warnings)
+let print_warning_set (warnings : (Location_span.t * string) Set.Poly.t) =
+  let str =
+    Fmt.strf "%a"
+      (Fmt.list ~sep:Fmt.nop pp_warning)
+      (Set.Poly.to_list warnings)
+  in
+  Out_channel.output_string Out_channel.stderr str
 
 let unscaled_constants_message (name : string) : string =
   Printf.sprintf
@@ -440,10 +445,10 @@ let uninitialized_warnings (mir : Program.Typed.t) =
     ~f:(fun (loc, vname) -> (loc, uninitialized_message vname))
     uninit_vars
 
-(* String-print uninitialized warnings
+(* Print uninitialized warnings
    In case a user wants only this warning *)
-let sprint_warn_uninitialized mir =
-  sprint_warning_set (uninitialized_warnings mir)
+let print_warn_uninitialized mir =
+  print_warning_set (uninitialized_warnings mir)
 
 (* Optimization settings for constant propagation and partial evaluation *)
 let settings_constant_prop =
@@ -452,8 +457,8 @@ let settings_constant_prop =
   ; copy_propagation= true
   ; partial_evaluation= true }
 
-(* String-print all pedantic mode warnings, sorted, to stderr *)
-let sprint_warn_pedantic (mir_unopt : Program.Typed.t) =
+(* Print all pedantic mode warnings, sorted, to stderr *)
+let print_warn_pedantic (mir_unopt : Program.Typed.t) =
   (* Some warnings will be stronger when constants are propagated *)
   let mir =
     Optimize.optimization_suite ~settings:settings_constant_prop mir_unopt
@@ -473,4 +478,4 @@ let sprint_warn_pedantic (mir_unopt : Program.Typed.t) =
       ; non_one_priors_warnings factor_graph mir
       ; distribution_warnings distributions_info ]
   in
-  sprint_warning_set warning_set
+  print_warning_set warning_set

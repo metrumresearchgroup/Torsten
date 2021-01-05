@@ -3,8 +3,9 @@ open Core_kernel
 open Debug_data_generation
 
 let%expect_test "whole program data generation check" =
+  let open Parse in
   let ast =
-    Frontend_utils.typed_ast_of_string_exn
+    parse_string Parser.Incremental.program
       {|       data {
                   int<lower=7> K;
                   int<lower=1> D;
@@ -13,6 +14,12 @@ let%expect_test "whole program data generation check" =
                   vector[K] x[N];
                     }
       |}
+  in
+  let ast =
+    Option.value_exn
+      (Result.ok
+         (Semantic_check.semantic_check_program
+            (Option.value_exn (Result.ok ast))))
   in
   let str = print_data_prog ast in
   print_s [%sexp (str : string)] ;
@@ -28,8 +35,9 @@ let%expect_test "whole program data generation check" =
       \n}" |}]
 
 let%expect_test "whole program data generation check" =
+  let open Parse in
   let ast =
-    Frontend_utils.typed_ast_of_string_exn
+    parse_string Parser.Incremental.program
       {|       data {
                     int x[3, 4];
                     int y[5, 2, 4];
@@ -38,6 +46,12 @@ let%expect_test "whole program data generation check" =
                     vector[3] p[4];
                 }
       |}
+  in
+  let ast =
+    Option.value_exn
+      (Result.ok
+         (Semantic_check.semantic_check_program
+            (Option.value_exn (Result.ok ast))))
   in
   let str = print_data_prog ast in
   print_s [%sexp (str : string)] ;
@@ -65,8 +79,9 @@ let%expect_test "whole program data generation check" =
       \n}" |}]
 
 let%expect_test "whole program data generation check" =
+  let open Parse in
   let ast =
-    Frontend_utils.typed_ast_of_string_exn
+    parse_string Parser.Incremental.program
       {|       data {
                   int<lower=2, upper=4> K;
                   int<lower=K, upper=K> D;
@@ -76,6 +91,12 @@ let%expect_test "whole program data generation check" =
                   vector[K ? D : K] w[(D + 2 == K) + 3];
                 }
       |}
+  in
+  let ast =
+    Option.value_exn
+      (Result.ok
+         (Semantic_check.semantic_check_program
+            (Option.value_exn (Result.ok ast))))
   in
   let str = print_data_prog ast in
   print_s [%sexp (str : string)] ;
@@ -93,8 +114,9 @@ let%expect_test "whole program data generation check" =
       \n}" |}]
 
 let%expect_test "whole program data generation check" =
+  let open Parse in
   let ast =
-    Frontend_utils.typed_ast_of_string_exn
+    parse_string Parser.Incremental.program
       {|
         data {
           corr_matrix[5] d;
@@ -108,6 +130,12 @@ let%expect_test "whole program data generation check" =
           cholesky_factor_cov[5, 4] l;
         }
       |}
+  in
+  let ast =
+    Option.value_exn
+      (Result.ok
+         (Semantic_check.semantic_check_program
+            (Option.value_exn (Result.ok ast))))
   in
   let str = print_data_prog ast in
   print_s [%sexp (str : string)] ;
@@ -166,8 +194,9 @@ let%expect_test "whole program data generation check" =
       \n}" |}]
 
 let%expect_test "whole program data generation check" =
+  let open Parse in
   let ast =
-    Frontend_utils.typed_ast_of_string_exn
+    parse_string Parser.Incremental.program
       {|
         data {
           int<lower=0> N;
@@ -193,6 +222,12 @@ let%expect_test "whole program data generation check" =
           cholesky_factor_cov[3] d_cfcov_33_ar[K];
         }
       |}
+  in
+  let ast =
+    Option.value_exn
+      (Result.ok
+         (Semantic_check.semantic_check_program
+            (Option.value_exn (Result.ok ast))))
   in
   let str = print_data_prog ast in
   print_s [%sexp (str : string)] ;
@@ -305,8 +340,9 @@ let%expect_test "whole program data generation check" =
       \n}" |}]
 
 let%expect_test "whole program data generation check" =
+  let open Parse in
   let ast =
-    Frontend_utils.typed_ast_of_string_exn
+    parse_string Parser.Incremental.program
       {|
         data {
           vector<upper=10>[5] x_vect;
@@ -340,6 +376,12 @@ let%expect_test "whole program data generation check" =
           row_vector<lower=[1,2,3,4,5],upper=x_row_vect_up>[5] y_row_lu_vector_bound_mixed;
         }
       |}
+  in
+  let ast =
+    Option.value_exn
+      (Result.ok
+         (Semantic_check.semantic_check_program
+            (Option.value_exn (Result.ok ast))))
   in
   let str = print_data_prog ast in
   print_s [%sexp (str : string)] ;
@@ -427,8 +469,9 @@ let%expect_test "whole program data generation check" =
     \n}" |}]
 
 let%expect_test "whole program data generation check" =
+  let open Parse in
   let ast =
-    Frontend_utils.typed_ast_of_string_exn
+    parse_string Parser.Incremental.program
       {|
       data {
         int<lower = 0> K;                     // players
@@ -438,6 +481,12 @@ let%expect_test "whole program data generation check" =
         int<lower = 0, upper = 1> y[N];       // winner for game n
       }
       |}
+  in
+  let ast =
+    Option.value_exn
+      (Result.ok
+         (Semantic_check.semantic_check_program
+            (Option.value_exn (Result.ok ast))))
   in
   let str = print_data_prog ast in
   print_s [%sexp (str : string)] ;
