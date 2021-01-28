@@ -1,1 +1,0 @@
-data { ordered[T ~ normal(0,1)] x;}
