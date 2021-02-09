@@ -31,7 +31,10 @@ parameters{
   real<lower = 0> QHat;
   real<lower = 0> V1Hat;
   real<lower = 0> V2Hat;
-  real<lower = 0> kaHat;
+  //  real<lower = 0> kaHat;
+  real<lower = (CLHat / V1Hat + QHat / V1Hat + QHat / V2Hat +
+		sqrt((CLHat / V1Hat + QHat / V1Hat + QHat / V2Hat)^2 -
+		     4 * CLHat / V1Hat * QHat / V2Hat)) / 2> kaHat; // ka > lambda_1
   real<lower = 0> ke0Hat;
   real<lower = 0> EC50Hat;
   vector<lower = 0>[nRandom] omega;
@@ -40,9 +43,11 @@ parameters{
   real<lower = 0> omegaEC50;
   real<lower = 0> sigma;
   real<lower = 0> sigmaResp;
-  vector[nRandom] logtheta[nSubjects];
-  real logKe0[nSubjects];
-  real logEC50[nSubjects];
+
+  // reparameterization
+  vector[nRandom] logtheta_raw[nSubjects];
+  real logKe0_raw[nSubjects];
+  real logEC50_raw[nSubjects];
 }
 
 transformed parameters{
@@ -66,6 +71,11 @@ transformed parameters{
   row_vector<lower = 0>[nt] ceHat;
   matrix[nCmt, nt] x;
   
+  matrix[nRandom, nRandom] L;
+  vector[nRandom] logtheta[nSubjects];
+  real logKe0[nSubjects];
+  real logEC50[nSubjects];
+
   thetaHat[1] = CLHat;
   thetaHat[2] = QHat;
   thetaHat[3] = V1Hat;
@@ -73,8 +83,13 @@ transformed parameters{
   thetaHat[5] = kaHat;
 
   Omega = quad_form_diag(rho, omega); // diag_matrix(omega) * rho * diag_matrix(omega)
+  L = cholesky_decompose(Omega);
 
   for(j in 1:nSubjects){
+    logtheta[j] = log(thetaHat) + L * logtheta_raw[j];
+    logKe0[j] = log(ke0Hat) + logKe0_raw[j] * omegaKe0;
+    logEC50[j] = log(EC50Hat) + logEC50_raw[j] * omegaEC50;
+
     CL[j] = exp(logtheta[j, 1]) * (weight[j] / 70)^0.75;
     Q[j] = exp(logtheta[j, 2]) * (weight[j] / 70)^0.75;
     V1[j] = exp(logtheta[j, 3]) * weight[j] / 70;
@@ -114,29 +129,31 @@ transformed parameters{
 }
 
 model{
-    // Prior
-    CLHat ~ normal(0, 20);
-    QHat ~ normal(0, 40);
-    V1Hat ~ normal(0, 150);
-    V2Hat ~ normal(0, 150);
-    kaHat ~ normal(0, 5);
-    ke0Hat ~ normal(0, 2);
-    EC50Hat ~ normal(0, 200);
-    omega ~ cauchy(0, 2);
-    rho ~ lkj_corr(1); 
-    omegaKe0 ~ cauchy(0, 2);
-    omegaEC50 ~ cauchy(0, 2);
-    sigma ~ cauchy(0, 2);
-    sigmaResp ~ cauchy(0, 5);
+  // Prior
+  CLHat ~ lognormal(log(10), 0.2);
+  QHat ~ lognormal(log(15), 0.2);
+  V1Hat ~ lognormal(log(30), 0.2);
+  V2Hat ~ lognormal(log(100), 0.2);
+  kaHat ~ lognormal(log(5), 0.25);
+  ke0Hat ~ lognormal(log(10), 0.25);
+  EC50Hat ~ lognormal(log(1.0), 0.2);
+  omega ~ normal(0, 0.2);
+  rho ~ lkj_corr(1); 
+  omegaKe0 ~ normal(0, 0.2);
+  omegaEC50 ~ normal(0, 0.2);
+  sigma ~ cauchy(0, 0.2);
+  sigmaResp ~ cauchy(0, 0.2);
 
-    // Inter-individual variability
-    logtheta ~ multi_normal(log(thetaHat), Omega);
-    logKe0 ~ normal(log(ke0Hat), omegaKe0);
-    logEC50 ~ normal(log(EC50Hat), omegaEC50);
+  // Inter-individual variability
+  for (i in 1:nSubjects) {
+    logtheta_raw[i] ~ std_normal();      
+  }
+  logKe0_raw ~ std_normal();
+  logEC50_raw ~ std_normal();
 
-    // Likelihood
-    logCObs ~ normal(log(cHatObs), sigma); 
-    respObs ~ normal(respHatObs, sigmaResp); 
+  // Likelihood
+  logCObs ~ normal(log(cHatObs), sigma); 
+  respObs ~ normal(respHatObs, sigmaResp); 
 }
 
 generated quantities{

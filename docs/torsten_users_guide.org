@@ -1399,10 +1399,10 @@ treatment.
   + Single dose and multiple doses
   + Parallel dose escalation design
   + 25 subjects per dose
-  + Single doses: 1.25, 5, 10, 20, and 40 mg 
+  + Single doses: 5, 10, 20, and 40 mg 
   + PK: plasma concentration of parent drug ($c$)
   + PD response: Emax function of effect compartment concentration ($R$)
-  + PK and PD measured at 0.083, 0.167, 0.25, 0.5, 0.75, 1, 2, 3, 4, 6, 8, 12, 18, and 24 hours
+  + PK and PD measured at 0.125, 0.25, 0.5, 0.75, 1, 2, 3, 4, 6, 8, 12, 18, and 24 hours
 - Phase IIa trial in patients
   + 100 subjects
   + Multiple doses: 20 mg
@@ -1415,103 +1415,123 @@ Torsten requires the user pass the entire event history
 (observation and dosing events) for an individual to the
 function. Thus the Stan model shows the call to =pmx_solve_linode=
 within a loop over the individual subjects rather than over
-the individual observations.
+the individual observations. Note that the correlation matrix $\rho$ does not explicitly appear
+in the model, but it is used to construct $\Omega$, which parametrizes
+the PK IIV. 
 
 #+include: "../example-models/effCpt/effCpt.stan" :lines "1-141" src stan
 
 *** Results
 We use the same diagnosis tools as for the
-previous examples. The MCMC history plots (Figure \ref{effCptModelMCMC}) suggest the 4 chains have converged to common
-distributions. We note some minor auto-correlations for $lp\_$ (the
-log posterior) and for IIV parameters: specifically $\Omega_{ke_0}$
-and $\rho$. The correlation matrix $\rho$ does not explicitly appear
-in the model, but it is used to construct $\Omega$, which parametrizes
-the PK IIV. 
-The fits to the plasma concentration
-(Figure \ref{effCptModelPredictionsPK}) are in close agreement with
-the data, notably for the sparse data case (phase IIa study). The fits
-to the PD data (Figure \ref{effCptModelPredictionsPD}) look good,
-though the data is more noisy. The model reflects the noise by
-producing larger credible intervals. The estimated values of the
-parameters are consistent with the values used to simulate the data
-(Table [[effCptModelParms]]) and Figure \ref{effCptModelDens}).
+previous examples. Table [[ref:effCptModelParms]] summarises the
+statistics and diagnostics of the parameters. In particular, =rhat=
+for all parameters being close to 1.0 indicates convergence of the 4
+chains. Figure [[ref:effcpt_mcmc_density]] shows the posterior density of
+the parameters.
 
+Posterior prediction check (PPC) in Figure
+[[ref:effcpt_ppc_5mg]]-[[ref:effcpt_ppc_study_2_20mg]] show that the fits to the plasma concentration
+are in close agreement with the data, notably for the sparse data case (phase IIa study). The fits
+to the PD data (Figure
+[[ref:effcpt_ppc_resp_5mg]]-[[ref:effcpt_ppc_resp_study_2_20mg]]) look
+reasonable considering data being more noisy so the model
+produces larger credible intervals. Both the summary table and PPC
+plots show that the estimated values of the
+parameters are consistent with the values used to simulate the data.
+
+# import from "summary_pars.csv"
 #+CAPTION: Summary of the MCMC simulations of the marginal posterior distributions of the model parameters for the effect compartment model example.
 #+ATTR_LATEX: :font \footnotesize :align  r r r r r r r r r r r
 #+LABEL: effCptModelParms
 #+NAME: effCptModelParms
-|           |     mean | se\under{}mean |     sd |     2.5% |      25% |      50% |      75% |   97.5% | n\under{}eff |  Rhat |
-|-----------+----------+----------------+--------+----------+----------+----------+----------+---------+--------------+-------|
-| lp__      | -201.282 |         10.073 | 84.189 | -333.764 | -259.017 | -213.416 | -154.381 |   8.549 |       69.850 | 1.044 |
-| CLHat     |   10.095 |          0.003 |  0.201 |    9.712 |    9.958 |   10.096 |   10.231 |  10.483 |     4000.000 | 0.999 |
-| QHat      |   14.867 |          0.014 |  0.357 |   14.182 |   14.620 |   14.862 |   15.106 |  15.563 |      678.208 | 1.007 |
-| V1Hat     |   34.188 |          0.067 |  1.089 |   31.940 |   33.494 |   34.214 |   34.918 |  36.251 |      267.748 | 1.016 |
-| V2Hat     |  103.562 |          0.076 |  2.925 |   98.031 |  101.600 |  103.454 |  105.472 | 109.583 |     1488.296 | 1.001 |
-| kaHat     |    1.930 |          0.004 |  0.077 |    1.771 |    1.880 |    1.933 |    1.982 |   2.076 |      334.888 | 1.014 |
-| ke0Hat    |    1.050 |          0.001 |  0.044 |    0.967 |    1.020 |    1.051 |    1.078 |   1.137 |     1164.741 | 1.000 |
-| EC50Hat   |  104.337 |          0.040 |  2.100 |  100.169 |  102.909 |  104.345 |  105.768 | 108.351 |     2744.041 | 1.000 |
-| sigma     |    0.099 |          0.000 |  0.002 |    0.095 |    0.097 |    0.099 |    0.100 |   0.103 |     1906.342 | 1.002 |
-| sigmaResp |   10.156 |          0.003 |  0.197 |    9.779 |   10.023 |   10.154 |   10.286 |  10.552 |     4000.000 | 1.000 |
-| omega[1]  |    0.270 |          0.000 |  0.016 |    0.241 |    0.259 |    0.269 |    0.280 |   0.302 |     4000.000 | 1.001 |
-| omega[2]  |    0.231 |          0.001 |  0.021 |    0.192 |    0.217 |    0.230 |    0.245 |   0.275 |      531.512 | 1.006 |
-| omega[3]  |    0.219 |          0.002 |  0.031 |    0.158 |    0.199 |    0.218 |    0.238 |   0.281 |      158.198 | 1.017 |
-| omega[4]  |    0.267 |          0.001 |  0.026 |    0.218 |    0.249 |    0.266 |    0.284 |   0.319 |      684.870 | 1.001 |
-| omega[5]  |    0.285 |          0.002 |  0.037 |    0.214 |    0.259 |    0.284 |    0.309 |   0.361 |      284.545 | 1.009 |
-| omegaKe0  |    0.271 |          0.003 |  0.047 |    0.183 |    0.239 |    0.271 |    0.303 |   0.363 |      217.350 | 1.007 |
-| omegaEC50 |    0.213 |          0.001 |  0.021 |    0.174 |    0.199 |    0.213 |    0.227 |   0.255 |     1190.193 | 1.000 |
-| rho[1,2]  |    0.194 |          0.003 |  0.100 |   -0.011 |    0.127 |    0.195 |    0.265 |   0.379 |     1000.772 | 1.004 |
-| rho[1,3]  |   -0.157 |          0.005 |  0.126 |   -0.395 |   -0.243 |   -0.157 |   -0.072 |   0.088 |      677.709 | 1.001 |
-| rho[2,3]  |    0.079 |          0.012 |  0.155 |   -0.227 |   -0.024 |    0.082 |    0.181 |   0.384 |      180.306 | 1.021 |
-| rho[1,4]  |   -0.107 |          0.003 |  0.112 |   -0.319 |   -0.183 |   -0.110 |   -0.032 |   0.118 |     1081.932 | 1.002 |
-| rho[2,4]  |    0.194 |          0.005 |  0.126 |   -0.062 |    0.110 |    0.199 |    0.282 |   0.428 |      623.035 | 1.007 |
-| rho[3,4]  |    0.796 |          0.008 |  0.094 |    0.592 |    0.737 |    0.808 |    0.867 |   0.940 |      152.112 | 1.033 |
-| rho[1,5]  |    0.023 |          0.006 |  0.135 |   -0.232 |   -0.068 |    0.024 |    0.115 |   0.285 |      564.687 | 1.003 |
-| rho[2,5]  |    0.119 |          0.011 |  0.160 |   -0.188 |    0.008 |    0.118 |    0.224 |   0.438 |      226.174 | 1.014 |
-| rho[3,5]  |   -0.246 |          0.018 |  0.202 |   -0.663 |   -0.382 |   -0.237 |   -0.105 |   0.133 |      119.465 | 1.021 |
-| rho[4,5]  |   -0.288 |          0.009 |  0.155 |   -0.576 |   -0.396 |   -0.291 |   -0.183 |   0.014 |      275.549 | 1.009 |
+| variable  |    mean |  median |    sd |   mad |     q5 |     q95 |  rhat | ess_bulk | ess_tail |
+|-----------+---------+---------+-------+-------+--------+---------+-------+----------+----------|
+| CLHat     |  10.121 |  10.120 | 0.195 | 0.192 |  9.797 |  10.445 | 1.007 |  319.942 |  630.619 |
+| QHat      |  14.858 |  14.853 | 0.347 | 0.344 | 14.301 |  15.432 | 1.000 | 1106.126 | 1712.821 |
+| V1Hat     |  34.493 |  34.516 | 1.004 | 0.995 | 32.814 |  36.086 | 1.004 |  671.777 | 1563.396 |
+| V2Hat     | 103.269 | 103.291 | 2.876 | 2.878 | 98.568 | 108.019 | 1.002 | 1689.165 | 2580.382 |
+| kaHat     |   1.968 |   1.969 | 0.076 | 0.074 |  1.843 |   2.087 | 1.001 | 1204.531 | 1747.427 |
+| ke0Hat    |   1.102 |   1.100 | 0.046 | 0.045 |  1.030 |   1.180 | 1.001 | 4008.337 | 3167.030 |
+| EC50Hat   |  99.512 |  99.542 | 2.124 | 2.098 | 95.981 | 102.987 | 1.000 | 2557.436 | 2773.519 |
+| omega[1]  |   0.268 |   0.267 | 0.016 | 0.016 |  0.242 |   0.295 | 1.008 |  594.842 |  978.297 |
+| omega[2]  |   0.229 |   0.228 | 0.021 | 0.021 |  0.195 |   0.264 | 1.002 | 1245.453 | 1966.911 |
+| omega[3]  |   0.212 |   0.211 | 0.029 | 0.029 |  0.165 |   0.261 | 1.005 |  623.820 | 1692.248 |
+| omega[4]  |   0.263 |   0.262 | 0.026 | 0.026 |  0.221 |   0.306 | 1.002 | 1396.611 | 2260.425 |
+| omega[5]  |   0.272 |   0.271 | 0.036 | 0.035 |  0.217 |   0.335 | 1.008 |  293.132 |  728.867 |
+| rho[1,2]  |   0.197 |   0.200 | 0.100 | 0.101 |  0.029 |   0.360 | 1.003 | 1322.261 | 1955.862 |
+| rho[1,3]  |  -0.161 |  -0.161 | 0.122 | 0.121 | -0.361 |   0.042 | 1.001 | 1609.160 | 2270.515 |
+| rho[1,4]  |  -0.101 |  -0.105 | 0.107 | 0.107 | -0.270 |   0.083 | 1.001 | 1685.591 | 2353.498 |
+| rho[1,5]  |   0.016 |   0.015 | 0.128 | 0.128 | -0.192 |   0.226 | 1.000 | 2039.767 | 2939.988 |
+| rho[2,3]  |   0.091 |   0.092 | 0.144 | 0.148 | -0.143 |   0.328 | 1.008 |  718.187 | 1550.836 |
+| rho[2,4]  |   0.186 |   0.190 | 0.125 | 0.125 | -0.025 |   0.384 | 1.005 |  948.704 | 1819.199 |
+| rho[2,5]  |   0.146 |   0.145 | 0.157 | 0.161 | -0.111 |   0.402 | 1.003 |  626.620 | 1546.157 |
+| rho[3,4]  |   0.815 |   0.827 | 0.093 | 0.094 |  0.646 |   0.947 | 1.010 |  309.098 |  736.635 |
+| rho[3,5]  |  -0.318 |  -0.323 | 0.219 | 0.228 | -0.678 |   0.055 | 1.016 |  200.806 |  607.958 |
+| rho[4,5]  |  -0.295 |  -0.299 | 0.161 | 0.162 | -0.551 |  -0.019 | 1.008 |  546.998 | 1151.092 |
+| omegaKe0  |   0.265 |   0.265 | 0.047 | 0.047 |  0.188 |   0.346 | 1.001 | 1731.276 | 2049.892 |
+| omegaEC50 |   0.216 |   0.216 | 0.020 | 0.020 |  0.182 |   0.249 | 1.001 | 1599.567 | 1844.056 |
+| sigma     |   0.099 |   0.099 | 0.002 | 0.002 |  0.095 |   0.103 | 1.002 | 1726.283 | 2836.027 |
+| sigmaResp |  10.165 |  10.166 | 0.198 | 0.198 |  9.844 |  10.495 | 1.002 | 4788.527 | 2923.203 |
+#+TBLFM: $2=$0;%0.3f::$3=$0;%0.3f::$4=$0;%0.3f::$5=$0;%0.3f::$6=$0;%0.3f::$7=$0;%0.3f::$8=$0;%0.3f::$9=$0;%0.3f::$10=$0;%0.3f
 
-\begin{figure}[!htb]
-  \includegraphics[width=3.0in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots001.pdf}
-  \includegraphics[width=3.0in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots002.pdf}
-  \includegraphics[width=3.0in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots003.pdf}
-  \includegraphics[width=3.0in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots004.pdf}
-  \includegraphics[width=3.0in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots005.pdf}
-  \caption{{MCMC history plots for the parameters of an Effect Compartment Model (each color corresponds to a different chain) for example 2}}
-  \label{effCptModelMCMC}
-\end{figure}
+#+CAPTION: Posterior marginal densities of the model parameters of the effect compartment model.
+#+NAME: effcpt_mcmc_density
+#+ATTR_LATEX: :width 0.8\linewidth
+[[../example-models/effCpt/density.pdf]]
 
-\begin{figure}[!htb]
-  \includegraphics[width=3.0in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots006.pdf}
-  \includegraphics[width=3.0in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots007.pdf}
-  \caption{{Posterior Marginal Densities of the Model Parameters of an Effect Compartment Model (each color corresponds to a different chain) for example 2}}
-  \label{effCptModelDens}
-\end{figure}
 
-\begin{figure}[!htb]
-  \includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots011.pdf}
-  \includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots012.pdf}
-  \includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots013.pdf}
-  \includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots014.pdf}
-  \includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots019.pdf}
-  \includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots020.pdf}
-  \includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots021.pdf}
-  \includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots022.pdf}
-  \caption{{Predicted (posterior median and 90 \% credible intervals) and observed plasma drug concentrations for example 2 for an Effect Compartment Model}}
-  \label{effCptModelPredictionsPK}
-\end{figure}
+#+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (5mg dose).
+#+NAME: effcpt_ppc_5mg
+#+ATTR_LATEX: :width \linewidth
+[[../example-models/effCpt/ppc_study_1_5mg.pdf]]
 
-\begin{figure}[!htb]
-\includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots023.pdf}
-\includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots024.pdf}
-\includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots025.pdf}
-\includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots026.pdf}
-\includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots027.pdf}
-\includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots028.pdf}
-\includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots029.pdf}
-\includegraphics[width=1.5in,trim=0in 0in 0 0in]{graphics/effCptModelTorsten_0.82/effCptPlots030.pdf}
-\caption{{Predicted (posterior median and 90 \% credible intervals) and observed PD Response for example 2}}
-\label{effCptModelPredictionsPD}
-\end{figure}
+#+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (10mg dose).
+#+NAME: effcpt_ppc_10mg
+#+ATTR_LATEX: :width \linewidth
+[[../example-models/effCpt/ppc_study_1_10mg.pdf]]
+
+#+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (20mg dose).
+#+NAME: effcpt_ppc_20mg
+#+ATTR_LATEX: :width \linewidth
+[[../example-models/effCpt/ppc_study_1_20mg.pdf]]
+
+#+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (40mg dose).
+#+NAME: effcpt_ppc_40mg
+#+ATTR_LATEX: :width \linewidth
+[[../example-models/effCpt/ppc_study_1_40mg.pdf]]
+
+#+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 2 (first 40 subjects).
+#+NAME: effcpt_ppc_study_2_20mg
+#+ATTR_LATEX: :width \linewidth
+[[../example-models/effCpt/ppc_study_2_20mg.pdf]]
+
+# PD
+
+#+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (5mg dose).
+#+NAME: effcpt_ppc_resp_5mg
+#+ATTR_LATEX: :width \linewidth
+[[../example-models/effCpt/ppc_study_1_5mg_resp.pdf]]
+
+#+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (10mg dose).
+#+NAME: effcpt_ppc_resp_10mg
+#+ATTR_LATEX: :width \linewidth
+[[../example-models/effCpt/ppc_study_1_10mg_resp.pdf]]
+
+#+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (20mg dose).
+#+NAME: effcpt_ppc_resp_20mg
+#+ATTR_LATEX: :width \linewidth
+[[../example-models/effCpt/ppc_study_1_20mg_resp.pdf]]
+
+#+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (40mg dose).
+#+NAME: effcpt_ppc_resp_40mg
+#+ATTR_LATEX: :width \linewidth
+[[../example-models/effCpt/ppc_study_1_40mg_resp.pdf]]
+
+#+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 2 (first 40 subjects).
+#+NAME: effcpt_ppc_resp_study_2_20mg
+#+ATTR_LATEX: :width \linewidth
+[[../example-models/effCpt/ppc_study_2_20mg_resp.pdf]]
+
 
 ** Friberg-Karlsson Semi-Mechanistic Population Model
 We now return to the example in Section [[ref:sec:mixed]] and extend
