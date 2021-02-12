@@ -104,10 +104,7 @@ This work was funded in part by the following organizations:
 * Introduction
 Stan is an open source probabilistic programing language designed
 primarily to do Bayesian data analysis
-cite:carpenter17_stan. 
-
-
-Several of its
+cite:carpenter17_stan. Several of its
 features make it a powerful tool to specify and fit complex
 models. First, its language is very expressive and
 flexible. Secondly, it implements a variant of No U-Turn
@@ -127,15 +124,10 @@ Comment at Torsten repository
 
 [[https://github.com/metrumresearchgroup/Torsten][https://github.com/metrumresearchgroup/Torsten]] 
 
-or shoot us an
-e-mail([[mailto:billg@metrumrg.com][billg@metrumrg.com]], [[mailto:yz@yizh.org][yz@yizh.org]])and we will help you help us!
+or email us ([[mailto:billg@metrumrg.com][billg@metrumrg.com]], [[mailto:yz@yizh.org][yiz@metrumrg.com]]) and we will help you help us!
 
 Torsten is licensed under the BSD 3-clause license.
 
-# *** *
-#     :PROPERTIES:
-#     :UNNUMBERED: t
-#     :END:
 #+begin_mdframed
 *WARNING:* The current version of Torsten is a /prototype/. It
 is being released for review and comment, and to support limited
@@ -387,21 +379,21 @@ following:
    :PROPERTIES:
    :CUSTOM_ID: installation
    :END:
-Currently Torsten is based on a forked version of Stan. The latest
-{{{torsten_ver}}} is
+Currently Torsten is based on a forked version of Stan and hosted on GitHub
+- https://github.com/metrumresearchgroup/Torsten
+The latest {{{torsten_ver}}} is
 compatible with Stan {{{stan_ver}}}. Torsten can be accessed from
-command line for cmdstan interface and =cmdstanr=(https://mc-stan.org/cmdstanr/) for R interface.
+command line for cmdstan interface and =cmdstanr= (https://mc-stan.org/cmdstanr/) for R interface.
 
 ** Command line interface
- After downloading the project 
+The command line interface ~cmdstan~ is available along with Torsten
+and can be found at =Torsten/cmdstan=. See cite:cmdstan_team_2020 for details of installation and
+required toolchain. 
 
-- https://github.com/metrumresearchgroup/Torsten
-
-The command line interface ~cmdstan~ is available to use without
-installation. The following command
-builds a Torsten model ~model_name~ in ~model_path~
+After installation, one can use the following command to build a Torsten model ~model_name~ in ~model_path~
 #+BEGIN_SRC sh
-  cd Torsten/cmdstan; make model_path/model_name
+  cd Torsten/cmdstan
+  make model_path/model_name # replace "make" with "mingw32-make" on Windows platform
 #+END_SRC
 
 ** R interface
@@ -410,11 +402,8 @@ builds a Torsten model ~model_name~ in ~model_path~
  #+BEGIN_SRC r
    cmdstanr::set_cmdstan_path("Torsten/cmdstan")
  #+END_SRC
- Then one can follow 
-
-https://mc-stan.org/cmdstanr/articles/cmdstanr.html
-
-to compile and run Torsten models.
+ Then one can follow https://mc-stan.org/cmdstanr/articles/cmdstanr.html to compile
+ and run Torsten models.
 
 ** MPI support
 \label{sec:mpi_support}
@@ -482,16 +471,11 @@ using =cmdstanr=, and use =bayesplot= to examine posterior density of =CL=.
 #+label: sec:using_torsten
 The reader should have a basic understanding of how Stan works before
 reading this chapter. There are excellent resources online to get
-started with Stan
-- [[http://mc-stan.org/documentation][http://mc-stan.org/documentation]]
-
+started with Stan ([[http://mc-stan.org/documentation][http://mc-stan.org/documentation]]).
 In this section we go through the different functions Torsten adds to
-Stan. The code for the examples can be found at
-- [[https://github.com/metrumresearchgroup/example-models][https://github.com/metrumresearchgroup/example-models]]
+Stan. The code for the examples can be found at the =example-models= folder. 
 
-and also at the =example-models= folder. 
-
-Torsten's functions are prefixed with =pmx_=. 
+Torsten's functions are prefixed with {{{torsten_src(pmx\_)}}}. 
 For some of their arguments we adopt NM-TRAN format for events
 specification(Table [[ref:tab:event_args]]).
 #+CAPTION: NM-TRAN compatible event specification arguments. All arrays should have the same length corresponding to the number of events.
@@ -499,13 +483,13 @@ specification(Table [[ref:tab:event_args]]).
 #+NAME: tab:event_args
 | Argument Name           | Definition                  | Stan data type            |
 |-------------------------+-----------------------------+---------------------------|
-| {{{torsten_src(time)}}} | Time                        | {{{torsten_src(real[])}}} |
-| {{{torsten_src(amt)}}}  | Amount                      | {{{torsten_src(real[])}}} |
-| {{{torsten_src(rate)}}} | Infusion rate               | {{{torsten_src(real[])}}} |
+| {{{torsten_src(time)}}} | time                        | {{{torsten_src(real[])}}} |
+| {{{torsten_src(amt)}}}  | amount                      | {{{torsten_src(real[])}}} |
+| {{{torsten_src(rate)}}} | infusion rate               | {{{torsten_src(real[])}}} |
 | {{{torsten_src(ii)}}}   | interdose interval          | {{{torsten_src(real[])}}} |
-| {{{torsten_src(evid)}}} | Event ID                    | {{{torsten_src(int[])}}}  |
-| {{{torsten_src(cmt)}}}  | Event compartment           | {{{torsten_src(int[])}}}  |
-| {{{torsten_src(addl)}}} | Additionial identical doses | {{{torsten_src(int[])}}}  |
+| {{{torsten_src(evid)}}} | event ID                    | {{{torsten_src(int[])}}}  |
+| {{{torsten_src(cmt)}}}  | event compartment           | {{{torsten_src(int[])}}}  |
+| {{{torsten_src(addl)}}} | additionial identical doses | {{{torsten_src(int[])}}}  |
 | {{{torsten_src(ss)}}}   | steady-state dosing flag    | {{{torsten_src(int[])}}}  |
 |-------------------------+-----------------------------+---------------------------|
 All the src_stan[:exports code]{real[]} arguments above are allowed to
@@ -513,15 +497,15 @@ be src_stan[:exports code]{parameters} in a Stan model.
 In addtion, Torsten functions
 support optional arguments and overloaded signatures.
 Optional arguments are indicated by surrounding square bracket =[]=.
-We point out three commonly used PMX model arguments that support
-overloading. In the rest of this document we assume the convention above unless indicated otherwise.
+Table below shows three commonly used PMX model arguments that support
+overloading. In the rest of this document we assume this convention unless indicated otherwise.
 #+CAPTION: PMX model parameter overloadings. One can use 1d array src_stan[:exports code ]{real[]} to indicate constants of all events, or 2d array src_stan[:exports code ]{real[ , ]} so that the \(i\)th row of the array describes the model arguments for time interval $(t_{i-1}, t_i)$, and the number of the rows equals to the size of {{{torsten_src(time)}}}.
 #+NAME: tab:event_params
 | Argument Name             | Definition               | Stan data type                                             | Optional           |
 |---------------------------+--------------------------+------------------------------------------------------------+--------------------|
-| {{{torsten_src(theta)}}}  | Model parameters         | {{{torsten_src(real[])}}} or {{{torsten_src(real[ \, ])}}} | N                  |
+| {{{torsten_src(theta)}}}  | model parameters         | {{{torsten_src(real[])}}} or {{{torsten_src(real[ \, ])}}} | N                  |
 | {{{torsten_src(biovar)}}} | bioavailability fraction | {{{torsten_src(real[])}}} or {{{torsten_src(real[ \, ])}}} | Y (default to 1.0) |
-| {{{torsten_src(tlag)}}}   | Lag time                 | {{{torsten_src(real[])}}} or {{{torsten_src(real[ \, ])}}} | Y (default to 0.0) |
+| {{{torsten_src(tlag)}}}   | lag time                 | {{{torsten_src(real[])}}} or {{{torsten_src(real[ \, ])}}} | Y (default to 0.0) |
 |---------------------------+--------------------------+------------------------------------------------------------+--------------------|
 
 ** One Compartment Model
@@ -673,7 +657,7 @@ function name can use any of the three suffixes. See below.
      definition, as Torsten automatically update $f$
      when the corresponding event indicates infusion dosage.
 **** {{{torsten_src(nCmt)}}} 
-     The number of compartments. Equivalently, the dimension of the ODE system.
+     The number of compartments, equivalently, the dimension of the ODE system.
 **** {{{torsten_src(x\_r)}}}
      2d arary real data to be passed to ODE RHS. If specified, its 1st
      dimension should have the same size as {{{torsten_src(time)}}}.
@@ -725,7 +709,6 @@ function name can use any of the three suffixes. See below.
 #+END_SRC
 
 ** Coupled ODE Model Function
-\label{sec:mixed}
 #+INDEX: coupled ODE Model
 *** Description
 When the ODE system consists of two subsystems in form of
@@ -959,7 +942,7 @@ by these functions.
 
     - All three integrators support adaptive stepping. To achieve
       that, at step $i$ estimated error $e_i$ is calculated and
-      compared with given tolerance so that(roughly speaking)
+      compared with given tolerance so that
       \begin{equation}
         e_i < \Vert\text{rtol} \times \tilde{y} + \text{atol}\Vert
       \end{equation}
@@ -996,10 +979,7 @@ different parameters. They have similar
 signatures to single-ODE integration functions.
 *** Usage
 #+BEGIN_SRC stan
-  matrix pmx_integrate_ode_group_[adams || rk45 || bdf](ODE_system, real[ , ] y0, real t0,
-                                                        int[] len, real[] ts,
-                                                        real[ , ] theta, real[ , ] x_r, int[ , ] x_i,
-                                                        [ real rtol, real atol, int max_step ] );
+  matrix pmx_integrate_ode_group_[adams || rk45 || bdf](ODE_system, real[ , ] y0, real t0, int[] len, real[] ts, real[ , ] theta, real[ , ] x_r, int[ , ] x_i, [ real rtol, real atol, int max_step ] );
 #+END_SRC
 Here src_stan[:exports code]{[adams || rk45 || bdf]} indicates the
 function name can be of any of the three suffixes. See section [[ref:sec:ode_func_note]].
@@ -1109,6 +1089,17 @@ pairs. Specifically, =linear_interpolation= implements the following function
 - All three arguments may be data or parameters.
 
 * Examples
+All the PMX models in this chapter can be found in
+=Torsten/example-models= directory:
+- =Torsten/example-models/pk2cpt= (Section [[ref:sec:pk2cpt]]).
+- =Torsten/example-models/pk2cpt_linode= (Section [[ref:sec:pk2cpt_linode]]).
+- =Torsten/example-models/pk2cpt_ode= (Section [[ref:sec:pk2cpt_ode]]).
+- =Torsten/example-models/FK_coupled= (Section [[ref:sec:fk_model]]).
+- =Torsten/example-models/twocpt_population= (Section [[ref:sec:twocpt_population]]).
+- =Torsten/example-models/lotka_volterra_ode_group_model= (Section [[ref:sec:lotka_volterra]]).
+- =Torsten/example-models/effCpt= (Section [[ref:sec:effcpt_model]]).
+- =Torsten/example-models/FribergKarlsson= (Section [[ref:sec:fkpop_model]]).
+
 ** Two-compartment model for single patient
 \label{sec:pk2cpt}
   We model drug absorption in a single patient and simulate plasma drug concentrations:
@@ -1168,9 +1159,9 @@ summarize the posterior is through =cmdstanr='s =summary= method.
 #+ATTR_LATEX: :width \linewidth
 [[../example-models/pk2cpt/deliv/figure/history.pdf]]
 
-#+CAPTION: Posterior Marginal Densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
+#+CAPTION: Posterior marginal densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
 #+NAME: twocpt_mcmc_posterior
-#+ATTR_LATEX: :width \linewidth
+#+ATTR_LATEX: :width 0.8\linewidth
 [[../example-models/pk2cpt/deliv/figure/density.pdf]]
 
 #+CAPTION: Predicted ($y_{\text{rep}}$) and observed ($y$) plasma drug concentrations of a two compartment model with first order absorption. $y_{\text{rep}}$ is shown with posterior median, 50%, 90% credible intervals.
@@ -1179,14 +1170,16 @@ summarize the posterior is through =cmdstanr='s =summary= method.
 [[../example-models/pk2cpt/deliv/figure/ppc_ribbon.pdf]]
 
 ** Two-compartment model as a linear ODE model for single patient 
+\label{sec:pk2cpt_linode}
 Using {{{torsten_src(pmx\_solve\_linode)}}}, the following example fits a two-compartment model
 with first order absorption. We omit src_stan[:exports code]{data} and
-src_stan[:exports code]{model} block as they are identical to Section [[ref:sec:pk2cpt]].
+src_stan[:exports code]{model} block as they are identical to Sectiontion [[ref:sec:pk2cpt]].
 
-#+include: "../example-models/pk3cpt_linode/pk3cpt_linode.stan" :lines "23-70" src stan
+#+include: "../example-models/pk2cpt_linode/pk2cpt_linode.stan" :lines "23-70" src stan
 
 ** Two-compartment model solved by numerical integrator for single patient 
-Using =pmx_solve_rk45=, the following example fits a two-compartment model
+\label{sec:pk2cpt_ode}
+Using {{{torsten_src(pmx\_solve\_rk45)}}}, the following example fits a two-compartment model
 with first order absorption. User-defined function
 =ode_rhs= describes the RHS of the ODEs. 
 #+include: "../example-models/pk2cpt_ode/pk2cpt_ode.stan" :lines "1-22" src stan
@@ -1197,6 +1190,7 @@ src_stan[:exports code]{model} block as they are identical to Section [[ref:sec:
 #+include: "../example-models/pk2cpt_ode/pk2cpt_ode.stan" :lines "41-78" src stan
 
 ** Joint PK-PD model
+\label{sec:fk_model}
 #+INDEX: Friberg-Karlsson Model
 
    A Friberg-Karlsson Semi-Mechanistic model cite:friberg_mechanistic_2003 couples
@@ -1238,7 +1232,7 @@ The ODEs specifying the Two Compartment Model
 (Equation \eqref{eq:twocpt}) do not depend on the PD ODEs
 (Equation \eqref{eq:FK}) and can be solved analytically
 using Torsten's src_stan[:exports code]{pmx_solve_twocpt} function. We
-therefore specify our model using a mixed solver function. We do not
+therefore specify our model using a coupled solver function. We do not
 expect our system to be stiff and use the Runge-Kutta 4th/5th order
 integrator.
 
@@ -1250,7 +1244,8 @@ integrator.
 #+include: "../example-models/FK_coupled/FribergKarlsson.stan" src stan
 
 ** Two-compartment population model
-Using =pmx_solve_group_bdf=, the following example fits a
+\label{sec:twocpt_population}
+Using {{{torsten_src(pmx\_solve\_group\_bdf)}}}, the following example fits a
 two-compartment population model.
 
 #+include: "../example-models/twocpt_population/twocpt_population.stan" :lines "1-145" src stan
@@ -1268,7 +1263,8 @@ src_sh[:exports code]{nproc=4} indicates solving 8 subjects' ODEs in
 parallel, with each process solving 2 subjects.
 
 ** Lotka-Volterra group model
-Using =pmx_integrate_ode_group_rk45=, the following example fits
+\label{sec:lotka_volterra}
+Using {{{torsten_src(pmx\_integrate\_ode\_group\_rk45)}}}, the following example fits
 a Lotka-Volterra group model, based on [[https://mc-stan.org/users/documentation/case-studies/lotka-volterra-predator-prey.html][Stan's case study]].
 
 #+include: "../example-models/lotka_volterra_ode_group_model/lv_group.stan" :lines "1-57" src stan
@@ -1357,6 +1353,7 @@ generated quantities{
 #+END_SRC
 
 ** Effect Compartment Population Model
+\label{sec:effcpt_model}
 Here we expand the example in [[sec:twocpt]] to a population model fitted to the
 combined data from phase I and phase IIa studies. The
 parameters exhibit inter-individual variations (IIV), due to
@@ -1410,10 +1407,10 @@ treatment.
 
 The model is simultaneously fitted to the PK and the PD
 data. For this effect compartment model, we construct a
-constant rate matrix and use =pmx_solve_linode=. Correct use of
+constant rate matrix and use {{{torsten_src(pmx\_solve\_linode)}}}. Correct use of
 Torsten requires the user pass the entire event history
 (observation and dosing events) for an individual to the
-function. Thus the Stan model shows the call to =pmx_solve_linode=
+function. Thus the Stan model shows the call to {{{torsten_src(pmx\_solve\_linode)}}}
 within a loop over the individual subjects rather than over
 the individual observations. Note that the correlation matrix $\rho$ does not explicitly appear
 in the model, but it is used to construct $\Omega$, which parametrizes
@@ -1479,7 +1476,6 @@ parameters are consistent with the values used to simulate the data.
 #+ATTR_LATEX: :width 0.8\linewidth
 [[../example-models/effCpt/density.pdf]]
 
-
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (5mg dose).
 #+NAME: effcpt_ppc_5mg
 #+ATTR_LATEX: :width \linewidth
@@ -1534,12 +1530,12 @@ parameters are consistent with the values used to simulate the data.
 
 
 ** Friberg-Karlsson Semi-Mechanistic Population Model
-We now return to the example in Section [[ref:sec:mixed]] and extend
-it to a population model. While we recommend using the mixed
-solver, for completeness we show how to specify the model
-with the =generalOdeModel= function. We leave it
+\label{sec:fkpop_model}
+We now return to the example in Section [[ref:sec:fk_model]] and extend
+it to a population model. While we recommend using the coupled
+solver, and this time we solve it using group solver. We leave it
 as an exercise to the reader to rewrite the model with
-=mixOde2CptModel=. 
+coupled solver.
 
 *** Friberg-Karlsson Population Model for drug-induced myelosuppression ($ANC$)
 \begin{gather*}
@@ -1562,84 +1558,81 @@ The PK and the PD data are simulated using the following treatment.
    + PD measured once every two days for 28 days.
 
 Once again, we simultaneously fit the model to the PK and the PD
-data. Note that from a computational perspective, this is a much more
-difficult problem than in the previous
-example. The nonlinear nature of the ODEs forces us to use a numerical
-solver, which is significantly slower than the linear methods we have
-employed so far. Because the ODE system of interest is non-stiff, we
-use the =genOdeModel_rk45=, 
-
-The two code snippets below show the definition of the ODEs
-system and the skeleton of the solution process in Stan's
-=transformed parameters= block.
-#+include: "../example-models/neutropeniaPopulation/neutropeniaPopulation.stan" :lines "1-54" src stan
-
-#+include: "../example-models/neutropeniaPopulation/neutropeniaPopulation.stan" :lines "134-190" src stan
-
-It pays off to construct informative priors. For instance, we could
+data. It pays off to construct informative priors. For instance, we could
 fit the PK data first, as was done in  example 1, and get informative
 priors on the PK parameters. The PD parameters are drug independent,
 so we can use information from the neutropenia literature. In this
-example, we choose to use weakly informative priors on the PK
-parameters and strongly informative priors on the PD parameters. 
+example, we choose to use strongly informative priors on both PK and PD
+parameters.
 
-Since it takes a long time to run the model, we only use 100
-iterations per chain, and study what we can learn from this less than
-optimal scenario. It is worth noting that Stan, because of its highly
-efficient MCMC sampler, still does a reasonable job estimating the
-posterior distribution.
+The ODE is defined as 
+#+include: "../example-models/FribergKarlsson/FribergKarlsson.stan" :lines "1-62" src stan
+
+We use the {{{torsten_src(pmx\_solve\_group\_rk45)}}} function to
+solve the entire population's events. 
+#+include: "../example-models/FribergKarlsson/FribergKarlsson.stan" :lines "140-189" src stan
+
+This allows us to use within-chain paralleleisation to reduce
+simulation time. When run from cmdstan, each MPI run generates one
+chain, and we use 4 MPI runs to generate 4 chains.
+#+BEGIN_SRC bash
+  # chain 1
+  mpiexec -n nproc ./FribergKarlsson sample adapt delta=0.95 data file=fribergkarlsson.data.R init=fribergkarlsson.init.R random seed=8765 id=1 output file=output.1.csv
+  # chain 2
+  mpiexec -n nproc ./FribergKarlsson sample adapt delta=0.95 data file=fribergkarlsson.data.R init=fribergkarlsson.init.R random seed=8765 id=2 output file=output.2.csv
+  # chain 3
+  mpiexec -n nproc ./FribergKarlsson sample adapt delta=0.95 data file=fribergkarlsson.data.R init=fribergkarlsson.init.R random seed=8765 id=3 output file=output.3.csv
+  # chain 4
+  mpiexec -n nproc ./FribergKarlsson sample adapt delta=0.95 data file=fribergkarlsson.data.R init=fribergkarlsson.init.R random seed=8765 id=4 output file=output.4.csv
+#+END_SRC
 
 *** Results
-The MCMC history plots are not as convincing
-as in the previous examples, mostly because the number of iterations
-is small (100 versus 1000 in the previous example) (Figure \ref{FKMCMC}. It does however look as though the chains are converging
-to a common distribution, and we see little auto-correlation (in
-particular, we expect that if we had run the model for 1000
-iterations, we would obtain the desired "fuzzy caterpillar"
-look). The model fits the data, and the credible interval reflect the
-noise in the data (Figure \ref{FKPredictions}). The parameters
-estimation reflects the real value of the parameters (Table [[FKParms]] and Figure \ref{FKDens}).
+Table [[ref:FkpopModelParms]] summarizes the sampling and some diagnostics output.
+estimation reflects the real value of the parameters (Table [[ref:FkpopModelParms]] and Figure [[ref:fkpop_mcmc_density]].
+Similar to the previous example, PPCs shown in Figure [[ref:fkpop_ppc_pk]]
+and [[ref:fkpop_ppc_pd]] indicate the model is a good fit.
 
-#+CAPTION: Summary of the MCMC simulations of the marginal posterior distributions of the model parameters for the Friberg-Karlsson model example.
+# import from "summary_pars.csv"
+#+CAPTION: Summary of the MCMC simulations of the marginal posterior distributions of the model parameters for the Friberg-Karlsson population model example.
 #+ATTR_LATEX: :font \footnotesize :align  r r r r r r r r r r r
-#+LABEL: FKParms
-#+NAME: FKParms
-|           |    mean | se\under{}mean |      sd |    2.5% |     25% |     50% |     75% |   97.5% | n\under{}eff |  Rhat |
-|-----------+---------+----------------+---------+---------+---------+---------+---------+---------+--------------+-------|
-| CL        |   9.986 |          0.009 |   0.174 |   9.641 |   9.872 |   9.982 |  10.107 |  10.331 |      400.000 | 0.997 |
-| Q         |  14.633 |          0.055 |   1.106 |  12.505 |  13.992 |  14.623 |  15.296 |  16.948 |      400.000 | 0.996 |
-| V1        |  32.909 |          0.174 |   2.439 |  28.203 |  31.186 |  32.836 |  34.762 |  37.750 |      195.828 | 1.008 |
-| V2        | 106.631 |          0.311 |   6.226 |  95.234 | 102.269 | 106.403 | 111.000 | 118.533 |      400.000 | 0.999 |
-| ka        |   1.882 |          0.012 |   0.175 |   1.582 |   1.756 |   1.871 |   2.006 |   2.223 |      196.052 | 1.007 |
-| sigma     |   0.106 |          0.001 |   0.010 |   0.089 |   0.098 |   0.105 |   0.112 |   0.132 |      259.693 | 1.009 |
-| alpha     | 3.3e-04 |        1.4e-06 | 2.2e-05 | 2.9e-04 | 3.2e-04 | 3.3e-04 | 3.5e-04 | 3.8e-04 |          247 |  1.01 |
-| mtt       | 132.763 |          0.515 |   6.498 | 120.843 | 128.082 | 132.223 | 136.694 | 146.845 |      159.372 | 1.024 |
-| circ0     |   5.014 |          0.009 |   0.172 |   4.711 |   4.888 |   5.000 |   5.138 |   5.334 |      400.000 | 1.000 |
-| gamma     |   0.190 |          0.002 |   0.022 |   0.153 |   0.175 |   0.187 |   0.202 |   0.239 |      139.485 | 1.025 |
-| sigmaNeut |   0.092 |          0.001 |   0.014 |   0.068 |   0.082 |   0.090 |   0.100 |   0.125 |      161.199 | 1.010 |
+#+LABEL: FkpopModelParms
+#+NAME: FkpopModelParms
+| variable  |    mean |  median |       sd |      mad |      q5 |     q95 |  rhat | ess_bulk | ess_tail |
+|-----------+---------+---------+----------+----------+---------+---------+-------+----------+----------|
+| CLHat     |   9.539 |   9.535 |    0.522 |    0.487 |   8.692 |  10.401 | 1.006 |  971.369 | 1655.449 |
+| QHat      |  15.401 |  15.386 |    1.018 |    1.000 |  13.742 |  17.090 | 1.000 | 2263.843 | 2447.006 |
+| V1Hat     |  37.396 |  37.360 |    2.244 |    2.228 |  33.762 |  41.058 | 1.001 | 1936.476 | 2372.815 |
+| V2Hat     | 101.698 | 101.394 |    6.503 |    6.119 |  91.529 | 112.538 | 1.001 | 2580.227 | 2592.925 |
+| kaHat     |   1.997 |   1.997 |    0.074 |    0.074 |   1.873 |   2.115 | 1.001 | 7056.877 | 2993.406 |
+| mttHat    | 113.681 | 113.204 |   11.506 |   10.910 |  95.807 | 133.514 | 1.001 | 4255.900 | 3269.646 |
+| circ0Hat  |   4.760 |   4.752 |    0.241 |    0.229 |   4.375 |   5.163 | 1.002 | 3774.920 | 2783.663 |
+| omega[1]  |   0.223 |   0.217 |    0.047 |    0.042 |   0.160 |   0.307 | 1.000 | 1751.864 | 2235.607 |
+| omega[2]  |   0.339 |   0.329 |    0.073 |    0.067 |   0.239 |   0.473 | 1.001 | 2363.843 | 2607.056 |
+| omega[3]  |   0.264 |   0.256 |    0.057 |    0.051 |   0.186 |   0.367 | 1.002 | 2128.660 | 2018.425 |
+| omega[4]  |   0.257 |   0.249 |    0.056 |    0.051 |   0.182 |   0.361 | 1.003 | 2293.877 | 2937.673 |
+| omega[5]  |   0.177 |   0.169 |    0.112 |    0.118 |   0.019 |   0.376 | 1.000 | 1550.483 | 2045.025 |
+| omega[6]  |   0.188 |   0.183 |    0.044 |    0.041 |   0.127 |   0.269 | 1.000 | 2377.698 | 2965.713 |
+| omega[7]  |   0.409 |   0.394 |    0.256 |    0.259 |   0.045 |   0.865 | 1.003 | 1386.987 | 2015.873 |
+| gamma     |   0.171 |   0.168 |    0.035 |    0.033 |   0.121 |   0.235 | 1.000 | 8809.668 | 3189.676 |
+| sigma     |   0.097 |   0.096 |    0.003 |    0.003 |   0.093 |   0.101 | 1.002 | 5436.508 | 2899.706 |
+| sigmaNeut |   0.106 |   0.105 |    0.012 |    0.011 |   0.088 |   0.127 | 1.000 | 2809.059 | 3031.605 |
+| alphaHat  | 2.24e-4 | 2.19e-4 | 3.97e-05 | 3.80e-05 | 1.66e-4 | 2.96e-4 | 1.000 | 5138.105 | 2807.328 |
+#+TBLFM: $2=$0;%0.3f::$3=$0;%0.3f::$4=$0;%0.3f::$5=$0;%0.3f::$6=$0;%0.3f::$7=$0;%0.3f::$8=$0;%0.3f::$9=$0;%0.3f::$10=$0;%0.3f
 
-\begin{figure}[htbp]
-\includegraphics[width=3.0in,trim=0in 0in 0 0in]{graphics/neutropenia_0.82/neutropeniaPopulationPlots001.pdf}
-\includegraphics[width=3.0in,trim=0in 0in 0 0in]{graphics/neutropenia_0.82/neutropeniaPopulationPlots002.pdf}
-\includegraphics[width=3.0in,trim=0in 0in 0 0in]{graphics/neutropenia_0.82/neutropeniaPopulationPlots003.pdf}
-\includegraphics[width=3.0in,trim=0in 0in 0 0in]{graphics/neutropenia_0.82/neutropeniaPopulationPlots004.pdf}
-\caption{{MCMC history plots for the parameters of a Friberg-Karlsson semi-mechanistic model (each color corresponds to a different chain) for example 3}}
-\label{FKMCMC}
-\end{figure}
+#+CAPTION: Posterior marginal densities of the model parameters of the Friberg-Karlsson population model.
+#+NAME: fkpop_mcmc_density
+#+ATTR_LATEX: :width 0.8\linewidth
+[[../example-models/FribergKarlsson/density.pdf]]
 
-\begin{figure}[htbp]
-\includegraphics[width=2.5in,trim=0in 0in 0 0in]{graphics/neutropenia_0.82/neutropeniaPopulationPlots005.pdf}
-\includegraphics[width=2.5in,trim=0in 0in 0 0in]{graphics/neutropenia_0.82/neutropeniaPopulationPlots006.pdf}
-\caption{{Posterior Marginal Densities of the Model Parameters of a Friberg-Karlsson semi-mechanistic model (each color corresponds to a different chain)}}
-\label{FKDens}
-\end{figure}
+#+CAPTION: Predicted (50%, 90% credible interval and median) and observed individual drug plasma concentration.
+#+NAME: fkpop_ppc_pk
+#+ATTR_LATEX: :width 0.8\linewidth
+[[../example-models/FribergKarlsson/ppc_pk.pdf]]
 
-\begin{figure}[htbp]
-\includegraphics[width=2.5in,trim=0in 0in 0 0in]{graphics/neutropenia_0.82/neutropeniaPopulationPlots010.pdf}
-\includegraphics[width=2.5in,trim=0in 0in 0 0in]{graphics/neutropenia_0.82/neutropeniaPopulationPlots011.pdf}
-\caption{{Predicted (posterior median and 90 \% credible intervals) and observed plasma drug concentrations, and Neutrophil counts, for a Friberg-Karlsson semi-mechanistic model}}
-\label{FKPredictions}
-\end{figure}
+#+CAPTION: Predicted (50%, 90% credible interval and median) and observed individual Neutrophil counts.
+#+NAME: fkpop_ppc_pd
+#+ATTR_LATEX: :width 0.8\linewidth
+[[../example-models/FribergKarlsson/ppc_pd.pdf]]
 
 \appendix
 * Compiling constants
