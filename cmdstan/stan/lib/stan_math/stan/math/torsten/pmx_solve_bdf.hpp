@@ -11,6 +11,7 @@
 #include <stan/math/torsten/pmx_check.hpp>
 #include <stan/math/torsten/pmx_solve_ode.hpp>
 #include <stan/math/torsten/pmx_solve_group_ode.hpp>
+#include <stan/math/torsten/dsolve/pmx_ode_integrator.hpp>
 #include <vector>
 
 namespace torsten {
@@ -36,7 +37,7 @@ namespace torsten {
             typename std::enable_if_t<last_is_ostream_ptr<Ts...>::value >* = nullptr>
   auto pmx_solve_bdf(const F& f, const int nCmt,
                       Ts... args) {
-    return PMXSolveODE<PkBdf>::solve(f, nCmt, args...);
+    return PMXSolveODE<dsolve::PMXOdeIntegrator<dsolve::PMXOdeSystem, dsolve::PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>>>::solve(f, nCmt, args...);
 }
 
 /**
@@ -61,7 +62,7 @@ namespace torsten {
             typename std::enable_if_t<!last_is_ostream_ptr<Ts...>::value >* = nullptr>
   auto pmx_solve_bdf(const F& f, const int nCmt,
                       Ts... args) {
-    return PMXSolveODE<PkBdf>::solve(f, nCmt, args..., nullptr);
+    return PMXSolveODE<dsolve::PMXOdeIntegrator<dsolve::PMXOdeSystem, dsolve::PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>>>::solve(f, nCmt, args..., nullptr);
 }
   
   /*
@@ -112,14 +113,14 @@ namespace torsten {
             typename std::enable_if_t<last_is_ostream_ptr<Ts...>::value >* = nullptr>
   auto pmx_solve_group_bdf(const F& f, const int nCmt,
                             const std::vector<int>& len, Ts... args) {
-    return PMXSolveGroupODE<PkBdf>::solve(f, nCmt, len, args...);
+    return PMXSolveGroupODE<dsolve::PMXOdeIntegrator<dsolve::PMXOdeSystem, dsolve::PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>>>::solve(f, nCmt, len, args...);
   }
 
   template <typename F, typename... Ts,
             typename std::enable_if_t<!last_is_ostream_ptr<Ts...>::value >* = nullptr>
   auto pmx_solve_group_bdf(const F& f, const int nCmt,
                             const std::vector<int>& len, Ts... args) {
-    return PMXSolveGroupODE<PkBdf>::solve(f, nCmt, len, args..., nullptr);
+    return PMXSolveGroupODE<dsolve::PMXOdeIntegrator<dsolve::PMXOdeSystem, dsolve::PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>>>::solve(f, nCmt, len, args..., nullptr);
   }
 
 }

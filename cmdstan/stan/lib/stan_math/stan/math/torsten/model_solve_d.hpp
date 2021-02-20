@@ -1,12 +1,14 @@
 #ifndef STAN_MATH_TORSTEN_MODEL_SOLVE_D_HPP
 #define STAN_MATH_TORSTEN_MODEL_SOLVE_D_HPP
 
+#include <stan/math/rev/core/recover_memory.hpp>
 #include <stan/math/torsten/torsten_def.hpp>
 #include <stan/math/torsten/val_and_grad_nested.hpp>
-#include <stan/math/torsten/pmx_ode_integrator.hpp>
+#include <stan/math/torsten/dsolve/pmx_ode_integrator.hpp>
 #include <stan/math/torsten/dsolve/pk_vars.hpp>
 #include <stan/math/torsten/pmx_ode_model.hpp>
 #include <stan/math/torsten/val_and_grad_nested.hpp>
+#include <stan/math/torsten/is_var.hpp>
 
 namespace torsten {
 
@@ -95,14 +97,14 @@ namespace torsten {
    * For transient solution, when the return type is already
    * data, we pass on to model's solver.
    */
-  template<typename T_model, PMXOdeIntegratorId It,
+  template<typename T_model, typename integrator_type,
            typename... Ts,
            typename std::enable_if_t<!stan::is_var<typename T_model::par_type>::value >* = nullptr> //NOLINT
   Eigen::VectorXd model_solve_d(const T_model& pkmodel,
                                 const PKRec<double>& y,
                                 const double& t0, const double& t1,
                                 const std::vector<double>& rate,
-                                const PMXOdeIntegrator<It>& integ,
+                                const integrator_type& integ,
                                 const Ts... model_pars) {
     PKRec<double> yd(y);
     pkmodel.solve(yd, t0, t1, rate, integ);
@@ -122,15 +124,15 @@ namespace torsten {
    */
   template<typename T_model, typename T, 
            typename Tt0, typename Tt1,
-           typename T1, PMXOdeIntegratorId It,
+           typename T1, typename integrator_type,
            typename... Ts,
            typename std::enable_if_t<torsten::is_var<typename T_model::par_type, Tt0, Tt1, T, T1>::value &&
-                                     It != torsten::PkBdf && It != torsten::PkAdams && It != torsten::PkRk45>* = nullptr>
+                                     !has_data_only_output<integrator_type>::value>* = nullptr>
   Eigen::VectorXd model_solve_d(const T_model& pkmodel,
                                 const PKRec<T>& y,
                                 const Tt0& t0, const Tt1& t1,
                                 const std::vector<T1>& rate,
-                                const PMXOdeIntegrator<It>& integ,
+                                const integrator_type& integ,
                                 const Ts... model_pars) {
     using stan::math::value_of;
     using stan::math::var;
@@ -176,15 +178,15 @@ namespace torsten {
    */
   template<typename T_model, typename T, 
            typename Tt0, typename Tt1,
-           typename T1, PMXOdeIntegratorId It,
+           typename T1, typename integrator_type,
            typename... Ts,
            typename std::enable_if_t<torsten::is_var<typename T_model::par_type, Tt0, Tt1, T, T1>::value &&
-                                     (It == torsten::PkBdf || It == torsten::PkAdams || It == torsten::PkRk45)>* = nullptr>
+                                     has_data_only_output<integrator_type>::value>* = nullptr>
   Eigen::VectorXd model_solve_d(const T_model& pkmodel,
                                 const PKRec<T>& y,
                                 const Tt0& t0, const Tt1& t1,
                                 const std::vector<T1>& rate,
-                                const PMXOdeIntegrator<It>& integ,
+                                const integrator_type& integ,
                                 const Ts... model_pars) {
     Eigen::VectorXd yd;
     pkmodel.solve_d(yd, y, t0, t1, rate, integ);
@@ -200,12 +202,12 @@ namespace torsten {
    * For steady-state solution. when the return type is already
    * data, we pass on to model's solver.
    */
-  template<typename T_model, PMXOdeIntegratorId It, typename... Ts,
+  template<typename T_model, typename integrator_type, typename... Ts,
            typename std::enable_if_t<!stan::is_var<typename T_model::par_type>::value >* = nullptr> //NOLINT
     Eigen::VectorXd model_solve_d(const T_model& pkmodel,
                                   double t0,
                                   const double& amt, const double& rate, const double& ii, const int& cmt, // NOLINT
-                                  const PMXOdeIntegrator<It>& integ,
+                                  const integrator_type& integ,
                                   const Ts... model_pars) {
     return pkmodel.solve(t0, amt, rate, ii, cmt, integ);
   }
@@ -220,11 +222,11 @@ namespace torsten {
    * type, we take gradient using autodiff.
    */
   template<typename T_model, typename T_amt, typename T_rate, typename T_ii,
-           PMXOdeIntegratorId It, typename... Ts>
+           typename integrator_type, typename... Ts>
   Eigen::VectorXd model_solve_d(const T_model& pkmodel,
                                 double t0,
                                 const T_amt& amt, const T_rate& r, const T_ii& ii, const int& cmt, // NOLINT
-                                const PMXOdeIntegrator<It>& integ,
+                                const integrator_type& integ,
                                 const Ts... model_pars) {
     using std::vector;
     using Eigen::VectorXd;

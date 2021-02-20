@@ -12,7 +12,7 @@
 
 namespace torsten {
 
-  template<PMXOdeIntegratorId It>
+  template<typename integrator_type>
   struct PMXSolveGroupODE {
     static constexpr double RTOL_DE = 1.e-6;
     static constexpr double ATOL_DE = 1.e-6;
@@ -53,7 +53,7 @@ namespace torsten {
       ER events_rec(nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss);
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
-      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       Eigen::Matrix<typename EM::T_scalar, -1, -1> pred(nCmt, events_rec.total_num_event_times);
@@ -141,7 +141,7 @@ namespace torsten {
       ER events_rec(nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss);
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
-      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       Eigen::Matrix<typename EM::T_scalar, -1, -1> pred(nCmt, events_rec.total_num_event_times);
@@ -225,7 +225,7 @@ namespace torsten {
       ER events_rec(nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss);
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
-      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       Eigen::Matrix<typename EM::T_scalar, -1, -1> pred(nCmt, events_rec.total_num_event_times);
@@ -314,7 +314,7 @@ namespace torsten {
       ER events_rec(nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss);
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
-      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       Eigen::Matrix<typename EM::T_scalar, -1, -1> pred(nCmt, events_rec.total_num_event_times);
@@ -411,7 +411,7 @@ namespace torsten {
       ER events_rec(nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss);
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
-      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       Eigen::Matrix<typename EM::T_scalar, -1, -1> pred(nCmt, events_rec.total_num_event_times);

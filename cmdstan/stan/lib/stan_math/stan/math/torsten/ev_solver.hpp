@@ -4,7 +4,7 @@
 #include <stan/math/prim/fun/multiply.hpp>
 #include <stan/math/rev/fun/multiply.hpp>
 #include <stan/math/torsten/dsolve/pk_vars.hpp>
-#include <stan/math/torsten/pmx_ode_integrator.hpp>
+#include <stan/math/torsten/dsolve/pmx_ode_integrator.hpp>
 #include <stan/math/torsten/ev_manager.hpp>
 #include <stan/math/torsten/model_factory.hpp>
 #include <stan/math/torsten/event.hpp>
@@ -107,11 +107,11 @@ namespace torsten{
      * @return a matrix with predicted amount in each compartment
      * at each event.
      */
-    template<PMXOdeIntegratorId It, typename... scalar_pars_type>
+    template<typename integrator_type, typename... scalar_pars_type>
     void pred(int id,
               const T_event_record& events_rec,
               Eigen::Matrix<typename EM::T_scalar, -1, -1>& res,
-              const PMXOdeIntegrator<It> integrator,
+              const integrator_type integrator,
               const std::vector<theta_container<T4>>& theta,
               const std::vector<std::vector<array_2d_tuple_pars_value_type>>&... array_2d_tuple_pars,
               const std::vector<std::vector<array_2d_pars_value_type>>&... array_2d_pars,
@@ -147,9 +147,9 @@ namespace torsten{
     /*
      * Step through a range of events.
      */
-    template<PMXOdeIntegratorId It, typename... scalar_pars_type>
+    template<typename integrator_type, typename... scalar_pars_type>
     void stepper(int i, PKRec<typename EM::T_scalar>& init, const EM& em,
-                 const PMXOdeIntegrator<It> integrator,
+                 const integrator_type integrator,
                  // const std::vector<std::vector<array_2d_pars_value_type>>&... array_2d_pars,
                  const scalar_pars_type... scalar_pars) {
       auto events = em.events();
@@ -176,11 +176,11 @@ namespace torsten{
      * @param scalar_pars params needed to construst the PMX model,
      *        such as functor & dimension of ODE system
      */
-    template<PMXOdeIntegratorId It, typename... scalar_pars_type>
+    template<typename integrator_type, typename... scalar_pars_type>
     void stepper_solve(int i, torsten::PKRec<typename EM::T_scalar>& init,
                        torsten::PKRec<double>& sol_d,
                        const EM& em,
-                       const PMXOdeIntegrator<It> integrator,
+                       const integrator_type integrator,
                        const scalar_pars_type... scalar_pars) {
       using std::vector;
       using stan::math::var;
@@ -196,7 +196,7 @@ namespace torsten{
       ev(sol_d, init, pkmodel, integrator, scalar_pars...);
     }
 
-    template<PMXOdeIntegratorId It, typename... scalar_pars_type>
+    template<typename integrator_type, typename... scalar_pars_type>
     /**
      * For MPI solutions, after each rank solves its corresponding
      * subjects, all ranks sync their results among each other.
@@ -212,7 +212,7 @@ namespace torsten{
     void stepper_sync(int i, torsten::PKRec<typename EM::T_scalar>& init,
                       torsten::PKRec<double>& sol_d,
                       const EM& em,
-                      const PMXOdeIntegrator<It> integrator,
+                      const integrator_type integrator,
                       const scalar_pars_type... scalar_pars) {
       using std::vector;
       using stan::math::var;
@@ -266,10 +266,10 @@ namespace torsten{
      * @param scalar_pars params needed to construst the PMX model,
      *        such as functor & dimension of ODE system
      */
-    template<PMXOdeIntegratorId It, typename... scalar_pars_type>
+    template<typename integrator_type, typename... scalar_pars_type>
     void pred(const T_event_record& events_rec,
               Eigen::Matrix<stan::math::var, -1, -1>& res,
-              const PMXOdeIntegrator<It> integrator,
+              const integrator_type integrator,
               const std::vector<theta_container<T4>>& theta,
               const std::vector<std::vector<array_2d_tuple_pars_value_type>>&... array_2d_tuple_pars,
               const std::vector<std::vector<array_2d_pars_value_type>>&... array_2d_pars,
@@ -386,7 +386,7 @@ namespace torsten{
           finished++;
           if (is_invalid) continue;
           if (std::isnan(res_d[id](0))) {
-            assert(rank != torsten::mpi::my_worker(id, np, size));
+            // assert(rank != torsten::mpi::my_worker(id, np, size));
             is_invalid = true;
             rank_fail_msg << "Rank " << rank << " received invalid data for id " << id;
           } else {
@@ -419,9 +419,9 @@ namespace torsten{
     /*
      * Data-only MPI solver that takes ragged arrays as input.
      */
-    template<PMXOdeIntegratorId It, typename... scalar_pars_type>
+    template<typename integrator_type, typename... scalar_pars_type>
     void pred(const T_event_record& events_rec, Eigen::MatrixXd& res,
-              const PMXOdeIntegrator<It> integrator,
+              const integrator_type integrator,
               const std::vector<theta_container<T4>>& theta,
               const std::vector<std::vector<array_2d_tuple_pars_value_type>>&... array_2d_tuple_pars,
               const std::vector<std::vector<array_2d_pars_value_type>>&... array_2d_pars,
@@ -516,10 +516,10 @@ namespace torsten{
      * addional information of the size of each individual
      * is required to locate the data in a single array for population.
      */
-    template<PMXOdeIntegratorId It, typename... scalar_pars_type> //NOLINT
+    template<typename integrator_type, typename... scalar_pars_type> //NOLINT
     void pred(const T_event_record& events_rec,
               Eigen::Matrix<typename EM::T_scalar, -1, -1>& res,
-              const PMXOdeIntegrator<It> integrator,
+              const integrator_type integrator,
               const std::vector<theta_container<T4>>& theta,
               const std::vector<std::vector<array_2d_tuple_pars_value_type>>&... array_2d_tuple_pars,
               const std::vector<std::vector<array_2d_pars_value_type>>&... array_2d_pars,
