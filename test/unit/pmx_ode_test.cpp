@@ -5,6 +5,9 @@
 #include <stan/math/torsten/test/unit/pmx_friberg_karlsson_test_fixture.hpp>
 #include <stan/math/torsten/test/unit/expect_near_matrix_eq.hpp>
 #include <stan/math/torsten/test/unit/expect_matrix_eq.hpp>
+#include <stan/math/torsten/dsolve/pmx_integrate_ode_rk45.hpp>
+#include <stan/math/torsten/dsolve/pmx_integrate_ode_bdf.hpp>
+#include <stan/math/torsten/dsolve/pmx_integrate_ode_adams.hpp>
 #include <stan/math/torsten/pmx_solve_rk45.hpp>
 #include <stan/math/torsten/pmx_solve_bdf.hpp>
 #include <stan/math/torsten/pmx_solve_adams.hpp>

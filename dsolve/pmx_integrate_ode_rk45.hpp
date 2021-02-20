@@ -1,9 +1,8 @@
 #ifndef STAN_MATH_TORSTEN_DSOLVE_INTEGRATE_ODE_RK45_HPP
 #define STAN_MATH_TORSTEN_DSOLVE_INTEGRATE_ODE_RK45_HPP
 
-#include <stan/math/torsten/dsolve/pmx_odeint_system.hpp>
+#include <stan/math/torsten/dsolve/pmx_ode_integrator.hpp>
 #include <stan/math/torsten/dsolve/pmx_odeint_integrator.hpp>
-#include <stan/math/torsten/dsolve/ode_check.hpp>
 #include <ostream>
 #include <vector>
 
@@ -39,23 +38,15 @@ namespace torsten {
                          const std::vector<int>& x_i,
                          double rtol,
                          double atol,
-                         long int max_num_steps,
+                         long int max_num_step,
                          std::ostream* msgs = nullptr) {
-    static const char* caller = "pmx_integrate_ode_rk45";
-    dsolve::ode_check(y0, t0, ts, theta, x_r, x_i, caller);
-
-    using Ode = dsolve::PMXOdeintSystem<F, Tt, T_initial, T_param>;
-    const int m = theta.size();
-    const int n = y0.size();
-
-    dsolve::PMXOdeService<Ode, dsolve::Odeint> serv(n, m);
-
-    Ode ode{serv, f, t0, ts, y0, theta, x_r, x_i, msgs};
-    using scheme_t = boost::numeric::odeint::runge_kutta_dopri5<std::vector<double>, double, std::vector<double>, double>;
-    dsolve::PMXOdeintIntegrator<scheme_t> solver(rtol, atol, max_num_steps);
-
-    return solver.integrate(ode);
-}
+    using dsolve::PMXOdeIntegrator;
+    using dsolve::PMXOdeintIntegrator;
+    using boost::numeric::odeint::runge_kutta_dopri5;
+    using scheme_t = runge_kutta_dopri5<std::vector<double>, double, std::vector<double>, double>;
+    PMXOdeIntegrator<dsolve::PMXOdeSystem, PMXOdeintIntegrator<scheme_t>> solver(rtol, atol, max_num_step, msgs);
+    return solver(f, y0, t0, ts, theta, x_r, x_i);
+  }
 
   /*
    * overload with default ode controls
