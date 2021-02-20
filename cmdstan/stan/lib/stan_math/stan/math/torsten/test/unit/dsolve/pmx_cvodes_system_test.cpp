@@ -1,10 +1,6 @@
 #include <stan/math.hpp>
 #include <stan/math/rev/core.hpp>
-#include <stan/math/torsten/dsolve/ode_check.hpp>
-#include <stan/math/torsten/dsolve/pmx_cvodes_fwd_system.hpp>
-#include <stan/math/torsten/dsolve/pmx_cvodes_system.hpp>
-#include <stan/math/torsten/dsolve/pmx_odeint_system.hpp>
-#include <stan/math/torsten/dsolve/cvodes_service.hpp>
+#include <stan/math/torsten/dsolve/pmx_ode_system.hpp>
 #include <test/unit/math/rev/fun/util.hpp>
 #include <stan/math/torsten/test/unit/pmx_ode_test_fixture.hpp>
 #include <test/unit/math/prim/functor/harmonic_oscillator.hpp>
@@ -21,108 +17,80 @@
 #include <vector>
 #include <limits>
 
-using torsten::dsolve::cvodes_def;
+using torsten::dsolve::PMXOdeSystem;
+using stan::math::var;
+using stan::math::to_var;
 
-TEST_F(TorstenOdeTest_sho, PMXCvodesSystem) {
-  using torsten::dsolve::PMXCvodesSystem;
-  using torsten::dsolve::PMXCvodesFwdSystem;
-  using torsten::dsolve::PMXOdeService;
-  using stan::math::var;
-  using stan::math::to_var;
-
+TEST_F(TorstenOdeTest_sho, PMXOdeSystem) {
   std::vector<stan::math::var> theta_var{to_var(theta)};
   std::vector<stan::math::var> y0_var{to_var(y0)};
 
-  using Ode1 = PMXCvodesFwdSystem<F, double, double, double,  cvodes_def<torsten::CSDA, CV_ADAMS, CV_STAGGERED>>;
-  
-  PMXOdeService<typename Ode1::Ode> s1(2, 1);
-  Ode1 ode1(s1, f, t0, ts, y0, theta, x_r, x_i, msgs);
+  using Ode1 = PMXOdeSystem<F, double, double, double>;
+  Ode1 ode1(f, t0, ts, y0, theta, x_r, x_i, msgs);
   test_cvodes_system(ode1, y0, theta, ts);
 
-  using Ode2 = PMXCvodesFwdSystem<F, double, var, double, cvodes_def<torsten::CSDA, CV_BDF, CV_STAGGERED>>;
-  
-  PMXOdeService<typename Ode2::Ode> s2(2, 1);
-  Ode2 ode2(s2, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
+  using Ode2 = PMXOdeSystem<F, double, var, double>;
+  Ode2 ode2(f, t0, ts, y0_var, theta, x_r, x_i, msgs);
   test_cvodes_system(ode2, y0, theta, ts);
 
-  using Ode3 = PMXCvodesFwdSystem<F, double, var, var, cvodes_def<torsten::CSDA, CV_BDF, CV_STAGGERED>>;
-  PMXOdeService<typename Ode3::Ode> s3(2, 1);
-  Ode3 ode3(s3, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
-  Ode3 ode4(s3, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
+  using Ode3 = PMXOdeSystem<F, double, var, var>;
+  Ode3 ode3(f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
+  Ode3 ode4(f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
   test_cvodes_system(ode3, y0, theta, ts);
   test_cvodes_system(ode4, y0, theta, ts);
 }
 
-TEST_F(TorstenOdeTest_chem, PMXCvodesSystem) {
-  using torsten::dsolve::PMXCvodesSystem;
-  using torsten::dsolve::PMXCvodesFwdSystem;
-  using torsten::dsolve::PMXOdeService;
-  using stan::math::var;
-  using stan::math::to_var;
-
+TEST_F(TorstenOdeTest_chem, PMXOdeSystem) {
   std::vector<stan::math::var> theta_var{to_var(theta)};
   std::vector<stan::math::var> y0_var{to_var(y0)};
 
-  using Ode1 = PMXCvodesFwdSystem<F, double, double, double,  cvodes_def<torsten::CSDA, CV_ADAMS, CV_STAGGERED>>;
-  
-  PMXOdeService<typename Ode1::Ode> s1(3, 3);
-  Ode1 ode1(s1, f, t0, ts, y0, theta, x_r, x_i, msgs);
+  using Ode1 = PMXOdeSystem<F, double, double, double>;
+  Ode1 ode1(f, t0, ts, y0, theta, x_r, x_i, msgs);
   test_cvodes_system(ode1, y0, theta, ts);
 
-  using Ode2 = PMXCvodesFwdSystem<F, double, var, double, cvodes_def<torsten::CSDA, CV_BDF, CV_STAGGERED>>;
-  
-  PMXOdeService<typename Ode2::Ode> s2(3, 3);
-  Ode2 ode2(s2, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
+  using Ode2 = PMXOdeSystem<F, double, var, double>;
+  Ode2 ode2(f, t0, ts, y0_var, theta, x_r, x_i, msgs);
   test_cvodes_system(ode2, y0, theta, ts);
+
+  using Ode3 = PMXOdeSystem<F, double, var, var>;
+  Ode3 ode3(f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
+  Ode3 ode4(f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
+  test_cvodes_system(ode3, y0, theta, ts);
+  test_cvodes_system(ode4, y0, theta, ts);
 }
 
-TEST_F(TorstenOdeTest_lorenz, PMXCvodesSystem) {
-  using torsten::dsolve::PMXCvodesSystem;
-  using torsten::dsolve::PMXCvodesFwdSystem;
-  using torsten::dsolve::PMXOdeService;
-  using stan::math::var;
-  using stan::math::to_var;
-
+TEST_F(TorstenOdeTest_lorenz, PMXOdeSystem) {
   std::vector<stan::math::var> theta_var{to_var(theta)};
   std::vector<stan::math::var> y0_var{to_var(y0)};
 
-  using Ode1 = PMXCvodesFwdSystem<F, double, double, double,  cvodes_def<torsten::CSDA, CV_ADAMS, CV_STAGGERED>>;
-  
-  PMXOdeService<typename Ode1::Ode> s1(3, 3);
-  Ode1 ode1(s1, f, t0, ts, y0, theta, x_r, x_i, msgs);
+  using Ode1 = PMXOdeSystem<F, double, double, double>;
+  Ode1 ode1(f, t0, ts, y0, theta, x_r, x_i, msgs);
   test_cvodes_system(ode1, y0, theta, ts);
 
-  using Ode2 = PMXCvodesFwdSystem<F, double, var, double, cvodes_def<torsten::CSDA, CV_BDF, CV_STAGGERED>>;
-  
-  PMXOdeService<typename Ode2::Ode> s2(3, 3);
-  Ode2 ode2(s2, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
+  using Ode2 = PMXOdeSystem<F, double, var, double>;
+  Ode2 ode2(f, t0, ts, y0_var, theta, x_r, x_i, msgs);
   test_cvodes_system(ode2, y0, theta, ts);
+
+  using Ode3 = PMXOdeSystem<F, double, var, var>;
+  Ode3 ode3(f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
+  Ode3 ode4(f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
+  test_cvodes_system(ode3, y0, theta, ts);
+  test_cvodes_system(ode4, y0, theta, ts);
 }
 
 TEST_F(TorstenOdeTest_sho, cvodes_constructor_errors) {
-  using torsten::dsolve::PMXCvodesFwdSystem;
-  using torsten::dsolve::PMXOdeService;
-  using torsten::dsolve::ode_check;
-  using stan::math::var;
-  using stan::math::to_var;
-
-  using Ode1 = PMXCvodesFwdSystem<F, double, double, double,  cvodes_def<torsten::CSDA, CV_ADAMS, CV_STAGGERED>>;
-  using Ode2 = PMXCvodesFwdSystem<F, double, var, var,  cvodes_def<torsten::CSDA, CV_ADAMS, CV_STAGGERED>>;
+  using Ode1 = PMXOdeSystem<F, double, double, double>;
+  using Ode2 = PMXOdeSystem<F, double, var, var>;
   
-  PMXOdeService<typename Ode1::Ode> s1(2, 1);
-  PMXOdeService<typename Ode2::Ode> s2(2, 1);
-
   std::vector<double> bad_dbl{y0};
   bad_dbl[0] = std::numeric_limits<double>::infinity();
 
-  static const char* caller = "";
-
-  ASSERT_NO_THROW(ode_check(y0, t0, ts, theta, x_r, x_i, caller));
-  EXPECT_THROW_MSG(ode_check(bad_dbl, t0, ts, theta, x_r, x_i, caller),
+  ASSERT_NO_THROW(Ode1(f, t0, ts, y0, theta, x_r, x_i, 0));
+  EXPECT_THROW_MSG(Ode1(f, t0, ts, bad_dbl, theta, x_r, x_i, 0),
                    std::domain_error, ": initial state");
-  EXPECT_THROW_MSG(ode_check(y0, t0, ts, bad_dbl, x_r, x_i, caller),
+  EXPECT_THROW_MSG(Ode1(f, t0, ts, y0, bad_dbl, x_r, x_i, 0),
                    std::domain_error, ": parameters");
-  EXPECT_THROW_MSG(ode_check(y0, t0, ts, theta, bad_dbl, x_i, caller),
+  EXPECT_THROW_MSG(Ode1(f, t0, ts, y0, theta, bad_dbl, x_i, 0),
                    std::domain_error, ": continuous data");
 
   std::vector<var> bad_var{std::numeric_limits<double>::infinity(), 1.0, 0.1};
@@ -130,11 +98,11 @@ TEST_F(TorstenOdeTest_sho, cvodes_constructor_errors) {
 
   std::vector<stan::math::var> theta_var(to_var(theta));
   std::vector<stan::math::var> y0_var(to_var(y0));
-  ASSERT_NO_THROW(ode_check(y0_var, t0, ts, theta_var, x_r, x_i, caller));
-  EXPECT_THROW_MSG(ode_check(bad_var, t0, ts, theta_var, x_r, x_i, caller),
+  ASSERT_NO_THROW(Ode2(f, t0, ts, y0_var, theta_var, x_r, x_i, 0));
+  EXPECT_THROW_MSG(Ode2(f, t0, ts, bad_var, theta_var, x_r, x_i, 0),
                    std::domain_error, ": initial state");
-  EXPECT_THROW_MSG(ode_check(y0_var, t0, ts, bad_var, x_r, x_i, caller),
+  EXPECT_THROW_MSG(Ode2(f, t0, ts, y0_var, bad_var, x_r, x_i, 0),
                    std::domain_error, ": parameters");
-  EXPECT_THROW_MSG(ode_check(empty_var, t0, ts, theta_var, x_r, x_i, caller),
+  EXPECT_THROW_MSG(Ode2(f, t0, ts, empty_var, theta_var, x_r, x_i, 0),
                    std::invalid_argument, ": initial state");
 }

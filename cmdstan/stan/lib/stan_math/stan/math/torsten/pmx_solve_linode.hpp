@@ -86,7 +86,7 @@ pmx_solve_linode(const std::vector<T0>& time,
 
   using model_type = torsten::PMXLinODEModel<typename EM::T_par>;
   EventSolver<model_type, EM> pr;
-  pr.pred(0, events_rec, pred, PMXOdeIntegrator<Analytical>(), system, biovar, tlag, nCmt);
+  pr.pred(0, events_rec, pred, dsolve::PMXAnalyiticalIntegrator(), system, biovar, tlag, nCmt);
   return pred;
 }
 

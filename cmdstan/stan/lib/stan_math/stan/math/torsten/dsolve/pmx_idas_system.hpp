@@ -10,7 +10,6 @@
 #include <stan/math/rev/meta/is_var.hpp>
 #include <stan/math/prim/meta/return_type.hpp>
 #include <stan/math/prim/fun/typedefs.hpp>
-#include <stan/math/rev/fun/typedefs.hpp>
 #include <idas/idas.h>
 #include <nvector/nvector_serial.h>
 #include <ostream>

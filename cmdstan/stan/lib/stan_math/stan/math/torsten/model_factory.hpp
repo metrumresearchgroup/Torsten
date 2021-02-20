@@ -2,7 +2,7 @@
 #define STAN_MATH_TORSTEN_MODEL_FACTORY_HPP
 
 #include <stan/math/torsten/dsolve/pk_vars.hpp>
-#include <stan/math/torsten/pmx_ode_integrator.hpp>
+#include <stan/math/torsten/dsolve/pmx_ode_integrator.hpp>
 #include <stan/math/torsten/ev_manager.hpp>
 #include <vector>
 

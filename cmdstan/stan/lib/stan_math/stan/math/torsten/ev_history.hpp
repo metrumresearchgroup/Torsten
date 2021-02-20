@@ -145,8 +145,8 @@ namespace torsten {
       pars(rec.len_[id]),
       time_(rec.time_),
       theta_(theta),
-      event_array_2d_params{std::tie(event_array_2d_params0...)},
-      model_array_2d_params{std::tie(model_array_2d_params0...)} {
+      event_array_2d_params{std::forward_as_tuple(event_array_2d_params0...)},
+      model_array_2d_params{std::forward_as_tuple(model_array_2d_params0...)} {
       int ibegin = rec.begin_[id];
       for (int i = 0; i < rec.len_[id]; ++i) {
         int theta_i = rec.len_param(id, theta) > 1 ? rec.begin_param(id, theta) + i : rec.begin_param(id, theta);
@@ -183,8 +183,8 @@ namespace torsten {
       pars(rec.len_[id]),
       time_(rec.time_),
       theta_(theta),
-      event_array_2d_params{std::tie(event_array_2d_params0...)},
-      model_array_2d_params{std::tie(model_array_2d_params0...)} {
+      event_array_2d_params{std::forward_as_tuple(event_array_2d_params0...)},
+      model_array_2d_params{std::forward_as_tuple(model_array_2d_params0...)} {
       int ibegin = rec.begin_[id];
       for (int i = 0; i < rec.len_[id]; ++i) {
         int j = isize_theta   > 1 ? ibegin_theta  + i : ibegin_theta;
