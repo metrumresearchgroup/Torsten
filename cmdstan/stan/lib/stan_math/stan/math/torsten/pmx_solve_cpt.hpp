@@ -117,7 +117,7 @@ namespace torsten {
 
       using model_type = model_t<typename EM::T_par>;
       EventSolver<model_type, EM> pr;
-      pr.pred(0, events_rec, pred, dsolve::PMXAnalyiticalIntegrator(), pMatrix, event_array_2d_params...);
+      pr.pred(0, events_rec, pred, PMXOdeIntegrator<Analytical>(), pMatrix, event_array_2d_params...);
       return pred;
     }
 

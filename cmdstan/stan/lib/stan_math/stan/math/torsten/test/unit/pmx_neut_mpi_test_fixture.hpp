@@ -5,6 +5,7 @@
 #include <boost/numeric/odeint.hpp>
 #include <stan/math/torsten/test/unit/test_macros.hpp>
 #include <stan/math/torsten/test/unit/pmx_ode_test_fixture.hpp>
+#include <stan/math/torsten/dsolve/pmx_cvodes_fwd_system.hpp>
 #include <stan/math/torsten/dsolve/pmx_cvodes_integrator.hpp>
 #include <test/unit/math/prim/functor/harmonic_oscillator.hpp>
 #include <test/unit/math/prim/functor/lorenz.hpp>

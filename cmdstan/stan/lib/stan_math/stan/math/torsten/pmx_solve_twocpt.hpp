@@ -149,7 +149,7 @@ pmx_solve_group_twocpt(const std::vector<int>& len,
 
   Eigen::Matrix<typename EM::T_scalar, -1, -1> pred(events_rec.total_num_event_times, nCmt);
 
-  pr.pred(events_rec, pred, dsolve::PMXAnalyiticalIntegrator(), pMatrix, biovar, tlag);
+  pr.pred(events_rec, pred, PMXOdeIntegrator<Analytical>(), pMatrix, biovar, tlag);
 
   return pred;
 }

@@ -3,6 +3,7 @@
 
 #include <stan/math/torsten/mpi/pmx_population_integrator.hpp>
 #include <stan/math/torsten/dsolve/pmx_integrate_ode_rk45.hpp>
+#include <stan/math/torsten/dsolve/ode_check.hpp>
 
 namespace torsten {
   /**
@@ -51,7 +52,7 @@ namespace torsten {
     using scheme_t = boost::numeric::odeint::runge_kutta_dopri5<std::vector<double>, double, std::vector<double>, double>;
     dsolve::PMXOdeintIntegrator<scheme_t> integrator(rtol, atol, max_num_step);
     torsten::mpi::PMXPopulationIntegrator<F, dsolve::PMXOdeintIntegrator<scheme_t>,
-                                          dsolve::PMXOdeSystem> solver(integrator);
+                                          dsolve::PMXOdeintSystem> solver(integrator);
 
     return solver(f, y0, t0, len, ts, theta, x_r, x_i, msgs);
   }

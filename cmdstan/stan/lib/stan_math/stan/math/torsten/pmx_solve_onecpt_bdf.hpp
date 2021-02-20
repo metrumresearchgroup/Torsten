@@ -97,10 +97,7 @@ pmx_solve_onecpt_bdf(const F& f,
 
   const int &nPK = torsten::PMXOneCptModel<double>::Ncmt;
   
-  using dsolve::PMXOdeIntegrator;
-  using dsolve::PMXCvodesIntegrator;
-  using dsolve::PMXOdeSystem;
-  PMXOdeIntegrator<PMXOdeSystem, PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+  PMXOdeIntegrator<StanBdf> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
   const int nCmt = nPK + nOde;
 
   using ER = NONMENEventsRecord<T0, T1, T2, T3>;

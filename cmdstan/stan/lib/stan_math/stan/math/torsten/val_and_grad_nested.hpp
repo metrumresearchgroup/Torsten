@@ -2,6 +2,7 @@
 #define STAN_MATH_TORSTEN_VAL_AND_GRAD_HPP
 
 #include <stan/math/rev/core.hpp>
+#include <stan/math/rev/fun/typedefs.hpp>
 
 namespace torsten {
 

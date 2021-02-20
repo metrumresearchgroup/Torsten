@@ -20,17 +20,11 @@ using torsten::PKRec;
 using torsten::PMXTwoCptModel;
 using torsten::PKODEModel;
 using torsten::PMXTwoCptODE;
+using torsten::PMXOdeIntegrator;
 using torsten::dsolve::pk_vars;
 using torsten::pmx_model_vars;
-using torsten::dsolve::PMXOdeIntegrator;
-using torsten::dsolve::PMXOdeSystem;
-using torsten::dsolve::PMXOdeSystem;
-using torsten::dsolve::PMXOdeSystem;
-using torsten::dsolve::PMXCvodesIntegrator;
-using torsten::dsolve::PMXOdeintIntegrator;
 
-using integ_t = torsten::dsolve::PMXAnalyiticalIntegrator;
-using scheme_t = boost::numeric::odeint::runge_kutta_dopri5<std::vector<double>, double, std::vector<double>, double>;
+using integ_t = torsten::PMXOdeIntegrator<torsten::Analytical>;
 
 TEST_F(TorstenTwoCptTest, model_solve_d_data_only) {
   using model_t = PMXTwoCptModel<double>;
@@ -309,7 +303,7 @@ TEST_F(TorstenTwoCptTest, rk45_model_solve_d_data_only) {
   PMXTwoCptODE f;
 
   using model_t = PKODEModel<double, PMXTwoCptODE>;
-  PMXOdeIntegrator<PMXOdeSystem, PMXOdeintIntegrator<scheme_t>> integrator;
+  PMXOdeIntegrator<torsten::PkRk45> integrator;
 
   torsten::PKRec<double> init(ncmt);
   init << 0, 100, 0;
@@ -331,7 +325,7 @@ TEST_F(TorstenTwoCptTest, rk45_model_solve_d_init_var) {
   PMXTwoCptODE f;
 
   using model_t = PKODEModel<double, PMXTwoCptODE>;
-  PMXOdeIntegrator<PMXOdeSystem, PMXOdeintIntegrator<scheme_t>> integrator;
+  PMXOdeIntegrator<torsten::PkRk45> integrator;
 
   torsten::PKRec<var> init(ncmt);
   init << 0, 100, 0;
@@ -358,7 +352,7 @@ TEST_F(TorstenTwoCptTest, rk45_model_solve_d_rate_var) {
   PMXTwoCptODE f;
 
   using model_t = PKODEModel<double, PMXTwoCptODE>;
-  PMXOdeIntegrator<PMXOdeSystem, PMXOdeintIntegrator<scheme_t>> integrator;
+  PMXOdeIntegrator<torsten::PkRk45> integrator;
 
   torsten::PKRec<double> init(ncmt);
   init << 0, 100, 0;
@@ -385,7 +379,7 @@ TEST_F(TorstenTwoCptTest, rk45_model_solve_d_par_var) {
   PMXTwoCptODE f;
 
   using model_t = PKODEModel<var, PMXTwoCptODE>;
-  PMXOdeIntegrator<PMXOdeSystem, PMXOdeintIntegrator<scheme_t>> integrator;
+  PMXOdeIntegrator<torsten::PkRk45> integrator;
 
   torsten::PKRec<double> init(ncmt);
   init << 0, 100, 0;
@@ -412,7 +406,7 @@ TEST_F(TorstenTwoCptTest, rk45_model_solve_d_data_only_ss) {
   PMXTwoCptODE f;
 
   using model_t = PKODEModel<double, PMXTwoCptODE>;
-  PMXOdeIntegrator<PMXOdeSystem, PMXOdeintIntegrator<scheme_t>> integrator;
+  PMXOdeIntegrator<torsten::PkRk45> integrator;
 
   torsten::PKRec<double> init(ncmt);
   init << 0, 100, 0;
@@ -436,7 +430,7 @@ TEST_F(TorstenTwoCptTest, rk45_model_solve_d_init_var_ss) {
   PMXTwoCptODE f;
 
   using model_t = PKODEModel<double, PMXTwoCptODE>;
-  PMXOdeIntegrator<PMXOdeSystem, PMXOdeintIntegrator<scheme_t>> integrator;
+  PMXOdeIntegrator<torsten::PkRk45> integrator;
 
   torsten::PKRec<var> init(ncmt);
   init << 0, 100, 0;
@@ -462,7 +456,7 @@ TEST_F(TorstenTwoCptTest, rk45_model_solve_d_init_var_ss) {
 TEST_F(TorstenTwoCptTest, rk45_model_solve_d_par_var_ss) {
   
   using torsten::PMXTwoCptODE;
-  using torsten::dsolve::PMXOdeIntegrator;
+  using torsten::PMXOdeIntegrator;
   using stan::math::var;
   using stan::math::vector_v;
 
@@ -470,7 +464,7 @@ TEST_F(TorstenTwoCptTest, rk45_model_solve_d_par_var_ss) {
   PMXTwoCptODE f;
 
   using model_t = PKODEModel<var, PMXTwoCptODE>;
-  PMXOdeIntegrator<PMXOdeSystem, PMXOdeintIntegrator<scheme_t>> integrator;
+  PMXOdeIntegrator<torsten::PkRk45> integrator;
 
   torsten::PKRec<double> init(ncmt);
   init << 0, 100, 0;
@@ -501,7 +495,7 @@ TEST_F(TorstenTwoCptTest, PkBdf_model_solve_d_data_only) {
   PMXTwoCptODE f;
 
   using model_t = PKODEModel<double, PMXTwoCptODE>;
-  PMXOdeIntegrator<PMXOdeSystem, PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>> integrator;
+  PMXOdeIntegrator<torsten::PkBdf> integrator;
 
   torsten::PKRec<double> init(ncmt);
   init << 0, 100, 0;
@@ -523,7 +517,7 @@ TEST_F(TorstenTwoCptTest, PkBdf_model_solve_d_init_var) {
   PMXTwoCptODE f;
 
   using model_t = PKODEModel<double, PMXTwoCptODE>;
-  PMXOdeIntegrator<PMXOdeSystem, PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>> integrator;
+  PMXOdeIntegrator<torsten::PkBdf> integrator;
 
   torsten::PKRec<var> init(ncmt);
   init << 0, 100, 0;
@@ -550,7 +544,7 @@ TEST_F(TorstenTwoCptTest, PkBdf_model_solve_d_rate_var) {
   PMXTwoCptODE f;
 
   using model_t = PKODEModel<double, PMXTwoCptODE>;
-  PMXOdeIntegrator<PMXOdeSystem, PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>> integrator;
+  PMXOdeIntegrator<torsten::PkBdf> integrator;
 
   torsten::PKRec<double> init(ncmt);
   init << 0, 100, 0;
@@ -575,7 +569,7 @@ TEST_F(TorstenTwoCptTest, PkBdf_model_solve_d_rate_var) {
 TEST_F(TorstenTwoCptTest, PkBdf_model_solve_d_par_var) {
   
   using torsten::PMXTwoCptODE;
-  using torsten::dsolve::PMXOdeIntegrator;
+  using torsten::PMXOdeIntegrator;
   using stan::math::var;
   using stan::math::vector_v;
 
@@ -583,7 +577,7 @@ TEST_F(TorstenTwoCptTest, PkBdf_model_solve_d_par_var) {
   PMXTwoCptODE f;
 
   using model_t = PKODEModel<var, PMXTwoCptODE>;
-  PMXOdeIntegrator<PMXOdeSystem, PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>> integrator;
+  PMXOdeIntegrator<torsten::PkBdf> integrator;
 
   torsten::PKRec<double> init(ncmt);
   init << 0, 100, 0;
@@ -608,13 +602,13 @@ TEST_F(TorstenTwoCptTest, PkBdf_model_solve_d_par_var) {
 TEST_F(TorstenTwoCptTest, PkBdf_model_solve_d_data_only_ss) {
   
   using torsten::PMXTwoCptODE;
-  using torsten::dsolve::PMXOdeIntegrator;
+  using torsten::PMXOdeIntegrator;
 
   const int ncmt = PMXTwoCptModel<double>::Ncmt;
   PMXTwoCptODE f;
 
   using model_t = PKODEModel<double, PMXTwoCptODE>;
-  PMXOdeIntegrator<PMXOdeSystem, PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>> integrator;
+  PMXOdeIntegrator<torsten::PkBdf> integrator;
 
   torsten::PKRec<double> init(ncmt);
   init << 0, 100, 0;
@@ -636,7 +630,7 @@ TEST_F(TorstenTwoCptTest, PkBdf_model_solve_d_data_only_ss) {
 TEST_F(TorstenTwoCptTest, PkBdf_model_solve_d_init_var_ss) {
   
   using torsten::PMXTwoCptODE;
-  using torsten::dsolve::PMXOdeIntegrator;
+  using torsten::PMXOdeIntegrator;
   using stan::math::var;
   using stan::math::vector_v;
 
@@ -644,7 +638,7 @@ TEST_F(TorstenTwoCptTest, PkBdf_model_solve_d_init_var_ss) {
   PMXTwoCptODE f;
 
   using model_t = PKODEModel<double, PMXTwoCptODE>;
-  PMXOdeIntegrator<PMXOdeSystem, PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>> integrator;
+  PMXOdeIntegrator<torsten::PkBdf> integrator;
 
   torsten::PKRec<var> init(ncmt);
   init << 0, 100, 0;
@@ -672,7 +666,7 @@ TEST_F(TorstenTwoCptTest, PkBdf_model_solve_d_par_var_ss) {
   PMXTwoCptODE f;
 
   using model_t = PKODEModel<var, PMXTwoCptODE>;
-  PMXOdeIntegrator<PMXOdeSystem, PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>> integrator;
+  PMXOdeIntegrator<torsten::PkBdf> integrator;
 
   torsten::PKRec<double> init(ncmt);
   init << 0, 100, 0;

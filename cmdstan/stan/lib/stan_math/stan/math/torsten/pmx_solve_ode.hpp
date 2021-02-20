@@ -44,7 +44,7 @@ namespace torsten {
     const std::vector<int>& addl,                                \
     const std::vector<int>& ss
 
-  template<typename integrator_type>
+  template<PMXOdeIntegratorId It>
   struct PMXSolveODE {
     
     /// default tolerances & max steps for
@@ -137,7 +137,7 @@ namespace torsten {
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
 
-      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       pr.pred(0, events_rec, pred, integrator, pMatrix, biovar, tlag, nCmt, f);
@@ -253,7 +253,7 @@ namespace torsten {
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
 
-      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       pr.pred(0, events_rec, pred, integrator, pMatrix, biovar, nCmt, f);
@@ -365,7 +365,7 @@ namespace torsten {
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
 
-      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       pr.pred(0, events_rec, pred, integrator, pMatrix, nCmt, f);
@@ -480,7 +480,7 @@ namespace torsten {
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
 
-      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       pr.pred(0, events_rec, pred, integrator, pMatrix, biovar, tlag, x_r, nCmt, f);
@@ -605,7 +605,7 @@ namespace torsten {
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
 
-      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       pr.pred(0, events_rec, pred, integrator, pMatrix, biovar, tlag, x_r, x_i, nCmt, f);

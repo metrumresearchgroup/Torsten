@@ -16,8 +16,6 @@ using Eigen::Dynamic;
 using stan::math::matrix_exp;
 using stan::math::to_vector;
 using torsten::PKODEModel;
-using torsten::dsolve::PMXOdeSystem;
-using torsten::dsolve::PMXCvodesIntegrator;
 
 TEST_F(TorstenTwoCptModelTest, linode_dbl) {
   y0(0) = 745;
@@ -50,7 +48,7 @@ TEST_F(TorstenTwoCptModelTest, linode_rate_var) {
   torsten::PKRec<var> y1(to_var(y0)), y2(to_var(y0));
   model1.solve_analytical(y1, t0, ts[0], rate_var);
   model2.solve(y2, t0, ts[0], rate_var);
-  torsten::test::test_grad(rate_var, y1, y2, 1.5e-12, 1e-10);
+  torsten::test::test_grad(rate_var, y1, y2, 1e-12, 1e-10);
 }
 
 TEST_F(TorstenTwoCptModelTest, linode_par_var) {
@@ -65,7 +63,7 @@ TEST_F(TorstenTwoCptModelTest, linode_par_var) {
   torsten::PKRec<var> y1(to_var(y0)), y2(to_var(y0));
   model1.solve_analytical(y1, t0, ts[0], rate);
   model2.solve(y2, t0, ts[0], rate);
-  torsten::test::test_grad(par_var, y1, y2, 1.5e-12, 1e-10);
+  torsten::test::test_grad(par_var, y1, y2, 1e-12, 1e-10);
 }
 
 TEST_F(TorstenTwoCptModelTest, linode_solver) {
@@ -155,7 +153,7 @@ TEST_F(TorstenTwoCptModelTest, linode_ss_par_var) {
   Eigen::Matrix<var, -1, -1> linode_par_var(model1.to_linode_par());
   PMXLinODEModel<var> model2(linode_par_var, model1.ncmt());
 
-  const dsolve::PMXAnalyiticalIntegrator integ;
+  const torsten::PMXOdeIntegrator<torsten::Analytical> integ;
   torsten::PKRec<var> y1 = model1.solve(ts[0], amt, r, ii, 1, integ);
   torsten::PKRec<var> y2 = model2.solve(ts[0], amt, r, ii, 1, integ);
   torsten::test::test_grad(par_var, y1, y2, 1e-11, 1e-10);
@@ -170,7 +168,7 @@ TEST_F(TorstenTwoCptModelTest, linode_ss_input_var) {
   Eigen::Matrix<var, -1, -1> linode_par_var(model1.to_linode_par());
   PMXLinODEModel<var> model2(linode_par_var, model1.ncmt());
 
-  const dsolve::PMXAnalyiticalIntegrator integ;
+  const torsten::PMXOdeIntegrator<torsten::Analytical> integ;
   torsten::PKRec<var> y1 = model1.solve(ts[0], amt, r, ii, 1, integ);
   torsten::PKRec<var> y2 = model2.solve(ts[0], amt, r, ii, 1, integ);
   std::vector<var> params{amt, r, ii};
@@ -188,8 +186,8 @@ TEST_F(TorstenTwoCptModelTest, linode_ss_vs_ode) {
   std::vector<var> ode_par_var(to_array_1d(linode_par_var));
   PKODEModel<var, PMXLinODE> model3(ode_par_var, model2.ncmt(), model2.f());
 
-  const dsolve::PMXAnalyiticalIntegrator integ2;
-  const PMXOdeIntegrator<PMXOdeSystem, PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>> integ3;
+  const torsten::PMXOdeIntegrator<torsten::Analytical> integ2;
+  const torsten::PMXOdeIntegrator<torsten::PkBdf> integ3;
   torsten::PKRec<var> y2 = model2.solve(ts[0], amt, r, ii, 1, integ2);
   torsten::PKRec<var> y3 = model3.solve(ts[0], amt, r, ii, 1, integ3);
   torsten::test::test_grad(par_var, y2, y3, 1e-7, 2e-7);
@@ -206,8 +204,8 @@ TEST_F(TorstenTwoCptModelTest, linode_long_ss_vs_ode) {
   std::vector<var> ode_par_var(to_array_1d(linode_par_var));
   PKODEModel<var, PMXLinODE> model3(ode_par_var, model2.ncmt(), model2.f());
 
-  const dsolve::PMXAnalyiticalIntegrator integ2;
-  const PMXOdeIntegrator<PMXOdeSystem, PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>> integ3;
+  const torsten::PMXOdeIntegrator<torsten::Analytical> integ2;
+  const torsten::PMXOdeIntegrator<torsten::PkBdf> integ3;
   torsten::PKRec<var> y2 = model2.solve(ts[0], amt, r, ii, 1, integ2);
   torsten::PKRec<var> y3 = model3.solve(ts[0], amt, r, ii, 1, integ3);
   torsten::test::test_grad(par_var, y2, y3, 5e-6, 1e-5);
@@ -224,8 +222,8 @@ TEST_F(TorstenTwoCptModelTest, linode_long_long_ss_infusion_vs_ode) {
   std::vector<var> ode_par_var(to_array_1d(linode_par_var));
   PKODEModel<var, PMXLinODE> model3(ode_par_var, model2.ncmt(), model2.f());
 
-  const dsolve::PMXAnalyiticalIntegrator integ2;
-  const PMXOdeIntegrator<PMXOdeSystem, PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>> integ3;
+  const torsten::PMXOdeIntegrator<torsten::Analytical> integ2;
+  const torsten::PMXOdeIntegrator<torsten::PkBdf> integ3;
   torsten::PKRec<var> y2 = model2.solve(ts[0], amt, r, ii, 1, integ2);
   torsten::PKRec<var> y3 = model3.solve(ts[0], amt, r, ii, 1, integ3);
   torsten::test::test_grad(par_var, y2, y3, 1e-6, 1e-5);

@@ -10,13 +10,14 @@
 #include <stan/math/prim/err/check_less_or_equal.hpp>
 #include <stan/math/torsten/pk_nvars.hpp>
 #include <stan/math/torsten/dsolve/pmx_algebra_solver_newton.hpp>
-#include <stan/math/torsten/dsolve/pmx_ode_integrator.hpp>
+#include <stan/math/torsten/pmx_ode_integrator.hpp>
 
 namespace torsten {
 
   using Eigen::Matrix;
   using Eigen::Dynamic;
-  using torsten::dsolve::PMXOdeIntegrator;
+  using torsten::PMXOdeIntegrator;
+  using torsten::PMXOdeIntegratorId;
 
   /** 
    * Rate adapter for ODE
@@ -26,11 +27,12 @@ namespace torsten {
    * 
    */
   template<typename T_theta, typename T_rate>
-  struct PMXOdeFunctorRateAdaptorImpl {
+  struct PMXOdeFunctorRateAdaptorInternal {
+    
     const std::vector<T_theta>& theta_;
     const std::vector<T_rate>& rate_;
 
-    PMXOdeFunctorRateAdaptorImpl(const std::vector<T_theta>& theta,
+    PMXOdeFunctorRateAdaptorInternal(const std::vector<T_theta>& theta,
                                      const std::vector<T_rate>& rate) :
       theta_(theta), rate_(rate) {}
 
@@ -48,6 +50,7 @@ namespace torsten {
 
     /** 
      * original ode param
+     * 
      * 
      * @return original ode param vector
      */
@@ -77,12 +80,12 @@ namespace torsten {
    * 
    */
   template<>
-  struct PMXOdeFunctorRateAdaptorImpl<double, stan::math::var> {
+  struct PMXOdeFunctorRateAdaptorInternal<double, stan::math::var> {
     
     const std::vector<double>& theta_;
     const std::vector<stan::math::var>& rate_;
 
-    PMXOdeFunctorRateAdaptorImpl(const std::vector<double>& theta,
+    PMXOdeFunctorRateAdaptorInternal(const std::vector<double>& theta,
                                      const std::vector<stan::math::var>& rate) :
       theta_(theta), rate_(rate) {}
 
@@ -127,12 +130,13 @@ namespace torsten {
    * 
    */
   template<typename T_theta>
-  struct PMXOdeFunctorRateAdaptorImpl<T_theta, double> {
+  struct PMXOdeFunctorRateAdaptorInternal<T_theta, double> {
+    
     const std::vector<T_theta>& theta_;
     const std::vector<double>& rate_;
 
-    PMXOdeFunctorRateAdaptorImpl(const std::vector<T_theta>& theta,
-                                 const std::vector<double>& rate) :
+    PMXOdeFunctorRateAdaptorInternal(const std::vector<T_theta>& theta,
+                                     const std::vector<double>& rate) :
       theta_(theta), rate_(rate) {}
 
     /** 
@@ -175,7 +179,7 @@ namespace torsten {
   template<typename F, typename T_theta, typename T_rate>
   struct PMXOdeFunctorRateAdaptor {
 
-    PMXOdeFunctorRateAdaptorImpl<T_theta, T_rate> adaptor;
+    PMXOdeFunctorRateAdaptorInternal<T_theta, T_rate> adaptor;
 
     PMXOdeFunctorRateAdaptor(const std::vector<T_theta>& theta,
                                 const std::vector<T_rate>& rate) :
@@ -338,7 +342,7 @@ namespace torsten {
     }
   };
 
-  template <typename integrator_type, typename T_theta,
+  template <PMXOdeIntegratorId It, typename T_theta,
             typename T_amt, typename T_rate, typename T_ii, typename F>
   struct PMXOdeFunctorSSAdaptor {
     PMXOdeFunctorSSAdaptorComponentTheta<T_theta> theta_;
@@ -347,12 +351,12 @@ namespace torsten {
     PMXOdeFunctorSSAdaptorComponentII<T_theta, T_amt, T_rate, T_ii> ii_;
     const int cmt_;
     const int ncmt_;    
-    const integrator_type& integrator_;
+    const PMXOdeIntegrator<It>& integrator_;
     
     PMXOdeFunctorSSAdaptor(const std::vector<T_theta>& theta, 
                               const T_amt& amt, const T_rate& rate,
                               const T_ii& ii, int cmt, int ncmt,
-                              const integrator_type& integrator)
+                              const PMXOdeIntegrator<It>& integrator)
       : theta_(theta),
         amt_(amt, theta.size()),
         rate_(rate, theta.size()),
@@ -781,13 +785,13 @@ namespace torsten {
      * For steady-state with data rate. 
      * Same as the non-steady version but with given @c init.
      */
-    template<typename integrator_type>
+    template<PMXOdeIntegratorId It>
     Eigen::Matrix<double, Eigen::Dynamic, 1>
     integrate(double t1,
               const std::vector<double> &rate,
               const Eigen::Matrix<double, 1, Eigen::Dynamic>& y0,
               const double& dt,
-              const integrator_type& integrator) const {
+              const PMXOdeIntegrator<It>& integrator) const {
       using stan::math::value_of;
 
       const double t0 = t1 - dt;
@@ -823,11 +827,11 @@ namespace torsten {
      *         solution at certain time step. Hence the returned
      *         matrix is of dim (numer of time steps) x (siez of ODE system).
      */
-    template<typename Tt0, typename Tt1, typename T, typename T1, typename integrator_type>
+    template<typename Tt0, typename Tt1, typename T, typename T1, PMXOdeIntegratorId It>
     void solve(Eigen::Matrix<T, -1, 1>& y,
                const Tt0& t0, const Tt1& t1,
                const std::vector<T1>& rate,
-               const integrator_type& integrator) const {
+               const PMXOdeIntegrator<It>& integrator) const {
       const double t0_d = stan::math::value_of(t0);
       std::vector<Tt1> ts(time_step(t0, t1));
       PMXOdeFunctorRateAdaptor<F, T_par, T1> f_rate(par_, rate);
@@ -841,24 +845,18 @@ namespace torsten {
       }
     }
 
-    /** 
-     * Torsten's integrators can return 
+    /*
+     * <code>PKBdf, PKAdams, PKRk45</code> integrators can return 
      * results in form of data directly,
-     * thanks to @c pmx_cvodes/arkode/odeint_integrator's observer implmenetation.
-     * 
-     * @param yd output data
-     * @param y initial condition
-     * @param t0 starting time
-     * @param t1 end tme
-     * @param rate infusion rate
-     * @param integrator ODE integrator
+     * thanks to @c pk_cvodes_integrator implementation.
      */
-    template<typename T0, typename T, typename T1, typename integrator_type>
+    template<typename T0, typename T, typename T1, PMXOdeIntegratorId It,
+             typename std::enable_if_t<It == torsten::PkBdf || It == torsten::PkAdams || It == torsten::PkRk45>* = nullptr>
     void solve_d(Eigen::VectorXd& yd,
                  const PKRec<T>& y,
                  const T0& t0, const T0& t1,
                  const std::vector<T1>& rate,
-                 const integrator_type& integrator) const {
+                 const PMXOdeIntegrator<It>& integrator) const {
       using stan::math::var;
       using stan::math::value_of;
       using stan::math::to_var;
@@ -912,10 +910,10 @@ namespace torsten {
      * being param and @c rate both being data.
      *
      */
-    template<typename integrator_type, typename T_amt, typename T_r, typename T_ii>
+    template<PMXOdeIntegratorId It, typename T_amt, typename T_r, typename T_ii>
     Eigen::Matrix<typename stan::return_type_t<T_amt, T_r, T_par, T_ii>, Eigen::Dynamic, 1> // NOLINT
     solve(double t0, const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt,
-          const integrator_type& integrator) const {
+          const PMXOdeIntegrator<It>& integrator) const {
       using stan::math::value_of;
       using stan::math::algebra_solver_powell;
       using stan::math::algebra_solver_newton;
@@ -935,7 +933,7 @@ namespace torsten {
       }
 
       const double init_dt = (rate == 0.0 || ii > 0) ? ii_dbl : 24.0;
-      PMXOdeFunctorSSAdaptor<integrator_type, T_par, T_amt, T_r, T_ii, F>
+      PMXOdeFunctorSSAdaptor<It, T_par, T_amt, T_r, T_ii, F>
         fss(par_, amt, rate, ii, cmt, ncmt_, integrator);
       try {
 #ifdef TORSTEN_AS_POWELL

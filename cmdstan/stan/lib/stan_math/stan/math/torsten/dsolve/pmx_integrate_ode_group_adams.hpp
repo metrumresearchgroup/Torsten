@@ -3,9 +3,13 @@
 
 #include <stan/math/torsten/mpi/pmx_population_integrator.hpp>
 #include <stan/math/torsten/dsolve/pmx_integrate_ode_adams.hpp>
-#include <stan/math/torsten/dsolve/pmx_cvodes_integrator.hpp>
+#include <stan/math/torsten/dsolve/ode_check.hpp>
 
 namespace torsten {
+  template <typename F, typename Tts, typename Ty0, typename Tpar>
+  using PMXCvodesFwdSystem_adams_ad =
+    dsolve::PMXCvodesFwdSystem<F, Tts, Ty0, Tpar, dsolve::cvodes_def<TORSTEN_CV_SENS, CV_ADAMS, TORSTEN_CV_ISM>>;
+
   /**
    * Solve population ODE model by delegating the population
    * ODE integration task to multiple processors through
@@ -49,10 +53,10 @@ namespace torsten {
     static const char* caller("pmx_integrate_ode_adams");
     dsolve::ode_group_check(y0, t0, len, ts, theta, x_r, x_i, caller);
 
-    dsolve::PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> integrator(rtol, atol, max_num_step);
+    dsolve::PMXCvodesIntegrator integrator(rtol, atol, max_num_step);
 
-    torsten::mpi::PMXPopulationIntegrator<F, dsolve::PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED>,
-                                          dsolve::PMXOdeSystem> solver(integrator);
+    torsten::mpi::PMXPopulationIntegrator<F, dsolve::PMXCvodesIntegrator,
+                                          PMXCvodesFwdSystem_adams_ad> solver(integrator);
 
     return solver(f, y0, t0, len, ts, theta, x_r, x_i, msgs);
   }
@@ -122,10 +126,10 @@ namespace torsten {
     static const char* caller("pmx_integrate_ode_adams");
     dsolve::ode_group_check(y0, t0, len, ts, theta, x_r, x_i, caller);
 
-    dsolve::PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> integrator(rtol, atol, max_num_step);
+    dsolve::PMXCvodesIntegrator integrator(rtol, atol, max_num_step);
 
-    torsten::mpi::PMXPopulationIntegrator<F, dsolve::PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED>,
-                                          dsolve::PMXOdeSystem> solver(integrator);
+    torsten::mpi::PMXPopulationIntegrator<F, dsolve::PMXCvodesIntegrator,
+                                          PMXCvodesFwdSystem_adams_ad> solver(integrator);
 
     return solver(f, y0, t0, len, ts, group_theta, theta, x_r, x_i, msgs);
   }

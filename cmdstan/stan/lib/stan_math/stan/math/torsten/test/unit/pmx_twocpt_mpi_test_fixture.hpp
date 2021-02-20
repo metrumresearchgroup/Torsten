@@ -1,7 +1,6 @@
 #ifndef TEST_UNIT_TORSTEN_PK_TWOCPT_MODEL_MPI_TEST_FIXTURE
 #define TEST_UNIT_TORSTEN_PK_TWOCPT_MODEL_MPI_TEST_FIXTURE
 
-#include <stan/math/rev/core/recover_memory.hpp>
 #include <stan/math/torsten/mpi/environment.hpp>
 //
 #include <gtest/gtest.h>
