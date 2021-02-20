@@ -383,12 +383,21 @@ Currently Torsten is based on a forked version of Stan and hosted on GitHub
 - https://github.com/metrumresearchgroup/Torsten
 The latest {{{torsten_ver}}} is
 compatible with Stan {{{stan_ver}}}. Torsten can be accessed from
-command line for cmdstan interface and =cmdstanr= (https://mc-stan.org/cmdstanr/) for R interface.
+command line for cmdstan interface and =cmdstanr=
+(https://mc-stan.org/cmdstanr/) for R interface. It requires
+a modern C++11 compiler as well as a Make utility. See cite:cmdstan_team_2020 for details of installation and
+required toolchain. In particular, we recommend the folowing versions
+of C++ compilers:
+- Linux: g++ >=7.5 or clang >=8.0,
+- macOS: the XCode version of clang,
+- Windows: g++ 8.1 (available with RTools 4.0).
+
+On windows, the Make utility =mingw32-make= can be installed as part
+of RTools.
 
 ** Command line interface
 The command line interface ~cmdstan~ is available along with Torsten
-and can be found at =Torsten/cmdstan=. See cite:cmdstan_team_2020 for details of installation and
-required toolchain. 
+and can be found at =Torsten/cmdstan=. 
 
 After installation, one can use the following command to build a Torsten model ~model_name~ in ~model_path~
 #+BEGIN_SRC sh
@@ -1161,7 +1170,7 @@ summarize the posterior is through =cmdstanr='s =summary= method.
 
 #+CAPTION: Posterior marginal densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
 #+NAME: twocpt_mcmc_posterior
-#+ATTR_LATEX: :width 0.8\linewidth
+#+ATTR_LATEX: :width \linewidth
 [[../example-models/pk2cpt/deliv/figure/density.pdf]]
 
 #+CAPTION: Predicted ($y_{\text{rep}}$) and observed ($y$) plasma drug concentrations of a two compartment model with first order absorption. $y_{\text{rep}}$ is shown with posterior median, 50%, 90% credible intervals.
