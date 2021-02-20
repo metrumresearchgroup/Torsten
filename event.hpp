@@ -2,7 +2,7 @@
 #define STAN_MATH_TORSTEN_EVENT_HPP
 
 #include<stan/math/torsten/torsten_def.hpp>
-#include<stan/math/torsten/dsolve/pmx_ode_integrator.hpp>
+#include<stan/math/torsten/pmx_ode_integrator.hpp>
 #include <stan/math/torsten/mpi/precomputed_gradients.hpp>
 #include <stan/math/torsten/model_solve_d.hpp>
 #include<vector>
@@ -55,15 +55,15 @@ namespace torsten {
      *
      * @tparam T solution type
      * @tparam model_t PMX model type
-     * @tparam integrator_type integrator type
+     * @tparam It integrator type
      * @param[in, out] y initial condition and output solution
      * @param[in] model PMX model with model parameters
      * @param[in] integ numerical integrator with control parameters
      */
-    template<typename T, typename model_t, typename integrator_type>
+    template<typename T, typename model_t, PMXOdeIntegratorId It>
     inline void operator()(PKRec<T>& y,
                            const model_t& model,
-                           const integrator_type& integ) {
+                           const PMXOdeIntegrator<It>& integ) {
       using stan::math::value_of;
       const double eps = 1.0E-12;
       const jump_t jp = force0 < eps ? jump(std::abs(cmt) - 1) : 0.0;
@@ -105,7 +105,7 @@ namespace torsten {
      *
      * @tparam T solution type
      * @tparam model_t PMX model type
-     * @tparam integrator_type integrator type
+     * @tparam It integrator type
      * @tparam Ts scalar model parameters for <code>nCmt</code> and <code>f</code>.
      * @param[in, out] yd data-only solution
      * @param[in, out] y initial condition and output solution
@@ -113,11 +113,11 @@ namespace torsten {
      * @param[in] integ numerical integrator with control parameters
      * @param[in] model_pars int & <code>F</code> functor type params for model construction
      */
-    template<typename T, typename model_t, typename integrator_type, typename... Ts>
+    template<typename T, typename model_t, PMXOdeIntegratorId It, typename... Ts>
     inline void operator()(Eigen::VectorXd& yd,
                            PKRec<T>& y,
                            const model_t& model,
-                           const integrator_type& integ,
+                           const PMXOdeIntegrator<It>& integ,
                            const Ts... model_pars) {
       using stan::math::value_of;
       const double eps = 1.0E-12;

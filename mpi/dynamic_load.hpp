@@ -475,29 +475,36 @@ namespace torsten {
                                          double rtol, double atol, int max_num_step) {
         Eigen::MatrixXd res;
         torsten::dsolve::pmx_ode_group_mpi_functor f(functor_id);
-        using Ode = torsten::dsolve::PMXOdeSystem<torsten::dsolve::pmx_ode_group_mpi_functor, Tt, Ty, Tp>;
-        Ode ode{f, t0, ts, y0, theta, x_r, x_i, NULL};
-        torsten::dsolve::OdeDataObserver<Ode> observer(ode);
         switch(integ_id) {
         case 1 : {
-          torsten::dsolve::PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> solver(rtol, atol, max_num_step);
-          solver.integrate(ode, observer);
+          using Ode = torsten::dsolve::PMXCvodesFwdSystem<torsten::dsolve::pmx_ode_group_mpi_functor, Tt, Ty, Tp,
+                                                          torsten::dsolve::cvodes_def<TORSTEN_CV_SENS, CV_ADAMS, TORSTEN_CV_ISM>>;
+          torsten::dsolve::PMXOdeService<Ode> serv(y0.size(), theta.size());
+          Ode ode{serv, f, t0, ts, y0, theta, x_r, x_i, NULL};
+          torsten::dsolve::PMXCvodesIntegrator solver(rtol, atol, max_num_step);
+          res = solver.template integrate<Ode, false>(ode);
           break;
         }
         case 2 : {
-          torsten::dsolve::PMXCvodesIntegrator<CV_BDF, CV_STAGGERED> solver(rtol, atol, max_num_step);
-          solver.integrate(ode, observer);
+          using Ode = torsten::dsolve::PMXCvodesFwdSystem<torsten::dsolve::pmx_ode_group_mpi_functor, Tt, Ty, Tp,
+                                                          torsten::dsolve::cvodes_def<TORSTEN_CV_SENS, CV_BDF, TORSTEN_CV_ISM>>;
+          torsten::dsolve::PMXOdeService<Ode> serv(y0.size(), theta.size());
+          Ode ode{serv, f, t0, ts, y0, theta, x_r, x_i, NULL};
+          torsten::dsolve::PMXCvodesIntegrator solver(rtol, atol, max_num_step);
+          res = solver.template integrate<Ode, false>(ode);
           break;
         }
-        case 3 : {
+        default : {
           using scheme_t = boost::numeric::odeint::runge_kutta_dopri5<std::vector<double>, double, std::vector<double>, double>;
+          using Ode = dsolve::PMXOdeintSystem<torsten::dsolve::pmx_ode_group_mpi_functor, Tt, Ty, Tp>;
+          dsolve::PMXOdeService<Ode, dsolve::Odeint> serv(y0.size(), theta.size());
+          Ode ode{serv, f, t0, ts, y0, theta, x_r, x_i, NULL};
           dsolve::PMXOdeintIntegrator<scheme_t> solver(rtol, atol, max_num_step);
-          solver.integrate(ode, observer);
+          res = solver.template integrate<Ode, false>(ode);
           break;
         }
-        default : {break;}
         }
-        return observer.y;
+        return res;
       }
 
       /*

@@ -95,11 +95,8 @@ pmx_solve_twocpt_bdf(const F& f,
     dummy_systems(1, dummy_system);
 
   const int &nPK = torsten::PMXTwoCptModel<double>::Ncmt;
-
-  using dsolve::PMXOdeIntegrator;
-  using dsolve::PMXCvodesIntegrator;
-  using dsolve::PMXOdeSystem;
-  PMXOdeIntegrator<PMXOdeSystem, PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+  
+  PMXOdeIntegrator<StanBdf> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
   const int nCmt = nPK + nOde;
 
   using ER = NONMENEventsRecord<T0, T1, T2, T3>;

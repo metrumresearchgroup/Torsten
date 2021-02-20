@@ -28,13 +28,14 @@ namespace torsten {
      * invalid value is filled into the data passed to the rest
      * ranks so they can detect the exception.
      */
-    template <typename F, typename integrator_t, template<typename...> class ode_t, typename... ode_pars_t>
+    // template <typename F, typename ode_t, typename service_t>
+    template <typename F, typename solver_t, template<typename...> class ode_t, typename... ode_pars_t>
     struct PMXPopulationIntegrator {
 
-      integrator_t& solver;
+      solver_t& solver;
       static constexpr double invalid_res_d = std::numeric_limits<double>::quiet_NaN();
 
-      PMXPopulationIntegrator(integrator_t& solver0) : solver(solver0) {}
+      PMXPopulationIntegrator(solver_t& solver0) : solver(solver0) {}
 
 #ifdef TORSTEN_MPI
 #ifdef TORSTEN_MPI_DYN
@@ -70,7 +71,7 @@ namespace torsten {
         using torsten::dsolve::pmx_ode_group_mpi_functor_id;
 
         stan::math::mpi::Communicator& pmx_comm = torsten::mpi::Session::ode_parm_comm();
-        int integ_id = torsten::dsolve::integrator_id<integrator_t>::value;
+        int integ_id = torsten::dsolve::integrator_id<ode_t<F, Tt, T_initial, T_param, ode_pars_t...>>::value;
         int functor_id = pmx_ode_group_mpi_functor_id<F>::value;
 
         torsten::mpi::PMXDynamicLoad<TORSTEN_MPI_DYN_MASTER> load(pmx_comm);
@@ -117,12 +118,13 @@ namespace torsten {
         const int np = theta.size(); // population size
 
         using Ode = ode_t<F, Tt, T_initial, T_param, ode_pars_t...>;
+        torsten::dsolve::PMXOdeService<Ode> serv(n, m);
     
         MPI_Comm comm = torsten::mpi::Session::ode_parm_comm().comm();
         int rank = torsten::mpi::Session::ode_parm_comm().rank();
         int size = torsten::mpi::Session::ode_parm_comm().size();
 
-        using scalar_type = typename Ode::scalar_t;
+        using scalar_type = typename stan::return_type_t<Tt, T_initial, T_param>;
 
         vector<MatrixXd> res_d(np);
         Matrix<scalar_type, -1, -1> res(n, ts.size());
@@ -144,16 +146,14 @@ namespace torsten {
           iter += len[i];
           int my_worker_id = torsten::mpi::my_worker(i, np, size);
           try {
-            Ode ode{f, t0, ts_i, y0[i], theta[i], x_r[i], x_i[i], msgs};
-            dsolve::OdeDataObserver<Ode> observer(ode);
-            res_d[i].resize(ode.system_size, ode.ts_.size());
+            Ode ode{serv, f, t0, ts_i, y0[i], theta[i], x_r[i], x_i[i], msgs};
+            res_d[i].resize(ode.fwd_system_size(), ode.ts().size());
             res_d[i].setConstant(0.0);
 
             // success in creating ODE, solve it
             if(rank == my_worker_id) {
               try {
-                solver.integrate(ode, observer);
-                res_d[i] = observer.y;
+                res_d[i] = solver. template integrate<Ode, false>(ode);
               } catch (const std::exception& e) {
                 is_invalid = true;
                 res_d[i].setConstant(invalid_res_d);
@@ -188,7 +188,7 @@ namespace torsten {
               is_invalid = true;
               rank_fail_msg << "Rank " << rank << " received invalid data for id " << i;
             } else {
-              Ode ode{f, t0, ts_i, y0[i], theta[i], x_r[i], x_i[i], msgs};
+              Ode ode{serv, f, t0, ts_i, y0[i], theta[i], x_r[i], x_i[i], msgs};
               Matrix<scalar_type, -1, -1>::Map(&res(begin_id), n, len[i]) = torsten::precomputed_gradients(res_d[i], ode.vars());
             }
             begin_id += len[i] * n;
@@ -242,6 +242,8 @@ namespace torsten {
         const int n = y0[0].size();
         const int np = len.size(); // population size
 
+        torsten::dsolve::PMXOdeService<Ode> serv(n, m);
+    
         MPI_Comm comm = torsten::mpi::Session::ode_parm_comm().comm();
         int rank = torsten::mpi::Session::ode_parm_comm().rank();
         int size = torsten::mpi::Session::ode_parm_comm().size();
@@ -272,16 +274,14 @@ namespace torsten {
           int my_worker_id = torsten::mpi::my_worker(i, np, size);
           try {
             std::copy(theta[i].begin(), theta[i].end(), theta_i.begin() + group_theta.size());
-            Ode ode{f, t0, ts_i, y0[i], theta_i, x_r[i], x_i[i], msgs};
-            dsolve::OdeDataObserver<Ode> observer(ode);
-            res_d[i].resize(ode.system_size, ode.ts_.size());
+            Ode ode{serv, f, t0, ts_i, y0[i], theta_i, x_r[i], x_i[i], msgs};
+            res_d[i].resize(ode.fwd_system_size(), ode.ts().size());
             res_d[i].setConstant(0.0);
 
             // success in creating ODE, solve it
             if(rank == my_worker_id) {
               try {
-                solver.integrate(ode, observer);
-                res_d[i] = observer.y;
+                res_d[i] = solver. template integrate<Ode, false>(ode);
               } catch (const std::exception& e) {
                 is_invalid = true;
                 res_d[i].setConstant(invalid_res_d);
@@ -317,7 +317,7 @@ namespace torsten {
               rank_fail_msg << "Rank " << rank << " received invalid data for id " << i;
             } else {
               std::copy(theta[i].begin(), theta[i].end(), theta_i.begin() + group_theta.size());
-              Ode ode{f, t0, ts_i, y0[i], theta_i, x_r[i], x_i[i], msgs};
+              Ode ode{serv, f, t0, ts_i, y0[i], theta_i, x_r[i], x_i[i], msgs};
               Matrix<scalar_type, -1, -1>::Map(&res(begin_id), n, len[i]) = torsten::precomputed_gradients(res_d[i], ode.vars());
             }
             begin_id += len[i] * n;
@@ -363,6 +363,8 @@ namespace torsten {
         const int n = y0[0].size();
         const int np = theta.size(); // population size
 
+        torsten::dsolve::PMXOdeService<Ode> serv(n, m);
+    
         MPI_Comm comm;
         comm = torsten::mpi::Session::ode_data_comm();
         int rank = torsten::mpi::Session::ode_data_comm().rank();
@@ -384,14 +386,12 @@ namespace torsten {
           int size_id = len[i] * n;
           int my_worker_id = torsten::mpi::my_worker(i, np, size);
           try {
-            Ode ode{f, t0, ts_i, y0[i], theta[i], x_r[i], x_i[i], msgs};
-            dsolve::OdeDataObserver<Ode> observer(ode);
+            Ode ode{serv, f, t0, ts_i, y0[i], theta[i], x_r[i], x_i[i], msgs};
 
             // success in creating ODE, solve it
             if(rank == my_worker_id) {
               try {
-                solver.integrate(ode, observer);
-                MatrixXd::Map(&res(begin_id), n, len[i]) = observer.y;
+                MatrixXd::Map(&res(begin_id), n, len[i]) = solver.template integrate<Ode, false>(ode);
               } catch (const std::exception& e) {
                 is_invalid = true;
                 MatrixXd::Map(&res(begin_id), n, len[i]).setConstant(invalid_res_d);
@@ -500,6 +500,8 @@ namespace torsten {
           has_warning = true;
         }
 
+        static torsten::dsolve::PMXOdeService<Ode> serv(n, m);
+
         using scalar_type = typename stan::return_type_t<Tt, T_initial, T_param>;
         Matrix<scalar_type, Dynamic, Dynamic> res(n, ts.size());
 
@@ -508,11 +510,9 @@ namespace torsten {
         for (int i = 0; i < np; ++i) {
           std::vector<Tt> ts_i(iter, iter + len[i]);
           iter += len[i];
-          Ode ode{f, t0, ts_i, y0[i], theta[i], x_r[i], x_i[i], msgs};
-          dsolve::OdeObserver<Ode> observer(ode);
-          solver.integrate(ode, observer);
+          Ode ode{serv, f, t0, ts_i, y0[i], theta[i], x_r[i], x_i[i], msgs};
           Matrix<scalar_type, -1, -1>::Map(&res(begin_id), n, len[i])
-            = stan::math::to_matrix(observer.y).transpose();
+            = stan::math::to_matrix(solver.template integrate(ode)).transpose();
           begin_id += n * len[i];
         }
 
@@ -552,6 +552,8 @@ namespace torsten {
           has_warning = true;
         }
 
+        static torsten::dsolve::PMXOdeService<Ode> serv(n, m);
+
         using scalar_type = typename stan::return_type_t<Tt, T_initial, T_param>;
         Matrix<scalar_type, Dynamic, Dynamic> res(n, ts.size());
 
@@ -565,11 +567,9 @@ namespace torsten {
           std::copy(theta[i].begin(), theta[i].end(), theta_i.begin() + group_theta.size());
           std::vector<Tt> ts_i(iter, iter + len[i]);
           iter += len[i];
-          Ode ode{f, t0, ts_i, y0[i], theta_i, x_r[i], x_i[i], msgs};
-          dsolve::OdeObserver<Ode> observer(ode);
-          solver.integrate(ode, observer);
+          Ode ode{serv, f, t0, ts_i, y0[i], theta_i, x_r[i], x_i[i], msgs};
           Matrix<scalar_type, -1, -1>::Map(&res(begin_id), n, len[i])
-            = stan::math::to_matrix(observer.y).transpose();
+            = stan::math::to_matrix(solver.template integrate(ode)).transpose();
           begin_id += n * len[i];
         }
 
@@ -578,8 +578,8 @@ namespace torsten {
 #endif  // end of TORSTEN_MPI
     };
 
-    template <typename F, typename integrator_t, template<typename...> class ode_t, typename... ode_pars_t>
-    constexpr double PMXPopulationIntegrator<F, integrator_t, ode_t, ode_pars_t...>::invalid_res_d;
+    template <typename F, typename solver_t, template<typename...> class ode_t, typename... ode_pars_t>
+    constexpr double PMXPopulationIntegrator<F, solver_t, ode_t, ode_pars_t...>::invalid_res_d;
 
   }
 }

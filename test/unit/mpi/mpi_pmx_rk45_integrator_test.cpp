@@ -1,5 +1,6 @@
 #include <stan/math.hpp>
 #include <stan/math/rev/core.hpp>
+#include <stan/math/rev/fun/typedefs.hpp>
 #include <test/unit/math/rev/fun/util.hpp>
 #include <stan/math/torsten/mpi.hpp>
 #include <stan/math/torsten/dsolve/pmx_integrate_ode_rk45.hpp>

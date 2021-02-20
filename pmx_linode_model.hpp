@@ -99,7 +99,7 @@ namespace torsten {
     void solve(PKRec<T>& y,
                const Tt0& t0, const Tt1& t1,
                const std::vector<T1>& rate,
-               const dsolve::PMXAnalyiticalIntegrator& integ) const {
+               const PMXOdeIntegrator<Analytical>& integ) const {
       using stan::math::matrix_exp;
       using stan::math::mdivide_left;
       using stan::math::multiply;
@@ -132,7 +132,7 @@ namespace torsten {
     void solve(PKRec<T>& y,
                const Tt0& t0, const Tt1& t1,
                const std::vector<T1>& rate) const {
-      const dsolve::PMXAnalyiticalIntegrator integ;
+      const PMXOdeIntegrator<Analytical> integ;
       solve(y, t0, t1, rate, integ);
     }
 
@@ -222,7 +222,7 @@ namespace torsten {
     template<typename T_amt, typename T_r, typename T_ii>
     Eigen::Matrix<typename stan::return_type_t<T_amt, T_r, T_ii, T_par>, -1, 1>
     solve(double t0, const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt,
-          const dsolve::PMXAnalyiticalIntegrator& integrator) const {
+          const PMXOdeIntegrator<torsten::Analytical>& integrator) const {
       return solve(t0, amt, rate, ii, cmt);
     }
   };
@@ -251,7 +251,7 @@ namespace torsten {
     void solve(PKRec<T>& y,
                const Tt0& t0, const Tt1& t1,
                const std::vector<T1>& rate,
-               const dsolve::PMXAnalyiticalIntegrator& integ) const {
+               const PMXOdeIntegrator<Analytical>& integ) const {
       using stan::math::multiply;
 
       typename stan::return_type_t<Tt0, Tt1> dt = t1 - t0;
