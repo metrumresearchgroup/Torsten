@@ -1,8 +1,8 @@
 #ifndef STAN_MATH_TORSTEN_DSOLVE_GROUP_FUNCTOR
 #define STAN_MATH_TORSTEN_DSOLVE_GROUP_FUNCTOR
 
-#include <stan/math/torsten/dsolve/pmx_odeint_system.hpp>
-#include <stan/math/torsten/dsolve/pmx_cvodes_fwd_system.hpp>
+#include <stan/math/torsten/dsolve/pmx_ode_system.hpp>
+#include <cvodes/cvodes.h>
 
 namespace torsten {
   namespace dsolve {
@@ -11,23 +11,26 @@ namespace torsten {
      * information to slaves. Defaults(rk45) is of value 3.
      */
     template<typename T>
-    struct integrator_id {
+    struct integrator_id;
+
+    template<typename scheme_t>
+    struct integrator_id<dsolve::PMXOdeintIntegrator<scheme_t>> {
       static constexpr int value = 3;
     };
 
     /*
      * specialization for adams integrator.
      */
-    template <typename F, typename Tts, typename Ty0, typename Tpar>
-    struct integrator_id<dsolve::PMXCvodesFwdSystem<F, Tts, Ty0, Tpar, cvodes_def<TORSTEN_CV_SENS, CV_ADAMS, TORSTEN_CV_ISM>>> {
+    template <int ism_type>
+    struct integrator_id<dsolve::PMXCvodesIntegrator<CV_ADAMS, ism_type>> {
       static constexpr int value = 1;
     };
 
     /*
      * specialization for bdf integrator.
      */
-    template <typename F, typename Tts, typename Ty0, typename Tpar>
-    struct integrator_id<dsolve::PMXCvodesFwdSystem<F, Tts, Ty0, Tpar, cvodes_def<TORSTEN_CV_SENS, CV_BDF, TORSTEN_CV_ISM>>> {
+    template <int ism_type>
+    struct integrator_id<dsolve::PMXCvodesIntegrator<CV_BDF, ism_type>> {
       static constexpr int value = 2;
     };
 
