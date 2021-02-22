@@ -102,8 +102,6 @@ namespace torsten {
                  const std::vector<T_param>& theta,
                  const std::vector<double>& x_r,
                  const std::vector<int>& x_i) const {
-        using Ode = dsolve::PMXOdeSystem<F, Tt, T_initial, T_param>;
-
         using Ode = ode_type<F, Tt, T_initial, T_param>;
         Ode ode{f, t0, ts, y0, theta, x_r, x_i, msgs};
         integrator_t solver(rtol, atol, max_num_step);
@@ -135,86 +133,9 @@ namespace torsten {
               const std::vector<double>& x_r,
               const std::vector<int>& x_i) const {
         std::vector<Tt> ts{t1};
-        static const char* caller = "pmx_integrate_ode";
-        const int m = theta.size();
-        const int n = y0.size();
         using Ode = ode_type<F, Tt, T_initial, T_param>;
         Ode ode{f, t0, ts, y0, theta, x_r, x_i, msgs};
         integrator_t solver(rtol, atol, max_num_step);
-        dsolve::OdeDataObserver<Ode> observer(ode);
-        solver.integrate(ode, observer);
-        return observer.y;
-      }
-    };
-
-    template<typename scheme_t>
-    struct PMXOdeIntegrator<dsolve::PMXOdeSystem, PMXOdeintIntegrator<scheme_t>> : public PMXOdeIntegratorBase {
-      PMXOdeIntegrator(double rtol0,
-                       double atol0,
-                       long int max_num_step0,
-                       double as_rtol0,
-                       double as_atol0,
-                       long int as_max_num_step0,
-                       std::ostream* msgs0) :
-        PMXOdeIntegratorBase(rtol0, atol0, max_num_step0, as_rtol0,
-                             as_atol0, as_max_num_step0, msgs0)
-      {}
-      
-      PMXOdeIntegrator(double rtol0, double atol0, long int max_num_step0,
-                       std::ostream* msgs0) :
-        PMXOdeIntegratorBase(rtol0, atol0, max_num_step0,
-                             1e-6, 1e-6, 100, msgs0)
-      {}
-
-      PMXOdeIntegrator() :
-        PMXOdeIntegratorBase(1e-10, 1e-10, 1e8,
-                             1e-6, 1e-6, 100, 0)
-      {}
-
-      template <typename F, typename Tt, typename T_initial, typename T_param>
-      std::vector<std::vector<typename stan::return_type_t<Tt, T_initial, T_param>> >
-      operator()(const F& f,
-                 const std::vector<T_initial>& y0,
-                 double t0,
-                 const std::vector<Tt>& ts,
-                 const std::vector<T_param>& theta,
-                 const std::vector<double>& x_r,
-                 const std::vector<int>& x_i) const {
-        using Ode = dsolve::PMXOdeSystem<F, Tt, T_initial, T_param>;
-
-        Ode ode{f, t0, ts, y0, theta, x_r, x_i, msgs};
-        dsolve::PMXOdeintIntegrator<scheme_t> solver(rtol, atol, max_num_step);
-        dsolve::OdeObserver<Ode> observer(ode);
-        solver.integrate(ode, observer);
-        return observer.y;
-      }
-
-      template <typename F, typename Tt, typename T_initial, typename T_param>
-      std::vector<std::vector<typename stan::return_type_t<Tt, T_initial, T_param>> >
-      operator()(const F& f,
-                 const std::vector<T_initial>& y0,
-                 double t0,
-                 const Tt& t1,
-                 const std::vector<T_param>& theta,
-                 const std::vector<double>& x_r,
-                 const std::vector<int>& x_i) const {
-        std::vector<Tt> ts{t1};
-        return (*this)(f, y0, t0, ts, theta, x_r, x_i);
-      }
-
-      template <typename F, typename Tt, typename T_initial, typename T_param>
-      Eigen::MatrixXd
-      solve_d(const F& f,
-              const std::vector<T_initial>& y0,
-              double t0,
-              const std::vector<Tt>& ts,
-              const std::vector<T_param>& theta,
-              const std::vector<double>& x_r,
-              const std::vector<int>& x_i) const {
-        using Ode = dsolve::PMXOdeSystem<F, Tt, T_initial, T_param>;
-
-        Ode ode{f, t0, ts, y0, theta, x_r, x_i, msgs};
-        dsolve::PMXOdeintIntegrator<scheme_t> solver(rtol, atol, max_num_step);
         dsolve::OdeDataObserver<Ode> observer(ode);
         solver.integrate(ode, observer);
         return observer.y;
