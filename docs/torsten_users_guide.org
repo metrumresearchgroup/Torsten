@@ -1648,14 +1648,13 @@ and [[ref:fkpop_ppc_pd]] indicate the model is a good fit.
   :PROPERTIES:
   :UNNUMBERED: t
   :END:
-Several constants are used in Torsten's makefile. These constants can
-be used in =cmdstan/make/local= file, or use =set_make_local= command
-in =cmdstanr=.
+Torsten uses compiling flags to control some solver behavior. These flags can
+be used in =cmdstan/make/local= file, or in =cmdstanr::set_make_local= function.
 - {{{torsten_src(TORSTEN\_MPI=1)}}} turns on within-chain parallelsation of MPI-enable
   functions. To use this option one must also point
   {{{torsten_src(TBB\_CXX\_TYPE)}}} to proper C compiler. See also section [[ref:sec:ode_group_note]] and [[ref:sec:ode_integ_group_note]].
-- {{{torsten_src(TORSTEN\_CVS\_JAC\_AD=1)}}} makes BDF and Adams
-  integrator use Stan's automatic differentiation to calculate
+- {{{torsten_src(TORSTEN\_CVS\_JAC\_DQ=1)}}} makes BDF and Adams
+  integrator use CVODES' default method to calculate
   Jacobian matrix in nonlinear solver cite:hindmarsh_cvodes_2020.
 
 \printindex
