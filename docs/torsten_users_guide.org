@@ -1201,54 +1201,59 @@ src_stan[:exports code]{model} block as they are identical to Section [[ref:sec:
 ** Joint PK-PD model
 \label{sec:fk_model}
 #+INDEX: Friberg-Karlsson Model
-
-   A Friberg-Karlsson Semi-Mechanistic model cite:friberg_mechanistic_2003 couples
-   a PK model with a PD
-   effect. In the current example, we use the two compartment model in section [[sec:twocpt]] for
-   PK model.
-
    Neutropenia is observed in patients receiving an ME-2 drug. Our goal
    is to model the relation between neutrophil counts and drug
-   exposure. Using a feedback mechanism, the body maintains the number of
-   neutrophils at a baseline value (Figure [[FK_model]]). While in the
-   patient's blood, the drug impedes the production of neutrophils. As a
-   result, the neutrophil count goes down. After the drug clears out, the
-   feedback mechanism kicks in and brings the neutrophil count back to
-   baseline.
+   exposure. As shown in Figure [[ref:fig:FK_model]], the Friberg-Karlsson Semi-Mechanistic model cite:friberg_mechanistic_2003 couples
+   a PK model with a PD
+   effect to describe a delayed feedback mechanism that keeps the
+   absolute neutrophil count (ANC) at the
+   baseline in a circulatory compartment (Circ), and
+   the drug's effect in
+   reducing the proliferation rate (prol).
+   The delay between prol and Circ is modeled using $n$ transit
+   comparments with mean transit time MTT = $(n + 1)/k_{\text{tr}}$,
+   with $k_{\text{tr}}$ the transit rate constant. In the current example, we use the two compartment model in section [[sec:twocpt]] for
+   PK model, and set $n = 3$.
 
-  \begin{align}
-    \log(ANC_i) \sim& N(\log(Circ), \sigma^2_{ANC})  \\
-    Circ =& f_{FK}(MTT, Circ_{0}, \alpha, \gamma, c)  \\
-    (MTT, Circ_{0}, \alpha, \gamma, ktr) =& (125, 5.0, 3 \times 10^{-4}, 0.17) \\
-    \sigma^2_{ANC} =& 0.001
-  \end{align}
-  where $c$ is the drug concentration in the blood we get from the Two
-  Compartment model, and $Circ$ is obtained by solving the following
-  system of nonlinear ODEs:
+\begin{align}
+  \log(\text{ANC})& \sim N(\log(y_{\text{circ}}), \sigma^2_{\text{ANC}}),  \\
+  y_{\text{circ}}& = f_{\text{FK}}(\text{MTT}, \text{Circ}_{0}, \alpha, \gamma, c),
+\end{align}
+  where $c$ is the drug concentration calculated from the PK model, and function $f_{\text{FK}}$ represents solving the following
+nonlinear ODE for $y_{\text{circ}}$ 
 \begin{subequations}
   \begin{align}
-   y_\mathrm{prol}' &= k_\mathrm{prol} y_\mathrm{prol} (1 - E_\mathrm{drug})\left(\frac{Circ_0}{y_\mathrm{circ}}\right)^\gamma - k_\mathrm{tr}y_\mathrm{prol} \\
-   y_\mathrm{trans1}' &= k_\mathrm{tr} y_\mathrm{prol} - k_\mathrm{tr} y_\mathrm{trans1} \\
-   y_\mathrm{trans2}' &= k_\mathrm{tr} y_\mathrm{trans1} - k_\mathrm{tr} y_\mathrm{trans2}  \\
-   y_\mathrm{trans3}' &= k_\mathrm{tr} y_\mathrm{trans2} - k_\mathrm{tr} y_\mathrm{trans3}  \\
-   y_\mathrm{circ}' &= k_\mathrm{tr} y_\mathrm{trans3} - k_\mathrm{tr} y_\mathrm{circ}
-   \end{align}
+  \frac{dy_\mathrm{prol}}{dt} &= k_\mathrm{prol} y_\mathrm{prol} (1 - E_\mathrm{drug})\left(\frac{\text{Circ}_0}{y_\mathrm{circ}}\right)^\gamma - k_\mathrm{tr}y_\mathrm{prol}, \\
+  \frac{dy_\mathrm{trans1}}{dt} &= k_\mathrm{tr} y_\mathrm{prol} - k_\mathrm{tr} y_\mathrm{trans1}, \\
+  \frac{dy_\mathrm{trans2}}{dt} &= k_\mathrm{tr} y_\mathrm{trans1} - k_\mathrm{tr} y_\mathrm{trans2},  \\
+  \frac{dy_\mathrm{trans3}}{dt} &= k_\mathrm{tr} y_\mathrm{trans2} - k_\mathrm{tr} y_\mathrm{trans3},  \\
+  \frac{dy_\mathrm{circ}}{dt} &= k_\mathrm{tr} y_\mathrm{trans3} - k_\mathrm{tr} y_\mathrm{circ},
    \label{eq:FK}
+  \end{align}
 \end{subequations}
-where $E_{drug}  = \alpha c$.
+We use $E_{\text{drug}} = \alpha c$ to model the linear effect of drug
+concentration in central compartment, with
+$c=y_{\text{cent}}/V_{\text{cent}}$ based on PK solutions.
 
-The ODEs specifying the Two Compartment Model
+Since the ODEs specifying the Two Compartment Model
 (Equation \eqref{eq:twocpt}) do not depend on the PD ODEs
 (Equation \eqref{eq:FK}) and can be solved analytically
-using Torsten's src_stan[:exports code]{pmx_solve_twocpt} function. We
-therefore specify our model using a coupled solver function. We do not
+using Torsten's src_stan[:exports code]{pmx_solve_twocpt} function
+we can specify solve the system using a coupled solver function. We do not
 expect our system to be stiff and use the Runge-Kutta 4th/5th order
 integrator.
 
 #+CAPTION: Friberg-Karlsson semi-mechanistic Model.
 #+NAME: FK_model
+#+LABEL: fig:FK_model
 #+ATTR_LATEX: :width 0.8\textwidth
 [[file:./graphics/neutrophilModel.jpg]]
+
+The model fitting is based on simulated data
+\begin{align*}
+  (\text{MTT}, \text{Circ}_{0}, \alpha, \gamma, k_{\text{tr}})& = (125, 5.0, 3 \times 10^{-4}, 0.17) \\
+  \sigma^2_{\text{ANC}}& = 0.001.
+\end{align*}
 
 #+include: "../example-models/FK_coupled/FribergKarlsson.stan" src stan
 
