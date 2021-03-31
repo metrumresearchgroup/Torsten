@@ -1,13 +1,15 @@
 #+TITLE: Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan
 #+SUBTITLE: User's Guide @@latex:\\@@ @@html:<br>@@ (Torsten Version 0.88, Stan version 2.25.0)
 #+LATEX_CLASS: amsbook
-#+LATEX_CLASS_OPTIONS: [10pt, reqno, oneside]
+#+LATEX_CLASS_OPTIONS: [12pt, reqno, oneside]
+
+# #+HTML_HEAD: <link rel="stylesheet" href="/Users/yiz/Work/tufte-css/tufte.css" type="text/css" />
 
 # title page
 #+LATEX_HEADER: \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
-#+LATEX_HEADER: \newcommand\mrgproject{Torsten}
+#+LATEX_HEADER: \newcommand\mrgproject{}
 #+LATEX_HEADER: \newcommand\mrgtitle{Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan}
-#+LATEX_HEADER: \newcommand\mrgsubtitle{\Large{User's Guide} \linebreak (Torsten Version 0.88rc, Stan version 2.25.0)}
+#+LATEX_HEADER: \newcommand\mrgsubtitle{\large{User's Guide} \linebreak (Torsten Version 0.88rc, Stan version 2.25.0)}
 #+LATEX_HEADER: \include{mrgtitlepage}
 
 # make index
@@ -30,7 +32,7 @@
 #+LATEX_HEADER: \usepackage{listings}
 #+LATEX_HEADER: \usepackage{siunitx}
 #+LATEX_HEADER: \usepackage{booktabs}
-#+LATEX_HEADER: \usepackage[framemethod=TikZ, skipabove=10pt, skipbelow=10pt, backgroundcolor=black!5, roundcorner=4pt, linewidth=1pt]{mdframed}
+#+LATEX_HEADER: \usepackage[framemethod=TikZ, skipabove=10pt, skipbelow=10pt, backgroundcolor=black!3, roundcorner=4pt, linewidth=1pt]{mdframed}
 #+LATEX_HEADER: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
 #+LATEX_HEADER: \AfterEndEnvironment{minted}{\end{mdframed}}
 
@@ -211,10 +213,6 @@ following:
   + Recruit non-developer users to conduct beta testing
 
 ** Changelog
-:PROPERTIES:
-:CUSTOM_ID: changelog
-:UNNUMBERED: t
-:END:
 *** Version 0.88 <2020-12-18 Fri>
 **** Added
      :PROPERTIES:
