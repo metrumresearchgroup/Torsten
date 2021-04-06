@@ -733,17 +733,19 @@ namespace torsten {
         }
       }
       if (is_var<T2>::value) {
-        for (size_t j = 0; j < rate.size(); ++j) {
-          res[i] = rate[j];
+        PMXOdeFunctorRateAdaptor<F, T3, T2> f_rate(par, rate);
+        std::vector<stan::math::var> theta(stan::math::to_var(f_rate.adaptor.adapted_param()));
+        for (size_t j = 0; j < theta.size(); ++j) {
+          res[i] = theta[j];
           i++;
         }
-      }
-      if (is_var<T3>::value) {
+      } else if (is_var<T3>::value) {
         for (size_t j = 0; j < par.size(); ++j) {
           res[i] = par[j];
           i++;
         }
       }
+
       if (is_var<T0>::value) {
         res[i] = t1;
       }
