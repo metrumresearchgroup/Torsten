@@ -4,7 +4,7 @@
 #include <stan/math/prim/fun/multiply.hpp>
 #include <stan/math/rev/fun/multiply.hpp>
 #include <stan/math/torsten/dsolve/pk_vars.hpp>
-#include <stan/math/torsten/pmx_ode_integrator.hpp>
+#include <stan/math/torsten/dsolve/pmx_ode_integrator.hpp>
 #include <stan/math/torsten/ev_manager.hpp>
 #include <stan/math/torsten/model_factory.hpp>
 #include <stan/math/torsten/event.hpp>
@@ -25,18 +25,18 @@ namespace torsten{
    */
   template<typename T_model, typename T_event_record,
            typename T0, typename T4, template<typename...> class theta_container,
-           typename... array_2d_tuple_pars_value_type,
-           typename... array_2d_pars_value_type>
+           typename... event_ctrl_type,
+           typename... ode_data_type>
   struct EventSolver<T_model,
                      EventsManager<T_event_record, NonEventParameters<T0, T4, theta_container,
-                                                                      std::tuple<array_2d_tuple_pars_value_type...>,
-                                                                      array_2d_pars_value_type...>> > {
+                                                                      std::tuple<event_ctrl_type...>,
+                                                                      ode_data_type...>> > {
     using EM = EventsManager<T_event_record, NonEventParameters<T0, T4, theta_container,
-                                                                std::tuple<array_2d_tuple_pars_value_type...>,
-                                                                array_2d_pars_value_type...>>;
+                                                                std::tuple<event_ctrl_type...>,
+                                                                ode_data_type...>>;
     using T_param = NonEventParameters<T0, T4, theta_container,
-                                       std::tuple<array_2d_tuple_pars_value_type...>,
-                                       array_2d_pars_value_type...>;
+                                       std::tuple<event_ctrl_type...>,
+                                       ode_data_type...>;
     /*
      * Data used to fill the results when computation throws exception.
      */
@@ -107,14 +107,14 @@ namespace torsten{
      * @return a matrix with predicted amount in each compartment
      * at each event.
      */
-    template<PMXOdeIntegratorId It, typename... scalar_pars_type>
+    template<typename integrator_type, typename... scalar_pars_type>
     void pred(int id,
               const T_event_record& events_rec,
               Eigen::Matrix<typename EM::T_scalar, -1, -1>& res,
-              const PMXOdeIntegrator<It> integrator,
+              const integrator_type integrator,
               const std::vector<theta_container<T4>>& theta,
-              const std::vector<std::vector<array_2d_tuple_pars_value_type>>&... array_2d_tuple_pars,
-              const std::vector<std::vector<array_2d_pars_value_type>>&... array_2d_pars,
+              const std::vector<std::vector<event_ctrl_type>>&... event_ctrl,
+              const std::vector<std::vector<ode_data_type>>&... ode_data,
               const scalar_pars_type... scalar_pars) {
       using Eigen::Matrix;
       using Eigen::Dynamic;
@@ -128,7 +128,7 @@ namespace torsten{
       init.setZero();
 
       try {
-        EM em(id, events_rec, theta, array_2d_tuple_pars..., array_2d_pars...);
+        EM em(id, events_rec, theta, event_ctrl..., ode_data...);
         auto events = em.events();
         int ikeep = 0, iev = 0;
         while(ikeep < em.nKeep) {
@@ -147,10 +147,9 @@ namespace torsten{
     /*
      * Step through a range of events.
      */
-    template<PMXOdeIntegratorId It, typename... scalar_pars_type>
+    template<typename integrator_type, typename... scalar_pars_type>
     void stepper(int i, PKRec<typename EM::T_scalar>& init, const EM& em,
-                 const PMXOdeIntegrator<It> integrator,
-                 // const std::vector<std::vector<array_2d_pars_value_type>>&... array_2d_pars,
+                 const integrator_type integrator,
                  const scalar_pars_type... scalar_pars) {
       auto events = em.events();
 
@@ -158,7 +157,7 @@ namespace torsten{
       typename EM::T_time tprev = i == 0 ? events.time(0) : events.time(i-1);
 
       T_model pkmodel {model_factory<T_model, EM, scalar_pars_type...>::model(em, i,
-                                                                              par_index_seq<array_2d_pars_value_type...>{},
+                                                                              par_index_seq<ode_data_type...>{},
                                                                               scalar_pars...)};
       auto ev = em.event(i);
       ev(init, pkmodel, integrator);
@@ -176,11 +175,11 @@ namespace torsten{
      * @param scalar_pars params needed to construst the PMX model,
      *        such as functor & dimension of ODE system
      */
-    template<PMXOdeIntegratorId It, typename... scalar_pars_type>
+    template<typename integrator_type, typename... scalar_pars_type>
     void stepper_solve(int i, torsten::PKRec<typename EM::T_scalar>& init,
                        torsten::PKRec<double>& sol_d,
                        const EM& em,
-                       const PMXOdeIntegrator<It> integrator,
+                       const integrator_type integrator,
                        const scalar_pars_type... scalar_pars) {
       using std::vector;
       using stan::math::var;
@@ -190,13 +189,13 @@ namespace torsten{
       typename EM::T_time tprev = i == 0 ? events.time(0) : events.time(i-1);
 
       T_model pkmodel {model_factory<T_model, EM, scalar_pars_type...>::model(em, i,
-                                                                              par_index_seq<array_2d_pars_value_type...>{},
+                                                                              par_index_seq<ode_data_type...>{},
                                                                               scalar_pars...)};
       auto ev = em.event(i);
       ev(sol_d, init, pkmodel, integrator, scalar_pars...);
     }
 
-    template<PMXOdeIntegratorId It, typename... scalar_pars_type>
+    template<typename integrator_type, typename... scalar_pars_type>
     /**
      * For MPI solutions, after each rank solves its corresponding
      * subjects, all ranks sync their results among each other.
@@ -212,7 +211,7 @@ namespace torsten{
     void stepper_sync(int i, torsten::PKRec<typename EM::T_scalar>& init,
                       torsten::PKRec<double>& sol_d,
                       const EM& em,
-                      const PMXOdeIntegrator<It> integrator,
+                      const integrator_type integrator,
                       const scalar_pars_type... scalar_pars) {
       using std::vector;
       using stan::math::var;
@@ -225,7 +224,7 @@ namespace torsten{
         init.setZero();
       } else if (events.is_ss_dosing(i)) {  // steady state event
         T_model pkmodel {model_factory<T_model, EM, scalar_pars_type...>::model(em, i,
-                                                                                par_index_seq<array_2d_pars_value_type...>{},
+                                                                                par_index_seq<ode_data_type...>{},
                                                                                 scalar_pars...)};
         auto curr_amt = em.fractioned_amt(i);
         vector<var> v_i(dsolve::pk_vars(curr_amt, events.rate(i), events.ii(i), pkmodel.par()));
@@ -235,9 +234,10 @@ namespace torsten{
         else
           init = torsten::mpi::precomputed_gradients(sol_d.segment(0, nsys), v_i);  // steady state with reset (ss = 1)
       } else if (events.time(i) > tprev) {
-          auto curr_rates = em.fractioned_rates(i);
+        // auto curr_rates = stan::math::value_of(em.fractioned_rates(i));
+        auto curr_rates = em.fractioned_rates(i);
           T_model pkmodel {model_factory<T_model, EM, scalar_pars_type...>::model(em, i,
-                                                                                  par_index_seq<array_2d_pars_value_type...>{},
+                                                                                  par_index_seq<ode_data_type...>{},
                                                                                   scalar_pars...)};
           vector<var> v_i =
             pmx_model_vars<T_model>::vars(events.time(i), init, curr_rates, pkmodel.par());
@@ -261,18 +261,18 @@ namespace torsten{
      * @param res solution 
      * @param integrator ODE integrator
      * @param theta PMX parameters passed into ODE function
-     * @param array_2d_tuple_pars optional PMX parameters: bioavailability & tlag
-     * @param array_2d_pars optional ODE parameters: real & integer data
+     * @param event_ctrl optional PMX parameters: bioavailability & tlag
+     * @param ode_data optional ODE parameters: real & integer data
      * @param scalar_pars params needed to construst the PMX model,
      *        such as functor & dimension of ODE system
      */
-    template<PMXOdeIntegratorId It, typename... scalar_pars_type>
+    template<typename integrator_type, typename... scalar_pars_type>
     void pred(const T_event_record& events_rec,
               Eigen::Matrix<stan::math::var, -1, -1>& res,
-              const PMXOdeIntegrator<It> integrator,
+              const integrator_type integrator,
               const std::vector<theta_container<T4>>& theta,
-              const std::vector<std::vector<array_2d_tuple_pars_value_type>>&... array_2d_tuple_pars,
-              const std::vector<std::vector<array_2d_pars_value_type>>&... array_2d_pars,
+              const std::vector<std::vector<event_ctrl_type>>&... event_ctrl,
+              const std::vector<std::vector<ode_data_type>>&... ode_data,
               const scalar_pars_type... scalar_pars) {
       using Eigen::Matrix;
       using Eigen::MatrixXd;
@@ -306,7 +306,7 @@ namespace torsten{
 
         const int nKeep = events_rec.num_event_times(id);
 
-        int nev = EM::num_events(id, events_rec, theta, array_2d_tuple_pars..., array_2d_pars...);
+        int nev = EM::num_events(id, events_rec, theta, event_ctrl..., ode_data...);
         res_d[id].resize(system_size(id, events_rec, theta), nev);
         res_d[id].setConstant(0.0);
 
@@ -319,7 +319,7 @@ namespace torsten{
             res_d[id].setConstant(invalid_res_d);
           } else {
             try {
-              EM em(id, events_rec, theta, array_2d_tuple_pars..., array_2d_pars...);
+              EM em(id, events_rec, theta, event_ctrl..., ode_data...);
               auto& events = em.events();
               assert(nev == events.size());
               assert(nKeep == em.nKeep);
@@ -386,11 +386,11 @@ namespace torsten{
           finished++;
           if (is_invalid) continue;
           if (std::isnan(res_d[id](0))) {
-            assert(rank != torsten::mpi::my_worker(id, np, size));
+            // assert(rank != torsten::mpi::my_worker(id, np, size));
             is_invalid = true;
             rank_fail_msg << "Rank " << rank << " received invalid data for id " << id;
           } else {
-            EM em(id, events_rec, theta, array_2d_tuple_pars..., array_2d_pars...);
+            EM em(id, events_rec, theta, event_ctrl..., ode_data...);
             auto events = em.events();
             PKRec<scalar> init(nCmt); init.setZero();
             PKRec<double> pred1 = VectorXd::Zero(res_d[id].rows());
@@ -419,12 +419,12 @@ namespace torsten{
     /*
      * Data-only MPI solver that takes ragged arrays as input.
      */
-    template<PMXOdeIntegratorId It, typename... scalar_pars_type>
+    template<typename integrator_type, typename... scalar_pars_type>
     void pred(const T_event_record& events_rec, Eigen::MatrixXd& res,
-              const PMXOdeIntegrator<It> integrator,
+              const integrator_type integrator,
               const std::vector<theta_container<T4>>& theta,
-              const std::vector<std::vector<array_2d_tuple_pars_value_type>>&... array_2d_tuple_pars,
-              const std::vector<std::vector<array_2d_pars_value_type>>&... array_2d_pars,
+              const std::vector<std::vector<event_ctrl_type>>&... event_ctrl,
+              const std::vector<std::vector<ode_data_type>>&... ode_data,
               const scalar_pars_type... scalar_pars) {
       using Eigen::Matrix;
       using Eigen::MatrixXd;
@@ -435,7 +435,7 @@ namespace torsten{
       using torsten::PKRec;
 
       using ER = NONMENEventsRecord<double, double, double, double>;
-      using EM_d = EventsManager<ER, NonEventParameters<T0, T4, theta_container, std::tuple<array_2d_tuple_pars_value_type...>, array_2d_pars_value_type...>>;
+      using EM_d = EventsManager<ER, NonEventParameters<T0, T4, theta_container, std::tuple<event_ctrl_type...>, ode_data_type...>>;
 
       const int nCmt = EM_d::nCmt(events_rec);
       const int np = events_rec.num_subjects();
@@ -462,7 +462,7 @@ namespace torsten{
         /* only solver rank */
         if (rank == my_worker_id) {
           try {
-            EM em(id, events_rec, theta, array_2d_tuple_pars..., array_2d_pars...);
+            EM em(id, events_rec, theta, event_ctrl..., ode_data...);
             auto events = em.events();
             init.setZero();
             int ikeep = 0, iev = 0;
@@ -516,13 +516,13 @@ namespace torsten{
      * addional information of the size of each individual
      * is required to locate the data in a single array for population.
      */
-    template<PMXOdeIntegratorId It, typename... scalar_pars_type> //NOLINT
+    template<typename integrator_type, typename... scalar_pars_type> //NOLINT
     void pred(const T_event_record& events_rec,
               Eigen::Matrix<typename EM::T_scalar, -1, -1>& res,
-              const PMXOdeIntegrator<It> integrator,
+              const integrator_type integrator,
               const std::vector<theta_container<T4>>& theta,
-              const std::vector<std::vector<array_2d_tuple_pars_value_type>>&... array_2d_tuple_pars,
-              const std::vector<std::vector<array_2d_pars_value_type>>&... array_2d_pars,
+              const std::vector<std::vector<event_ctrl_type>>&... event_ctrl,
+              const std::vector<std::vector<ode_data_type>>&... ode_data,
               const scalar_pars_type... scalar_pars) {
       using ER = T_event_record;
 
@@ -541,7 +541,7 @@ namespace torsten{
         const int nKeep = events_rec.num_event_times(id);
         Eigen::Matrix<typename EM::T_scalar, -1, -1> res_id(nCmt, nKeep);
         pred(id, events_rec, res_id, integrator, theta,
-             array_2d_tuple_pars..., array_2d_pars..., scalar_pars...);
+             event_ctrl..., ode_data..., scalar_pars...);
         for (int j = 0; j < nKeep; ++j) {
           res.col(EM::begin(id, events_rec) + j) = res_id.col(j);
         }
@@ -552,11 +552,11 @@ namespace torsten{
 
   template<typename T_model, typename T_event_record,
            typename T0, typename T4, template<typename...> class theta_container,
-           typename... array_2d_tuple_pars_value_type,
-           typename... array_2d_pars_value_type>
+           typename... event_ctrl_type,
+           typename... ode_data_type>
   constexpr double EventSolver<T_model,
                                EventsManager<T_event_record, NonEventParameters<T0, T4, theta_container,
-                                                                                std::tuple<array_2d_tuple_pars_value_type...>,
-                                                                                array_2d_pars_value_type...>> >::invalid_res_d;
+                                                                                std::tuple<event_ctrl_type...>,
+                                                                                ode_data_type...>> >::invalid_res_d;
 }
 #endif

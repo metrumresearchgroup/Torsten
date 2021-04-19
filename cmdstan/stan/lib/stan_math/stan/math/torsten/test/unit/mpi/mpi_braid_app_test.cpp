@@ -8,7 +8,7 @@
 #include <vector>
 #include <memory>
 
-using torsten::dsolve::PMXCvodesFwdSystem;
+using torsten::dsolve::PMXOdeSystem;
 using torsten::dsolve::PMXCvodesIntegrator;
 using torsten::dsolve::PMXOdeService;
 using torsten::PMXCvodesSensMethod;
@@ -28,7 +28,7 @@ TEST_F(TorstenOdeTest_neutropenia, braid_app) {
   auto y = torsten::pmx_integrate_ode_bdf(f, y0, t0, ts, theta, x_r, x_i);
 
   PMXCvodesIntegrator solver(rtol, atol, 1e8);
-  using Ode = PMXCvodesFwdSystem<F, double, double, double, cvodes_def<torsten::AD, CV_BDF, CV_STAGGERED> >;
+  using Ode = PMXCvodesFwdSystem<F, double, double, double>;
   PMXOdeService<typename Ode::Ode> s1(y0.size(), theta.size());
   Ode ode{s1, f, t0, ts, y0, theta, x_r, x_i, msgs};
   auto mem       = ode.mem();

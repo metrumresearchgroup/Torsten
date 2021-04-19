@@ -240,5 +240,5 @@ TEST(pmx_solve_ode, solver_iv_end_time_equals_to_next_ev_time) {
   std::vector<int> ss(nt, 0);
   std::vector<double> ii(nt, 0.0);
 
-  EXPECT_NO_THROW(pmx_solve_bdf(memBODE_functor__(), nCmt, time, amt, rate, ii, evid, cmt, addl, ss, parms));
+  EXPECT_NO_THROW(pmx_solve_bdf(memBODE_functor__(), nCmt, time, amt, rate, ii, evid, cmt, addl, ss, parms, nullptr));
 }

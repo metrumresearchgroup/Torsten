@@ -11,26 +11,6 @@
 #include <vector>
 
 namespace torsten {
-
-  /** 
-   * helper type trait used for actual ODE solver functions to
-   * detect if the last arg is <code>ostream*</code>
-   * 
-   * @tparam Ts all of the args for pmx solvers
-   */
-  template<typename... Ts>
-  struct last_is_ostream_ptr;
-
-  template<typename T>
-  struct last_is_ostream_ptr<T> {
-    static const bool value = std::is_same<T, std::ostream*>::value;
-  };
-
-  template<typename T, typename... Ts>
-  struct last_is_ostream_ptr<T, Ts...> {
-    static const bool value = last_is_ostream_ptr<Ts...>::value;
-  };
-
 /**
  * simpily pmx function declare
  * 
@@ -44,7 +24,7 @@ namespace torsten {
     const std::vector<int>& addl,                                \
     const std::vector<int>& ss
 
-  template<PMXOdeIntegratorId It>
+  template<typename integrator_type>
   struct PMXSolveODE {
     
     /// default tolerances & max steps for
@@ -105,21 +85,20 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3, typename T4,
               typename T5, typename T6, typename F>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4, T5, T6>,
-                   Eigen::Dynamic, Eigen::Dynamic>
+    static stan::matrix_return_t<T0, T1, T2, T3, T4, T5, T6>
     solve(const F& f,
-               const int nCmt,
-               TORSTEN_PMX_FUNC_EVENTS_ARGS,
-               const std::vector<std::vector<T4> >& pMatrix,
-               const std::vector<std::vector<T5> >& biovar,
-               const std::vector<std::vector<T6> >& tlag,
-               double rel_tol,
-               double abs_tol,
-               long int max_num_steps,
-               double as_rel_tol,
-               double as_abs_tol,
-               long int as_max_num_steps,
-               std::ostream* msgs) {
+          const int nCmt,
+          TORSTEN_PMX_FUNC_EVENTS_ARGS,
+          const std::vector<std::vector<T4> >& pMatrix,
+          const std::vector<std::vector<T5> >& biovar,
+          const std::vector<std::vector<T6> >& tlag,
+          double rel_tol,
+          double abs_tol,
+          long int max_num_steps,
+          double as_rel_tol,
+          double as_abs_tol,
+          long int as_max_num_steps,
+          std::ostream* msgs) {
       using std::vector;
       using Eigen::Dynamic;
       using Eigen::Matrix;
@@ -137,7 +116,7 @@ namespace torsten {
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
 
-      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       pr.pred(0, events_rec, pred, integrator, pMatrix, biovar, tlag, nCmt, f);
@@ -149,8 +128,7 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3, typename T4,
               typename T5, typename T6, typename F>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4, T5, T6>,
-                   Eigen::Dynamic, Eigen::Dynamic>
+    static stan::matrix_return_t<T0, T1, T2, T3, T4, T5, T6>
     solve(const F& f,
                const int nCmt,
                TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -171,8 +149,7 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3, typename T4,
               typename T5, typename T6, typename F>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4, T5, T6>,
-                   Eigen::Dynamic, Eigen::Dynamic>
+    static stan::matrix_return_t<T0, T1, T2, T3, T4, T5, T6>
     solve(const F& f,
                const int nCmt,
                TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -198,14 +175,10 @@ namespace torsten {
     template <typename T0, typename T1, typename T2, typename T3,
               typename T_par, typename T_biovar, typename T_tlag,
               typename F,
-              typename std::enable_if_t<!(torsten::is_std_vector<T_par, T_biovar, T_tlag>::value)>* = nullptr,
               typename... Ts,
-              typename std::enable_if_t<torsten::none_std_vector<Ts...>::value>* = nullptr>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3,
-                                                       typename torsten::value_type<T_par>::type,
-                                                       typename torsten::value_type<T_biovar>::type,
-                                                       typename torsten::value_type<T_tlag>::type>,
-                          Eigen::Dynamic, Eigen::Dynamic>
+              typename = require_any_not_std_vector_t<T_par, T_biovar, T_tlag>,
+              typename = require_all_not_std_vector_t<Ts...> >
+    static stan::matrix_return_t<T0, T1, T2, T3, T_par, T_biovar, T_tlag>
     solve(const F& f,
           const int nCmt,
           TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -227,8 +200,7 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3, typename T4,
               typename T5, typename F>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4, T5>,
-                   Eigen::Dynamic, Eigen::Dynamic>
+    static stan::matrix_return_t<T0, T1, T2, T3, T4, T5>
     solve(const F& f,
                const int nCmt,
                TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -253,7 +225,7 @@ namespace torsten {
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
 
-      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       pr.pred(0, events_rec, pred, integrator, pMatrix, biovar, nCmt, f);
@@ -266,8 +238,7 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3, typename T4,
               typename T5, typename F>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4, T5>,
-                   Eigen::Dynamic, Eigen::Dynamic>
+    static stan::matrix_return_t<T0, T1, T2, T3, T4, T5>
     solve(const F& f,
           const int nCmt,
           TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -288,8 +259,7 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3, typename T4,
               typename T5, typename F>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4, T5>,
-                          Eigen::Dynamic, Eigen::Dynamic>
+    static stan::matrix_return_t<T0, T1, T2, T3, T4, T5>
     solve(const F& f,
           const int nCmt,
           TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -314,13 +284,10 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3,
               typename T_par, typename T_biovar, typename F,
-              typename std::enable_if_t<!(torsten::is_std_vector<T_par, T_biovar>::value)>* = nullptr,
               typename... Ts,
-              typename std::enable_if_t<torsten::none_std_vector<Ts...>::value>* = nullptr>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3,
-                                                       typename torsten::value_type<T_par>::type,
-                                                       typename torsten::value_type<T_biovar>::type>,
-                          Eigen::Dynamic, Eigen::Dynamic>
+              typename = require_any_not_std_vector_t<T_par, T_biovar>,
+              typename = require_all_not_std_vector_t<Ts...> >
+    static stan::matrix_return_t<T0, T1, T2, T3, T_par, T_biovar>
     solve(const F& f,
           const int nCmt,
           TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -340,8 +307,7 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3, typename T4,
               typename F>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4>,
-                   Eigen::Dynamic, Eigen::Dynamic>
+    static stan::matrix_return_t<T0, T1, T2, T3, T4>
     solve(const F& f,
                const int nCmt,
                TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -365,7 +331,7 @@ namespace torsten {
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
 
-      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       pr.pred(0, events_rec, pred, integrator, pMatrix, nCmt, f);
@@ -379,8 +345,7 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3, typename T4,
               typename F>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4>,
-                   Eigen::Dynamic, Eigen::Dynamic>
+    static stan::matrix_return_t<T0, T1, T2, T3, T4>
     solve(const F& f,
           const int nCmt,
           TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -401,8 +366,7 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3, typename T4,
               typename F>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4>,
-                          Eigen::Dynamic, Eigen::Dynamic>
+    static stan::matrix_return_t<T0, T1, T2, T3, T4>
     solve(const F& f,
           const int nCmt,
           TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -427,12 +391,10 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3,
               typename T_par, typename F,
-              typename std::enable_if_t<!(torsten::is_std_vector<T_par>::value)>* = nullptr,
               typename... Ts,
-              typename std::enable_if_t<torsten::none_std_vector<Ts...>::value>* = nullptr>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3,
-                                                       typename torsten::value_type<T_par>::type>,
-                          Eigen::Dynamic, Eigen::Dynamic>
+              typename = require_any_not_std_vector_t<T_par>,
+              typename = require_all_not_std_vector_t<Ts...> >
+    static stan::matrix_return_t<T0, T1, T2, T3, T_par>
     solve(const F& f,
           const int nCmt,
           TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -451,8 +413,7 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3, typename T4,
               typename T5, typename T6, typename F>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4, T5, T6>,
-                   Eigen::Dynamic, Eigen::Dynamic>
+    static stan::matrix_return_t<T0, T1, T2, T3, T4, T5, T6>
     solve(const F& f,
           const int nCmt,
           TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -480,7 +441,7 @@ namespace torsten {
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
 
-      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       pr.pred(0, events_rec, pred, integrator, pMatrix, biovar, tlag, x_r, nCmt, f);
@@ -494,8 +455,7 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3, typename T4,
               typename T5, typename T6, typename F>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4, T5, T6>,
-                   Eigen::Dynamic, Eigen::Dynamic>
+    static stan::matrix_return_t<T0, T1, T2, T3, T4, T5, T6>
     solve(const F& f,
           const int nCmt,
           TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -519,8 +479,7 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3, typename T4,
               typename T5, typename T6, typename F>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4, T5, T6>,
-                          Eigen::Dynamic, Eigen::Dynamic>
+    static stan::matrix_return_t<T0, T1, T2, T3, T4, T5, T6>
     solve(const F& f,
           const int nCmt,
           TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -544,14 +503,10 @@ namespace torsten {
     template <typename T0, typename T1, typename T2, typename T3,
               typename T_par, typename T_biovar, typename T_tlag,
               typename F,
-              typename std::enable_if_t<!(torsten::is_std_vector<T_par, T_biovar, T_tlag>::value)>* = nullptr,
               typename... Ts,
-              typename std::enable_if_t<torsten::none_std_vector<Ts...>::value>* = nullptr>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3,
-                                                       typename torsten::value_type<T_par>::type,
-                                                       typename torsten::value_type<T_biovar>::type,
-                                                       typename torsten::value_type<T_tlag>::type>,
-                          Eigen::Dynamic, Eigen::Dynamic>
+              typename = require_any_not_std_vector_t<T_par, T_biovar, T_tlag>,
+              typename = require_all_not_std_vector_t<Ts...> >
+    static stan::matrix_return_t<T0, T1, T2, T3, T_par, T_biovar, T_tlag>
     solve(const F& f,
           const int nCmt,
           TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -575,8 +530,7 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3, typename T4,
               typename T5, typename T6, typename F>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4, T5, T6>,
-                          Eigen::Dynamic, Eigen::Dynamic>
+    static stan::matrix_return_t<T0, T1, T2, T3, T4, T5, T6>
     solve(const F& f,
           const int nCmt,
           TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -605,7 +559,7 @@ namespace torsten {
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
 
-      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       pr.pred(0, events_rec, pred, integrator, pMatrix, biovar, tlag, x_r, x_i, nCmt, f);
@@ -619,8 +573,7 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3, typename T4,
               typename T5, typename T6, typename F>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4, T5, T6>,
-                          Eigen::Dynamic, Eigen::Dynamic>
+    static stan::matrix_return_t<T0, T1, T2, T3, T4, T5, T6>
     solve(const F& f,
           const int nCmt,
           TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -645,8 +598,7 @@ namespace torsten {
      */
     template <typename T0, typename T1, typename T2, typename T3, typename T4,
               typename T5, typename T6, typename F>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4, T5, T6>,
-                          Eigen::Dynamic, Eigen::Dynamic>
+    static stan::matrix_return_t<T0, T1, T2, T3, T4, T5, T6>
     solve(const F& f,
                const int nCmt,
                TORSTEN_PMX_FUNC_EVENTS_ARGS,
@@ -671,14 +623,10 @@ namespace torsten {
     template <typename T0, typename T1, typename T2, typename T3,
               typename T_par, typename T_biovar, typename T_tlag,
               typename F,
-              typename std::enable_if_t<!(torsten::is_std_vector<T_par, T_biovar, T_tlag>::value)>* = nullptr,
               typename... Ts,
-              typename std::enable_if_t<torsten::none_std_vector<Ts...>::value>* = nullptr>
-    static Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3,
-                                                       typename torsten::value_type<T_par>::type,
-                                                       typename torsten::value_type<T_biovar>::type,
-                                                       typename torsten::value_type<T_tlag>::type>,
-                          Eigen::Dynamic, Eigen::Dynamic>
+              typename = require_any_not_std_vector_t<T_par, T_biovar, T_tlag>,
+              typename = require_all_not_std_vector_t<Ts...> >
+    static stan::matrix_return_t<T0, T1, T2, T3, T_par, T_biovar, T_tlag>
     solve(const F& f,
           const int nCmt,
           TORSTEN_PMX_FUNC_EVENTS_ARGS,

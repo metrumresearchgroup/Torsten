@@ -180,14 +180,14 @@
   std::vector<std::vector<stan::math::var> > biovar_v(1, stan::math::to_var(BIOVAR[0]));                             \
   std::vector<std::vector<stan::math::var> > tlag_v(1, stan::math::to_var(tlag[0]));                                 \
   {                                                                                                                  \
-      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    TLAG);                 \
-      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    TLAG);                 \
-      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], TLAG);                 \
-      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], TLAG[0]);              \
-      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    TLAG[0]);              \
-      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], TLAG);                 \
-      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], TLAG[0]);              \
-      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    TLAG[0]);              \
+      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    TLAG, nullptr);                 \
+      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    TLAG, nullptr);                 \
+      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], TLAG, nullptr);                 \
+      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], TLAG[0], nullptr);              \
+      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    TLAG[0], nullptr);              \
+      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], TLAG, nullptr);                 \
+      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], TLAG[0], nullptr);              \
+      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    TLAG[0], nullptr);              \
       torsten::test::test_grad(theta_v[0],  x0, x1, EPS_VAL, EPS_GRAD);                                              \
       torsten::test::test_grad(theta_v[0],  x0, x2, EPS_VAL, EPS_GRAD);                                              \
       torsten::test::test_grad(theta_v[0],  x0, x3, EPS_VAL, EPS_GRAD);                                              \
@@ -197,14 +197,14 @@
       torsten::test::test_grad(theta_v[0],  x0, x7, EPS_VAL, EPS_GRAD);                                              \
   }                                                                                                                  \
   {                                                                                                                  \
-      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v,    TLAG);                 \
-      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v,    TLAG);                 \
-      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v[0], TLAG);                 \
-      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v[0], TLAG[0]);              \
-      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v,    TLAG[0]);              \
-      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v[0], TLAG);                 \
-      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v[0], TLAG[0]);              \
-      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v,    TLAG[0]);              \
+      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v,    TLAG, nullptr);                 \
+      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v,    TLAG, nullptr);                 \
+      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v[0], TLAG, nullptr);                 \
+      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v[0], TLAG[0], nullptr);              \
+      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v,    TLAG[0], nullptr);              \
+      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v[0], TLAG, nullptr);                 \
+      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v[0], TLAG[0], nullptr);              \
+      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v,    TLAG[0], nullptr);              \
       torsten::test::test_grad(biovar_v[0],  x0, x1, EPS_VAL, EPS_GRAD);                                             \
       torsten::test::test_grad(biovar_v[0],  x0, x2, EPS_VAL, EPS_GRAD);                                             \
       torsten::test::test_grad(biovar_v[0],  x0, x3, EPS_VAL, EPS_GRAD);                                             \
@@ -214,14 +214,14 @@
       torsten::test::test_grad(biovar_v[0],  x0, x7, EPS_VAL, EPS_GRAD);                                             \
   }                                                                                                                  \
   {                                                                                                                  \
-      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    BIOVAR,    tlag_v);                 \
-      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], BIOVAR,    tlag_v);                 \
-      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], BIOVAR[0], tlag_v);                 \
-      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], BIOVAR[0], tlag_v[0]);              \
-      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], BIOVAR,    tlag_v[0]);              \
-      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    BIOVAR[0], tlag_v);                 \
-      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    BIOVAR[0], tlag_v[0]);              \
-      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    BIOVAR,    tlag_v[0]);              \
+      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    BIOVAR,    tlag_v, nullptr);                 \
+      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], BIOVAR,    tlag_v, nullptr);                 \
+      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], BIOVAR[0], tlag_v, nullptr);                 \
+      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], BIOVAR[0], tlag_v[0], nullptr);              \
+      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], BIOVAR,    tlag_v[0], nullptr);              \
+      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    BIOVAR[0], tlag_v, nullptr);                 \
+      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    BIOVAR[0], tlag_v[0], nullptr);              \
+      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    BIOVAR,    tlag_v[0], nullptr);              \
       torsten::test::test_grad(tlag_v[0],  x0, x1, EPS_VAL, EPS_GRAD);                                               \
       torsten::test::test_grad(tlag_v[0],  x0, x2, EPS_VAL, EPS_GRAD);                                               \
       torsten::test::test_grad(tlag_v[0],  x0, x3, EPS_VAL, EPS_GRAD);                                               \
@@ -231,14 +231,14 @@
       torsten::test::test_grad(tlag_v[0],  x0, x7, EPS_VAL, EPS_GRAD);                                               \
   }                                                                                                                  \
   {                                                                                                                  \
-      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v,    TLAG);               \
-      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v,    TLAG);               \
-      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v[0], TLAG);               \
-      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v[0], TLAG[0]);            \
-      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v,    TLAG[0]);            \
-      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v[0], TLAG);               \
-      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v[0], TLAG[0]);            \
-      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v,    TLAG[0]);            \
+      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v,    TLAG, nullptr);               \
+      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v,    TLAG, nullptr);               \
+      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v[0], TLAG, nullptr);               \
+      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v[0], TLAG[0], nullptr);            \
+      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v,    TLAG[0], nullptr);            \
+      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v[0], TLAG, nullptr);               \
+      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v[0], TLAG[0], nullptr);            \
+      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v,    TLAG[0], nullptr);            \
       torsten::test::test_grad(theta_v[0],  x0, x1, EPS_VAL, EPS_GRAD);                                              \
       torsten::test::test_grad(theta_v[0],  x0, x2, EPS_VAL, EPS_GRAD);                                              \
       torsten::test::test_grad(theta_v[0],  x0, x3, EPS_VAL, EPS_GRAD);                                              \
@@ -255,14 +255,14 @@
       torsten::test::test_grad(biovar_v[0],  x0, x7, EPS_VAL, EPS_GRAD);                                             \
   }                                                                                                                  \
   {                                                                                                                  \
-      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    tlag_v);               \
-      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    tlag_v);               \
-      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], tlag_v);               \
-      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], tlag_v[0]);            \
-      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    tlag_v[0]);            \
-      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], tlag_v);               \
-      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], tlag_v[0]);            \
-      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    tlag_v[0]);            \
+      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    tlag_v, nullptr);               \
+      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    tlag_v, nullptr);               \
+      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], tlag_v, nullptr);               \
+      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], tlag_v[0], nullptr);            \
+      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    tlag_v[0], nullptr);            \
+      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], tlag_v, nullptr);               \
+      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], tlag_v[0], nullptr);            \
+      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    tlag_v[0], nullptr);            \
       torsten::test::test_grad(theta_v[0],  x0, x1, EPS_VAL, EPS_GRAD);                                              \
       torsten::test::test_grad(theta_v[0],  x0, x2, EPS_VAL, EPS_GRAD);                                              \
       torsten::test::test_grad(theta_v[0],  x0, x3, EPS_VAL, EPS_GRAD);                                              \
@@ -279,14 +279,14 @@
       torsten::test::test_grad(tlag_v[0],  x0, x7, EPS_VAL, EPS_GRAD);                                               \
   }                                                                                                                  \
   {                                                                                                                  \
-      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v,    tlag_v);               \
-      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v,    tlag_v);               \
-      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v[0], tlag_v);               \
-      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v[0], tlag_v[0]);            \
-      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v,    tlag_v[0]);            \
-      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v[0], tlag_v);               \
-      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v[0], tlag_v[0]);            \
-      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v,    tlag_v[0]);            \
+      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v,    tlag_v, nullptr);               \
+      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v,    tlag_v, nullptr);               \
+      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v[0], tlag_v, nullptr);               \
+      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v[0], tlag_v[0], nullptr);            \
+      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA[0], biovar_v,    tlag_v[0], nullptr);            \
+      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v[0], tlag_v, nullptr);               \
+      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v[0], tlag_v[0], nullptr);            \
+      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA,    biovar_v,    tlag_v[0], nullptr);            \
       torsten::test::test_grad(biovar_v[0],  x0, x1, EPS_VAL, EPS_GRAD);                                             \
       torsten::test::test_grad(biovar_v[0],  x0, x2, EPS_VAL, EPS_GRAD);                                             \
       torsten::test::test_grad(biovar_v[0],  x0, x3, EPS_VAL, EPS_GRAD);                                             \
@@ -303,14 +303,14 @@
       torsten::test::test_grad(tlag_v[0],  x0, x7, EPS_VAL, EPS_GRAD);                                               \
   }                                                                                                                  \
   {                                                                                                                  \
-      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v,    tlag_v);             \
-      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v,    tlag_v);             \
-      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v[0], tlag_v);             \
-      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v[0], tlag_v[0]);          \
-      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v,    tlag_v[0]);          \
-      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v[0], tlag_v);             \
-      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v[0], tlag_v[0]);          \
-      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v,    tlag_v[0]);          \
+      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v,    tlag_v, nullptr);             \
+      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v,    tlag_v, nullptr);             \
+      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v[0], tlag_v, nullptr);             \
+      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v[0], tlag_v[0], nullptr);          \
+      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], biovar_v,    tlag_v[0], nullptr);          \
+      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v[0], tlag_v, nullptr);             \
+      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v[0], tlag_v[0], nullptr);          \
+      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    biovar_v,    tlag_v[0], nullptr);          \
       torsten::test::test_grad(theta_v[0],  x0, x1, EPS_VAL, EPS_GRAD);                                              \
       torsten::test::test_grad(theta_v[0],  x0, x2, EPS_VAL, EPS_GRAD);                                              \
       torsten::test::test_grad(theta_v[0],  x0, x3, EPS_VAL, EPS_GRAD);                                              \
@@ -343,14 +343,14 @@
   std::vector<std::vector<stan::math::var> > biovar_v(1, stan::math::to_var(BIOVAR[0]));                                                      \
   std::vector<std::vector<stan::math::var> > tlag_v(1, stan::math::to_var(tlag[0]));                                                          \
   {                                                                                                                                           \
-      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    TLAG);                                          \
-      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    TLAG, 1.e-6, 1.e-6, 1e6);                       \
-      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], TLAG, 1.e-6, 1.e-6, 1e6);                       \
-      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], TLAG[0], 1.e-6, 1.e-6, 1e6, 1.e-6, 1.e-6, 1e2); \
-      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    TLAG[0], 1.e-6, 1.e-6, 1e6, 1.e-6, 1.e-6, 1e2); \
-      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], TLAG, 1.e-6, 1.e-6, 1e6);                       \
-      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], TLAG[0], 1.e-6, 1.e-6, 1e6);                    \
-      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    TLAG[0], 1.e-6, 1.e-6, 1e6);                    \
+      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    TLAG, nullptr);                                          \
+      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    TLAG, 1.e-6, 1.e-6, 1e6, nullptr);                       \
+      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], TLAG, 1.e-6, 1.e-6, 1e6, nullptr);                       \
+      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], TLAG[0], 1.e-6, 1.e-6, 1e6, 1.e-6, 1.e-6, 1e2, nullptr); \
+      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    TLAG[0], 1.e-6, 1.e-6, 1e6, 1.e-6, 1.e-6, 1e2, nullptr); \
+      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], TLAG, 1.e-6, 1.e-6, 1e6, nullptr);                       \
+      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], TLAG[0], 1.e-6, 1.e-6, 1e6, nullptr);                    \
+      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    TLAG[0], 1.e-6, 1.e-6, 1e6, nullptr);                    \
       torsten::test::test_grad(theta_v[0],  x0, x1, EPS_VAL, EPS_GRAD);                                                                       \
       torsten::test::test_grad(theta_v[0],  x0, x2, EPS_VAL, EPS_GRAD);                                                                       \
       torsten::test::test_grad(theta_v[0],  x0, x3, EPS_VAL, EPS_GRAD);                                                                       \
@@ -360,14 +360,14 @@
       torsten::test::test_grad(theta_v[0],  x0, x7, EPS_VAL, EPS_GRAD);                                                                       \
   }                                                                                                                                           \
   {                                                                                                                                           \
-      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR);                                          \
-      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], 1.e-6, 1.e-6, 1e6);                             \
-      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], 1.e-6, 1.e-6, 1e6);                             \
-      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], 1.e-6, 1.e-6, 1e6, 1.e-6, 1.e-6, 1e2);          \
-      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], 1.e-6, 1.e-6, 1e6, 1.e-6, 1.e-6, 1e2);          \
-      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    1.e-6, 1.e-6, 1e6);                             \
-      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    1.e-6, 1.e-6, 1e6);                             \
-      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    1.e-6, 1.e-6, 1e6);                             \
+      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR, nullptr);                                          \
+      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], 1.e-6, 1.e-6, 1e6, nullptr);                             \
+      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], 1.e-6, 1.e-6, 1e6, nullptr);                             \
+      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], 1.e-6, 1.e-6, 1e6, 1.e-6, 1.e-6, 1e2, nullptr);          \
+      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], 1.e-6, 1.e-6, 1e6, 1.e-6, 1.e-6, 1e2, nullptr);          \
+      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    1.e-6, 1.e-6, 1e6, nullptr);                             \
+      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    1.e-6, 1.e-6, 1e6, nullptr);                             \
+      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    1.e-6, 1.e-6, 1e6, nullptr);                             \
       torsten::test::test_grad(theta_v[0],  x0, x1, EPS_VAL, EPS_GRAD);                                                                       \
       torsten::test::test_grad(theta_v[0],  x0, x2, EPS_VAL, EPS_GRAD);                                                                       \
       torsten::test::test_grad(theta_v[0],  x0, x3, EPS_VAL, EPS_GRAD);                                                                       \
@@ -386,14 +386,14 @@
   std::vector<std::vector<stan::math::var> > biovar_v(1, stan::math::to_var(BIOVAR[0]));                                                      \
   std::vector<std::vector<stan::math::var> > tlag_v(1, stan::math::to_var(tlag[0]));                                                          \
   {                                                                                                                                           \
-      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    TLAG);                                          \
-      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    1.e-6, 1.e-6, 1e6);                       \
-      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], 1.e-6, 1.e-6, 1e6);                       \
-      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], 1.e-6, 1.e-6, 1e6, 1.e-6, 1.e-6, 1e2); \
-      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    1.e-6, 1.e-6, 1e6, 1.e-6, 1.e-6, 1e2); \
-      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], 1.e-6, 1.e-6, 1e6);                       \
-      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], 1.e-6, 1.e-6, 1e6);                    \
-      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    1.e-6, 1.e-6, 1e6);                    \
+      auto x0 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    TLAG, nullptr);                                          \
+      auto x1 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    1.e-6, 1.e-6, 1e6, nullptr);                       \
+      auto x2 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], 1.e-6, 1.e-6, 1e6, nullptr);                       \
+      auto x3 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR[0], 1.e-6, 1.e-6, 1e6, 1.e-6, 1.e-6, 1e2, nullptr); \
+      auto x4 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v[0], BIOVAR,    1.e-6, 1.e-6, 1e6, 1.e-6, 1.e-6, 1e2, nullptr); \
+      auto x5 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], 1.e-6, 1.e-6, 1e6, nullptr);                       \
+      auto x6 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR[0], 1.e-6, 1.e-6, 1e6, nullptr);                    \
+      auto x7 = FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v,    BIOVAR,    1.e-6, 1.e-6, 1e6, nullptr);                    \
       torsten::test::test_grad(theta_v[0],  x0, x1, EPS_VAL, EPS_GRAD);                                                                       \
       torsten::test::test_grad(theta_v[0],  x0, x2, EPS_VAL, EPS_GRAD);                                                                       \
       torsten::test::test_grad(theta_v[0],  x0, x3, EPS_VAL, EPS_GRAD);                                                                       \
@@ -471,7 +471,7 @@
     {                                                                                                    \
       auto theta_v = torsten::to_var(THETA);                                                             \
       auto x1 = FUN_CPT(TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v, BIOVAR, TLAG);                \
-      auto x2 = FUN_ODE(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v, BIOVAR, TLAG);       \
+      auto x2 = FUN_ODE(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, theta_v, BIOVAR, TLAG, nullptr); \
       for (size_t i = 0; i < theta_v.size(); ++i) {                                                      \
         torsten::test::test_grad(theta_v[i], x1, x2, EPS_VAL, EPS_GRAD);                                 \
       }                                                                                                  \
@@ -479,7 +479,7 @@
     {                                                                                                    \
       auto biovar_v = torsten::to_var(BIOVAR);                                                           \
       auto x1 = FUN_CPT(TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, biovar_v, TLAG);                \
-      auto x2 = FUN_ODE(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, biovar_v, TLAG);       \
+      auto x2 = FUN_ODE(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, biovar_v, TLAG, nullptr);       \
       for (size_t i = 0; i < biovar_v.size(); ++i) {                                                     \
         torsten::test::test_grad(biovar_v[i], x1, x2, EPS_VAL, EPS_GRAD);                                \
       }                                                                                                  \
@@ -487,7 +487,7 @@
     {                                                                                                    \
       auto tlag_v = torsten::to_var(TLAG);                                                               \
       auto x1 = FUN_CPT(TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, tlag_v);                \
-      auto x2 = FUN_ODE(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, tlag_v);       \
+      auto x2 = FUN_ODE(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, tlag_v, nullptr);       \
       for (size_t i = 0; i < tlag_v.size(); ++i) {                                                       \
         torsten::test::test_grad(tlag_v[i], x1, x2, EPS_VAL, EPS_GRAD);                                  \
       }                                                                                                  \
@@ -499,10 +499,10 @@
                                    H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                                \
   {                                                                                                               \
     auto f1 = [&] (const std::vector<std::vector<double> >& x) {                                                  \
-      return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, x, BIOVAR, TLAG, RTOL, ATOL, NSTEP);       \
+      return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, x, BIOVAR, TLAG, RTOL, ATOL, NSTEP, nullptr);       \
     };                                                                                                            \
     auto f2 = [&] (const std::vector<std::vector<stan::math::var> >& x) {                                         \
-      return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, x, BIOVAR, TLAG, RTOL, ATOL, NSTEP);       \
+      return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, x, BIOVAR, TLAG, RTOL, ATOL, NSTEP, nullptr);       \
     };                                                                                                            \
     torsten::test::test_grad(f1, f2, THETA, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                                      \
   }
@@ -512,10 +512,10 @@
                                    H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                                \
   {                                                                                                               \
     auto f1 = [&] (const std::vector<std::vector<double> >& x) {                                                  \
-      return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, x, TLAG, RTOL, ATOL, NSTEP);        \
+      return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, x, TLAG, RTOL, ATOL, NSTEP, nullptr);        \
     };                                                                                                            \
     auto f2 = [&] (const std::vector<std::vector<stan::math::var> >& x) {                                         \
-      return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, x, TLAG, RTOL, ATOL, NSTEP);        \
+      return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, x, TLAG, RTOL, ATOL, NSTEP, nullptr);        \
     };                                                                                                            \
     torsten::test::test_grad(f1, f2, BIOVAR, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                                     \
   }
@@ -526,10 +526,10 @@
                                    H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                                \
   {                                                                                                               \
     auto f1 = [&] (const std::vector<std::vector<double> >& x) {                                                  \
-      return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, x, RTOL, ATOL, NSTEP);      \
+      return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, x, RTOL, ATOL, NSTEP, nullptr);      \
     };                                                                                                            \
     auto f2 = [&] (const std::vector<std::vector<stan::math::var> >& x) {                                         \
-      return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, x, RTOL, ATOL, NSTEP);      \
+      return FUN(F, NCMT, TIME, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, x, RTOL, ATOL, NSTEP, nullptr);      \
     };                                                                                                            \
     torsten::test::test_grad(f1, f2, TLAG, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                                       \
   }
@@ -539,10 +539,10 @@
                                     H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                               \
   {                                                                                                               \
     auto f1 = [&] (const std::vector<double>& x) {                                                                \
-      return FUN(F, NCMT, TIME, AMT, x, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP);      \
+      return FUN(F, NCMT, TIME, AMT, x, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP, nullptr);      \
     };                                                                                                            \
     auto f2 = [&] (const std::vector<stan::math::var>& x) {                                                       \
-      return FUN(F, NCMT, TIME, AMT, x, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP);      \
+      return FUN(F, NCMT, TIME, AMT, x, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP, nullptr);      \
     };                                                                                                            \
     torsten::test::test_grad(f1, f2, RATE, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                                       \
   }
@@ -552,10 +552,10 @@
                                     H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                               \
   {                                                                                                               \
     auto f1 = [&] (const std::vector<double>& x) {                                                                \
-      return FUN(F, NCMT, TIME, x, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP);     \
+      return FUN(F, NCMT, TIME, x, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP, nullptr);     \
     };                                                                                                            \
     auto f2 = [&] (const std::vector<stan::math::var>& x) {                                                       \
-      return FUN(F, NCMT, TIME, x, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP);     \
+      return FUN(F, NCMT, TIME, x, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP, nullptr);     \
     };                                                                                                            \
     torsten::test::test_grad(f1, f2, AMT, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                                        \
   }
@@ -565,10 +565,10 @@
                                    H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                                \
   {                                                                                                               \
     auto f1 = [&] (const std::vector<double>& x) {                                                                \
-      return FUN(F, NCMT, x, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP);      \
+      return FUN(F, NCMT, x, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP, nullptr);      \
     };                                                                                                            \
     auto f2 = [&] (const std::vector<stan::math::var>& x) {                                                       \
-      return FUN(F, NCMT, x, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP);      \
+      return FUN(F, NCMT, x, AMT, RATE, II, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP, nullptr);      \
     };                                                                                                            \
     torsten::test::test_grad(f1, f2, TIME, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                                       \
   }
@@ -578,10 +578,10 @@
                                     H, EPS_VAL, EPS_RTOL, EPS_ATOL)                                               \
    {                                                                                                              \
      auto f1 = [&] (const std::vector<double>& x) {                                                               \
-       return FUN(F, NCMT, TIME, AMT, RATE, x, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP);   \
+       return FUN(F, NCMT, TIME, AMT, RATE, x, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP, nullptr);   \
      };                                                                                                           \
      auto f2 = [&] (const std::vector<stan::math::var>& x) {                                                      \
-       return FUN(F, NCMT, TIME, AMT, RATE, x, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP);   \
+       return FUN(F, NCMT, TIME, AMT, RATE, x, EVID, CMT, ADDL, SS, THETA, BIOVAR, TLAG, RTOL, ATOL, NSTEP, nullptr);   \
      };                                                                                                           \
      torsten::test::test_grad(f1, f2, II, H, EPS_VAL, EPS_RTOL, EPS_ATOL);                                        \
    }

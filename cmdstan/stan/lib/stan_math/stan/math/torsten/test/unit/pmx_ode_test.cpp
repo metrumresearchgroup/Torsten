@@ -5,6 +5,9 @@
 #include <stan/math/torsten/test/unit/pmx_friberg_karlsson_test_fixture.hpp>
 #include <stan/math/torsten/test/unit/expect_near_matrix_eq.hpp>
 #include <stan/math/torsten/test/unit/expect_matrix_eq.hpp>
+#include <stan/math/torsten/dsolve/pmx_integrate_ode_rk45.hpp>
+#include <stan/math/torsten/dsolve/pmx_integrate_ode_bdf.hpp>
+#include <stan/math/torsten/dsolve/pmx_integrate_ode_adams.hpp>
 #include <stan/math/torsten/pmx_solve_rk45.hpp>
 #include <stan/math/torsten/pmx_solve_bdf.hpp>
 #include <stan/math/torsten/pmx_solve_adams.hpp>
@@ -49,12 +52,12 @@ TEST_F(TorstenOneCptTest, ss_zero_rate) {
   MatrixXd x_rk45 = torsten::pmx_solve_rk45(f_onecpt, nCmt,
                                 time, amt, rate, ii, evid, cmt, addl, ss,
                                 pMatrix, biovar, tlag,
-                                rel_tol, abs_tol, max_num_steps);
+                                rel_tol, abs_tol, max_num_steps, nullptr);
 
   MatrixXd x_bdf = torsten::pmx_solve_bdf(f_onecpt, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, biovar, tlag,
-                              rel_tol, abs_tol, max_num_steps);
+                              rel_tol, abs_tol, max_num_steps, nullptr);
 
   Eigen::MatrixXd x(10, 2);
   x << 1200.0      , 384.7363,
@@ -297,7 +300,7 @@ TEST_F(TorstenOneCptTest, ss_multiple_infusion_tlag) {
                              NonEventParameters<double, double, std::vector, std::tuple<double, double>>>
         em(events_rec, pMatrix, biovar, tlag1);
       return torsten::pmx_solve_bdf(f_onecpt, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag1,
-                                    rel_tol, abs_tol, max_num_steps);
+                                    rel_tol, abs_tol, max_num_steps, nullptr);
     };
     auto f2 = [&] (const std::vector<stan::math::var>& x) {
       std::vector<std::vector<var> > tlag1(nt);
@@ -309,7 +312,7 @@ TEST_F(TorstenOneCptTest, ss_multiple_infusion_tlag) {
                              NonEventParameters<double, double, std::vector, std::tuple<double, var>>>
         em(events_rec, pMatrix, biovar, tlag1);
       return torsten::pmx_solve_bdf(f_onecpt, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag1,
-                                    rel_tol, abs_tol, max_num_steps);
+                                    rel_tol, abs_tol, max_num_steps, nullptr);
     };
     std::vector<double> tlag_test(tlag[3]);
     torsten::test::test_grad(f1, f2, tlag_test, 2e-5, 1e-5, 1e-3, 1e-5);
@@ -422,12 +425,12 @@ TEST_F(TorstenOneCptTest, ss_multiple_infusion) {
   MatrixXd x_rk45 = torsten::pmx_solve_rk45(f_onecpt, nCmt,
                                 time, amt, rate, ii, evid, cmt, addl, ss,
                                 pMatrix, biovar, tlag,
-                                rel_tol, abs_tol, max_num_steps);
+                                rel_tol, abs_tol, max_num_steps, nullptr);
 
   MatrixXd x_bdf = torsten::pmx_solve_bdf(f_onecpt, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, biovar, tlag,
-                              rel_tol, abs_tol, max_num_steps);
+                              rel_tol, abs_tol, max_num_steps, nullptr);
 
   MatrixXd x(10, 2);
   x << 8.465519e-03, 360.2470,
@@ -490,12 +493,12 @@ TEST_F(TorstenOneCptTest, multiple_bolus) {
   MatrixXd x_rk45 = torsten::pmx_solve_rk45(f_onecpt, nCmt,
                                 time, amt, rate, ii, evid, cmt, addl, ss,
                                 pMatrix, biovar, tlag,
-                                rel_tol, abs_tol, max_num_steps);
+                                rel_tol, abs_tol, max_num_steps, nullptr);
 
   MatrixXd x_bdf = torsten::pmx_solve_bdf(f_onecpt, nCmt,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, biovar, tlag,
-                              rel_tol, abs_tol, max_num_steps);
+                              rel_tol, abs_tol, max_num_steps, nullptr);
 
   MatrixXd x(10, nCmt);
   x << 1000.0, 0.0,
@@ -657,13 +660,13 @@ TEST(Torsten, genCpt_One_abstime_SingleDose) {
   x_rk45 = torsten::pmx_solve_rk45(f, 2,
                                 time, amt, rate, ii, evid, cmt, addl, ss,
                                 pMatrix, biovar, tlag,
-                                rel_tol, abs_tol, max_num_steps);
+                                rel_tol, abs_tol, max_num_steps, nullptr);
 
   Matrix<double, Eigen::Dynamic, Eigen::Dynamic> x_bdf;
   x_bdf = torsten::pmx_solve_bdf(f, 2,
                               time, amt, rate, ii, evid, cmt, addl, ss,
                               pMatrix, biovar, tlag,
-                              rel_tol, abs_tol, max_num_steps);
+                              rel_tol, abs_tol, max_num_steps, nullptr);
 
   MatrixXd amounts(10, 2);
   amounts << 1000.0, 0.0,
@@ -731,12 +734,12 @@ TEST_F(TorstenOneCptTest, multiple_bolus_time_dependent_param) {
   MatrixXd x_rk45 = torsten::pmx_solve_rk45(f_onecpt, nCmt,
                                          time, amt, rate, ii, evid, cmt, addl, ss,
                                          pMatrix, biovar, tlag,
-                                                  rel_tol, abs_tol, max_num_steps);
+                                                  rel_tol, abs_tol, max_num_steps, nullptr);
 
   MatrixXd x_bdf = torsten::pmx_solve_bdf(f_onecpt, nCmt,
                                        time, amt, rate, ii, evid, cmt, addl, ss,
                                        pMatrix, biovar, tlag,
-                                              rel_tol, abs_tol, max_num_steps);
+                                              rel_tol, abs_tol, max_num_steps, nullptr);
 
   MatrixXd x(nt, 2);
   x << 1000.0, 0.0,
@@ -804,12 +807,12 @@ TEST_F(TorstenOneCptTest, rate_par) {
   MatrixXd x_rk45 = torsten::pmx_solve_rk45(f_onecpt, nCmt,
                                   time, amt, rate, ii, evid, cmt, addl, ss,
                                   pMatrix, biovar, tlag,
-                                    rel_tol, abs_tol, max_num_steps);
+                                    rel_tol, abs_tol, max_num_steps, nullptr);
 
   MatrixXd x_bdf = torsten::pmx_solve_bdf(f_onecpt, nCmt,
                                 time, amt, rate, ii, evid, cmt, addl, ss,
                                 pMatrix, biovar, tlag,
-                                rel_tol, abs_tol, max_num_steps);
+                                rel_tol, abs_tol, max_num_steps, nullptr);
 
   MatrixXd x(nt, 2);
   x << 0.00000,   0.00000,
@@ -875,11 +878,11 @@ TEST_F(TorstenTwoCptTest, rate_par) {
   x_rk45 = pmx_solve_rk45(f_twocpt, nCmt,
                           time, amt, rate, ii, evid, cmt, addl, ss,
                           pMatrix, biovar, tlag,
-                          rel_tol, abs_tol, max_num_steps);
+                          rel_tol, abs_tol, max_num_steps, nullptr);
   x_bdf = pmx_solve_bdf(f_twocpt, nCmt,
                         time, amt, rate, ii, evid, cmt, addl, ss,
                         pMatrix, biovar, tlag,
-                        rel_tol, abs_tol, max_num_steps);
+                        rel_tol, abs_tol, max_num_steps, nullptr);
 
   MatrixXd amounts(10, 3);
   amounts << 0.00000,   0.00000,   0.0000000,
@@ -941,13 +944,13 @@ TEST_F(FribergKarlssonTest, steady_state) {
                                    time, amt, rate, ii, evid, cmt, addl, ss,
                                    theta, biovar, tlag,
                                    rel_tol, abs_tol, max_num_steps,
-                                   1.e-10, 1.e-5, 1e2);
+                                   1.e-10, 1.e-5, 1e2, nullptr);
 
   x_bdf = torsten::pmx_solve_bdf(f, nCmt,
                                  time, amt, rate, ii, evid, cmt, addl, ss,
                                  theta, biovar, tlag,
                                  rel_tol, abs_tol, max_num_steps,
-                                 1.e-10, 1.e-5, 1e2);
+                                 1.e-10, 1.e-5, 1e2, nullptr);
 
   MatrixXd x(10, 8);
   x << 8.000000e+04, 11996.63, 55694.35, -3.636308, -3.653620,  -3.653933, -3.653748, -3.653622,
@@ -1028,8 +1031,8 @@ TEST_F(TorstenOdeTest, exception) {
   int ncmt = torsten::PMXTwoCptModel<double>::Ncmt;
 
   EXPECT_NO_THROW(torsten::pmx_solve_bdf(f_twocpt, ncmt, time, amt, rate, ii,
-                                               evid, cmt, addl, ss, pMatrix,
-                                               biovar, tlag));
+                                         evid, cmt, addl, ss, pMatrix,
+                                         biovar, tlag, nullptr));
 }
 
 TEST_F(TorstenOdeTest_neutropenia, max_cvodes_fails) {
@@ -1048,14 +1051,14 @@ TEST_F(TorstenOdeTest_neutropenia, max_cvodes_fails) {
   long int max_num_steps = 1e3;
 
   y0 = y0_bad;
-  EXPECT_THROW(stan::math::integrate_ode_bdf(f, y0, t0, ts, theta, x_r, x_i, 0, rtol, atol, max_num_steps), // NOLINT
+  EXPECT_THROW(stan::math::integrate_ode_bdf(f, y0, t0, ts, theta, x_r, x_i, 0, rtol, atol, max_num_steps),
                std::domain_error);
-  EXPECT_THROW(torsten::pmx_integrate_ode_bdf(f, y0, t0, ts, theta, x_r, x_i, rtol, atol, max_num_steps), // NOLINT
+  EXPECT_THROW(torsten::pmx_integrate_ode_bdf(f, y0, t0, ts, theta, x_r, x_i, rtol, atol, max_num_steps),
                std::runtime_error);
 
   y0 = y0_good;
-  EXPECT_NO_THROW(stan::math::integrate_ode_bdf(f, y0, t0, ts, theta, x_r, x_i, 0, rtol, atol, max_num_steps)); // NOLINT
-  EXPECT_NO_THROW(torsten::pmx_integrate_ode_bdf(f, y0, t0, ts, theta, x_r, x_i, rtol, atol, max_num_steps)); // NOLINT
+  EXPECT_NO_THROW(stan::math::integrate_ode_bdf(f, y0, t0, ts, theta, x_r, x_i, 0, rtol, atol, max_num_steps));
+  EXPECT_NO_THROW(torsten::pmx_integrate_ode_bdf(f, y0, t0, ts, theta, x_r, x_i, rtol, atol, max_num_steps));
 }
 
 TEST_F(TorstenOneCptTest, ss_multiple_infusion_rate) {

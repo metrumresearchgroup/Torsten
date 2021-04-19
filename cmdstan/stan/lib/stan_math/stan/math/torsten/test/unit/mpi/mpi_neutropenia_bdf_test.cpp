@@ -3,7 +3,6 @@
 #include <stan/math.hpp>
 #include <stan/math/rev/core.hpp>
 #include <test/unit/math/rev/fun/util.hpp>
-#include <stan/math/torsten/dsolve/pmx_cvodes_fwd_system.hpp>
 #include <stan/math/torsten/dsolve/pmx_cvodes_integrator.hpp>
 #include <stan/math/torsten/dsolve/pmx_integrate_ode_bdf.hpp>
 #include <stan/math/torsten/dsolve/pmx_integrate_ode_group_adams.hpp>
@@ -31,7 +30,7 @@
 TORSTEN_MPI_SESSION_INIT;
 
 TEST_F(TorstenOdeTest_neutropenia, fwd_sensitivity_theta_bdf_mpi) {
-  using torsten::dsolve::PMXCvodesFwdSystem;
+  using torsten::dsolve::PMXOdeSystem;
   using torsten::pmx_integrate_ode_group_bdf;
   using torsten::pmx_integrate_ode_bdf;
   using stan::math::var;

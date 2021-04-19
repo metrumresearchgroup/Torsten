@@ -1,11 +1,11 @@
 #ifndef STAN_MATH_TORSTEN_TO_ARRAY_2D_HPP
 #define STAN_MATH_TORSTEN_TO_ARRAY_2D_HPP
 
-#include <stan/math/torsten/is_std_vector.hpp>
+#include <stan/math/torsten/meta.hpp>
 
 namespace torsten {
   template<typename T,
-           typename std::enable_if_t<!torsten::is_std_vector<T>::value >* = nullptr> //NOLINT
+           typename std::enable_if_t<!stan::is_std_vector<T>::value >* = nullptr> //NOLINT
   const std::vector<std::vector<T>> to_array_2d(const std::vector<T>& v)
   {
     return {v};

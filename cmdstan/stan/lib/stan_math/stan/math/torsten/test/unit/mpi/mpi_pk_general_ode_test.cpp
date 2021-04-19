@@ -29,12 +29,12 @@ TEST_F(TorstenPopulationPMXTwoCptTest, rk45_solver_multiple_bolus_doses_data_onl
   using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<double, Dynamic, Dynamic> x =
-    torsten::pmx_solve_rk45(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag); // NOLINT
+    torsten::pmx_solve_rk45(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag, nullptr);
 
   Matrix<double, Dynamic, Dynamic> x_m =
     torsten::pmx_solve_group_rk45(model_t::f_, model_t::Ncmt,
-                                        len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                        pMatrix_m, biovar_m, tlag_m);
+                                  len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
+                                  pMatrix_m, biovar_m, tlag_m, nullptr);
 
   int begin_i = 0;
   for (int i = 0; i < np; ++i) {
@@ -51,12 +51,12 @@ TEST_F(TorstenPopulationPMXTwoCptTest, bdf_solver_multiple_bolus_doses_data_only
   using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<double, Dynamic, Dynamic> x =
-    torsten::pmx_solve_bdf(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag); // NOLINT
+    torsten::pmx_solve_bdf(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag, nullptr);
 
   Matrix<double, Dynamic, Dynamic> x_m =
     torsten::pmx_solve_group_bdf(model_t::f_, model_t::Ncmt,
                                         len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                        pMatrix_m, biovar_m, tlag_m);
+                                        pMatrix_m, biovar_m, tlag_m, nullptr);
 
   int begin_i = 0;
   for (int i = 0; i < np; ++i) {
@@ -73,12 +73,12 @@ TEST_F(TorstenPopulationPMXTwoCptTest, adams_solver_multiple_bolus_doses_data_on
   using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<double, Dynamic, Dynamic> x =
-    torsten::pmx_solve_adams(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag); // NOLINT
+    torsten::pmx_solve_adams(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag, nullptr);
 
   Matrix<double, Dynamic, Dynamic> x_m =
     torsten::pmx_solve_group_adams(model_t::f_, model_t::Ncmt,
                                         len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                        pMatrix_m, biovar_m, tlag_m);
+                                        pMatrix_m, biovar_m, tlag_m, nullptr);
 
   int begin_i = 0;
   for (int i = 0; i < np; ++i) {
@@ -102,12 +102,12 @@ TEST_F(TorstenPopulationPMXTwoCptTest, rk45_solver_multiple_IV_doses_data_only) 
   using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<double, Dynamic, Dynamic> x =
-    torsten::pmx_solve_rk45(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag); // NOLINT
+    torsten::pmx_solve_rk45(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag, nullptr);
 
   Matrix<double, Dynamic, Dynamic> x_m =
     torsten::pmx_solve_group_rk45(model_t::f_, model_t::Ncmt,
                                         len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                        pMatrix_m, biovar_m, tlag_m);
+                                        pMatrix_m, biovar_m, tlag_m, nullptr);
 
   int begin_i = 0;
   for (int i = 0; i < np; ++i) {
@@ -131,12 +131,12 @@ TEST_F(TorstenPopulationPMXTwoCptTest, adams_solver_multiple_IV_doses_data_only)
   using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<double, Dynamic, Dynamic> x =
-    torsten::pmx_solve_adams(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag); // NOLINT
+    torsten::pmx_solve_adams(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag, nullptr);
 
   Matrix<double, Dynamic, Dynamic> x_m =
     torsten::pmx_solve_group_adams(model_t::f_, model_t::Ncmt,
                                         len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                        pMatrix_m, biovar_m, tlag_m);
+                                        pMatrix_m, biovar_m, tlag_m, nullptr);
 
   int begin_i = 0;
   for (int i = 0; i < np; ++i) {
@@ -160,12 +160,12 @@ TEST_F(TorstenPopulationPMXTwoCptTest, bdf_solver_multiple_IV_doses_data_only) {
   using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<double, Dynamic, Dynamic> x =
-    torsten::pmx_solve_bdf(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag); // NOLINT
+    torsten::pmx_solve_bdf(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag, nullptr);
 
   Matrix<double, Dynamic, Dynamic> x_m =
     torsten::pmx_solve_group_bdf(model_t::f_, model_t::Ncmt,
                                         len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                        pMatrix_m, biovar_m, tlag_m);
+                                        pMatrix_m, biovar_m, tlag_m, nullptr);
 
   int begin_i = 0;
   for (int i = 0; i < np; ++i) {
@@ -188,12 +188,12 @@ TEST_F(TorstenPopulationPMXTwoCptTest, rk45_solver_multiple_bolus_doses_par_var)
   using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<var, Dynamic, Dynamic> x =
-    torsten::pmx_solve_rk45(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag); // NOLINT
+    torsten::pmx_solve_rk45(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag, nullptr);
 
   Matrix<var, Dynamic, Dynamic> x_m =
     torsten::pmx_solve_group_rk45(model_t::f_, model_t::Ncmt,
                                         len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                        pMatrix_m_v, biovar_m, tlag_m);
+                                        pMatrix_m_v, biovar_m, tlag_m, nullptr);
 
   int begin_i = 0;
   for (int i = 0; i < np; ++i) {
@@ -216,12 +216,12 @@ TEST_F(TorstenPopulationPMXTwoCptTest, adams_solver_multiple_bolus_doses_par_var
   using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<var, Dynamic, Dynamic> x =
-    torsten::pmx_solve_adams(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag); // NOLINT
+    torsten::pmx_solve_adams(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag, nullptr);
 
   Matrix<var, Dynamic, Dynamic> x_m =
     torsten::pmx_solve_group_adams(model_t::f_, model_t::Ncmt,
                                         len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                        pMatrix_m_v, biovar_m, tlag_m);
+                                        pMatrix_m_v, biovar_m, tlag_m, nullptr);
 
   int begin_i = 0;
   for (int i = 0; i < np; ++i) {
@@ -244,12 +244,12 @@ TEST_F(TorstenPopulationPMXTwoCptTest, bdf_solver_multiple_bolus_doses_par_var) 
   using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<var, Dynamic, Dynamic> x =
-    torsten::pmx_solve_bdf(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag); // NOLINT
+    torsten::pmx_solve_bdf(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag, nullptr);
 
   Matrix<var, Dynamic, Dynamic> x_m =
     torsten::pmx_solve_group_bdf(model_t::f_, model_t::Ncmt,
                                         len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                        pMatrix_m_v, biovar_m, tlag_m);
+                                        pMatrix_m_v, biovar_m, tlag_m, nullptr);
 
   int begin_i = 0;
   for (int i = 0; i < np; ++i) {
@@ -279,12 +279,12 @@ TEST_F(TorstenPopulationPMXTwoCptTest, rk45_solver_multiple_IV_doses_par_var) {
   using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<var, Dynamic, Dynamic> x =
-    torsten::pmx_solve_rk45(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag); // NOLINT
+    torsten::pmx_solve_rk45(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag, nullptr);
 
   Matrix<var, Dynamic, Dynamic> x_m =
     torsten::pmx_solve_group_rk45(model_t::f_, model_t::Ncmt,
                                         len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                        pMatrix_m_v, biovar_m, tlag_m);
+                                        pMatrix_m_v, biovar_m, tlag_m, nullptr);
 
   int begin_i = 0;
   for (int i = 0; i < np; ++i) {
@@ -314,12 +314,12 @@ TEST_F(TorstenPopulationPMXTwoCptTest, adams_solver_multiple_IV_doses_par_var) {
   using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<var, Dynamic, Dynamic> x =
-    torsten::pmx_solve_adams(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag); // NOLINT
+    torsten::pmx_solve_adams(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag, nullptr);
 
   Matrix<var, Dynamic, Dynamic> x_m =
     torsten::pmx_solve_group_adams(model_t::f_, model_t::Ncmt,
                                         len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                        pMatrix_m_v, biovar_m, tlag_m);
+                                        pMatrix_m_v, biovar_m, tlag_m, nullptr);
 
   int begin_i = 0;
   for (int i = 0; i < np; ++i) {
@@ -349,12 +349,12 @@ TEST_F(TorstenPopulationPMXTwoCptTest, bdf_solver_multiple_IV_doses_par_var) {
   using model_t = torsten::PMXTwoCptModel<double>;
 
   Matrix<var, Dynamic, Dynamic> x =
-    torsten::pmx_solve_bdf(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag); // NOLINT
+    torsten::pmx_solve_bdf(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar, tlag, nullptr);
 
   Matrix<var, Dynamic, Dynamic> x_m =
     torsten::pmx_solve_group_bdf(model_t::f_, model_t::Ncmt,
                                         len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                        pMatrix_m_v, biovar_m, tlag_m);
+                                        pMatrix_m_v, biovar_m, tlag_m, nullptr);
 
   int begin_i = 0;
   for (int i = 0; i < np; ++i) {
@@ -389,15 +389,15 @@ TEST_F(TorstenPopulationPMXTwoCptTest, exception_sync) {
                                                   pMatrix_m,
                                                   biovar_m,
                                                   tlag_m,
-                                                  1e-6, 1e-6, 1e4),
-                     std::runtime_error, "CVode(mem, ts[i], y, &t1, CV_NORMAL) failed with error flag -1");
+                                           1e-6, 1e-6, 1e4, nullptr),
+                     std::runtime_error, "failed with error flag -1");
   } else {
     EXPECT_THROW_MSG(pmx_solve_group_adams(model_t::f_, model_t::Ncmt,
                                                   len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
                                                   pMatrix_m,
                                                   biovar_m,
                                                   tlag_m,
-                                                  1e-6, 1e-6, 1e4),
+                                                  1e-6, 1e-6, 1e4, nullptr),
                      std::runtime_error, "received invalid data for id 4");
   }
   MPI_Barrier(comm);
@@ -410,15 +410,15 @@ TEST_F(TorstenPopulationPMXTwoCptTest, exception_sync) {
                                                   pMatrix_m,
                                                   biovar_m,
                                                   tlag_m,
-                                                  1e-6, 1e-6, 1e4),
-                     std::runtime_error, "CVode(mem, ts[i], y, &t1, CV_NORMAL) failed with error flag -1");
+                                                  1e-6, 1e-6, 1e4, nullptr),
+                     std::runtime_error, "failed with error flag -1");
   } else {
     EXPECT_THROW_MSG(pmx_solve_group_adams(model_t::f_, model_t::Ncmt,
                                                   len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
                                                   pMatrix_m,
                                                   biovar_m,
                                                   tlag_m,
-                                                  1e-6, 1e-6, 1e4),
+                                                  1e-6, 1e-6, 1e4, nullptr),
                      std::runtime_error, "received invalid data for id");
   }
   MPI_Barrier(comm);
@@ -430,7 +430,7 @@ TEST_F(TorstenPopulationNeutropeniaTest, bdf_non_uniform_population_data) {
   setup_population(length);
 
   auto x_m = torsten::pmx_solve_group_bdf(f, nCmt, len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                          theta_m, biovar_m, tlag_m);
+                                          theta_m, biovar_m, tlag_m, nullptr);
 
   int ibegin = 0;
   for (int i = 0; i < np; ++i) {
@@ -446,8 +446,8 @@ TEST_F(TorstenPopulationNeutropeniaTest, bdf_non_uniform_population_data) {
     std::vector<std::vector<double> > biovar_i(biovar_m.begin() + ibegin, biovar_m.begin() + ibegin + len[i]);
     std::vector<std::vector<double> > tlag_i(tlag_m.begin() + ibegin, tlag_m.begin() + ibegin + len[i]);
     auto x = torsten::pmx_solve_bdf(f, nCmt,
-                                          time_i, amt_i, rate_i, ii_i, evid_i, cmt_i, addl_i, ss_i,
-                                          theta_i, biovar_i, tlag_i);
+                                    time_i, amt_i, rate_i, ii_i, evid_i, cmt_i, addl_i, ss_i,
+                                    theta_i, biovar_i, tlag_i, nullptr);
 
     MatrixXd x_i(nCmt, len[i]);
     for (int j = 0; j < len[i]; ++j) x_i.col(j) = x_m.col(ibegin + j);
@@ -465,7 +465,7 @@ TEST_F(TorstenPopulationNeutropeniaTest, bdf_non_uniform_population_theta_var) {
   std::vector<std::vector<var>> theta_m_v = torsten::to_var(theta_m);
 
   auto x_m = torsten::pmx_solve_group_bdf(f, nCmt, len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                          theta_m_v, biovar_m, tlag_m);
+                                          theta_m_v, biovar_m, tlag_m, nullptr);
 
   int ibegin = 0;
   for (int i = 0; i < np; ++i) {
@@ -482,7 +482,7 @@ TEST_F(TorstenPopulationNeutropeniaTest, bdf_non_uniform_population_theta_var) {
     std::vector<std::vector<double> > biovar_i(biovar_m.begin() + ibegin, biovar_m.begin() + ibegin + len[i]);
     std::vector<std::vector<double> > tlag_i(tlag_m.begin() + ibegin, tlag_m.begin() + ibegin + len[i]);
     auto x = torsten::pmx_solve_bdf(f, nCmt, time_i, amt_i, rate_i, ii_i, evid_i, cmt_i, addl_i, ss_i,
-                                            theta_i_v, biovar_i, tlag_i);
+                                            theta_i_v, biovar_i, tlag_i, nullptr);
 
     Matrix<var, Dynamic, Dynamic> x_i(nCmt, len[i]);
     for (int j = 0; j < len[i]; ++j) {
@@ -504,7 +504,7 @@ TEST_F(TorstenPopulationNeutropeniaTest, bdf_non_uniform_population_biovar_var) 
   std::vector<std::vector<var>> biovar_m_v = torsten::to_var(biovar_m);
 
   auto x_m = torsten::pmx_solve_group_bdf(f, nCmt, len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                          theta_m, biovar_m_v, tlag_m);
+                                          theta_m, biovar_m_v, tlag_m, nullptr);
 
   int ibegin = 0;
   for (int i = 0; i < np; ++i) {
@@ -521,7 +521,7 @@ TEST_F(TorstenPopulationNeutropeniaTest, bdf_non_uniform_population_biovar_var) 
     std::vector<std::vector<var> > biovar_i_v = torsten::to_var(biovar_i);
     std::vector<std::vector<double> > tlag_i(tlag_m.begin() + ibegin, tlag_m.begin() + ibegin + len[i]);
     auto x = torsten::pmx_solve_bdf(f, nCmt, time_i, amt_i, rate_i, ii_i, evid_i, cmt_i, addl_i, ss_i,
-                                          theta_i, biovar_i_v, tlag_i);
+                                    theta_i, biovar_i_v, tlag_i, nullptr);
  
     Matrix<var, Dynamic, Dynamic> x_i(nCmt, len[i]);
     for (int j = 0; j < len[i]; ++j) {
@@ -543,7 +543,7 @@ TEST_F(TorstenPopulationNeutropeniaTest, rk45_non_uniform_population_multiple_IV
 
   std::vector<std::vector<var>> theta_m_v = torsten::to_var(theta_m);
   auto x_m = torsten::pmx_solve_group_bdf(f, nCmt, len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                          theta_m_v, biovar_m, tlag_m);
+                                          theta_m_v, biovar_m, tlag_m, nullptr);
 
   int ibegin = 0;
   for (int i = 0; i < np; ++i) {
@@ -560,7 +560,7 @@ TEST_F(TorstenPopulationNeutropeniaTest, rk45_non_uniform_population_multiple_IV
     std::vector<std::vector<double> > biovar_i(biovar_m.begin() + ibegin, biovar_m.begin() + ibegin + len[i]);
     std::vector<std::vector<double> > tlag_i(tlag_m.begin() + ibegin, tlag_m.begin() + ibegin + len[i]);
     auto x = torsten::pmx_solve_bdf(f, nCmt, time_i, amt_i, rate_i, ii_i, evid_i, cmt_i, addl_i, ss_i,
-                                            theta_i_v, biovar_i, tlag_i);
+                                    theta_i_v, biovar_i, tlag_i, nullptr);
 
 
     Matrix<var, Dynamic, Dynamic> x_i(nCmt, len[i]);
@@ -615,9 +615,9 @@ TEST_F(TorstenPopulationNeutropeniaTest, exception_max_num_steps_fails) {
   long int max_num_steps = 1e1;
 
   EXPECT_THROW(torsten::pmx_solve_group_bdf(f, nCmt,
-                                                   len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                                   theta_m, biovar_m, tlag_m,
-                                                   rtol, atol, max_num_steps),
+                                            len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
+                                            theta_m, biovar_m, tlag_m,
+                                            rtol, atol, max_num_steps, nullptr),
                std::runtime_error);
 }
 
@@ -634,7 +634,7 @@ TEST_F(TorstenPopulationNeutropeniaTest, exception_var_max_num_steps_fails) {
   EXPECT_THROW(torsten::pmx_solve_group_bdf(f, nCmt,
                                             len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
                                             theta_m_v, biovar_m, tlag_m,
-                                            rtol, atol, max_num_steps),
+                                            rtol, atol, max_num_steps, nullptr),
                std::runtime_error);
 }
 
@@ -660,9 +660,9 @@ TEST_F(TorstenPopulationNeutropeniaTest, domain_error) {
     rate_m[id * nt + j] = std::numeric_limits<double>::infinity();
   }
   EXPECT_THROW_MSG(pmx_solve_group_bdf(f, nCmt,
-                                              len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                              theta_m, biovar_m, tlag_m,
-                                              rtol, atol, max_num_steps),
+                                       len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
+                                       theta_m, biovar_m, tlag_m,
+                                       rtol, atol, max_num_steps, nullptr),
                    std::domain_error,
                    "rate[109] is inf, but must be finite");
 #ifdef TORSTEN_MPI
@@ -674,9 +674,9 @@ TEST_F(TorstenPopulationNeutropeniaTest, domain_error) {
   }
   theta_m[id][3] = std::numeric_limits<double>::infinity();
   EXPECT_THROW_MSG(pmx_solve_group_bdf(f, nCmt,
-                                              len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                              theta_m, biovar_m, tlag_m,
-                                              rtol, atol, max_num_steps),
+                                       len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
+                                       theta_m, biovar_m, tlag_m,
+                                       rtol, atol, max_num_steps, nullptr),
                    std::domain_error,
                    "parameters[4] is inf, but must be finite!");
 #ifdef TORSTEN_MPI
@@ -685,9 +685,9 @@ TEST_F(TorstenPopulationNeutropeniaTest, domain_error) {
 
   theta_m[id][3] = std::numeric_limits<double>::quiet_NaN();
   EXPECT_THROW_MSG(pmx_solve_group_bdf(f, nCmt,
-                                              len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                              theta_m, biovar_m, tlag_m,
-                                              rtol, atol, max_num_steps),
+                                       len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
+                                       theta_m, biovar_m, tlag_m,
+                                       rtol, atol, max_num_steps, nullptr),
                    std::domain_error,
                    "parameters[4] is nan, but must be finite!");
 #ifdef TORSTEN_MPI
@@ -697,12 +697,53 @@ TEST_F(TorstenPopulationNeutropeniaTest, domain_error) {
   theta_m[id][3] = 1.0;
   biovar_m[id][3] = -1.0;
   EXPECT_THROW_MSG(pmx_solve_group_bdf(f, nCmt,
-                                              len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
-                                              theta_m, biovar_m, tlag_m,
-                                              rtol, atol, max_num_steps),
+                                       len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
+                                       theta_m, biovar_m, tlag_m,
+                                       rtol, atol, max_num_steps, nullptr),
                    std::domain_error,
-                   "bioavailability[4] is -1, but must be >= 0");
+                   "PMX SOLVE GROUP ODE: bioavailability[4] is -1, but must be >= 0!");
 #ifdef TORSTEN_MPI
   MPI_Barrier(comm);
 #endif
+}
+
+TEST_F(TorstenPopulationPMXTwoCptTest, bdf_solver_multiple_bolus_doses_par_bioavailability_var) {
+  biovar = {{0.8, 0.7, 0.8}};
+
+  for (int i = 0; i < np; ++i) {
+    biovar_m[i] = biovar[0];
+  }
+
+  vector<vector<var> > pMatrix_m_v(np);
+  vector<vector<var> > pMatrix_v(torsten::to_var(pMatrix));
+  for (int i = 0; i < np; ++i) {
+    pMatrix_m_v[i] = stan::math::to_var(pMatrix[0]);
+  }
+
+  vector<vector<var> > biovar_v(torsten::to_var(biovar));  
+  vector<vector<var> > biovar_m_v(biovar_m.size());
+  for (auto i = 0; i < np; ++i) {
+    biovar_m_v[i] = torsten::to_var(biovar[0]);
+  }
+
+  using model_t = torsten::PMXTwoCptModel<double>;
+
+  Matrix<var, Dynamic, Dynamic> x =
+    torsten::pmx_solve_bdf(model_t::f_, model_t::Ncmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix_v, biovar_v, tlag, nullptr);
+
+  Matrix<var, Dynamic, Dynamic> x_m =
+    torsten::pmx_solve_group_bdf(model_t::f_, model_t::Ncmt,
+                                 len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
+                                 pMatrix_m_v, biovar_m_v, tlag_m, nullptr);
+
+  int begin_i = 0;
+  for (int i = 0; i < np; ++i) {
+    Matrix<var, Dynamic, Dynamic> x_i(model_t::Ncmt, len[i]);
+    for (int j = 0; j < len[i]; ++j) {
+      x_i.col(j) = x_m.col(begin_i + j);
+    }
+    torsten::test::test_grad(pMatrix_m_v[i], pMatrix_v[0], x_i, x);
+    torsten::test::test_grad(biovar_m_v[i], biovar_v[0], x_i, x);
+    begin_i += len[i];
+  }
 }
