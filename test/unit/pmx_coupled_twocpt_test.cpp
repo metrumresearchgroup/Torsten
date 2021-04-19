@@ -347,7 +347,7 @@ TEST_F(TorstenCoupledTwoCptTest, ss_constant_infusion) {
                                 time, amt, rate, ii, evid, cmt, addl, ss,
                                 parameters, biovar, tlag,
                                 rel_tol_bdf, abs_tol_bdf, max_num_steps_bdf,
-                                1.e-10, 1.e-8, 100);
+                                1.e-10, 1.e-8, 100, nullptr);
 
   torsten::test::test_val(x, x_rk45, 1.e-5, 1.e-8);
   torsten::test::test_val(x, x_bdf,  1.e-5, 1.e-8);

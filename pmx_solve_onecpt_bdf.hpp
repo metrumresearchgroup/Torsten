@@ -3,7 +3,6 @@
 
 #include <Eigen/Dense>
 #include <stan/math/torsten/to_array_2d.hpp>
-#include <stan/math/torsten/is_std_vector.hpp>
 #include <stan/math/torsten/ev_manager.hpp>
 #include <stan/math/torsten/ev_solver.hpp>
 #include <stan/math/torsten/pmx_coupled_model.hpp>
@@ -97,7 +96,10 @@ pmx_solve_onecpt_bdf(const F& f,
 
   const int &nPK = torsten::PMXOneCptModel<double>::Ncmt;
   
-  PMXOdeIntegrator<StanBdf> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+  using dsolve::PMXOdeIntegrator;
+  using dsolve::PMXCvodesIntegrator;
+  using dsolve::PMXOdeSystem;
+  PMXOdeIntegrator<PMXOdeSystem, PMXCvodesIntegrator<CV_BDF, CV_STAGGERED>> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
   const int nCmt = nPK + nOde;
 
   using ER = NONMENEventsRecord<T0, T1, T2, T3>;
@@ -181,14 +183,8 @@ pmx_solve_onecpt_bdf(const F& f,
   template <typename T0, typename T1, typename T2, typename T3,
             typename T_par, typename T_biovar, typename T_tlag,
             typename F,
-            typename
-            std::enable_if_t<
-              !(torsten::is_std_vector<T_par>::value && torsten::is_std_vector<T_biovar>::value && torsten::is_std_vector<T_tlag>::value)>* = nullptr> //NOLINT
-  Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3,
-                                            typename torsten::value_type<T_par>::type,
-                                            typename torsten::value_type<T_biovar>::type,
-                                            typename torsten::value_type<T_tlag>::type>,
-                 Eigen::Dynamic, Eigen::Dynamic>
+            typename = require_any_not_std_vector_t<T_par, T_biovar, T_tlag> >
+  stan::matrix_return_t<T0, T1, T2, T3, T_par, T_biovar, T_tlag>
   pmx_solve_onecpt_bdf(const F& f,
                        const int nOde,
                        const std::vector<T0>& time,
@@ -229,14 +225,8 @@ pmx_solve_onecpt_bdf(const F& f,
   template <typename T0, typename T1, typename T2, typename T3,
             typename T_par, typename T_biovar, typename T_tlag,
             typename F,
-            typename
-            std::enable_if_t<
-              !(torsten::is_std_vector<T_par>::value && torsten::is_std_vector<T_biovar>::value && torsten::is_std_vector<T_tlag>::value)>* = nullptr> //NOLINT
-  Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3,
-                                            typename torsten::value_type<T_par>::type,
-                                            typename torsten::value_type<T_biovar>::type,
-                                            typename torsten::value_type<T_tlag>::type>,
-                 Eigen::Dynamic, Eigen::Dynamic>
+            typename = require_any_not_std_vector_t<T_par, T_biovar, T_tlag> >
+  stan::matrix_return_t<T0, T1, T2, T3, T_par, T_biovar, T_tlag>
   pmx_solve_onecpt_bdf(const F& f,
                        const int nOde,
                        const std::vector<T0>& time,
@@ -268,14 +258,8 @@ pmx_solve_onecpt_bdf(const F& f,
   template <typename T0, typename T1, typename T2, typename T3,
             typename T_par, typename T_biovar, typename T_tlag,
             typename F,
-            typename
-            std::enable_if_t<
-              !(torsten::is_std_vector<T_par>::value && torsten::is_std_vector<T_biovar>::value && torsten::is_std_vector<T_tlag>::value)>* = nullptr> //NOLINT
-  Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3,
-                                            typename torsten::value_type<T_par>::type,
-                                            typename torsten::value_type<T_biovar>::type,
-                                            typename torsten::value_type<T_tlag>::type>,
-                 Eigen::Dynamic, Eigen::Dynamic>
+            typename = require_any_not_std_vector_t<T_par, T_biovar, T_tlag> >
+  stan::matrix_return_t<T0, T1, T2, T3, T_par, T_biovar, T_tlag>
   pmx_solve_onecpt_bdf(const F& f,
                        const int nOde,
                        const std::vector<T0>& time,
@@ -304,9 +288,7 @@ pmx_solve_onecpt_bdf(const F& f,
   // old version
 template <typename T0, typename T1, typename T2, typename T3, typename T4,
           typename T5, typename T6, typename F>
-Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-  typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-  Eigen::Dynamic, Eigen::Dynamic>
+stan::matrix_return_t<T0, T1, T2, T3, T4, T5, T6>
 mixOde1CptModel_bdf(const F& f,
                     const int nOde,
                     const std::vector<T0>& time,
@@ -335,14 +317,8 @@ mixOde1CptModel_bdf(const F& f,
   template <typename T0, typename T1, typename T2, typename T3,
             typename T_par, typename T_biovar, typename T_tlag,
             typename F,
-            typename
-            std::enable_if_t<
-              !(torsten::is_std_vector<T_par>::value && torsten::is_std_vector<T_biovar>::value && torsten::is_std_vector<T_tlag>::value)>* = nullptr> //NOLINT
-  Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3,
-                                            typename torsten::value_type<T_par>::type,
-                                            typename torsten::value_type<T_biovar>::type,
-                                            typename torsten::value_type<T_tlag>::type>,
-                 Eigen::Dynamic, Eigen::Dynamic>
+            typename = require_any_not_std_vector_t<T_par, T_biovar, T_tlag> >
+  stan::matrix_return_t<T0, T1, T2, T3, T_par, T_biovar, T_tlag>
   mixOde1CptModel_bdf(const F& f,
                         const int nOde,
                         const std::vector<T0>& time,

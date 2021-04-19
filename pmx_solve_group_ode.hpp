@@ -12,7 +12,7 @@
 
 namespace torsten {
 
-  template<PMXOdeIntegratorId It>
+  template<typename integrator_type>
   struct PMXSolveGroupODE {
     static constexpr double RTOL_DE = 1.e-6;
     static constexpr double ATOL_DE = 1.e-6;
@@ -43,7 +43,7 @@ namespace torsten {
           double as_rel_tol,
           double as_abs_tol,
           long int as_max_num_steps,
-          std::ostream* msgs = 0) {
+          std::ostream* msgs) {
       static const char* caller("PMX SOLVE GROUP ODE");
       torsten::pmx_population_check(len, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, caller);
       torsten::pmx_population_check(len, time, biovar, tlag, caller);
@@ -53,7 +53,7 @@ namespace torsten {
       ER events_rec(nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss);
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
-      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       Eigen::Matrix<typename EM::T_scalar, -1, -1> pred(nCmt, events_rec.total_num_event_times);
@@ -77,7 +77,7 @@ namespace torsten {
           const std::vector<std::vector<T4> >& pMatrix,
           const std::vector<std::vector<T5> >& biovar,
           const std::vector<std::vector<T6> >& tlag,
-          std::ostream* msgs = 0) {
+          std::ostream* msgs) {
       return solve(f, nCmt, len, time, amt, rate,
                    ii, evid, cmt, addl, ss,
                    pMatrix, biovar, tlag,
@@ -103,7 +103,7 @@ namespace torsten {
           double rel_tol,
           double abs_tol,
           long int max_num_steps,
-          std::ostream* msgs = 0) {
+          std::ostream* msgs) {
       return solve(f, nCmt, len, time, amt, rate,
                    ii, evid, cmt, addl, ss,
                    pMatrix, biovar, tlag,
@@ -131,7 +131,7 @@ namespace torsten {
           double as_rel_tol,
           double as_abs_tol,
           long int as_max_num_steps,
-          std::ostream* msgs = 0) {
+          std::ostream* msgs) {
       static const char* caller("PMX SOLVE GROUP ODE");
       torsten::pmx_population_check(len, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, caller);
       torsten::pmx_population_check(len, time, biovar, caller);
@@ -141,7 +141,7 @@ namespace torsten {
       ER events_rec(nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss);
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
-      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       Eigen::Matrix<typename EM::T_scalar, -1, -1> pred(nCmt, events_rec.total_num_event_times);
@@ -164,7 +164,7 @@ namespace torsten {
           TORSTEN_PMX_FUNC_EVENTS_ARGS,
           const std::vector<std::vector<T4> >& pMatrix,
           const std::vector<std::vector<T5> >& biovar,
-          std::ostream* msgs = 0) {
+          std::ostream* msgs) {
       return solve(f, nCmt, len, time, amt, rate,
                    ii, evid, cmt, addl, ss,
                    pMatrix, biovar,
@@ -190,7 +190,7 @@ namespace torsten {
           double rel_tol,
           double abs_tol,
           long int max_num_steps,
-          std::ostream* msgs = 0) {
+          std::ostream* msgs) {
       return solve(f, nCmt, len, time, amt, rate,
                    ii, evid, cmt, addl, ss,
                    pMatrix, biovar,
@@ -216,7 +216,7 @@ namespace torsten {
           double as_rel_tol,
           double as_abs_tol,
           long int as_max_num_steps,
-          std::ostream* msgs = 0) {
+          std::ostream* msgs) {
       static const char* caller("PMX SOLVE GROUP ODE");
       torsten::pmx_population_check(len, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, caller);
 
@@ -225,7 +225,7 @@ namespace torsten {
       ER events_rec(nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss);
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
-      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       Eigen::Matrix<typename EM::T_scalar, -1, -1> pred(nCmt, events_rec.total_num_event_times);
@@ -246,7 +246,7 @@ namespace torsten {
           const std::vector<int>& len,
           TORSTEN_PMX_FUNC_EVENTS_ARGS,
           const std::vector<std::vector<T4> >& pMatrix,
-          std::ostream* msgs = 0) {
+          std::ostream* msgs) {
       return solve(f, nCmt, len, time, amt, rate,
                    ii, evid, cmt, addl, ss,
                    pMatrix,
@@ -270,7 +270,7 @@ namespace torsten {
           double rel_tol,
           double abs_tol,
           long int max_num_steps,
-          std::ostream* msgs = 0) {
+          std::ostream* msgs) {
       return solve(f, nCmt, len, time, amt, rate,
                    ii, evid, cmt, addl, ss,
                    pMatrix,
@@ -304,7 +304,7 @@ namespace torsten {
           double as_rel_tol,
           double as_abs_tol,
           long int as_max_num_steps,
-          std::ostream* msgs = 0) {
+          std::ostream* msgs) {
       static const char* caller("PMX SOLVE GROUP ODE");
       torsten::pmx_population_check(len, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, caller);
       torsten::pmx_population_check(len, time, biovar, tlag, caller);
@@ -314,7 +314,7 @@ namespace torsten {
       ER events_rec(nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss);
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
-      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       Eigen::Matrix<typename EM::T_scalar, -1, -1> pred(nCmt, events_rec.total_num_event_times);
@@ -339,7 +339,7 @@ namespace torsten {
           const std::vector<std::vector<T5> >& biovar,
           const std::vector<std::vector<T6> >& tlag,
           const std::vector<std::vector<double> >& x_r,
-          std::ostream* msgs = 0) {
+          std::ostream* msgs) {
       return solve(f, nCmt, len, time, amt, rate,
                    ii, evid, cmt, addl, ss,
                    pMatrix, biovar, tlag, x_r,
@@ -366,7 +366,7 @@ namespace torsten {
           double rel_tol,
           double abs_tol,
           long int max_num_steps,
-          std::ostream* msgs = 0) {
+          std::ostream* msgs) {
       return solve(f, nCmt, len, time, amt, rate,
                    ii, evid, cmt, addl, ss,
                    pMatrix, biovar, tlag, x_r,
@@ -401,7 +401,7 @@ namespace torsten {
           double as_rel_tol,
           double as_abs_tol,
           long int as_max_num_steps,
-          std::ostream* msgs = 0) {
+          std::ostream* msgs) {
       static const char* caller("PMX SOLVE GROUP ODE");
       torsten::pmx_population_check(len, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, caller);
       torsten::pmx_population_check(len, time, biovar, tlag, caller);
@@ -411,7 +411,7 @@ namespace torsten {
       ER events_rec(nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss);
 
       using model_type = torsten::PKODEModel<typename EM::T_par, F>;
-      PMXOdeIntegrator<It> integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
+      integrator_type integrator(rel_tol, abs_tol, max_num_steps, as_rel_tol, as_abs_tol, as_max_num_steps, msgs);
       EventSolver<model_type, EM> pr;
 
       Eigen::Matrix<typename EM::T_scalar, -1, -1> pred(nCmt, events_rec.total_num_event_times);
@@ -437,7 +437,7 @@ namespace torsten {
           const std::vector<std::vector<T6> >& tlag,
           const std::vector<std::vector<double> >& x_r,
           const std::vector<std::vector<int> >& x_i,
-          std::ostream* msgs = 0) {
+          std::ostream* msgs) {
       return solve(f, nCmt, len, time, amt, rate,
                    ii, evid, cmt, addl, ss,
                    pMatrix, biovar, tlag, x_r, x_i,
@@ -465,7 +465,7 @@ namespace torsten {
           double rel_tol,
           double abs_tol,
           long int max_num_steps,
-          std::ostream* msgs = 0) {
+          std::ostream* msgs) {
       return solve(f, nCmt, len, time, amt, rate,
                    ii, evid, cmt, addl, ss,
                    pMatrix, biovar, tlag, x_r, x_i,

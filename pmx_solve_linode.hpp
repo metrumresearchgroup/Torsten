@@ -5,7 +5,6 @@
 #include <stan/math/torsten/ev_manager.hpp>
 #include <boost/math/tools/promotion.hpp>
 #include <stan/math/torsten/ev_solver.hpp>
-#include <stan/math/torsten/is_std_vector.hpp>
 #include <stan/math/torsten/to_array_2d.hpp>
 #include <stan/math/torsten/pmx_linode_model.hpp>
 #include <stan/math/torsten/pmx_check.hpp>
@@ -54,8 +53,7 @@ namespace torsten {
  */
 template <typename T0, typename T1, typename T2, typename T3,
           typename T4, typename T5, typename T6>
-Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4, T5, T6>,
-               Eigen::Dynamic, Eigen::Dynamic>
+stan::matrix_return_t<T0, T1, T2, T3, T4, T5, T6>
 pmx_solve_linode(const std::vector<T0>& time,
                  const std::vector<T1>& amt,
                  const std::vector<T2>& rate,
@@ -86,7 +84,7 @@ pmx_solve_linode(const std::vector<T0>& time,
 
   using model_type = torsten::PMXLinODEModel<typename EM::T_par>;
   EventSolver<model_type, EM> pr;
-  pr.pred(0, events_rec, pred, PMXOdeIntegrator<Analytical>(), system, biovar, tlag, nCmt);
+  pr.pred(0, events_rec, pred, dsolve::PMXAnalyiticalIntegrator(), system, biovar, tlag, nCmt);
   return pred;
 }
 
@@ -96,10 +94,7 @@ pmx_solve_linode(const std::vector<T0>& time,
  */
 template <typename T0, typename T1, typename T2, typename T3,
           typename T4, typename T_biovar, typename T_tlag>
-Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4,
-                                          typename torsten::value_type<T_biovar>::type,
-                                          typename torsten::value_type<T_tlag>::type>,
-               Eigen::Dynamic, Eigen::Dynamic>
+stan::matrix_return_t<T0, T1, T2, T3, T4, T_biovar, T_tlag>
 pmx_solve_linode(const std::vector<T0>& time,
                  const std::vector<T1>& amt,
                  const std::vector<T2>& rate,
@@ -125,13 +120,8 @@ pmx_solve_linode(const std::vector<T0>& time,
  */
 template <typename T0, typename T1, typename T2, typename T3,
           typename T4, typename T_biovar, typename T_tlag,
-          typename
-          std::enable_if_t<
-            !(torsten::is_std_vector<T_biovar>::value && torsten::is_std_vector<T_tlag>::value)>* = nullptr> //NOLINT
-Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4,
-                                          typename torsten::value_type<T_biovar>::type,
-                                          typename torsten::value_type<T_tlag>::type>,
-               Eigen::Dynamic, Eigen::Dynamic>
+          typename = require_any_not_std_vector_t<T_biovar, T_tlag> >
+stan::matrix_return_t<T0, T1, T2, T3, T4, T_biovar, T_tlag>
 pmx_solve_linode(const std::vector<T0>& time,
                  const std::vector<T1>& amt,
                  const std::vector<T2>& rate,
@@ -152,10 +142,8 @@ pmx_solve_linode(const std::vector<T0>& time,
 
   // old version by using transpose
 template <typename T0, typename T1, typename T2, typename T3,
-  typename T4, typename T5, typename T6>
-Eigen::Matrix <typename boost::math::tools::promote_args<T0, T1, T2, T3,
-                                                         typename boost::math::tools::promote_args<T4, T5, T6>::type>::type,
-               Eigen::Dynamic, Eigen::Dynamic>
+          typename T4, typename T5, typename T6>
+stan::matrix_return_t<T0, T1, T2, T3, T4, T5, T6>
 linOdeModel(const std::vector<T0>& time,
             const std::vector<T1>& amt,
             const std::vector<T2>& rate,
@@ -173,10 +161,7 @@ linOdeModel(const std::vector<T0>& time,
 
 template <typename T0, typename T1, typename T2, typename T3,
           typename T4, typename T_biovar, typename T_tlag>
-Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4,
-                                          typename torsten::value_type<T_biovar>::type,
-                                          typename torsten::value_type<T_tlag>::type>,
-               Eigen::Dynamic, Eigen::Dynamic>
+stan::matrix_return_t<T0, T1, T2, T3, T4, T_biovar, T_tlag>
 linOdeModel(const std::vector<T0>& time,
                  const std::vector<T1>& amt,
                  const std::vector<T2>& rate,
@@ -194,13 +179,8 @@ linOdeModel(const std::vector<T0>& time,
 
   template <typename T0, typename T1, typename T2, typename T3,
             typename T4, typename T_biovar, typename T_tlag,
-            typename
-            std::enable_if_t<
-              !(torsten::is_std_vector<T_biovar>::value && torsten::is_std_vector<T_tlag>::value)>* = nullptr> //NOLINT
-  Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4,
-                                            typename torsten::value_type<T_biovar>::type,
-                                            typename torsten::value_type<T_tlag>::type>,
-                 Eigen::Dynamic, Eigen::Dynamic>
+            typename = require_any_not_std_vector_t<T_biovar, T_tlag> >
+  stan::matrix_return_t<T0, T1, T2, T3, T4, T_biovar, T_tlag>
   linOdeModel(const std::vector<T0>& time,
               const std::vector<T1>& amt,
               const std::vector<T2>& rate,

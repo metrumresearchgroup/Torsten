@@ -3,8 +3,8 @@
 
 #include <Eigen/Dense>
 #include <stan/math/prim/err/check_greater_or_equal.hpp>
+#include <stan/math/torsten/meta.hpp>
 #include <stan/math/torsten/to_array_2d.hpp>
-#include <stan/math/torsten/is_std_vector.hpp>
 #include <stan/math/torsten/pmx_solve_ode.hpp>
 #include <stan/math/torsten/pmx_solve_cpt.hpp>
 #include <stan/math/torsten/ev_solver.hpp>
@@ -38,14 +38,8 @@ namespace torsten {
  */
   template <typename T0, typename T1, typename T2, typename T3,
             typename T_par, typename T_biovar, typename T_tlag,
-               typename
-            std::enable_if_t<
-              !(torsten::is_std_vector<T_par>::value && torsten::is_std_vector<T_biovar>::value && torsten::is_std_vector<T_tlag>::value)>* = nullptr> //NOLINT
-  Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3,
-                                            typename torsten::value_type<T_par>::type,
-                                            typename torsten::value_type<T_biovar>::type,
-                                            typename torsten::value_type<T_tlag>::type>,
-                 Eigen::Dynamic, Eigen::Dynamic>
+            typename = require_any_not_std_vector_t<T_par, T_biovar, T_tlag> >
+  stan::matrix_return_t<T0, T1, T2, T3, T_par, T_biovar, T_tlag>
   pmx_solve_twocpt(const std::vector<T0>& time,
                    const std::vector<T1>& amt,
                    const std::vector<T2>& rate,
@@ -68,8 +62,7 @@ namespace torsten {
   // old version
   template <typename T0, typename T1, typename T2, typename T3, typename T4,
             typename T5, typename T6>
-  Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3, T4, T5, T6>,
-                 Eigen::Dynamic, Eigen::Dynamic>
+  stan::matrix_return_t<T0, T1, T2, T3, T4, T5, T6>
   PKModelTwoCpt(const std::vector<T0>& time,
                 const std::vector<T1>& amt,
                 const std::vector<T2>& rate,
@@ -88,14 +81,8 @@ namespace torsten {
 
   template <typename T0, typename T1, typename T2, typename T3,
             typename T_par, typename T_biovar, typename T_tlag,
-               typename
-            std::enable_if_t<
-              !(torsten::is_std_vector<T_par>::value && torsten::is_std_vector<T_biovar>::value && torsten::is_std_vector<T_tlag>::value)>* = nullptr> //NOLINT
-  Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3,
-                                            typename torsten::value_type<T_par>::type,
-                                            typename torsten::value_type<T_biovar>::type,
-                                            typename torsten::value_type<T_tlag>::type>,
-                 Eigen::Dynamic, Eigen::Dynamic>
+            typename = require_any_not_std_vector_t<T_par, T_biovar, T_tlag> >
+  stan::matrix_return_t<T0, T1, T2, T3, T_par, T_biovar, T_tlag>
   PKModelTwoCpt(const std::vector<T0>& time,
                    const std::vector<T1>& amt,
                    const std::vector<T2>& rate,
@@ -149,7 +136,7 @@ pmx_solve_group_twocpt(const std::vector<int>& len,
 
   Eigen::Matrix<typename EM::T_scalar, -1, -1> pred(events_rec.total_num_event_times, nCmt);
 
-  pr.pred(events_rec, pred, PMXOdeIntegrator<Analytical>(), pMatrix, biovar, tlag);
+  pr.pred(events_rec, pred, dsolve::PMXAnalyiticalIntegrator(), pMatrix, biovar, tlag);
 
   return pred;
 }

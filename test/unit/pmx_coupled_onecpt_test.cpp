@@ -299,9 +299,9 @@ TEST_F(TorstenCoupledOneCptTest, ss_const_infusion) {
   // can't do constant rate in mrgsolve. Comparing to result obtained
   // with generalOdeModel, as a provisional test.
   MatrixXd x = torsten::pmx_solve_rk45(f, nOde,
-                             time, amt, rate, ii, evid, cmt, addl, ss,
-                             parameters, biovar, tlag,
-                             rel_tol_rk, abs_tol_rk, max_num_steps_rk);
+                                       time, amt, rate, ii, evid, cmt, addl, ss,
+                                       parameters, biovar, tlag,
+                                       rel_tol_rk, abs_tol_rk, max_num_steps_rk, nullptr);
   torsten::test::test_val(x, x_rk45, 1.5e-2, 1.0e-5);
   torsten::test::test_val(x, x_bdf, 1.5e-2, 1.0e-5);
   

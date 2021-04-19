@@ -1,7 +1,7 @@
 #ifndef STAN_MATH_TORSTEN_COUPLED_MODEL_HPP
 #define STAN_MATH_TORSTEN_COUPLED_MODEL_HPP
 
-#include <stan/math/torsten/pmx_ode_integrator.hpp>
+#include <stan/math/torsten/dsolve/pmx_ode_integrator.hpp>
 #include <stan/math/torsten/pmx_onecpt_model.hpp>
 #include <stan/math/torsten/pmx_twocpt_model.hpp>
 #include <stan/math/torsten/pmx_ode_model.hpp>
@@ -537,7 +537,7 @@ namespace torsten {
         if ((cmt_ - nPK_) >= 0) x0[cmt_ - nPK_ - 1] += amt;
         ts[0] = ii_;
         std::vector<scalar> pred = integrator_(f_, x0, t0, ts, parms,
-                                          dat, dat_int)[0];
+                                               dat, dat_int)[0];
 
         for (int i = 0; i < result.size(); i++)
           result(i) = x(i) - pred[i];
@@ -774,17 +774,17 @@ namespace torsten {
     F_c f_coupled;
 
     PMXOdeFunctorCouplingSSAdaptor<T_m, F_c, T_amt, double, T_ii, T_integrator>
-      system(F_c(), ii_dbl, cmt, integrator, nPK);
+      system(f_coupled, ii_dbl, cmt, integrator, nPK);
 
     Eigen::Matrix<double, -1, 1> predPD_guess;
     Eigen::Matrix<scalar, 1, -1> predPD;
 
     double init_dt = (rate > 0.0 && ii == 0.0) ? 24.0 : ii_dbl;
     if (rate == 0) {  // bolus dose
-      predPD_guess = stan::math::to_vector(integrator(F_c(), init_pd,
-                                        0.0, init_dt,
+      predPD_guess = stan::math::to_vector(integrator(f_coupled, init_pd,
+                                                      0.0, init_dt,
                                                       stan::math::value_of(theta2),
-                                        x_r, x_i)[0]);
+                                                      x_r, x_i)[0]);
 
       predPD = algebra_solver_powell(system, predPD_guess,
                               to_vector(theta2),
@@ -800,7 +800,7 @@ namespace torsten {
     } else {
       x_r[cmt - 1] = rate;
 
-      predPD_guess = stan::math::to_vector(integrator(F_c(), init_pd,
+      predPD_guess = stan::math::to_vector(integrator(f_coupled, init_pd,
                                                       0.0, init_dt,
                                                       stan::math::value_of(theta2),
                                                       x_r, x_i)[0]);
@@ -826,11 +826,11 @@ namespace torsten {
     // torsten::PKRec<scalar_type>
     // solve(const T_time& t_next,
     //       const torsten::PMXOdeIntegrator<It>& integrator) const {
-    template<typename Tt0, typename Tt1, typename T, typename T1, PMXOdeIntegratorId It>
+    template<typename Tt0, typename Tt1, typename T, typename T1, typename integrator_type>
     void solve(PKRec<T>& y,
                const Tt0& t0, const Tt1& t1,
                const std::vector<T1>& rate,
-               const PMXOdeIntegrator<It>& integrator) const {
+               const integrator_type& integrator) const {
       using std::vector;
 
       // pass fixed times to the integrator. FIX ME - see issue #30
@@ -872,10 +872,10 @@ namespace torsten {
      * the solution to @c integrate, in which the type of @c
      * amt will be used for template partial specification.
      */
-    template<torsten::PMXOdeIntegratorId It, typename T_ii, typename T_amt>
+    template<typename integrator_type, typename T_ii, typename T_amt>
     torsten::PKRec<typename stan::return_type_t<T_amt, T_ii, T_par>>
     solve(double t0, const T_amt& amt, const double& rate, const T_ii& ii, const int& cmt,
-          const torsten::PMXOdeIntegrator<It>& integrator) const {
+          const integrator_type& integrator) const {
       return integrate(amt, rate, ii, cmt, integrator);
     }
   };

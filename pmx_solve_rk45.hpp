@@ -2,7 +2,6 @@
 #define STAN_MATH_TORSTEN_SOLVE_RK45_HPP
 
 #include <Eigen/Dense>
-#include <stan/math/torsten/is_std_vector.hpp>
 #include <stan/math/torsten/to_array_2d.hpp>
 #include <stan/math/torsten/ev_manager.hpp>
 #include <stan/math/torsten/pmx_population_check.hpp>
@@ -32,20 +31,12 @@ namespace torsten {
  *         at each event. 
  *
  */
-  template <typename F, typename... Ts,
-            typename std::enable_if_t<last_is_ostream_ptr<Ts...>::value >* = nullptr>
-  auto pmx_solve_rk45(const F& f, const int nCmt,
-                      Ts... args) {
-    return PMXSolveODE<PkRk45>::solve(f, nCmt, args...);
+  template <typename F, typename... Ts>
+  auto pmx_solve_rk45(const F& f, const int nCmt, Ts... args) {
+    using scheme_t = boost::numeric::odeint::runge_kutta_dopri5<std::vector<double>, double, std::vector<double>, double>;
+    return PMXSolveODE<dsolve::PMXOdeIntegrator<dsolve::PMXOdeSystem, dsolve::PMXOdeintIntegrator<scheme_t>>>::solve(f, nCmt, args...);
 }
 
-  template <typename F, typename... Ts,
-            typename std::enable_if_t<!last_is_ostream_ptr<Ts...>::value >* = nullptr>
-  auto pmx_solve_rk45(const F& f, const int nCmt,
-                      Ts... args) {
-    return PMXSolveODE<PkRk45>::solve(f, nCmt, args..., nullptr);
-}
-  
   /*
    * For backward compatibility we keep old version of
    * return type using transpose. This is less efficient and
@@ -54,11 +45,7 @@ namespace torsten {
   template <typename T0, typename T1, typename T2, typename T3,
             typename T_par, typename T_biovar, typename T_tlag,
             typename F>
-  Eigen::Matrix <typename stan::return_type_t<T0, T1, T2, T3,
-                                            typename value_type<T_par>::type,
-                                            typename value_type<T_biovar>::type,
-                                            typename value_type<T_tlag>::type>,
-                 Eigen::Dynamic, Eigen::Dynamic>
+  stan::matrix_return_t<T0, T1, T2, T3, T_par, T_biovar, T_tlag>
   generalOdeModel_rk45(const F& f,
                        const int nCmt,
                        const std::vector<T0>& time,
@@ -90,20 +77,12 @@ namespace torsten {
    * the length of each individual's data. The size of that
    * vector is the size of the population.
    */
-  template <typename F, typename... Ts,
-            typename std::enable_if_t<last_is_ostream_ptr<Ts...>::value >* = nullptr>
+  template <typename F, typename... Ts>
   auto pmx_solve_group_rk45(const F& f, const int nCmt,
                             const std::vector<int>& len, Ts... args) {
-    return PMXSolveGroupODE<PkRk45>::solve(f, nCmt, len, args...);
+    using scheme_t = boost::numeric::odeint::runge_kutta_dopri5<std::vector<double>, double, std::vector<double>, double>;
+    return PMXSolveGroupODE<dsolve::PMXOdeIntegrator<dsolve::PMXOdeSystem, dsolve::PMXOdeintIntegrator<scheme_t>>>::solve(f, nCmt, len, args...);
   }
-
-  template <typename F, typename... Ts,
-            typename std::enable_if_t<!last_is_ostream_ptr<Ts...>::value >* = nullptr>
-  auto pmx_solve_group_rk45(const F& f, const int nCmt,
-                            const std::vector<int>& len, Ts... args) {
-    return PMXSolveGroupODE<PkRk45>::solve(f, nCmt, len, args..., nullptr);
-  }
-
 }
 
 #endif

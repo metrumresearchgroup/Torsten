@@ -7,7 +7,6 @@
 #include <stan/math/torsten/dsolve/pmx_cvodes_integrator.hpp>
 #include <stan/math/torsten/dsolve/pmx_odeint_integrator.hpp>
 #include <stan/math/torsten/dsolve/pmx_ode_vars.hpp>
-#include <stan/math/torsten/is_var.hpp>
 #include <stan/math/prim/err/check_greater.hpp>
 #include <stan/math/prim/err/check_less.hpp>
 #include <vector>
@@ -254,7 +253,7 @@ namespace torsten {
        * are present.
        */
       template<typename Tt, typename T,
-               typename std::enable_if_t<torsten::is_var<T>::value >* = nullptr> //NOLINT
+               typename = stan::require_any_var_t<T>>
       inline std::array<int, 2>
       master_recv(Eigen::Matrix<T, -1, -1>& res,
                   std::vector<Eigen::MatrixXd>& res_d,
@@ -361,9 +360,9 @@ namespace torsten {
         init_buf[i_p]         = theta[0].size();
         init_buf[i_x_r]       = x_r[0].size();
         init_buf[i_x_i]       = x_i[0].size();
-        init_buf[i_t_var]     = torsten::is_var<Tt>::value;
-        init_buf[i_y_var]     = torsten::is_var<Ty>::value;
-        init_buf[i_p_var]     = torsten::is_var<Tp>::value;
+        init_buf[i_t_var]     = stan::is_var<Tt>::value;
+        init_buf[i_y_var]     = stan::is_var<Ty>::value;
+        init_buf[i_p_var]     = stan::is_var<Tp>::value;
 
         for (int i = 1; i < pmx_comm.size(); ++i) {
           MPI_Send(init_buf.data(), init_buf.size(), MPI_INT, i, up_tag, comm);
@@ -475,36 +474,29 @@ namespace torsten {
                                          double rtol, double atol, int max_num_step) {
         Eigen::MatrixXd res;
         torsten::dsolve::pmx_ode_group_mpi_functor f(functor_id);
+        using Ode = torsten::dsolve::PMXOdeSystem<torsten::dsolve::pmx_ode_group_mpi_functor, Tt, Ty, Tp, void>;
+        Ode ode{f, t0, ts, y0, theta, x_r, x_i, NULL};
+        torsten::dsolve::OdeDataObserver<Ode> observer(ode);
         switch(integ_id) {
         case 1 : {
-          using Ode = torsten::dsolve::PMXCvodesFwdSystem<torsten::dsolve::pmx_ode_group_mpi_functor, Tt, Ty, Tp,
-                                                          torsten::dsolve::cvodes_def<TORSTEN_CV_SENS, CV_ADAMS, TORSTEN_CV_ISM>>;
-          torsten::dsolve::PMXOdeService<Ode> serv(y0.size(), theta.size());
-          Ode ode{serv, f, t0, ts, y0, theta, x_r, x_i, NULL};
-          torsten::dsolve::PMXCvodesIntegrator solver(rtol, atol, max_num_step);
-          res = solver.template integrate<Ode, false>(ode);
+          torsten::dsolve::PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> solver(rtol, atol, max_num_step);
+          solver.integrate(ode, observer);
           break;
         }
         case 2 : {
-          using Ode = torsten::dsolve::PMXCvodesFwdSystem<torsten::dsolve::pmx_ode_group_mpi_functor, Tt, Ty, Tp,
-                                                          torsten::dsolve::cvodes_def<TORSTEN_CV_SENS, CV_BDF, TORSTEN_CV_ISM>>;
-          torsten::dsolve::PMXOdeService<Ode> serv(y0.size(), theta.size());
-          Ode ode{serv, f, t0, ts, y0, theta, x_r, x_i, NULL};
-          torsten::dsolve::PMXCvodesIntegrator solver(rtol, atol, max_num_step);
-          res = solver.template integrate<Ode, false>(ode);
+          torsten::dsolve::PMXCvodesIntegrator<CV_BDF, CV_STAGGERED> solver(rtol, atol, max_num_step);
+          solver.integrate(ode, observer);
           break;
         }
-        default : {
+        case 3 : {
           using scheme_t = boost::numeric::odeint::runge_kutta_dopri5<std::vector<double>, double, std::vector<double>, double>;
-          using Ode = dsolve::PMXOdeintSystem<torsten::dsolve::pmx_ode_group_mpi_functor, Tt, Ty, Tp>;
-          dsolve::PMXOdeService<Ode, dsolve::Odeint> serv(y0.size(), theta.size());
-          Ode ode{serv, f, t0, ts, y0, theta, x_r, x_i, NULL};
           dsolve::PMXOdeintIntegrator<scheme_t> solver(rtol, atol, max_num_step);
-          res = solver.template integrate<Ode, false>(ode);
+          solver.integrate(ode, observer);
           break;
         }
+        default : {break;}
         }
-        return res;
+        return observer.y;
       }
 
       /*

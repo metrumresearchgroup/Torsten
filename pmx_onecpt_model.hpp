@@ -4,7 +4,7 @@
 #include <stan/math/torsten/pmx_linode_model.hpp>
 #include <stan/math/torsten/PKModel/functors/check_mti.hpp>
 #include <stan/math/torsten/model_solve_d.hpp>
-#include <stan/math/torsten/pmx_ode_integrator.hpp>
+#include <stan/math/torsten/dsolve/pmx_ode_integrator.hpp>
 #include <stan/math/torsten/dsolve/pk_vars.hpp>
 #include <stan/math/torsten/pk_nvars.hpp>
 #include <stan/math/rev/fun/exp.hpp>
@@ -137,7 +137,7 @@ namespace torsten {
     void solve(Eigen::Matrix<T, -1, 1>& y,
                const Tt0& t0, const Tt1& t1,
                const std::vector<T1>& rate,
-               const PMXOdeIntegrator<Analytical>& integ) const {
+               const dsolve::PMXAnalyiticalIntegrator& integ) const {
       using stan::math::exp;
 
       typename stan::return_type_t<Tt0, Tt1> dt = t1 - t0;
@@ -173,7 +173,7 @@ namespace torsten {
     void solve_analytical(Eigen::Matrix<T, -1, 1>& y,
                           const Tt0& t0, const Tt1& t1,
                           const std::vector<T1>& rate,
-                          const PMXOdeIntegrator<Analytical>& integ) const {
+                          const dsolve::PMXAnalyiticalIntegrator& integ) const {
       using stan::math::exp;
 
       typename stan::return_type_t<Tt0, Tt1> dt = t1 - t0;
@@ -211,7 +211,7 @@ namespace torsten {
     void solve(Eigen::Matrix<T, -1, 1>& y,
                const Tt0& t0, const Tt1& t1,
                const std::vector<T1>& rate) const {
-      const PMXOdeIntegrator<Analytical> integ;
+      const dsolve::PMXAnalyiticalIntegrator integ;
       solve(y, t0, t1, rate, integ);
     }
 
@@ -222,7 +222,7 @@ namespace torsten {
     void solve_analytical(Eigen::Matrix<T, -1, 1>& y,
                           const Tt0& t0, const Tt1& t1,
                           const std::vector<T1>& rate) const {
-      const PMXOdeIntegrator<Analytical> integ;
+      const dsolve::PMXAnalyiticalIntegrator integ;
       solve_analytical(y, t0, t1, rate, integ);
     }
 
@@ -264,10 +264,10 @@ namespace torsten {
     /*
      * wrapper to fit @c PrepWrapper's call signature
      */
-    template<torsten::PMXOdeIntegratorId It, typename T_amt, typename T_r, typename T_ii>
+    template<typename integrator_type, typename T_amt, typename T_r, typename T_ii>
     Eigen::Matrix<typename stan::return_type_t<T_amt, T_r, T_ii, T_par>, -1, 1>
     solve(double t0, const T_amt& amt, const T_r& rate, const T_ii& ii, const int& cmt,
-          const torsten::PMXOdeIntegrator<It>& integrator) const {
+          const integrator_type& integrator) const {
       return solve(t0, amt, rate, ii, cmt);
     }
 

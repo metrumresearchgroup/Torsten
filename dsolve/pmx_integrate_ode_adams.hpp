@@ -1,8 +1,8 @@
 #ifndef STAN_MATH_TORSTEN_DSOLVE_INTEGRATE_ODE_ADAMS_HPP
 #define STAN_MATH_TORSTEN_DSOLVE_INTEGRATE_ODE_ADAMS_HPP
 
+#include <stan/math/torsten/dsolve/pmx_ode_integrator.hpp>
 #include <stan/math/torsten/dsolve/pmx_cvodes_integrator.hpp>
-#include <stan/math/torsten/dsolve/ode_check.hpp>
 #include <ostream>
 #include <vector>
 
@@ -40,19 +40,11 @@ namespace torsten {
                           double atol,
                           long int max_num_step,
                           std::ostream* msgs = nullptr) {
-    static const char* caller = "pmx_integrate_ode_adams";
-    dsolve::ode_check(y0, t0, ts, theta, x_r, x_i, caller);
-
-    using Ode = dsolve::PMXCvodesFwdSystem<F, Tt, T_initial, T_param,
-                                           dsolve::cvodes_def<TORSTEN_CV_SENS, CV_ADAMS, TORSTEN_CV_ISM>>;
-    const int n = y0.size();
-    const int m = theta.size();
-
-    static dsolve::PMXOdeService<Ode> serv(n, m);
-
-    Ode ode{serv, f, t0, ts, y0, theta, x_r, x_i, msgs};
-    dsolve::PMXCvodesIntegrator solver(rtol, atol, max_num_step);
-    return solver.integrate(ode);
+    using dsolve::PMXOdeIntegrator;
+    using dsolve::PMXCvodesIntegrator;
+    using dsolve::PMXOdeSystem;
+    PMXOdeIntegrator<PMXOdeSystem,  PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED>> solver(rtol, atol, max_num_step, msgs);
+    return solver(f, y0, t0, ts, theta, x_r, x_i);
 }
 
   /*

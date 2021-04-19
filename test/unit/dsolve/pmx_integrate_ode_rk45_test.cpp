@@ -21,13 +21,14 @@
 
 using stan::math::integrate_ode_rk45;
 using torsten::pmx_integrate_ode_rk45;
-using torsten::dsolve::PMXOdeintSystem;
+using torsten::dsolve::PMXOdeSystem;
 using torsten::dsolve::PMXOdeService;
-using torsten::dsolve::Odeint;
 using torsten::dsolve::PMXOdeintIntegrator;
 using torsten::pmx_integrate_ode_group_rk45;
 using stan::math::var;
 using std::vector;
+using dsolve::OdeObserver;
+using dsolve::OdeDataObserver;
 
 #if defined(STAN_LANG_MPI) || defined(TORSTEN_MPI)
 TORSTEN_MPI_SESSION_INIT;
@@ -42,14 +43,14 @@ TEST_F(TorstenOdeTest_sho, odeint_rk45_ivp_system) {
 TEST_F(TorstenOdeTest_sho, odeint_rk45_ivp_system_matrix_result) {
   std::vector<std::vector<double> > y1(integrate_ode_rk45(f, y0, t0, ts, theta, x_r, x_i, msgs, atol, rtol, max_num_steps));
 
-  using Ode = PMXOdeintSystem<harm_osc_ode_fun, double, double, double>;
-  PMXOdeService<Ode, Odeint> serv(y0.size(), theta.size());
-  Ode ode{serv, f, t0, ts, y0, theta, x_r, x_i, msgs};
+  using Ode = PMXOdeSystem<harm_osc_ode_fun, double, double, double>;
+  Ode ode{f, t0, ts, y0, theta, x_r, x_i, msgs};
   using scheme_t = boost::numeric::odeint::runge_kutta_dopri5<std::vector<double>, double, std::vector<double>, double>;
   PMXOdeintIntegrator<scheme_t> solver(rtol, atol, max_num_steps);
-  Eigen::MatrixXd y2 = solver.integrate<Ode, false>(ode);
+  OdeDataObserver<Ode> observer(ode);
+  solver.integrate(ode, observer);
 
-  torsten::test::test_val(y1, y2);
+  torsten::test::test_val(y1, observer.y);
 }
 
 TEST_F(TorstenOdeTest_lorenz, odeint_rk45_ivp_system) {
@@ -61,14 +62,14 @@ TEST_F(TorstenOdeTest_lorenz, odeint_rk45_ivp_system) {
 TEST_F(TorstenOdeTest_lorenz, odeint_rk45_ivp_system_matrix_result) {
  std::vector<std::vector<double> > y1(integrate_ode_rk45(f, y0, t0, ts, theta, x_r, x_i, msgs, atol, rtol, max_num_steps));
 
-  using Ode = PMXOdeintSystem<lorenz_ode_fun, double, double, double>;
-  PMXOdeService<Ode, Odeint> serv(y0.size(), theta.size());
-  Ode ode{serv, f, t0, ts, y0, theta, x_r, x_i, msgs};
+  using Ode = PMXOdeSystem<lorenz_ode_fun, double, double, double>;
+  Ode ode{f, t0, ts, y0, theta, x_r, x_i, msgs};
   using scheme_t = boost::numeric::odeint::runge_kutta_dopri5<std::vector<double>, double, std::vector<double>, double>;
   PMXOdeintIntegrator<scheme_t> solver(rtol, atol, max_num_steps);
-  Eigen::MatrixXd y2 = solver.integrate<Ode, false>(ode);
+  OdeDataObserver<Ode> observer(ode);
+  solver.integrate(ode, observer);
 
-  torsten::test::test_val(y1, y2);
+  torsten::test::test_val(y1, observer.y);
 }
 
 TEST_F(TorstenOdeTest_chem, odeint_rk45_ivp_system) {
@@ -114,14 +115,14 @@ TEST_F(TorstenOdeTest_sho, rk45_theta_var_matrix_result) {
   std::vector<var> theta_var = stan::math::to_var(theta);
   vector<vector<var> > y1(integrate_ode_rk45(f, y0, t0, ts, theta_var, x_r, x_i, msgs, atol, rtol, max_num_steps));
 
-  using Ode = PMXOdeintSystem<harm_osc_ode_fun, double, double, var>;
-  PMXOdeService<Ode, Odeint> serv(y0.size(), theta.size());
-  Ode ode{serv, f, t0, ts, y0, theta_var, x_r, x_i, msgs};
+  using Ode = PMXOdeSystem<harm_osc_ode_fun, double, double, var>;
+  Ode ode{f, t0, ts, y0, theta_var, x_r, x_i, msgs};
   using scheme_t = boost::numeric::odeint::runge_kutta_dopri5<std::vector<double>, double, std::vector<double>, double>;
   PMXOdeintIntegrator<scheme_t> solver(rtol, atol, max_num_steps);
-  Eigen::MatrixXd y2 = solver.integrate<Ode, false>(ode);
+  OdeDataObserver<Ode> observer(ode);
+  solver.integrate(ode, observer);
 
-  torsten::test::test_grad(theta_var, y1, y2, 1.e-8, 1.e-8);
+  torsten::test::test_grad(theta_var, y1, observer.y, 1.e-8, 1.e-8);
 }
 
 TEST_F(TorstenOdeTest_lorenz, odeint_rk45_fwd_sensitivity_theta) {
@@ -239,6 +240,43 @@ TEST_F(TorstenOdeTest_neutropenia, group_rk45_fwd_sensitivity_theta) {
   for (int i = 0; i < np; ++i) {
     stan::math::matrix_v y_i = y_m2.block(0, icol, y0.size(), len[i]);
     torsten::test::test_grad(theta_var, theta_var_m[i], y, y_i, 1e-16, 1e-16);
+    icol += len[i];
+  }
+}
+
+TEST_F(TorstenOdeTest_neutropenia, group_rk45_fwd_sensitivity_theta_vs_adams) {
+  // size of population
+  const int np = 2;
+
+  vector<var> theta_var = stan::math::to_var(theta);
+
+  vector<int> len(np, ts.size());
+  vector<double> ts_m;
+  ts_m.reserve(np * ts.size());
+  for (int i = 0; i < np; ++i) ts_m.insert(ts_m.end(), ts.begin(), ts.end());
+
+  vector<vector<double> > y0_m (np, y0);
+  vector<vector<var> > theta_var_m (np, stan::math::to_var(theta));
+  vector<vector<double> > x_r_m (np, x_r);
+  vector<vector<int> > x_i_m (np, x_i);
+
+  vector<vector<var> > y = pmx_integrate_ode_adams(f, y0, t0, ts, theta_var, x_r, x_i);
+  Eigen::Matrix<var, -1, -1> y_m1 = pmx_integrate_ode_group_rk45(f, y0_m, t0, len, ts_m, theta_var_m , x_r_m, x_i_m);
+  Eigen::Matrix<var, -1, -1> y_m2 = pmx_integrate_ode_group_rk45(f, y0_m, t0, len, ts_m, theta_var_m , x_r_m, x_i_m);
+
+  EXPECT_EQ(y_m1.cols(), ts_m.size());
+  EXPECT_EQ(y_m2.cols(), ts_m.size());
+  int icol = 0;
+  for (int i = 0; i < np; ++i) {
+    stan::math::matrix_v y_i = y_m1.block(0, icol, y0.size(), len[i]);
+    torsten::test::test_grad(theta_var, theta_var_m[i], y, y_i, 2e-6, 2e-6);
+    icol += len[i];
+  }
+
+  icol = 0;
+  for (int i = 0; i < np; ++i) {
+    stan::math::matrix_v y_i = y_m2.block(0, icol, y0.size(), len[i]);
+    torsten::test::test_grad(theta_var, theta_var_m[i], y, y_i, 2e-6, 2e-6);
     icol += len[i];
   }
 }

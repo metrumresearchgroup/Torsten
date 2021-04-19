@@ -18,9 +18,11 @@
 #include <chrono>
 #include <ctime>
 
-using torsten::dsolve::PMXCvodesFwdSystem;
+using torsten::dsolve::PMXOdeSystem;
 using torsten::dsolve::PMXCvodesIntegrator;
 using torsten::dsolve::PMXOdeService;
+using torsten::dsolve::OdeObserver;
+using torsten::dsolve::OdeDataObserver;
 using torsten::PMXCvodesSensMethod;
 using torsten::AD;
 using torsten::CSDA;
@@ -28,8 +30,6 @@ using torsten::DQ;
 using stan::math::var;
 
 TEST_F(TorstenOdeTest_sho, t0_var) {
-  PMXCvodesIntegrator solver(rtol, atol, 1000);
-  
   ts.resize(1); ts[0] = 1.0;
   std::vector<double> t0_vec{t0};
   
@@ -55,8 +55,6 @@ TEST_F(TorstenOdeTest_sho, t0_var) {
 }
 
 TEST_F(TorstenOdeTest_chem, t0_var) {
-  PMXCvodesIntegrator solver(rtol, atol, 1000);
-  
   ts.resize(1); ts[0] = 1.0;
   std::vector<double> t0_vec{t0};
   
@@ -84,8 +82,6 @@ TEST_F(TorstenOdeTest_chem, t0_var) {
 }
 
 TEST_F(TorstenOdeTest_lorenz, t0_var) {
-  PMXCvodesIntegrator solver(rtol, atol, 1000);
-  
   ts.resize(1); ts[0] = 1.0;
   std::vector<double> t0_vec{t0};
   
@@ -112,298 +108,236 @@ TEST_F(TorstenOdeTest_lorenz, t0_var) {
   }
 }
 
-TEST_F(TorstenOdeTest_sho, cvodes_ivp_system_csda) {
-  PMXCvodesIntegrator solver(rtol, atol, 1000);
+TEST_F(TorstenOdeTest_sho, cvodes_ivp_system) {
+  using Ode = PMXOdeSystem<F, double, double, double>;
+  Ode ode{f, t0, ts, y0, theta, x_r, x_i, msgs};
 
-  using Ode1 = PMXCvodesFwdSystem<F, double, double, double, cvodes_def<CSDA, CV_BDF, CV_STAGGERED>>;
-  
-  PMXOdeService<Ode1> s1(2, 1);
-  Ode1 ode{s1, f, t0, ts, y0, theta, x_r, x_i, msgs};
-  std::vector<std::vector<double> > y = solver.integrate(ode);
-  Eigen::MatrixXd y_mat = solver.integrate<Ode1, false>(ode);
-  std::vector<std::vector<double> > y1 =
-    stan::math::integrate_ode_bdf(f, y0, t0, ts, theta , x_r, x_i);
-  torsten::test::test_val(y, y1);
-  torsten::test::test_val(y_mat, y1);
+  {
+    PMXCvodesIntegrator<CV_BDF, CV_STAGGERED> solver(rtol, atol, 1000);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);
+    std::vector<std::vector<double> > y1 =
+      stan::math::integrate_ode_bdf(f, y0, t0, ts, theta , x_r, x_i);
+    torsten::test::test_val(observer.y, y1);
+    torsten::test::test_val(observer_mat.y, y1);
 
-  y = torsten::pmx_integrate_ode_bdf(f, y0, t0, ts, theta , x_r, x_i);
-  torsten::test::test_val(y, y1);
+    auto y = torsten::pmx_integrate_ode_bdf(f, y0, t0, ts, theta , x_r, x_i);
+    torsten::test::test_val(observer.y, y1);
+  }
 
-  using Ode2 = PMXCvodesFwdSystem<F, double, double, double, cvodes_def<CSDA, CV_ADAMS, CV_STAGGERED>>;
-  PMXOdeService<Ode2> s2(2, 1);
-  Ode2 ode2{s2, f, t0, ts, y0, theta, x_r, x_i, msgs};
-  y = solver.integrate(ode2);
-  y_mat = solver.integrate<Ode2, false>(ode2);
-  y1 = stan::math::integrate_ode_adams(f, y0, t0, ts, theta , x_r, x_i);
-  torsten::test::test_val(y, y1);
-  torsten::test::test_val(y_mat, y1);
+  {
+    PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> solver(rtol, atol, 1000);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);
+    std::vector<std::vector<double> > y1 =
+      stan::math::integrate_ode_adams(f, y0, t0, ts, theta , x_r, x_i);
+    torsten::test::test_val(observer.y, y1);
+    torsten::test::test_val(observer_mat.y, y1);
 
-  y = torsten::pmx_integrate_ode_adams(f, y0, t0, ts, theta , x_r, x_i);
-  torsten::test::test_val(y, y1);
+    auto y = torsten::pmx_integrate_ode_adams(f, y0, t0, ts, theta , x_r, x_i);
+    torsten::test::test_val(observer.y, y1);
+  }
 }
 
 TEST_F(TorstenOdeTest_lorenz, cvodes_ivp_system) {
-  PMXCvodesIntegrator solver(rtol, atol, max_num_steps);
+  using Ode = PMXOdeSystem<F, double, double, double>;
+  Ode ode{f, t0, ts, y0, theta, x_r, x_i, msgs};
 
-  using Ode1 = PMXCvodesFwdSystem<F, double, double, double, cvodes_def<AD, CV_BDF, CV_STAGGERED>>;
-  
-  PMXOdeService<typename Ode1::Ode> s1(3, 3);
-  Ode1 ode{s1, f, t0, ts, y0, theta, x_r, x_i, msgs};
-  std::vector<std::vector<double> > y = solver.integrate(ode);
-  Eigen::MatrixXd y_mat = solver.integrate<Ode1, false>(ode);
-  std::vector<std::vector<double> > y1 =
-    stan::math::integrate_ode_bdf(f, y0, t0, ts, theta , x_r, x_i);
-  torsten::test::test_val(y, y1);
-  torsten::test::test_val(y_mat, y1);
+  {
+    PMXCvodesIntegrator<CV_BDF, CV_STAGGERED> solver(rtol, atol, 10000);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);
+    std::vector<std::vector<double> > y1 =
+      stan::math::integrate_ode_bdf(f, y0, t0, ts, theta , x_r, x_i);
+    torsten::test::test_val(observer.y, y1);
+    torsten::test::test_val(observer_mat.y, y1);
 
-  y = torsten::pmx_integrate_ode_bdf(f, y0, t0, ts, theta , x_r, x_i);
-  torsten::test::test_val(y, y1);
+    auto y = torsten::pmx_integrate_ode_bdf(f, y0, t0, ts, theta , x_r, x_i);
+    torsten::test::test_val(observer.y, y1);
+  }
 
-  using Ode2 = PMXCvodesFwdSystem<F, double, double, double, cvodes_def<AD, CV_ADAMS, CV_STAGGERED>>;
-  
-  PMXOdeService<typename Ode2::Ode> s2(3, 3);
-  Ode2 ode2{s2, f, t0, ts, y0, theta, x_r, x_i, msgs};
-  y = solver.integrate(ode2);
-  y_mat = solver.integrate<Ode2, false>(ode2);
-  y1 = stan::math::integrate_ode_adams(f, y0, t0, ts, theta , x_r, x_i);
-  torsten::test::test_val(y, y1);
-  torsten::test::test_val(y_mat, y1);
+  {
+    PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> solver(rtol, atol, 10000);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);
+    std::vector<std::vector<double> > y1 =
+      stan::math::integrate_ode_adams(f, y0, t0, ts, theta , x_r, x_i);
+    torsten::test::test_val(observer.y, y1);
+    torsten::test::test_val(observer_mat.y, y1);
 
-  y = torsten::pmx_integrate_ode_adams(f, y0, t0, ts, theta , x_r, x_i);
-  torsten::test::test_val(y, y1);
+    auto y = torsten::pmx_integrate_ode_adams(f, y0, t0, ts, theta , x_r, x_i);
+    torsten::test::test_val(observer.y, y1);
+  }
 }
 
-TEST_F(TorstenOdeTest_chem, fwd_sensitivity_theta_CSDA) {
-  PMXCvodesIntegrator solver(rtol, atol, 1e8);
+TEST_F(TorstenOdeTest_chem, fwd_sensitivity_theta) {
+  using Ode = PMXOdeSystem<F, double, double, var>;
   std::vector<var> theta_var = stan::math::to_var(theta);
+  Ode ode(f, t0, ts, y0, theta_var, x_r, x_i, msgs);
 
-  std::vector<std::vector<var> > y_a, y_b, y1, y2;
-  using Ode1 = PMXCvodesFwdSystem<F, double, double, var, cvodes_def<CSDA, CV_ADAMS, CV_STAGGERED>>;
-  using Ode2 = PMXCvodesFwdSystem<F, double, double, var, cvodes_def<CSDA, CV_BDF, CV_STAGGERED>>;
-  
-  PMXOdeService<typename Ode1::Ode> s1(3, 3);
-  PMXOdeService<typename Ode2::Ode> s2(3, 3);
-  Ode1 ode1(s1, f, t0, ts, y0, theta_var, x_r, x_i, msgs);
-  Ode2 ode2(s2, f, t0, ts, y0, theta_var, x_r, x_i, msgs);
+  {
+    PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> solver(rtol, atol, 1e8);
+    auto y1 = stan::math::integrate_ode_adams(f, y0, t0, ts, theta_var, x_r, x_i);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);
+    torsten::test::test_grad(theta_var, y1, observer.y, 1.E-8, 1.E-5);
+    torsten::test::test_grad(theta_var, y1, observer_mat.y, 1.E-8, 1.E-5);
+  }
 
-  y1 = stan::math::integrate_ode_adams(f, y0, t0, ts, theta_var, x_r, x_i);
-  y2 = stan::math::integrate_ode_bdf(f, y0, t0, ts, theta_var, x_r, x_i);
-
-  y_a = solver.integrate(ode1);
-  y_b = solver.integrate(ode2);
-  torsten::test::test_grad(theta_var, y1, y_a, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y2, y_b, 1.E-8, 1.E-5);
-
-  Eigen::MatrixXd y_a_mat = solver.integrate<Ode1, false>(ode1);
-  Eigen::MatrixXd y_b_mat = solver.integrate<Ode2, false>(ode2);
-  torsten::test::test_grad(theta_var, y1, y_a_mat, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y2, y_b_mat, 1.E-8, 1.E-5);
+  {
+    PMXCvodesIntegrator<CV_BDF, CV_STAGGERED> solver(rtol, atol, 1e8);
+    auto y1 = stan::math::integrate_ode_bdf(f, y0, t0, ts, theta_var, x_r, x_i);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);
+    torsten::test::test_grad(theta_var, y1, observer.y, 1.E-8, 1.E-5);
+    torsten::test::test_grad(theta_var, y1, observer_mat.y, 1.E-8, 1.E-5);
+  }
 }
 
-TEST_F(TorstenOdeTest_chem, fwd_sensitivity_theta_AD) {
-  PMXCvodesIntegrator solver(rtol, atol, 1e8);
-  std::vector<var> theta_var = stan::math::to_var(theta);
-
-  std::vector<std::vector<var> > y_a, y_b, y1, y2;
-  using Ode1 = PMXCvodesFwdSystem<F, double, double, var, cvodes_def<AD, CV_ADAMS, CV_STAGGERED>>;
-  using Ode2 = PMXCvodesFwdSystem<F, double, double, var, cvodes_def<AD, CV_BDF, CV_STAGGERED>>;
-  
-  PMXOdeService<Ode1> s1(3, 3);
-  PMXOdeService<Ode2> s2(3, 3);
-  Ode1 ode1(s1, f, t0, ts, y0, theta_var, x_r, x_i, msgs);
-  Ode2 ode2(s2, f, t0, ts, y0, theta_var, x_r, x_i, msgs);
-
-  y1 = stan::math::integrate_ode_adams(f, y0, t0, ts, theta_var, x_r, x_i);
-  y2 = stan::math::integrate_ode_bdf(f, y0, t0, ts, theta_var, x_r, x_i);
-
-  y_a = solver.integrate(ode1);
-  y_b = solver.integrate(ode2);
-  torsten::test::test_grad(theta_var, y1, y_a, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y2, y_b, 1.E-8, 1.E-5);
-
-  y_a = torsten::pmx_integrate_ode_adams(f, y0, t0, ts, theta_var, x_r, x_i);
-  y_b = torsten::pmx_integrate_ode_bdf(f, y0, t0, ts, theta_var, x_r, x_i);
-  torsten::test::test_grad(theta_var, y1, y_a, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y2, y_b, 1.E-8, 1.E-5);
-
-  Eigen::MatrixXd y_a_mat = solver.integrate<Ode1, false>(ode1);
-  Eigen::MatrixXd y_b_mat = solver.integrate<Ode2, false>(ode2);
-  torsten::test::test_grad(theta_var, y1, y_a_mat, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y2, y_b_mat, 1.E-8, 1.E-5);
-}
-
-TEST_F(TorstenOdeTest_chem, fwd_sensitivity_y0_CSDA) {
-  PMXCvodesIntegrator solver(rtol, atol, 1e8);
+TEST_F(TorstenOdeTest_chem, fwd_sensitivity_y0) {
+  using Ode = PMXOdeSystem<F, double, var, double>;
   std::vector<var> y0_var = stan::math::to_var(y0);
+  Ode ode(f, t0, ts, y0_var, theta, x_r, x_i, msgs);
 
-  std::vector<std::vector<var> > y_a, y_b, y1, y2;
-  using Ode1 = PMXCvodesFwdSystem<F, double, var, double, cvodes_def<CSDA, CV_ADAMS, CV_STAGGERED>>;
-  using Ode2 = PMXCvodesFwdSystem<F, double, var, double, cvodes_def<CSDA, CV_BDF, CV_STAGGERED>>;
-  
-  PMXOdeService<typename Ode1::Ode> s1(3, 3);
-  PMXOdeService<typename Ode2::Ode> s2(3, 3);
-  Ode1 ode1(s1, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
-  Ode2 ode2(s2, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
+  {
+    PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> solver(rtol, atol, 1e8);
+    auto y1 = stan::math::integrate_ode_adams(f, y0_var, t0, ts, theta, x_r, x_i);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);
+    torsten::test::test_grad(y0_var, y1, observer.y, 1.E-8, 1.E-5);
+    torsten::test::test_grad(y0_var, y1, observer_mat.y, 1.E-8, 1.E-5);
+  }
 
-  y1 = stan::math::integrate_ode_adams(f, y0_var, t0, ts, theta, x_r, x_i);
-  y2 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta, x_r, x_i);
-
-  y_a = solver.integrate(ode1);
-  y_b = solver.integrate(ode2);
-  torsten::test::test_grad(y0_var, y1, y_a, 1.E-8, 1.E-5);
-  torsten::test::test_grad(y0_var, y2, y_b, 1.E-8, 1.E-5);
-
-  Eigen::MatrixXd y_a_mat = solver.integrate<Ode1, false>(ode1);
-  Eigen::MatrixXd y_b_mat = solver.integrate<Ode2, false>(ode2);
-  torsten::test::test_grad(y0_var, y1, y_a_mat, 1.E-8, 1.E-5);
-  torsten::test::test_grad(y0_var, y2, y_b_mat, 1.E-8, 1.E-5);
-}
-
-TEST_F(TorstenOdeTest_chem, fwd_sensitivity_y0_AD) {
-  PMXCvodesIntegrator solver(rtol, atol, 1e8);
-  std::vector<var> y0_var = stan::math::to_var(y0);
-
-  std::vector<std::vector<var> > y_a, y_b, y1, y2;
-  using Ode1 = PMXCvodesFwdSystem<F, double, var, double, cvodes_def<AD, CV_ADAMS, CV_STAGGERED>>;
-  using Ode2 = PMXCvodesFwdSystem<F, double, var, double, cvodes_def<AD, CV_BDF, CV_STAGGERED>>;
-  
-  PMXOdeService<Ode1> s1(3, 3);
-  PMXOdeService<Ode2> s2(3, 3);
-  Ode1 ode1(s1, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
-  Ode2 ode2(s2, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
-
-  y1 = stan::math::integrate_ode_adams(f, y0_var, t0, ts, theta, x_r, x_i);
-  y2 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta, x_r, x_i);
-
-  y_a = solver.integrate(ode1);
-  y_b = solver.integrate(ode2);
-  torsten::test::test_grad(y0_var, y_a, y1, 1.E-8, 1.E-5);
-  torsten::test::test_grad(y0_var, y_b, y2, 1.E-8, 1.E-5);
-
-  y_a = torsten::pmx_integrate_ode_adams(f, y0_var, t0, ts, theta, x_r, x_i);
-  y_b = torsten::pmx_integrate_ode_bdf(f, y0_var, t0, ts, theta, x_r, x_i);
-  torsten::test::test_grad(y0_var, y_a, y1, 1.E-8, 1.E-5);
-  torsten::test::test_grad(y0_var, y_b, y2, 1.E-8, 1.E-5);
-
-  Eigen::MatrixXd y_a_mat = solver.integrate<Ode1, false>(ode1);
-  Eigen::MatrixXd y_b_mat = solver.integrate<Ode2, false>(ode2);
-  torsten::test::test_grad(y0_var, y1, y_a_mat, 1.E-8, 1.E-5);
-  torsten::test::test_grad(y0_var, y2, y_b_mat, 1.E-8, 1.E-5);
+  {
+    PMXCvodesIntegrator<CV_BDF, CV_STAGGERED> solver(rtol, atol, 1e8);
+    auto y1 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta, x_r, x_i);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);
+    torsten::test::test_grad(y0_var, y1, observer.y, 1.E-8, 1.E-5);
+    torsten::test::test_grad(y0_var, y1, observer_mat.y, 1.E-8, 1.E-5);
+  }
 }
 
 TEST_F(TorstenOdeTest_chem, fwd_sensitivity_theta_y0) {
-  PMXCvodesIntegrator solver(rtol, atol, 1e8);
+  using Ode = PMXOdeSystem<F, double, var, var>;
   std::vector<var> theta_var = stan::math::to_var(theta);
   std::vector<var> y0_var = stan::math::to_var(y0);
+  Ode ode(f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
 
-  std::vector<std::vector<var> > y_a, y_b, y1, y2;
-  using Ode1 = PMXCvodesFwdSystem<F, double, var, var, cvodes_def<AD, CV_ADAMS, CV_STAGGERED>>;
-  using Ode2 = PMXCvodesFwdSystem<F, double, var, var, cvodes_def<AD, CV_BDF, CV_STAGGERED>>;
-  
-  PMXOdeService<typename Ode1::Ode> s1(3, 3);
-  PMXOdeService<typename Ode2::Ode> s2(3, 3);
-  Ode1 ode1(s1, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
-  Ode2 ode2(s2, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
+  {
+    PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> solver(rtol, atol, 1e8);
+    auto y1 = stan::math::integrate_ode_adams(f, y0_var, t0, ts, theta_var, x_r, x_i);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);    
+    torsten::test::test_grad(y0_var, observer.y, y1, 1.E-8, 1.E-5);
+    torsten::test::test_grad(theta_var, observer.y, y1, 1.E-8, 1.E-5);
 
-  y1 = stan::math::integrate_ode_adams(f, y0_var, t0, ts, theta_var, x_r, x_i);
-  y2 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta_var, x_r, x_i);
+    std::vector<stan::math::var> vars(y0_var);
+    vars.insert(vars.end(), theta_var.begin(), theta_var.end());
+    torsten::test::test_grad(vars, y1, observer_mat.y, 1.E-8, 1.E-5);
+  }
 
-  y_a = solver.integrate(ode1);
-  y_b = solver.integrate(ode2);
-  torsten::test::test_grad(y0_var, y_a, y1, 1.E-8, 1.E-5);
-  torsten::test::test_grad(y0_var, y_b, y2, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y_a, y1, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y_b, y2, 1.E-8, 1.E-5);
+  {
+    PMXCvodesIntegrator<CV_BDF, CV_STAGGERED> solver(rtol, atol, 1e8);
+    auto y1 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta_var, x_r, x_i);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);    
+    torsten::test::test_grad(y0_var, observer.y, y1, 1.E-8, 1.E-5);
+    torsten::test::test_grad(theta_var, observer.y, y1, 1.E-8, 1.E-5);
 
-  y_a = torsten::pmx_integrate_ode_adams(f, y0_var, t0, ts, theta_var, x_r, x_i);
-  y_b = torsten::pmx_integrate_ode_bdf(f, y0_var, t0, ts, theta_var, x_r, x_i);
-  torsten::test::test_grad(y0_var, y_a, y1, 1.E-8, 1.E-5);
-  torsten::test::test_grad(y0_var, y_b, y2, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y_a, y1, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y_b, y2, 1.E-8, 1.E-5);
-
-  Eigen::MatrixXd y_a_mat = solver.integrate<Ode1, false>(ode1);
-  Eigen::MatrixXd y_b_mat = solver.integrate<Ode2, false>(ode2);
-  std::vector<stan::math::var> vars(y0_var);
-  vars.insert(vars.end(), theta_var.begin(), theta_var.end());
-  torsten::test::test_grad(vars, y1, y_a_mat, 1.E-8, 1.E-5);
-  torsten::test::test_grad(vars, y2, y_b_mat, 1.E-8, 1.E-5);
+    std::vector<stan::math::var> vars(y0_var);
+    vars.insert(vars.end(), theta_var.begin(), theta_var.end());
+    torsten::test::test_grad(vars, y1, observer_mat.y, 1.E-8, 1.E-5);
+  }
 }
 
 TEST_F(TorstenOdeTest_sho, fwd_sensitivity_theta) {
-  PMXCvodesIntegrator solver(rtol, atol, 1e8);
+  using Ode = PMXOdeSystem<F, double, double, var>;
   std::vector<var> theta_var = stan::math::to_var(theta);
+  Ode ode(f, t0, ts, y0, theta_var, x_r, x_i, msgs);
 
-  std::vector<std::vector<var> > y_a, y_b, y1, y2;
-  using Ode1 = PMXCvodesFwdSystem<F, double, double, var, cvodes_def<AD, CV_ADAMS, CV_STAGGERED>>;
-  using Ode2 = PMXCvodesFwdSystem<F, double, double, var, cvodes_def<AD, CV_BDF, CV_STAGGERED>>;
-  
-  PMXOdeService<typename Ode1::Ode> s1(2, 1);
-  PMXOdeService<typename Ode2::Ode> s2(2, 1);
-  Ode1 ode1(s1, f, t0, ts, y0, theta_var, x_r, x_i, msgs);
-  Ode2 ode2(s2, f, t0, ts, y0, theta_var, x_r, x_i, msgs);
+  {
+    PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> solver(rtol, atol, 1e8);
+    auto y1 = stan::math::integrate_ode_adams(f, y0, t0, ts, theta_var, x_r, x_i);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);
+    torsten::test::test_grad(theta_var, y1, observer.y, 1.E-8, 1.E-5);
+    torsten::test::test_grad(theta_var, y1, observer_mat.y, 1.E-8, 1.E-5);
+  }
 
-  y1 = stan::math::integrate_ode_adams(f, y0, t0, ts, theta_var, x_r, x_i);
-  y2 = stan::math::integrate_ode_bdf(f, y0, t0, ts, theta_var, x_r, x_i);
-
-  y_a = solver.integrate(ode1);
-  y_b = solver.integrate(ode2);
-  torsten::test::test_grad(theta_var, y_a, y1, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y_b, y2, 1.E-8, 1.E-5);
-
-  y_a = torsten::pmx_integrate_ode_adams(f, y0, t0, ts, theta_var, x_r, x_i);
-  y_b = torsten::pmx_integrate_ode_bdf(f, y0, t0, ts, theta_var, x_r, x_i);
-  torsten::test::test_grad(theta_var, y_a, y1, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y_b, y2, 1.E-8, 1.E-5);
-
-  Eigen::MatrixXd y_a_mat = solver.integrate<Ode1, false>(ode1);
-  Eigen::MatrixXd y_b_mat = solver.integrate<Ode2, false>(ode2);
-  torsten::test::test_grad(theta_var, y1, y_a_mat, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y2, y_b_mat, 1.E-8, 1.E-5);
+  {
+    PMXCvodesIntegrator<CV_BDF, CV_STAGGERED> solver(rtol, atol, 1e8);
+    auto y1 = stan::math::integrate_ode_bdf(f, y0, t0, ts, theta_var, x_r, x_i);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);
+    torsten::test::test_grad(theta_var, y1, observer.y, 1.E-8, 1.E-5);
+    torsten::test::test_grad(theta_var, y1, observer_mat.y, 1.E-8, 1.E-5);
+  }
 }
 
 TEST_F(TorstenOdeTest_sho, fwd_sensitivity_y0) {
-  PMXCvodesIntegrator solver(rtol, atol, 1e8);
+  using Ode = PMXOdeSystem<F, double, var, double>;
   std::vector<var> y0_var = stan::math::to_var(y0);
+  Ode ode(f, t0, ts, y0_var, theta, x_r, x_i, msgs);
 
-  std::vector<std::vector<var> > y_a, y_b, y1, y2;
-  using Ode1 = PMXCvodesFwdSystem<F, double, var, double, cvodes_def<AD, CV_ADAMS, CV_STAGGERED>>;
-  using Ode2 = PMXCvodesFwdSystem<F, double, var, double, cvodes_def<AD, CV_BDF, CV_STAGGERED>>;
-  
-  PMXOdeService<typename Ode1::Ode> s1(2, 1);
-  PMXOdeService<typename Ode2::Ode> s2(2, 1);
-  Ode1 ode1(s1, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
-  Ode2 ode2(s2, f, t0, ts, y0_var, theta, x_r, x_i, msgs);
+  {
+    PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> solver(rtol, atol, 1e8);
+    auto y1 = stan::math::integrate_ode_adams(f, y0_var, t0, ts, theta, x_r, x_i);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);
+    torsten::test::test_grad(y0_var, y1, observer.y, 1.E-8, 1.E-5);
+    torsten::test::test_grad(y0_var, y1, observer_mat.y, 1.E-8, 1.E-5);
+  }
 
-  y1 = stan::math::integrate_ode_adams(f, y0_var, t0, ts, theta, x_r, x_i);
-  y2 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta, x_r, x_i);
-
-  y_a = solver.integrate(ode1);
-  y_b = solver.integrate(ode2);
-  torsten::test::test_grad(y0_var, y_a, y1, 1.E-8, 1.E-5);
-  torsten::test::test_grad(y0_var, y_b, y2, 1.E-8, 1.E-5);
-
-  y_a = torsten::pmx_integrate_ode_adams(f, y0_var, t0, ts, theta, x_r, x_i);
-  y_b = torsten::pmx_integrate_ode_bdf(f, y0_var, t0, ts, theta, x_r, x_i);
-  torsten::test::test_grad(y0_var, y_a, y1, 1.E-8, 1.E-5);
-  torsten::test::test_grad(y0_var, y_b, y2, 1.E-8, 1.E-5);
-
-  Eigen::MatrixXd y_a_mat = solver.integrate<Ode1, false>(ode1);
-  Eigen::MatrixXd y_b_mat = solver.integrate<Ode2, false>(ode2);
-  torsten::test::test_grad(y0_var, y1, y_a_mat, 1.E-8, 1.E-5);
-  torsten::test::test_grad(y0_var, y2, y_b_mat, 1.E-8, 1.E-5);
+  {
+    PMXCvodesIntegrator<CV_BDF, CV_STAGGERED> solver(rtol, atol, 1e8);
+    auto y1 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta, x_r, x_i);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);
+    torsten::test::test_grad(y0_var, y1, observer.y, 1.E-8, 1.E-5);
+    torsten::test::test_grad(y0_var, y1, observer_mat.y, 1.E-8, 1.E-5);
+  }
 }
 
 TEST_F(TorstenOdeTest_sho, fwd_sensitivity_ts) {
   using stan::math::value_of;
-  PMXCvodesIntegrator solver(rtol, atol, 1e8);
+  using Ode = PMXOdeSystem<F, var, double, double>;
+  PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> solver(rtol, atol, 1e8);
   std::vector<var> ts_var = stan::math::to_var(ts);
+  Ode ode(f, t0, ts_var, y0, theta, x_r, x_i, msgs);
+  OdeObserver<Ode> observer(ode);
+  OdeDataObserver<Ode> observer_mat(ode);
+  solver.integrate(ode, observer);
 
-  std::vector<std::vector<var> > y, y1, y2;
-  using Ode = PMXCvodesFwdSystem<F, var, double, double, cvodes_def<AD, CV_ADAMS, CV_STAGGERED>>;
-  PMXOdeService<typename Ode::Ode> s(2, 1);
-  Ode ode(s, f, t0, ts_var, y0, theta, x_r, x_i, msgs);
-  y = solver.integrate(ode);
+  std::vector<std::vector<var>>& y = observer.y;
 
   std::vector<double> g(ts.size()), fval(y0.size());
   for (size_t i = 0; i < ts.size(); ++i) {
@@ -424,15 +358,15 @@ TEST_F(TorstenOdeTest_sho, fwd_sensitivity_ts) {
 
 TEST_F(TorstenOdeTest_lorenz, fwd_sensitivity_ts) {
   using stan::math::value_of;
-
-  PMXCvodesIntegrator solver(rtol, atol, 1e8);
+  using Ode = PMXOdeSystem<F, var, double, double>;
+  PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> solver(rtol, atol, 1e8);
   std::vector<var> ts_var = stan::math::to_var(ts);
+  Ode ode(f, t0, ts_var, y0, theta, x_r, x_i, msgs);
+  OdeObserver<Ode> observer(ode);
+  OdeDataObserver<Ode> observer_mat(ode);
+  solver.integrate(ode, observer);
 
-  std::vector<std::vector<var> > y, y1, y2;
-  using Ode = PMXCvodesFwdSystem<F, var, double, double, cvodes_def<AD, CV_BDF, CV_STAGGERED>>;
-  PMXOdeService<typename Ode::Ode> s(3, 3);
-  Ode ode(s, f, t0, ts_var, y0, theta, x_r, x_i, msgs);
-  y = solver.integrate(ode);
+  std::vector<std::vector<var>>& y = observer.y;
 
   std::vector<double> g(ts.size()), fval(y0.size());
   for (size_t i = 0; i < ts.size(); ++i) {
@@ -452,59 +386,55 @@ TEST_F(TorstenOdeTest_lorenz, fwd_sensitivity_ts) {
 }
 
 TEST_F(TorstenOdeTest_sho, fwd_sensitivity_theta_y0) {
-  PMXCvodesIntegrator solver(rtol, atol, 1e8);
+  using Ode = PMXOdeSystem<F, double, var, var>;
   std::vector<var> theta_var = stan::math::to_var(theta);
   std::vector<var> y0_var = stan::math::to_var(y0);
+  Ode ode(f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
 
-  std::vector<std::vector<var> > y_a, y_b, y1, y2;
-  using Ode1 = PMXCvodesFwdSystem<F, double, var, var, cvodes_def<AD, CV_ADAMS, CV_STAGGERED>>;
-  using Ode2 = PMXCvodesFwdSystem<F, double, var, var, cvodes_def<AD, CV_BDF, CV_STAGGERED>>;
-  
-  PMXOdeService<typename Ode1::Ode> s1(2, 1);
-  PMXOdeService<typename Ode2::Ode> s2(2, 1);
-  Ode1 ode1(s1, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
-  Ode2 ode2(s2, f, t0, ts, y0_var, theta_var, x_r, x_i, msgs);
+  {
+    PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> solver(rtol, atol, 1e8);
+    auto y1 = stan::math::integrate_ode_adams(f, y0_var, t0, ts, theta_var, x_r, x_i);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);    
+    torsten::test::test_grad(y0_var, observer.y, y1, 1.E-8, 1.E-5);
+    torsten::test::test_grad(theta_var, observer.y, y1, 1.E-8, 1.E-5);
 
-  y1 = stan::math::integrate_ode_adams(f, y0_var, t0, ts, theta_var, x_r, x_i);
-  y2 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta_var, x_r, x_i);
+    std::vector<stan::math::var> vars(y0_var);
+    vars.insert(vars.end(), theta_var.begin(), theta_var.end());
+    torsten::test::test_grad(vars, y1, observer_mat.y, 1.E-8, 1.E-5);
+  }
 
-  y_a = solver.integrate(ode1);
-  y_b = solver.integrate(ode2);
-  torsten::test::test_grad(y0_var, y_a, y1, 1.E-8, 1.E-5);
-  torsten::test::test_grad(y0_var, y_b, y2, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y_a, y1, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y_b, y2, 1.E-8, 1.E-5);
+  {
+    PMXCvodesIntegrator<CV_BDF, CV_STAGGERED> solver(rtol, atol, 1e8);
+    auto y1 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta_var, x_r, x_i);
+    OdeObserver<Ode> observer(ode);
+    OdeDataObserver<Ode> observer_mat(ode);
+    solver.integrate(ode, observer);
+    solver.integrate(ode, observer_mat);    
+    torsten::test::test_grad(y0_var, observer.y, y1, 1.E-8, 1.E-5);
+    torsten::test::test_grad(theta_var, observer.y, y1, 1.E-8, 1.E-5);
 
-  y_a = torsten::pmx_integrate_ode_adams(f, y0_var, t0, ts, theta_var, x_r, x_i);
-  y_b = torsten::pmx_integrate_ode_bdf(f, y0_var, t0, ts, theta_var, x_r, x_i);
-  torsten::test::test_grad(y0_var, y_a, y1, 1.E-8, 1.E-5);
-  torsten::test::test_grad(y0_var, y_b, y2, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y_a, y1, 1.E-8, 1.E-5);
-  torsten::test::test_grad(theta_var, y_b, y2, 1.E-8, 1.E-5);
-
-  Eigen::MatrixXd y_a_mat = solver.integrate<Ode1, false>(ode1);
-  Eigen::MatrixXd y_b_mat = solver.integrate<Ode2, false>(ode2);
-  std::vector<stan::math::var> vars(y0_var);
-  vars.insert(vars.end(), theta_var.begin(), theta_var.end());
-  torsten::test::test_grad(vars, y1, y_a_mat, 1.E-8, 1.E-5);
-  torsten::test::test_grad(vars, y2, y_b_mat, 1.E-8, 1.E-5);
+    std::vector<stan::math::var> vars(y0_var);
+    vars.insert(vars.end(), theta_var.begin(), theta_var.end());
+    torsten::test::test_grad(vars, y1, observer_mat.y, 1.E-8, 1.E-5);
+  }
 }
 
 TEST_F(TorstenOdeTest_lorenz, fwd_sensitivity_theta_y0_ts) {
   using stan::math::value_of;
-
-  PMXCvodesIntegrator solver(rtol, atol, 1e8);
+  using Ode = PMXOdeSystem<F, var, var, var>;
+  PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> solver(rtol, atol, 1e8);
   std::vector<var> theta_var = stan::math::to_var(theta);
   std::vector<var> y0_var = stan::math::to_var(y0);
   std::vector<var> ts_var = stan::math::to_var(ts);
+  Ode ode(f, t0, ts_var, y0_var, theta_var, x_r, x_i, msgs);
+  OdeObserver<Ode> observer(ode);
+  solver.integrate(ode, observer);
+  std::vector<std::vector<var> >& y = observer.y;
+  std::vector<std::vector<var> > y1 = stan::math::integrate_ode_adams(f, y0_var, t0, ts, theta_var, x_r, x_i);
 
-  std::vector<std::vector<var> > y, y1, y2;
-  using Ode = PMXCvodesFwdSystem<F, var, var, var, cvodes_def<AD, CV_ADAMS, CV_STAGGERED>>;
-  PMXOdeService<typename Ode::Ode> s(3, 3);
-  Ode ode(s, f, t0, ts_var, y0_var, theta_var, x_r, x_i, msgs);
-  y = solver.integrate(ode);
-
-  y1 = stan::math::integrate_ode_adams(f, y0_var, t0, ts, theta_var, x_r, x_i);
   torsten::test::test_grad(y0_var, y, y1, 1.E-6, 1.E-5);
   torsten::test::test_grad(theta_var, y, y1, 1.E-6, 1.E-4);
 
@@ -527,19 +457,16 @@ TEST_F(TorstenOdeTest_lorenz, fwd_sensitivity_theta_y0_ts) {
 
 TEST_F(TorstenOdeTest_chem, fwd_sensitivity_theta_y0_ts) {
   using stan::math::value_of;
-
-  PMXCvodesIntegrator solver(rtol, atol, 1e8);
+  using Ode = PMXOdeSystem<F, var, var, var>;
+  PMXCvodesIntegrator<CV_BDF, CV_STAGGERED> solver(rtol, atol, 1e8);
   std::vector<var> theta_var = stan::math::to_var(theta);
   std::vector<var> y0_var = stan::math::to_var(y0);
   std::vector<var> ts_var = stan::math::to_var(ts);
-
-  std::vector<std::vector<var> > y, y1, y2;
-  using Ode = PMXCvodesFwdSystem<F, var, var, var, cvodes_def<AD, CV_BDF, CV_STAGGERED>>;
-  PMXOdeService<typename Ode::Ode> s(3, 3);
-  Ode ode(s, f, t0, ts_var, y0_var, theta_var, x_r, x_i, msgs);
-  y = solver.integrate(ode);
-
-  y1 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta_var, x_r, x_i);
+  Ode ode(f, t0, ts_var, y0_var, theta_var, x_r, x_i, msgs);
+  OdeObserver<Ode> observer(ode);
+  solver.integrate(ode, observer);
+  std::vector<std::vector<var> >& y = observer.y;
+  std::vector<std::vector<var> > y1 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta_var, x_r, x_i);
 
   torsten::test::test_grad(y0_var, y, y1, 1.E-6, 1.E-5);
   torsten::test::test_grad(theta_var, y, y1, 1.E-6, 1.E-4);
@@ -563,18 +490,16 @@ TEST_F(TorstenOdeTest_chem, fwd_sensitivity_theta_y0_ts) {
 
 TEST_F(TorstenOdeTest_chem, fwd_sensitivity_y0_ts) {
   using stan::math::value_of;
-
-  PMXCvodesIntegrator solver(rtol, atol, 1e8);
+  using Ode = PMXOdeSystem<F, var, var, double>;
+  PMXCvodesIntegrator<CV_BDF, CV_STAGGERED> solver(rtol, atol, 1e8);
   std::vector<var> y0_var = stan::math::to_var(y0);
   std::vector<var> ts_var = stan::math::to_var(ts);
+  Ode ode(f, t0, ts_var, y0_var, theta, x_r, x_i, msgs);
+  OdeObserver<Ode> observer(ode);
+  solver.integrate(ode, observer);
+  std::vector<std::vector<var> >& y = observer.y;
+  std::vector<std::vector<var> > y1 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts_var, theta, x_r, x_i);
 
-  std::vector<std::vector<var> > y, y1, y2;
-  using Ode = PMXCvodesFwdSystem<F, var, var, double, cvodes_def<AD, CV_BDF, CV_STAGGERED>>;
-  PMXOdeService<typename Ode::Ode> s(3, 3);
-  Ode ode(s, f, t0, ts_var, y0_var, theta, x_r, x_i, msgs);
-  y = solver.integrate(ode);
-
-  y1 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta, x_r, x_i);
   torsten::test::test_grad(y0_var, y, y1, 1.E-6, 1.E-5);
 
   std::vector<double> g(ts.size()), fval(y0.size());
@@ -596,18 +521,16 @@ TEST_F(TorstenOdeTest_chem, fwd_sensitivity_y0_ts) {
 
 TEST_F(TorstenOdeTest_chem, fwd_sensitivity_theta_ts) {
   using stan::math::value_of;
-
-  PMXCvodesIntegrator solver(rtol, atol, 1e8);
+  using Ode = PMXOdeSystem<F, var, double, var>;
+  PMXCvodesIntegrator<CV_BDF, CV_STAGGERED> solver(rtol, atol, 1e8);
   std::vector<var> theta_var = stan::math::to_var(theta);
   std::vector<var> ts_var = stan::math::to_var(ts);
+  Ode ode(f, t0, ts_var, y0, theta_var, x_r, x_i, msgs);
+  OdeObserver<Ode> observer(ode);
+  solver.integrate(ode, observer);
+  std::vector<std::vector<var> >& y = observer.y;
+  std::vector<std::vector<var> > y1 = stan::math::integrate_ode_bdf(f, y0, t0, ts_var, theta_var, x_r, x_i);
 
-  std::vector<std::vector<var> > y, y1, y2;
-  using Ode = PMXCvodesFwdSystem<F, var, double, var, cvodes_def<AD, CV_BDF, CV_STAGGERED>>;
-  PMXOdeService<typename Ode::Ode> s(3, 3);
-  Ode ode(s, f, t0, ts_var, y0, theta_var, x_r, x_i, msgs);
-  y = solver.integrate(ode);
-
-  y1 = stan::math::integrate_ode_bdf(f, y0, t0, ts, theta_var, x_r, x_i);
   torsten::test::test_grad(theta_var, y, y1, 1.E-6, 1.E-5);
 
   std::vector<double> g(ts.size()), fval(y0.size());
@@ -629,18 +552,16 @@ TEST_F(TorstenOdeTest_chem, fwd_sensitivity_theta_ts) {
 
 TEST_F(TorstenOdeTest_sho, fwd_sensitivity_theta_ts) {
   using stan::math::value_of;
-
-  PMXCvodesIntegrator solver(rtol, atol, 1e8);
+  using Ode = PMXOdeSystem<F, var, double, var>;
+  PMXCvodesIntegrator<CV_ADAMS, CV_STAGGERED> solver(rtol, atol, 1e8);
   std::vector<var> theta_var = stan::math::to_var(theta);
   std::vector<var> ts_var = stan::math::to_var(ts);
+  Ode ode(f, t0, ts_var, y0, theta_var, x_r, x_i, msgs);
+  OdeObserver<Ode> observer(ode);
+  solver.integrate(ode, observer);
+  std::vector<std::vector<var> >& y = observer.y;
+  std::vector<std::vector<var> > y1 = stan::math::integrate_ode_adams(f, y0, t0, ts_var, theta_var, x_r, x_i);
 
-  std::vector<std::vector<var> > y, y1, y2;
-  using Ode = PMXCvodesFwdSystem<F, var, double, var, cvodes_def<AD, CV_BDF, CV_STAGGERED>>;
-  PMXOdeService<typename Ode::Ode> s(2, 1);
-  Ode ode(s, f, t0, ts_var, y0, theta_var, x_r, x_i, msgs);
-  y = solver.integrate(ode);
-
-  y1 = stan::math::integrate_ode_bdf(f, y0, t0, ts, theta_var, x_r, x_i);
   torsten::test::test_grad(theta_var, y, y1, 1.E-6, 1.E-5);
 
   std::vector<double> g(ts.size()), fval(y0.size());
@@ -788,7 +709,7 @@ TEST_F(TorstenOdeTest_sho, integrate_ode_adams_theta_ts) {
   std::vector<var> ts_var = stan::math::to_var(ts);
 
   std::vector<std::vector<var> > y, y1, y2;
-  for (int i = 0; i < 10; ++i) {
+  for (int i = 0; i < 3; ++i) {
     y = pmx_integrate_ode_adams(f, y0, t0, ts_var, theta_var, x_r, x_i);
   }
   y1 = stan::math::integrate_ode_adams(f, y0, t0, ts, theta_var, x_r, x_i);
@@ -821,7 +742,7 @@ TEST_F(TorstenOdeTest_lorenz, integrate_ode_bdf_y0_ts) {
   std::vector<var> ts_var = stan::math::to_var(ts);
 
   std::vector<std::vector<var> > y, y1, y2;
-  for (int i = 0; i < 10; ++i) {
+  for (int i = 0; i < 3; ++i) {
     y = pmx_integrate_ode_bdf(f, y0_var, t0, ts_var, theta, x_r, x_i);
   }
   y1 = stan::math::integrate_ode_bdf(f, y0_var, t0, ts, theta, x_r, x_i);
@@ -854,7 +775,7 @@ TEST_F(TorstenOdeTest_lorenz, integrate_ode_bdf_theta_ts) {
   std::vector<var> ts_var = stan::math::to_var(ts);
 
   std::vector<std::vector<var> > y, y1, y2;
-  for (int i = 0; i < 10; ++i) {
+  for (int i = 0; i < 3; ++i) {
     y = pmx_integrate_ode_bdf(f, y0, t0, ts_var, theta_var, x_r, x_i);
   }
   y1 = stan::math::integrate_ode_bdf(f, y0, t0, ts, theta_var, x_r, x_i);
@@ -879,7 +800,7 @@ TEST_F(TorstenOdeTest_lorenz, integrate_ode_bdf_theta_ts) {
 }
 
 TEST_F(TorstenOdeTest_lorenz, fwd_sensitivity_theta_AD_stan_bdf) {
-  using torsten::dsolve::PMXCvodesFwdSystem;
+  using torsten::dsolve::PMXOdeSystem;
   using torsten::pmx_integrate_ode_bdf;
   using stan::math::var;
   using std::vector;
@@ -897,7 +818,7 @@ TEST_F(TorstenOdeTest_lorenz, fwd_sensitivity_theta_AD_stan_bdf) {
 }
 
 // TEST_F(CVODESIntegratorTest, error_handling) {
-//   using torsten::dsolve::PMXCvodesFwdSystem;
+//   using torsten::dsolve::PMXOdeSystem;
 //   using torsten::dsolve::PMXCvodesIntegrator;
 //   const double rtol = 1e-4;
 //   const double atol = 1e-8;
@@ -917,7 +838,7 @@ TEST_F(TorstenOdeTest_lorenz, fwd_sensitivity_theta_AD_stan_bdf) {
 //   EXPECT_THROW_MSG(PMXCvodesIntegrator(rtol, atol, -100), std::invalid_argument,
 //                    "max_num_steps");
 
-//   PMXCvodesFwdSystem<harm_osc_ode_fun, double, double, double> ode{
+//   PMXOdeSystem<harm_osc_ode_fun, double, double, double> ode{
 //       f, y0, theta, x_r, x_i, msgs};
 //   PMXCvodesIntegrator solver(rtol, atol, n);
 //   double bad_t0 = std::numeric_limits<double>::infinity();
