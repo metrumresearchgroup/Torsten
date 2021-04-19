@@ -50,24 +50,24 @@ TEST_F(TorstenOneCptTest, variadic_tlag) {
   auto f1 = [&] (const std::vector<std::vector<double> >& x) {
               return pmx_solve_rk45(f_onecpt, nCmt, time, amt, rate,
               ii, evid, cmt, addl, ss, x, biovar, tlag, rtol, atol,
-              max_num_steps);
+              max_num_steps, nullptr);
             };
   auto f2 = [&] (const std::vector<std::vector<stan::math::var> >& x) {
               return pmx_solve_rk45(f_onecpt, nCmt, time, amt, rate,
               ii, evid, cmt, addl, ss, x, biovar, rtol, atol,
-              max_num_steps);
+              max_num_steps, nullptr);
             };
   torsten::test::test_grad(f1, f2, pMatrix, 2e-5, 1e-6, 1e-5, 1e-6);
 
   auto f3 = [&] (const std::vector<double>& x) {
               return pmx_solve_rk45(f_onecpt, nCmt, time, amt, rate,
                                     ii, evid, cmt, addl, ss, x, biovar[0], tlag[0], rtol, atol,
-              max_num_steps);
+              max_num_steps, nullptr);
             };
   auto f4 = [&] (const std::vector<stan::math::var>& x) {
               return pmx_solve_rk45(f_onecpt, nCmt, time, amt, rate,
                                     ii, evid, cmt, addl, ss, x, biovar, rtol, atol,
-              max_num_steps);
+              max_num_steps, nullptr);
             };
   torsten::test::test_grad(f3, f4, pMatrix[0], 2e-5, 1e-6, 1e-5, 1e-6);
 }
@@ -91,24 +91,24 @@ TEST_F(TorstenOneCptTest, variadic_biovar) {
   auto f1 = [&] (const std::vector<std::vector<double> >& x) {
               return pmx_solve_rk45(f_onecpt, nCmt, time, amt, rate,
               ii, evid, cmt, addl, ss, x, biovar, tlag, rtol, atol,
-              max_num_steps);
+              max_num_steps, nullptr);
             };
   auto f2 = [&] (const std::vector<std::vector<stan::math::var> >& x) {
               return pmx_solve_rk45(f_onecpt, nCmt, time, amt, rate,
               ii, evid, cmt, addl, ss, x, rtol, atol,
-              max_num_steps);
+              max_num_steps, nullptr);
             };
   torsten::test::test_grad(f1, f2, pMatrix, 2e-5, 1e-6, 1e-5, 1e-6);
 
   auto f3 = [&] (const std::vector<double>& x) {
               return pmx_solve_rk45(f_onecpt, nCmt, time, amt, rate,
                                     ii, evid, cmt, addl, ss, x, biovar[0], tlag[0], rtol, atol,
-              max_num_steps);
+              max_num_steps, nullptr);
             };
   auto f4 = [&] (const std::vector<stan::math::var>& x) {
               return pmx_solve_rk45(f_onecpt, nCmt, time, amt, rate,
                                     ii, evid, cmt, addl, ss, x, rtol, atol,
-              max_num_steps);
+              max_num_steps, nullptr);
             };
   torsten::test::test_grad(f3, f4, pMatrix[0], 2e-5, 1e-6, 1e-5, 1e-6);
 }
@@ -209,10 +209,10 @@ TEST_F(TorstenTwoCptTest, variadic_real_and_int_data) {
   twocpt_ode_with_real_data f1;
   auto y1 = pmx_solve_bdf(f_twocpt, nCmt, time, amt, rate,
                           ii, evid, cmt, addl, ss, theta_1, biovar, tlag,
-                          rtol, atol, max_num_steps, rtol, atol, max_num_steps);
+                          rtol, atol, max_num_steps, rtol, atol, max_num_steps, nullptr);
   auto y2 = pmx_solve_bdf(f1, nCmt, time, amt, rate,
                           ii, evid, cmt, addl, ss, pMatrix_var, biovar, tlag, x_r,
-                          rtol, atol, max_num_steps, rtol, atol, max_num_steps);
+                          rtol, atol, max_num_steps, rtol, atol, max_num_steps, nullptr);
   torsten::test::test_grad(theta_1[0], pMatrix_var[0], y1, y2, 1e-5, 1e-6);
 
   int cl_add_int = 1;
@@ -222,10 +222,10 @@ TEST_F(TorstenTwoCptTest, variadic_real_and_int_data) {
   twocpt_ode_with_data f2;
   auto y3 = pmx_solve_bdf(f_twocpt, nCmt, time, amt, rate,
                           ii, evid, cmt, addl, ss, theta_2, biovar, tlag,
-                          rtol, atol, max_num_steps, rtol, atol, max_num_steps);
+                          rtol, atol, max_num_steps, rtol, atol, max_num_steps, nullptr);
   auto y4 = pmx_solve_bdf(f2, nCmt, time, amt, rate,
                           ii, evid, cmt, addl, ss, pMatrix_var, biovar, tlag, x_r, x_i,
-                          rtol, atol, max_num_steps, rtol, atol, max_num_steps);
+                          rtol, atol, max_num_steps, rtol, atol, max_num_steps, nullptr);
   torsten::test::test_grad(theta_2[0], pMatrix_var[0], y3, y4, 1e-5, 1e-6);
 }
 
@@ -255,9 +255,9 @@ TEST_F(TorstenTwoCptTest, variadic_real_and_int_data_default_control) {
   std::vector<std::vector<double> > x_r{{cl_add}};
   twocpt_ode_with_real_data f1;
   auto y1 = pmx_solve_rk45(f_twocpt, nCmt, time, amt, rate,
-                          ii, evid, cmt, addl, ss, theta_1, biovar, tlag);
+                           ii, evid, cmt, addl, ss, theta_1, biovar, tlag, nullptr);
   auto y2 = pmx_solve_rk45(f1, nCmt, time, amt, rate,
-                          ii, evid, cmt, addl, ss, pMatrix_var, biovar, tlag, x_r);
+                          ii, evid, cmt, addl, ss, pMatrix_var, biovar, tlag, x_r, nullptr);
   torsten::test::test_grad(theta_1[0], pMatrix_var[0], y1, y2, 1e-5, 1e-6);
 
   int cl_add_int = 1;
@@ -266,9 +266,9 @@ TEST_F(TorstenTwoCptTest, variadic_real_and_int_data_default_control) {
   std::vector<std::vector<int> > x_i{{cl_add_int}};
   twocpt_ode_with_data f2;
   auto y3 = pmx_solve_rk45(f_twocpt, nCmt, time, amt, rate,
-                          ii, evid, cmt, addl, ss, theta_2, biovar, tlag);
+                          ii, evid, cmt, addl, ss, theta_2, biovar, tlag, nullptr);
   auto y4 = pmx_solve_rk45(f2, nCmt, time, amt, rate,
-                          ii, evid, cmt, addl, ss, pMatrix_var, biovar, tlag, x_r, x_i);
+                          ii, evid, cmt, addl, ss, pMatrix_var, biovar, tlag, x_r, x_i, nullptr);
   torsten::test::test_grad(theta_2[0], pMatrix_var[0], y3, y4, 1e-5, 1e-6);
 }
 

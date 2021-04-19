@@ -17,21 +17,22 @@
 #include <functional>
 
 namespace torsten {
-
   /** 
-   * Utility alias to access Nth type of a parameter pack
-   * example of usage
+   * Implementation of Non event parameters structure for
+   * bioavailability, lag time, real ODEdata, integer ODE data. Since
+   * we allow elision of any of these we need template discern the
+   * combination. The default is that the param pack has both
+   * bioavailability and lag time
    *
-   * <code>using ThirdType = NthTypeOf<2, Ts...>;</code>
+   * @tparam Ts types of non-event parameters. Each in the parameter
+   * pack is a 2d array.
    */
-  template<int N, typename... Ts> using NthTypeOf =
-    typename std::tuple_element<N, std::tuple<Ts...>>::type;
-
   template<typename... Ts>
   struct NonEventParameters_Impl {
-    static constexpr int npar = sizeof...(Ts) + 1; // all Ts pars & theta
-    using biovar_t = NthTypeOf<0, Ts...>;
-    using lag_t = NthTypeOf<1, Ts...>;
+    /// total # of params plus one for theta
+    static constexpr int npar = sizeof...(Ts) + 1;
+    using biovar_t = std::tuple_element_t<0, std::tuple<Ts...> >;
+    using lag_t = std::tuple_element_t<1, std::tuple<Ts...> >;
 
     static const auto& bioavailability(int i, int j,
                                        const std::tuple<const std::vector<std::vector<Ts> >&...> array_2d_params) {
@@ -43,6 +44,9 @@ namespace torsten {
     }
   };
 
+  /**
+   * Specialization: there's bioavailabity but no lag time.
+   */
   template<typename T>
   struct NonEventParameters_Impl<T> {
     static constexpr int npar = 2;
@@ -59,6 +63,9 @@ namespace torsten {
     }
   };
 
+  /**
+   * Specialization: there's neither bioavailabity but nor lag time.
+   */
   template<>
   struct NonEventParameters_Impl<> {
     static constexpr int npar = 1;
@@ -133,25 +140,25 @@ namespace torsten {
     const std::vector<T0>& time_;
     const std::vector<theta_container<T4>>& theta_;
     /// put parameter pack for bioavailability and lag time into tuple for later retrieval
-    const std::tuple<const std::vector<std::vector<tuple_pars_t> >&...> event_array_2d_params;
-    /// put parameter pack for ODE's data into tuple for later retrieval
-    const std::tuple<const std::vector<std::vector<Ts> >&...> model_array_2d_params;
+    const std::tuple<const std::vector<std::vector<tuple_pars_t> >&...> event_ctrl;
+    /// put parameter pack for ODE's real & integer data into tuple for later retrieval
+    const std::tuple<const std::vector<std::vector<Ts> >&...> ode_data;
 
     template <typename rec_t>
     NonEventParameters(int id, const rec_t& rec,
                        const std::vector<theta_container<T4>>& theta,
-                       const std::vector<std::vector<tuple_pars_t> >&... event_array_2d_params0,
-                       const std::vector<std::vector<Ts> >&... model_array_2d_params0) :
+                       const std::vector<std::vector<tuple_pars_t> >&... event_ctrl0,
+                       const std::vector<std::vector<Ts> >&... ode_data0) :
       pars(rec.len_[id]),
       time_(rec.time_),
       theta_(theta),
-      event_array_2d_params{std::tie(event_array_2d_params0...)},
-      model_array_2d_params{std::tie(model_array_2d_params0...)} {
+      event_ctrl{std::forward_as_tuple(event_ctrl0...)},
+      ode_data{std::forward_as_tuple(ode_data0...)} {
       int ibegin = rec.begin_[id];
       for (int i = 0; i < rec.len_[id]; ++i) {
         int theta_i = rec.len_param(id, theta) > 1 ? rec.begin_param(id, theta) + i : rec.begin_param(id, theta);
         pars[i] = std::make_pair<double, std::array<int, npar> >(double(stan::math::value_of(time_[ibegin + i])),
-          {theta_i,index_param(id,i,rec,event_array_2d_params0)..., index_param(id,i,rec,model_array_2d_params0)...});
+          {theta_i,index_param(id,i,rec,event_ctrl0)..., index_param(id,i,rec,ode_data0)...});
       }
       sort();
     }
@@ -178,13 +185,13 @@ namespace torsten {
                        int ibegin_biovar, int isize_biovar,
                        int ibegin_tlag, int isize_tlag,
                        const std::vector<theta_container<T4>>& theta,
-                       const std::vector<std::vector<tuple_pars_t> >&... event_array_2d_params0,
-                       const std::vector<std::vector<Ts> >&... model_array_2d_params0) :
+                       const std::vector<std::vector<tuple_pars_t> >&... event_ctrl0,
+                       const std::vector<std::vector<Ts> >&... ode_data0) :
       pars(rec.len_[id]),
       time_(rec.time_),
       theta_(theta),
-      event_array_2d_params{std::tie(event_array_2d_params0...)},
-      model_array_2d_params{std::tie(model_array_2d_params0...)} {
+      event_ctrl{std::forward_as_tuple(event_ctrl0...)},
+      ode_data{std::forward_as_tuple(ode_data0...)} {
       int ibegin = rec.begin_[id];
       for (int i = 0; i < rec.len_[id]; ++i) {
         int j = isize_theta   > 1 ? ibegin_theta  + i : ibegin_theta;
@@ -219,17 +226,17 @@ namespace torsten {
     inline auto& get_model_array_1d_param(int i) const {
       using Tuple = std::tuple<const std::vector<std::vector<Ts> >&...>;
       constexpr size_t Is_param = Is + NonEventParameters_Impl<tuple_pars_t...>::npar;
-      return std::get<Is>(model_array_2d_params)[std::get<Is_param>(pars[i].second)];
+      return std::get<Is>(ode_data)[std::get<Is_param>(pars[i].second)];
     }
 
     inline const T5 bioavailability(int iEvent, int iParameter) const {
       return NonEventParameters_Impl<tuple_pars_t...>::bioavailability(get_par_array(iEvent)[1], iParameter,
-                                                                       event_array_2d_params);
+                                                                       event_ctrl);
     }
 
     inline const T6 lag_time(int iEvent, int iParameter) const {
       return NonEventParameters_Impl<tuple_pars_t...>::lag_time(get_par_array(iEvent)[2], iParameter,
-                                                                event_array_2d_params);
+                                                                event_ctrl);
     }
 
     inline int size() { return pars.size(); }

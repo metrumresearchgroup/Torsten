@@ -263,7 +263,7 @@ TEST_F(TorstenOneCptTest, steady_state_multiple_infusion_vs_ode) {
   time[1] = addl[0] * ii[0];
 
   auto f = torsten::PMXOneCptModel<double>::f_;
-  MatrixXd x_ode = torsten::pmx_solve_rk45(f, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag);
+  MatrixXd x_ode = torsten::pmx_solve_rk45(f, nCmt, time, amt, rate, ii, evid, cmt, addl, ss, pMatrix, biovar, tlag, nullptr);
 
   // The last columns from the two runs are the steady state results
   for (int i = 0; i < nCmt; ++i) {
@@ -389,7 +389,7 @@ TEST_F(TorstenOneCptTest, single_iv_central_cmt_var) {
   rate[0] = 600;
 
   MatrixXd x = pmx_solve_onecpt(time, amt, rate, ii, evid, cmt, addl, ss,
-                                                     pMatrix, biovar, tlag);
+                                pMatrix, biovar, tlag);
 
   MatrixXd amounts(10, 2);
   amounts << 

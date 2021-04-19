@@ -52,8 +52,8 @@ namespace torsten {
     template<typename... Tss>
     EventsManager(const ER& rec,
                   const std::vector<theta_container<T4>>& theta,
-                  const std::vector<std::vector<Tss>>&... more_params) :
-      EventsManager(0, rec, theta, more_params...)
+                  const std::vector<std::vector<Tss>>&... non_event_params) :
+      EventsManager(0, rec, theta, non_event_params...)
     {}
 
     /*
@@ -63,8 +63,8 @@ namespace torsten {
     template<typename... Tss>
     EventsManager(int id, const ER& rec,
                   const std::vector<theta_container<T4>>& theta,
-                  const std::vector<std::vector<Tss>>&... more_params) :
-      params(id, rec, theta, more_params...),
+                  const std::vector<std::vector<Tss>>&... non_event_params) :
+      params(id, rec, theta, non_event_params...),
       event_his(rec.ncmt, rec.begin_[id], rec.len_[id], rec.time_, rec.amt_, rec.rate_, rec.ii_, rec.evid_, rec.cmt_, rec.addl_, rec.ss_)
     {
       ncmt = rec.ncmt;
@@ -83,8 +83,8 @@ namespace torsten {
                   int ibegin_biovar, int isize_biovar,
                   int ibegin_tlag, int isize_tlag,
                   const std::vector<theta_container<T4>>& theta,
-                  const std::vector<std::vector<Tss>>&... more_params) :
-      params(id, rec, ibegin_theta, isize_theta, ibegin_biovar, isize_biovar, ibegin_tlag, isize_tlag, theta, more_params...),
+                  const std::vector<std::vector<Tss>>&... non_event_params) :
+      params(id, rec, ibegin_theta, isize_theta, ibegin_biovar, isize_biovar, ibegin_tlag, isize_tlag, theta, non_event_params...),
       event_his(rec.ncmt, rec.begin_[id], rec.len_[id], rec.time_, rec.amt_, rec.rate_, rec.ii_, rec.evid_, rec.cmt_, rec.addl_, rec.ss_)
     {
       ncmt = rec.ncmt;
@@ -215,6 +215,7 @@ namespace torsten {
      * @return dosing amount
      */
     inline T_amt fractioned_amt(int i) const {
+      // return bioavailability(i, cmt(i) - 1) * amt(i);
       return params.bioavailability(i, event_his.cmt(i) - 1) * event_his.amt(i);
     }
 
@@ -281,8 +282,8 @@ namespace torsten {
     template<typename... Tss>
     static int num_events(const ER& rec,
                           const std::vector<theta_container<T4>>& theta,
-                          const std::vector<std::vector<Tss>>&... more_params) {
-      return num_events(0, rec, theta, more_params...);
+                          const std::vector<std::vector<Tss>>&... non_event_params) {
+      return num_events(0, rec, theta, non_event_params...);
     }
 
     static int num_events(int id, const ER& rec,
@@ -319,7 +320,7 @@ namespace torsten {
                           const std::vector<theta_container<T4>>& theta,
                           const std::vector<std::vector<T5> >& biovar,
                           const std::vector<std::vector<T6> >& tlag,
-                          const std::vector<std::vector<Tss>>&... more_params) {
+                          const std::vector<std::vector<Tss>>&... non_event_params) {
       int res;
       bool has_lag = rec.has_positive_param(id, tlag);
 
@@ -352,7 +353,7 @@ namespace torsten {
         res = n;
       } else {
         // FIXME not to use brute force
-        res = EventsManager(id, rec, theta, biovar, tlag, more_params...).events().size();
+        res = EventsManager(id, rec, theta, biovar, tlag, non_event_params...).events().size();
       }
 
       return res;
