@@ -1,19 +1,23 @@
 ## Template to simulate PKPD data
 ## Fribgerg-Karlsson population model
 
-modelName <- "fribergKarlsson"
+rm(list = ls())
+gc()
 
-library(mrgsolve)
-library(rstan)
+modelName <- "Fribergkarlsson"
+
+library("mrgsolve")
+library("dplyr")
+library("ggplot2")
 
 ## Simulate ME-2 plasma concentrations and ANC values
 ## using mrgsolve.
 
-nSub <- 15; # number of subjects
+nSub <- 8; # number of subjects
 nIIV <- 7; # number of parameters with inter-individual variations
 
 code <- '
-$PARAM CL = 10, Q = 15, VC = 35, VP = 105, KA = 2.0, MTT = 125, 
+$PARAM CL = 10, Q = 15, VC = 35, VP = 105, KA = 2.0, MTT = 125,
 Circ0 = 5, alpha = 3E-4, gamma = 0.17, WT = 70
 
 $SET delta=0.1 // simulation grid
@@ -38,11 +42,11 @@ double k12 = Qi / VCi;
 double k21 = Qi / VPi;
 double ktr = 4/MTTi;
 
-$ODE 
+$ODE
 dxdt_GUT = -KA * GUT;
 dxdt_CENT = KA * GUT - (k10 + k12) * CENT + k21 * PERI;
 dxdt_PERI = k12 * CENT - k21 * PERI;
-dxdt_PROL = ktr * (PROL + Circ0i) * 
+dxdt_PROL = ktr * (PROL + Circ0i) *
 ((1 - alphai * CENT/VCi) * pow(Circ0i/(CIRC + Circ0i),gamma) - 1);
 dxdt_TRANSIT1 = ktr * (PROL - TRANSIT1);
 dxdt_TRANSIT2 = ktr * (TRANSIT1 - TRANSIT2);
@@ -52,7 +56,7 @@ dxdt_CIRC = ktr * (TRANSIT3 - CIRC);
 $OMEGA name="IIV"
 0.0625 0.0625 0.0625 0.0625 0.04 0.0256 0.0256
 
-$SIGMA 0.01 0.01 
+$SIGMA 0.01 0.01
 
 $TABLE
 double CP = CENT/VCi;
@@ -70,8 +74,8 @@ out <- mod %>% data_set(e1) %>% carry.out(dose) %>% Req(CP,DV1,DV2) %>% mrgsim(e
 ## Observation and dosing times
 # doseTimes <- seq(0, 168, by = 12)
 xpk <- c(0, 0.083, 0.167, 0.25, 0.5, 0.75, 1, 1.5, 2,3,4,6,8)
-xpk <- c(xpk, xpk + 12, seq(24, 156, by = 12), c(xpk, 12, 18, 24) + 168)
-xneut <- seq(0, 672, by = 48)
+xpk <- c(xpk, xpk + 12, seq(24, 96, by = 12))
+xneut <- seq(0, 96, by = 24)
 time <- sort(unique(c(xpk, xneut)))
 
 ## Assemble data set for Stan
@@ -156,13 +160,13 @@ data <- with(xdata,
                rate = rate,
                cObs = DV1[iObsPK],
                neutObs = DV2[iObsPD],
-               
+
                nSubjects = nSub,
                nIIV = nIIV,
                start = start,
                end = end,
                weight = weight,
-               
+
                # Priors for PD parameters
                circ0HatPrior = circ0HatPrior,
                circ0HatPriorCV = circ0HatPriorCV,
@@ -175,23 +179,29 @@ data <- with(xdata,
              ))
 
 ## create initial estimates
-init <- function(){
-  list(CLHat = abs(rnorm(1, 0, 20)),
-       QHat = abs(rnorm(1, 0, 20)),
-       V1Hat = abs(rnorm(1, 0, 100)),
-       V2Hat = abs(rnorm(1, 0, 1000)),
-       kaHat = abs(rnorm(1, 0, 5)),
-       sigma = 0.2,
-       alphaHat = exp(rnorm(1, log(alphaHatPrior), alphaHatPriorCV)),
-       mttHat = exp(rnorm(1, log(mttHatPrior), mttHatPriorCV)),
-       circ0Hat = exp(rnorm(1, log(circ0HatPrior), circ0HatPriorCV)),
-       gamma = exp(rnorm(1, log(gammaPrior), gammaPriorCV)),
-       sigmaNeut = 0.2,
-       L = diag(nIIV),
-       omega = exp(rnorm(nIIV, log(0.05), 0.5)),
-       etaStd = matrix(rep(0, nIIV * nSub), nrow = nIIV))
+init <- function() {
+    x <- list(CLHat = abs(rnorm(1, 20, 20)),
+              QHat = abs(rnorm(1, 20, 20)),
+              V1Hat = abs(rnorm(1, 50, 50)),
+              V2Hat = abs(rnorm(1, 100, 100)),
+              kaHat = abs(rnorm(1, 5, 5)),
+              sigma = 0.2,
+              alphaHat = exp(rnorm(1, log(alphaHatPrior), alphaHatPriorCV)),
+              mttHat = exp(rnorm(1, log(mttHatPrior), mttHatPriorCV)),
+              circ0Hat = exp(rnorm(1, log(circ0HatPrior), circ0HatPriorCV)),
+              gamma = exp(rnorm(1, log(gammaPrior), gammaPriorCV)),
+              sigmaNeut = 0.2,
+              L = diag(nIIV),
+              omega = exp(rnorm(nIIV, log(0.05), 0.5)),
+              etaStd = matrix(rep(0, nIIV * nSub), nrow = nIIV))
+    x$kaHat  <- max(x$kaHat, (x$CLHat / x$V1Hat + x$QHat / x$V1Hat + x$QHat / x$V2Hat +
+                              sqrt((x$CLHat / x$V1Hat + x$QHat / x$V1Hat + x$QHat / x$V2Hat)^2 -
+                                   4 * x$CLHat / x$V1Hat * x$QHat / x$V2Hat)) / 2)
+    x
 }
 
-with(data, stan_rdump(ls(data), file = paste0(modelName,".data.R")))
-inits <- init()
-with(inits, stan_rdump(ls(inits), file = paste0(modelName,".init.R")))
+with(data, rstan::stan_rdump(ls(data), file = paste0(modelName,".data.R")))
+for (i in 1:4) {
+    inits <- init()
+    with(inits, rstan::stan_rdump(ls(inits), file = paste0(modelName,".init.",i, ".R")))
+}
