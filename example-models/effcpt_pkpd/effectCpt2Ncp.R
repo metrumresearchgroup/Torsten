@@ -34,16 +34,12 @@ library(tidyverse)
 ## source(file.path(toolsDir, "stanTools.R"))
 ## source(file.path(toolsDir, "functions.R"))
 
-rstan_options(auto_write = TRUE)
-## options(mc.cores = parallel::detectCores())
-
 set.seed(11191951) ## not required but assures repeatable results
 
 ################################################################################################
 ### Simulate ME-2 plasma concentrations and ANC values
 
 ## Parameter values
-
 ka <- 1.5
 CL <- 10 # L/h
 V <- 35 # L
@@ -63,11 +59,12 @@ rho <- diag(6)
 ## Observation and dosing times
 doses = c(10, 20, 40, 80)
 xpk <- c(0, 0.083, 0.167, 0.25, 0.5, 0.75, 1, 1.5, 2,3,4,6,8)
-xpk <- c(xpk, xpk + 12, seq(24, 156, by = 12), c(xpk, 12, 18, 24) + 168)
-xpd <- xpk[xpk %% 1 == 0]
+## xpk <- c(xpk, xpk + 12, seq(24, 156, by = 12), c(xpk, 12, 18, 24) + 168)
+xpk <- c(xpk, xpk + 12, seq(24, 120, by = 12))
+xpd <- xpk[xpk %% 24 == 0]
 time <- sort(unique(c(xpk, xpd)))
 
-nPerDose <- 4
+nPerDose <- 3
 nId <- nPerDose * length(doses) ## Number of individuals
 weight = rnorm.trunc(nId, 70, 15, 50, 100)
 
@@ -130,7 +127,7 @@ dataSim <- with(allData,
                      sigmaPD = sigmaPD))
 
 ### Simulate using Stan
-mod.sim <- cmdstan_model(file.path(modelDir, paste(simModelName, ".stan", sep = "")))
+mod.sim <- cmdstan_model(file.path(modelDir, paste(simModelName, ".stan", sep = "")),force_recompile=TRUE,quiet=FALSE)
 sim <- mod.sim$sample(data=dataSim, fixed_param=TRUE, seed=3829, iter_sampling = 1)
 
 ################################################################################################
@@ -271,6 +268,12 @@ init <- function(){
          etaStd = matrix(rep(0, 6 * nId), nrow = 6)
     )
 }
+
+for (i in 1:4) {
+    inits <- init()
+    with(inits, rstan::stan_rdump(ls(inits), file = paste0("init.",i, ".R")))
+}
+
 
 ### Specify the variables for which you want history and density plots
 

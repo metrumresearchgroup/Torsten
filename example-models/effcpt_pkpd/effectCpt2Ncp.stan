@@ -100,14 +100,14 @@ transformed parameters{
     K[3, 3] = -ke0[j];
 
     x[, start[j]:end[j] ] = pmx_solve_linode(time[start[j]:end[j]], 
-                                           amt[start[j]:end[j]],
-                                           rate[start[j]:end[j]],
-                                           ii[start[j]:end[j]],
-                                           evid[start[j]:end[j]],
-                                           cmt[start[j]:end[j]],
-                                           addl[start[j]:end[j]],
-                                           ss[start[j]:end[j]],
-                                           K, F, tLag);
+                                             amt[start[j]:end[j]],
+                                             rate[start[j]:end[j]],
+                                             ii[start[j]:end[j]],
+                                             evid[start[j]:end[j]],
+                                             cmt[start[j]:end[j]],
+                                             addl[start[j]:end[j]],
+                                             ss[start[j]:end[j]],
+                                             K, F, tLag);
 
     cHat[start[j]:end[j]] = x[2, start[j]:end[j]]' / V[j];
     ceHat[start[j]:end[j]] = x[3, start[j]:end[j]]' / V[j];
