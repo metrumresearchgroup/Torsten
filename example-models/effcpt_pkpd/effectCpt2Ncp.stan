@@ -70,11 +70,11 @@ transformed parameters{
   real<lower = 0> ke0[nId];
   real<lower = 0> Emax[nId];
   real<lower = 0> E0[nId];
-  vector[nt] cHat;
-  vector[nt] ceHat;
-  vector[nt] respHat;
-  vector[nObsPK] cHatObs;
-  vector[nObsPD] respHatObs;
+  vector<lower = 0>[nt] cHat;
+  vector<lower = 0>[nt] ceHat;
+  vector<lower = 0>[nt] respHat;
+  vector<lower = 0>[nObsPK] cHatObs;
+  vector<lower = 0>[nObsPD] respHatObs;
   matrix[nCmt, nCmt] K;
   matrix[nCmt, nt] x;
 
