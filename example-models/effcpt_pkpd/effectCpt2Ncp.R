@@ -59,12 +59,11 @@ rho <- diag(6)
 ## Observation and dosing times
 doses = c(10, 20, 40, 80)
 xpk <- c(0, 0.083, 0.167, 0.25, 0.5, 0.75, 1, 1.5, 2,3,4,6,8)
-## xpk <- c(xpk, xpk + 12, seq(24, 156, by = 12), c(xpk, 12, 18, 24) + 168)
-xpk <- c(xpk, xpk + 12, seq(24, 120, by = 12))
-xpd <- xpk[xpk %% 24 == 0]
+xpk <- c(xpk, xpk + 12, seq(24, 156, by = 12), c(xpk, 12, 18, 24) + 168)
+xpd <- xpk[xpk %% 1 == 0]
 time <- sort(unique(c(xpk, xpd)))
 
-nPerDose <- 3
+nPerDose <- 4
 nId <- nPerDose * length(doses) ## Number of individuals
 weight = rnorm.trunc(nId, 70, 15, 50, 100)
 
@@ -198,15 +197,15 @@ CLPriorCV <- 1 ## 0.10
 VPriorCV <- 1 ## 0.14
 kaPriorCV <- 1 ## 0.16
 
-ke0Prior <- 0.5
+ke0Prior <- ke0
 ke0PriorCV <- 1
-E0Prior <- 80
+E0Prior <- E0
 E0PriorCV <- 1
-EmaxPrior <- 40
+EmaxPrior <- Emax
 EmaxPriorCV <- 1
-EC50Prior <- 250
+EC50Prior <- EC50
 EC50PriorCV <- 1
-gammaPrior <- 2
+gammaPrior <- gamma
 gammaPriorCV <- 1
 
 ## create data set
