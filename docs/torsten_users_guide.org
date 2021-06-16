@@ -3,8 +3,6 @@
 #+LATEX_CLASS: amsbook
 #+LATEX_CLASS_OPTIONS: [12pt, reqno, oneside]
 
-# #+HTML_HEAD: <link rel="stylesheet" href="/Users/yiz/Work/tufte-css/tufte.css" type="text/css" />
-
 # title page
 #+LATEX_HEADER: \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
 #+LATEX_HEADER: \newcommand\mrgproject{}
@@ -58,15 +56,18 @@
 #+MACRO: stan_ver v2.27.0
 #+MACRO: newline @@latex:\\@@ @@html:<br>@@ @@ascii:|@@
 
-#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://www.pirilampo.org/styles/readtheorg/css/htmlize.css"/>
-#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://www.pirilampo.org/styles/readtheorg/css/readtheorg.css"/>
+# #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://www.pirilampo.org/styles/readtheorg/css/htmlize.css"/>
+# #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://www.pirilampo.org/styles/readtheorg/css/readtheorg.css"/>
+# #+HTML_HEAD: <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+# #+HTML_HEAD: <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+# #+HTML_HEAD: <script type="text/javascript" src="https://www.pirilampo.org/styles/lib/js/jquery.stickytableheaders.min.js"></script>
+# #+HTML_HEAD: <script type="text/javascript" src="https://www.pirilampo.org/styles/readtheorg/js/readtheorg.js"></script>
+#+HTML_MATHJAX: align: left indent: 5em tagside: left font: Neo-Euler
+#+HTML_MATHJAX: cancel.js noErrors.js
+#+hugo_base_dir: ./hugo/
+#+hugo_section: post
 
-#+HTML_HEAD: <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-#+HTML_HEAD: <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-#+HTML_HEAD: <script type="text/javascript" src="https://www.pirilampo.org/styles/lib/js/jquery.stickytableheaders.min.js"></script>
-#+HTML_HEAD: <script type="text/javascript" src="https://www.pirilampo.org/styles/readtheorg/js/readtheorg.js"></script>
-
-#+OPTIONS: title:t, num:3
+#+OPTIONS: title:t, num:nil
 
 ** Development team
   :PROPERTIES:
