@@ -1,5 +1,5 @@
 functions{
-    real[] twoCptNeutModelODE(real t, real[] x, real[] parms, real[] rdummy, int[] idummy){
+    vector twoCptNeutModelODE(real t, vector x, real[] parms, real[] rdummy, int[] idummy){
     real k10;
     real k12;
     real k21;
@@ -13,7 +13,7 @@ functions{
     real gamma;
     real alpha;
     real ktr;
-    real dxdt[8];
+    vector[8] dxdt;
     real conc;
     real EDrug;
     real transit1;

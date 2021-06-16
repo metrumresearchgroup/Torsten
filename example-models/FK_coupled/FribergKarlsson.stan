@@ -1,5 +1,5 @@
 functions{
-  real[] FK_ODE(real t, real[] y, real[] y_pk, real[] theta, real[] rdummy, int[] idummy){
+  vector FK_ODE(real t, vector y, vector y_pk, real[] theta, real[] rdummy, int[] idummy){
     /* PK variables */
     real VC = theta[3];
 
@@ -16,8 +16,8 @@ functions{
     real circ     = fmax(machine_precision(), y[5] + circ0);
     real conc     = y_pk[2] / VC;
     real EDrug    = alpha * conc;
-
-    real dydt[5];
+    
+    vector[5] dydt;
 
     dydt[1] = ktr * prol * ((1 - EDrug) * ((circ0 / circ)^gamma) - 1);
     dydt[2] = ktr * (prol - transit1);

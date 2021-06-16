@@ -1,5 +1,5 @@
 functions{
-  real[] ode_rhs(real t, real[] x, real[] parms, real[] x_r, int[] x_i){
+  vector ode_rhs(real t, vector x, real[] parms, real[] x_r, int[] x_i){
     real CL = parms[1];
     real Q = parms[2];
     real V1 = parms[3];
@@ -10,7 +10,7 @@ functions{
     real k12 = Q / V1;
     real k21 = Q / V2;
     
-    real y[3];
+    vector[3] y;
 
     y[1] = -ka*x[1];
     y[2] = ka*x[1] - (k10 + k12)*x[2] + k21*x[3];

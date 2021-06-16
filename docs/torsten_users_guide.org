@@ -1,5 +1,5 @@
 #+TITLE: Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan
-#+SUBTITLE: User's Guide @@latex:\\@@ @@html:<br>@@ (Torsten Version 0.88, Stan version 2.25.0)
+#+SUBTITLE: User's Guide @@latex:\\@@ @@html:<br>@@ (Torsten Version 0.89rc, Stan version 2.27.0)
 #+LATEX_CLASS: amsbook
 #+LATEX_CLASS_OPTIONS: [12pt, reqno, oneside]
 
@@ -9,7 +9,7 @@
 #+LATEX_HEADER: \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
 #+LATEX_HEADER: \newcommand\mrgproject{}
 #+LATEX_HEADER: \newcommand\mrgtitle{Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan}
-#+LATEX_HEADER: \newcommand\mrgsubtitle{\large{User's Guide} \linebreak (Torsten Version 0.88rc, Stan version 2.25.0)}
+#+LATEX_HEADER: \newcommand\mrgsubtitle{\large{User's Guide} \linebreak (Torsten Version 0.89rc, Stan version 2.27.0)}
 #+LATEX_HEADER: \include{mrgtitlepage}
 
 # make index
@@ -54,8 +54,8 @@
 #+LATEX_HEADER: \newtheorem{remark}{Remark}
 
 #+MACRO: torsten_src @@latex:{\small \color{MRGGreen} \texttt{\textbf{$1}}}@@
-#+MACRO: torsten_ver v0.88
-#+MACRO: stan_ver v2.25.0
+#+MACRO: torsten_ver v0.89rc
+#+MACRO: stan_ver v2.27.0
 #+MACRO: newline @@latex:\\@@ @@html:<br>@@ @@ascii:|@@
 
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://www.pirilampo.org/styles/readtheorg/css/htmlize.css"/>
@@ -213,6 +213,16 @@ following:
   + Recruit non-developer users to conduct beta testing
 
 ** Changelog
+*** Version 0.89 <2021-06-15 Tue>
+**** Changed
+     :PROPERTIES:
+     :CUSTOM_ID: 0-85-changed
+     :END:
+  - New backend for ODE events solvers.
+  - Use vector instead of array as ODE function state & return type.
+  - Simplified ODE integrator naming,
+    e.g. {{{torsten_src(pmx\_ode\_bdf)}}} and  {{{torsten_src(pmx\_ode\_bdf\_ctrl)}}}.
+  - Update to Stan version 2.27.0.
 *** Version 0.88 <2020-12-18 Fri>
 **** Added
      :PROPERTIES:
@@ -652,7 +662,7 @@ function name can use any of the three suffixes. See below.
      ODE right-hand-side $f$. It should be defined in
      src_stan[:exports code]{functions} block and has the following format
 #+BEGIN_SRC stan
-  real[] = f(real t, real[] y, real[] param, real[] dat_r, int[] dat_i) {...}
+  vector = f(real t, vector y, real[] param, real[] dat_r, int[] dat_i) {...}
 #+END_SRC
      Here {{{torsten_src(t)}}} is time, {{{torsten_src(y)}}} the unknowns of ODE, {{{torsten_src(param)}}} the parameters, {{{torsten_src(dat\_r)}}} the real data, {{{torsten_src(dat\_i)}}}
      the integer data. {{{torsten_src(param)}}},
@@ -749,7 +759,7 @@ integrator. In the context, currently the couple solver supports one-
      system, but takes one additional argument: $y_1$, the PK states,
      i.e. solution to the PK ODEs.
      #+BEGIN_SRC stan
-       real[] reduced_ODE_rhs(real t, real[] y2, real[] y1, real[] theta, real[] x_r, int[] x_i) 
+       vector reduced_ODE_rhs(real t, vector y2, vector y1, real[] theta, real[] x_r, int[] x_i) 
      #+END_SRC
 **** {{{torsten_src(nCmt)}}} 
      The number of compartments. Equivalently, the dimension of the ODE system.
@@ -908,7 +918,7 @@ by these functions.
      It should be defined in
      src_stan[:exports code]{functions} block and has the following format
 #+BEGIN_SRC stan
-  real[] = f(real t, real[] y, real[] param, real[] dat_r, int[] dat_i) {...}
+  vector = f(real t, vector y, real[] param, real[] dat_r, int[] dat_i) {...}
 #+END_SRC
      Here {{{torsten_src(t)}}} is time, {{{torsten_src(y)}}} the unknowns of ODE, {{{torsten_src(param)}}} the parameters, {{{torsten_src(dat\_r)}}} the real data, {{{torsten_src(dat\_i)}}}
      the integer data.

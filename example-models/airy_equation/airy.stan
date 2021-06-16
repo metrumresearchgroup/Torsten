@@ -19,7 +19,7 @@ parameters {
 
 transformed parameters {
  vector[2] yinit = [y0, 0.0]';
- vector[2] y[n] = ode_adams_tol(airy, yinit, 0.0, ts, rtol, atol, 1000000);
+ vector[2] y[n] = pmx_ode_adams_ctrl(airy, yinit, 0.0, ts, rtol, atol, 1000000);
 }
 
 model {
