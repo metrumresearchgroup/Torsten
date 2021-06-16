@@ -639,6 +639,7 @@ where $k_{10}=CL/V_2$, $k_{12}=Q/V_2$, and $k_{21}=Q/V_3$.
     An =n=-by-=nt= matrix, where =nt= is the number of time steps and =n= is the number of rows(columns) of square matrix {{{torsten_src(K)}}}.
 
 ** General ODE Model Function
+\label{sec:general_ode}
 *** Description
     Function {{{torsten_src(pmx\_solve\_adams)}}}, {{{torsten_src(pmx\_solve\_bdf)}}}, and {{{torsten_src(pmx\_solve\_rk45)}}} solve a first-order ODE system
     specified by user-specified right-hand-side function {{{torsten_src(ODE\_rhs)}}} $f$
@@ -795,6 +796,8 @@ population, one subject after another.
 Here src_stan[:exports code]{[adams || rk45 || bdf]} indicates the
 function name can be of any of the three suffixes. See section [[ref:sec:ode_func_note]].
 *** Arguments
+**** {{{torsten_src(ODE\_rhs)}}}
+     Same as in Section [[ref:sec:general_ode]].
 **** {{{torsten_src(time)}}}, {{{torsten_src(amt)}}}, {{{torsten_src(rate)}}}, {{{torsten_src(ii)}}}, {{{torsten_src(evid)}}}, {{{torsten_src(cmt)}}}, {{{torsten_src(addl)}}}, {{{torsten_src(ss)}}}
      2d-array arguments that describe data record for the
      entire population (see also Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]]). They must have same size in the first
@@ -809,21 +812,6 @@ function name can be of any of the three suffixes. See section [[ref:sec:ode_fun
      The length of data for each subject within
      the above events arrays. The size of {{{torsten_src(len)}}} equals
      to population size $N$.
-**** {{{torsten_src(ODE\_rhs)}}}
-     ODE right-hand-side $f$. It should be defined in
-     src_stan[:exports code]{functions} block and has the following format
-#+BEGIN_SRC stan
-  real[] = f(real t, real[] y, real[] param, real[] dat_r, int[] dat_i) {...}
-#+END_SRC
-     Here {{{torsten_src(t)}}} is time, {{{torsten_src(y)}}} the unknowns of ODE, {{{torsten_src(param)}}} the parameters, {{{torsten_src(dat\_r)}}} the real data, {{{torsten_src(dat\_i)}}}
-     the integer data. {{{torsten_src(param)}}},
-     {{{torsten_src(dat\_r)}}}, and {{{torsten_src(dat\_i)}}} are from
-     the entry of {{{torsten_src(theta)}}}, {{{torsten_src(x\_r)}}},
-     and {{{torsten_src(x\_i)}}} corresponding to
-     {{{torsten_src(t)}}}, respectively.
-     $f$ should not include dosing rates in its
-     definition, as Torsten automatically update $f$
-     when the corresponding event indicates infusion dosage.
 **** {{{torsten_src(nCmt)}}} 
      The number of compartments. Equivalently, the dimension of the ODE system.
 **** {{{torsten_src(x\_r)}}}
