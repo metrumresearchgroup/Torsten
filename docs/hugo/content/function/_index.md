@@ -1,0 +1,911 @@
++++
+title = "Using Torsten"
+author = ["Yi Zhang"]
+date = 2021-06-25T00:00:00-07:00
+lastmod = 2021-06-26T00:13:57-07:00
+draft = false
+weight = 1005
++++
+
+<a id="org6659f9c"></a>
+
+The reader should have a basic understanding of how Stan works before
+reading this chapter. There are excellent resources online to get
+started with Stan ([http://mc-stan.org/documentation](http://mc-stan.org/documentation)).
+In this section we go through the different functions Torsten adds to
+Stan. The code for the examples can be found at the `example-models` folder.
+
+Torsten's functions are prefixed with `pmx_`.
+For some of their arguments we adopt NM-TRAN format for events
+specification(Table [tab:event_args](#tab:event_args)).
+
+<a id="table--tab:event-args"></a>
+<div class="table-caption">
+  <span class="table-number"><a href="#table--tab:event-args">Table 1</a></span>:
+  NM-TRAN compatible event specification arguments. All arrays should have the same length corresponding to the number of events.
+</div>
+
+| Argument Name | Definition                  | Stan data type |
+|---------------|-----------------------------|----------------|
+| `time`        | event time                  | `real[]`       |
+| `amt`         | dosing amount               | `real[]`       |
+| `rate`        | infusion rate               | `real[]`       |
+| `ii`          | interdose interval          | `real[]`       |
+| `evid`        | event ID                    | `int[]`        |
+| `cmt`         | event compartment           | `int[]`        |
+| `addl`        | additionial identical doses | `int[]`        |
+| `ss`          | steady-state dosing flag    | `int[]`        |
+
+All the `real[]` arguments above are allowed to
+be `parameters` in a Stan model.
+In addtion, Torsten functions
+support optional arguments and overloaded signatures.
+Optional arguments are indicated by surrounding square bracket `[]`.
+Table below shows three commonly used PMX model arguments that support
+overloading. In the rest of this document we assume this convention unless indicated otherwise.
+
+<a id="table--tab:event-params"></a>
+<div class="table-caption">
+  <span class="table-number"><a href="#table--tab:event-params">Table 2</a></span>:
+  PMX model parameter overloadings. One can use 1d array <code class="src src-stan"><span style="color: #b58900;">real</span>[]</code> to indicate constants of all events, or 2d array <code class="src src-stan"><span style="color: #b58900;">real</span>[ , ]</code> so that the \(i\)th row of the array describes the model arguments for time interval \((t_{i-1}, t_i)\), and the number of the rows equals to the size of <code>time</code>.
+</div>
+
+| Argument Name | Definition               | Stan data type          | Optional           |
+|---------------|--------------------------|-------------------------|--------------------|
+| `theta`       | model parameters         | `real[]` or `real[ , ]` | N                  |
+| `biovar`      | bioavailability fraction | `real[]` or `real[ , ]` | Y (default to 1.0) |
+| `tlag`        | lag time                 | `real[]` or `real[ , ]` | Y (default to 0.0) |
+
+
+## <span class="section-num">1</span> One Compartment Model {#one-compartment-model}
+
+
+
+### <span class="section-num">1.1</span> Description {#description}
+
+Function `pmx_solve_onecpt` solves a one-compartment PK
+model (Figure [1](#org1616883)). The model obtains plasma concentrations of parent drug \\(c=y\_2/V\_2\\)
+by solving for the mass of drug in the central compartment
+\\(y\_2\\) from ordinary differential equations(ODEs)
+
+\begin{align}\label{eq:onecpt}
+  y\_1' &= -k\_a y\_1, \\\\\\
+  y\_2' &= k\_a y\_1 - \left(\frac{CL}{V\_2} + \frac{Q}{V\_2}\right) y\_2.
+\end{align}
+
+<a id="org1616883"></a>
+
+{{< figure src="/ox-hugo/cptModels.png" caption="Figure 1: One and two compartment models with first order absorption implemented in Torsten." >}}
+
+
+### <span class="section-num">1.2</span> Usage {#usage}
+
+```stan
+matrix = pmx_solve_onecpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, biovar, tlag ] )
+```
+
+
+### <span class="section-num">1.3</span> Arguments {#arguments}
+
+See Table [tab:event_args](#tab:event_args) and Table [tab:event_params](#tab:event_params).
+
+
+### <span class="section-num">1.4</span> Return value {#return-value}
+
+An `ncmt`-by-`nt` matrix, where `nt` is the number of time steps and `ncmt=2` is the number of compartments.
+
+
+### <span class="section-num">1.5</span> Note {#note}
+
+-   ODE Parameters `theta` should consist of \\(CL\\), \\(V\_2\\), \\(k\_a\\), in that order.
+-   `biovar` and `tlag` are optional, so that the following are allowed:
+
+<!--listend-->
+
+```stan
+pmx_solve_onecpt(..., theta);
+pmx_solve_onecpt(..., theta, biovar);
+pmx_solve_onecpt(..., theta, biovar, tlag);
+```
+
+-   Setting \\(k\_a = 0\\) eliminates the first-order absorption.
+
+
+## <span class="section-num">2</span> Two Compartment Model {#two-compartment-model}
+
+<a id="orge6084b7"></a>
+
+
+### <span class="section-num">2.1</span> Description {#description}
+
+Function `pmx_solve_twocpt` solves a two-compartment PK
+model (Figure [{{< relref "one-cpt" >}}]({{< relref "one-cpt" >}})). The model obtains plasma concentrations of parent drug \\(c=y\_2/V\_2\\)
+by solving for the mass of drug in the central compartment
+\\(y\_2\\) from ordinary differential equations(ODEs)
+
+\begin{align} \label{eq:twocpt}
+  y\_1' &= -k\_a y\_1 \\\\\\
+  y\_2' &= k\_a y\_1 - \left(\frac{CL}{V\_2} + \frac{Q}{V\_2}\right) y\_2 +  \frac{Q}{V\_3}  y\_3  \\\\\\
+  y\_3' &= \frac{Q}{V\_2} y\_2 - \frac{Q}{V\_3} y\_3
+\end{align}
+
+
+### <span class="section-num">2.2</span> Usage {#usage}
+
+```stan
+matrix = pmx_solve_twocpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, biovar, tlag ] )
+```
+
+
+### <span class="section-num">2.3</span> Arguments {#arguments}
+
+See Table [tab:event_args](#tab:event_args) and Table [tab:event_params](#tab:event_params).
+
+
+### <span class="section-num">2.4</span> Return value {#return-value}
+
+An `ncmt`-by-`nt` matrix, where `nt` is the number of time steps and `ncmt=3` is the number of compartments.
+
+
+### <span class="section-num">2.5</span> Note {#note}
+
+-   ODE Parameters `theta` consists of \\(CL\\), \\(Q\\), \\(V\_2\\), \\(V\_3\\), \\(k\_a\\).
+-   `biovar` and `tlag` are optional, so that the following are allowed:
+
+<!--listend-->
+
+```stan
+pmx_solve_twocpt(..., theta);
+pmx_solve_twocpt(..., theta, biovar);
+pmx_solve_twocpt(..., theta, biovar, tlag);
+```
+
+-   Setting \\(k\_a = 0\\) eliminates the first-order absorption.
+
+
+## <span class="section-num">3</span> General Linear ODE Model Function {#general-linear-ode-model-function}
+
+
+### <span class="section-num">3.1</span> Description {#description}
+
+Function `pmx_solve_linode` solves a (piecewise) linear ODEs model with coefficients
+in form of matrix \\(K\\)
+
+\begin{equation}
+y^\prime\left(t\right) = Ky\left(t\right)
+\end{equation}
+
+For example, in a two-compartment model with first order absorption, \\(K\\) is
+
+\begin{equation}
+  K = \left[\begin{array}{ccc}
+              -k\_a & 0 & 0 \\\\\\
+              k\_a & -\left(k\_{10} + k\_{12}\right) & k\_{21} \\\\\\
+              0 & k\_{12} & -k\_{21}
+            \end{array}\right]
+\end{equation}
+
+where \\(k\_{10}=CL/V\_2\\), \\(k\_{12}=Q/V\_2\\), and \\(k\_{21}=Q/V\_3\\).
+
+
+### <span class="section-num">3.2</span> Usage {#usage}
+
+```stan
+matrix = pmx_solve_linode(time, amt, rate, ii, evid, cmt, addl, ss, K, biovar, tlag )
+```
+
+
+### <span class="section-num">3.3</span> Arguments {#arguments}
+
+-   `K`
+    System parameters. `K` can be either
+    -   a `matrix` for constant parameters in all events, or
+    -   an array of matrices `matrix K[nt]` so that the \\(i\\)th entry of the array describes
+        the model parameters for time interval \\((t\_{i-1}, t\_i)\\),
+        and the number of the rows equals to the number of event time `nt`.
+-   See Table [tab:event_args](#tab:event_args) and Table [tab:event_params](#tab:event_params) for the rest of arguments.
+
+
+### <span class="section-num">3.4</span> Return value {#return-value}
+
+An `n`-by-`nt` matrix, where `nt` is the number of time steps and `n` is the number of rows(columns) of square matrix `K`.
+
+
+## <span class="section-num">4</span> General ODE Model Function {#general-ode-model-function}
+
+
+### <span class="section-num">4.1</span> Description {#description}
+
+Function `pmx_solve_adams`, `pmx_solve_bdf`, and `pmx_solve_rk45` solve a first-order ODE system
+specified by user-specified right-hand-side function `ODE_rhs` \\(f\\)
+
+\begin{equation\*}
+y'(t) = f(t, y(t))
+\end{equation\*}
+
+In the case where the `rate` vector \\(r\\) is non-zero, this equation becomes:
+
+\begin{equation\*}
+y'(t) = f(t, y(t)) + r
+\end{equation\*}
+
+
+### <span class="section-num">4.2</span> Usage {#usage}
+
+```stan
+matrix pmx_solve_[adams || rk45 || bdf](ODE_rhs, int nCmt, time, amt, rate, ii, evid, cmt, addl, ss, theta, [ biovar, tlag, real[,] x_r, int [,] x_i, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
+```
+
+Here `[adams || rk45 || bdf]` indicates the
+function name can use any of the three suffixes. See below.
+
+
+### <span class="section-num">4.3</span> Arguments {#arguments}
+
+-   `ODE_rhs`
+    ODE right-hand-side \\(f\\). It should be defined in
+    `functions` block and has the following format
+
+<!--listend-->
+
+```stan
+vector = f(real t, vector y, real[] param, real[] dat_r, int[] dat_i) {...}
+```
+
+Here `t` is time, `y` the unknowns of ODE, `param` the parameters, `dat\_r` the real data, `dat\_i`
+the integer data. `param`,
+`dat\_r`, and `dat\_i` are from
+the entry of `theta`, `x_r`,
+and `x_i` corresponding to
+`t`, respectively.
+\\(f\\) should not include dosing rates in its
+definition, as Torsten automatically update \\(f\\)
+when the corresponding event indicates infusion dosage.
+
+-   `nCmt`
+    The number of compartments, equivalently, the dimension of the ODE system.
+-   `x_r`
+    2d arary real data to be passed to ODE RHS. If specified, its 1st
+    dimension should have the same size as `time`.
+-   `x_i`
+    2d arary integer data to be passed to ODE RHS. If specified, its 1st
+    dimension should have the same size as `time`.
+-   `rel_tol`
+    The relative tolerance for numerical integration, default to 1.0E-6.
+-   `abs_tol`
+    The absolute tolerance for numerical integration, default to 1.0E-6.
+-   `max_step`
+    The maximum number of steps in numerical integration, default to \\(10^6\\).
+-   `as_rel_tol`
+    The relative tolerance for algebra solver for steady state solution, default to 1.0E-6.
+-   `as_abs_tol`
+    The absolute tolerance for algebra solver for steady state solution, default to 1.0E-6.
+-   `as_max_step`
+    The maximum number of interations in algebra solver for steady state solution, default to \\(10^2\\).
+-   See Table [tab:event_args](#tab:event_args) and Table [tab:event_params](#tab:event_params) for the rest of arguments.
+
+
+### <span class="section-num">4.4</span> Return value {#return-value}
+
+An `nCmt`-by-`nt` matrix, where `nt` is the size of `time`.
+
+
+### <span class="section-num">4.5</span> Note {#note}
+
+-   See section [sec:ode_func_note](#sec:ode_func_note) for different types of integrator and general guidance.
+-   See section [sec:ode_func_note](#sec:ode_func_note) for comments on accuracy and tolerance.
+-   The default values of `atol`,
+    `rtol`, and `max_step` are
+    based on a limited amount of PKPD test problems and should not be considered as
+    universally applicable. We strongly recommend user to set these values
+    according to physical intuition and numerical tests. See also Secion
+    [sec:ode_func_note](#sec:ode_func_note).
+-   With optional arguments indicated by square bracket, the following calls are allowed:
+
+<!--listend-->
+
+```stan
+pmx_solve_[adams || rk45 || bdf](..., theta);
+pmx_solve_[adams || rk45 || bdf](..., theta, rel_tol, abs_tol, max_step);
+pmx_solve_[adams || rk45 || bdf](..., theta, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
+pmx_solve_[adams || rk45 || bdf](..., theta, biovar);
+pmx_solve_[adams || rk45 || bdf](..., theta, biovar, rel_tol, abs_tol, max_step);
+pmx_solve_[adams || rk45 || bdf](..., theta, biovar, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
+pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag);
+pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, rel_tol, abs_tol, max_step);
+pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
+pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r);
+pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, rel_tol, abs_tol, max_step);
+pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
+pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, x_i);
+pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, x_i, rel_tol, abs_tol, max_step);
+pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, x_i, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
+```
+
+
+## <span class="section-num">5</span> Coupled ODE Model Function {#coupled-ode-model-function}
+
+
+
+### <span class="section-num">5.1</span> Description {#description}
+
+When the ODE system consists of two subsystems in form of
+
+\begin{align\*}
+  y\_1^\prime &= f\_1(t, y\_1), \\\\\\
+  y\_2^\prime &= f\_2(t, y\_1, y\_2),
+\end{align\*}
+
+with \\(y\_1\\), \\(y\_2\\), \\(f\_1\\), and \\(f\_2\\) being vector-valued functions, and
+\\(y\_1^\prime\\) independent of \\(y\_2\\), the solution can be
+accelerated if \\(y\_1\\) admits an analytical solution which can
+be introduced into the ODE for \\(y\_2\\) for numerical
+integration. This structure arises in PK/PD
+models, where \\(y\_1\\) describes a forcing PK function and \\(y\_2\\) the PD
+effects. In the example of a Friberg-Karlsson
+semi-mechanistic model(see below), we observe an average speedup of
+\\(\sim 47 \pm 18 \%\\) when using the mix solver in lieu of the numerical
+integrator. In the context, currently the couple solver supports one-
+& two-compartment for PK model, and `rk45` &
+`bdf` integrator for nonlinear PD model.
+
+
+### <span class="section-num">5.2</span> Usage {#usage}
+
+```stan
+matrix pmx_solve_onecpt_[ rk45 || bdf ](reduced_ODE_system, int nOde, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag [, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
+matrix pmx_solve_twocpt_[ rk45 || bdf ](reduced_ODE_system, int nOde, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag [, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
+```
+
+
+### <span class="section-num">5.3</span> Arguments {#arguments}
+
+
+#### <span class="section-num">5.3.1</span> `reduced\_ODE\_rhs` {#reduced-ode-rhs}
+
+The system  numerically solve (\\(y\_2\\) in the above discussion, also called the
+_reduced system_ and `nOde` the number of equations in
+the \underline{reduced} system. The function that defines a reduced
+system has an almost identical signature to that used for a full
+system, but takes one additional argument: \\(y\_1\\), the PK states,
+i.e. solution to the PK ODEs.
+
+```stan
+vector reduced_ODE_rhs(real t, vector y2, vector y1, real[] theta, real[] x_r, int[] x_i)
+```
+
+
+#### <span class="section-num">5.3.2</span> `nCmt` {#ncmt}
+
+The number of compartments. Equivalently, the dimension of the ODE system.
+
+
+#### <span class="section-num">5.3.3</span> `rel_tol` {#rel-tol}
+
+The relative tolerance for numerical integration, default to 1.0E-6.
+
+
+#### <span class="section-num">5.3.4</span> `abs_tol` {#abs-tol}
+
+The absolute tolerance for numerical integration, default to 1.0E-6.
+
+
+#### <span class="section-num">5.3.5</span> `max_step` {#max-step}
+
+The maximum number of steps in numerical integration, default to \\(10^6\\).
+
+
+#### <span class="section-num">5.3.6</span> See Table [tab:event_args](#tab:event_args) and Table [tab:event_params](#tab:event_params) for the rest of arguments. {#see-table-tab-event-args--tab-event-args--and-table-tab-event-params--tab-event-params--for-the-rest-of-arguments-dot}
+
+
+### <span class="section-num">5.4</span> Return value {#return-value}
+
+    An `nPk + nOde`-by-`nt` matrix, where `nt` is the size of
+    `time`, and `nPk` equals to 2 in
+q    `pmx_solve_onecpt_` functions
+    and 3 in `pmx_solve_twocpt_` functions.
+
+
+## <span class="section-num">6</span> General ODE-based Population Model Function {#general-ode-based-population-model-function}
+
+
+### <span class="section-num">6.1</span> Description {#description}
+
+All the preivous functions solves for a single sunject. Torsten also
+provides population modeling counterparts for ODE solutions. The
+functions solve for a population that share an ODE model but with
+subject-level parameters and event specifications and have similar
+signatures to single-subject functions, except that now events
+arguments `time`, `amt`, `rate`, `ii`,
+`evid`, `cmt`,
+`addl`, `ss` specifies the entire
+population, one subject after another.
+
+
+### <span class="section-num">6.2</span> Usage {#usage}
+
+```stan
+matrix pmx_solve_group_[adams || rk45 || bdf](ODE_rhs, int nCmt, int[] len, time, amt, rate, ii, evid, cmt, addl, ss, theta, [ biovar, tlag, real[,] x_r, int [,] x_i, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
+```
+
+Here `[adams || rk45 || bdf]` indicates the
+function name can be of any of the three suffixes. See section [sec:ode_func_note](#sec:ode_func_note).
+
+
+### <span class="section-num">6.3</span> Arguments {#arguments}
+
+
+#### <span class="section-num">6.3.1</span> `ODE_rhs` {#ode-rhs}
+
+Same as in Section [sec:general_ode](#sec:general_ode).
+
+
+#### <span class="section-num">6.3.2</span> `time`, `amt`, `rate`, `ii`, `evid`, `cmt`, `addl`, `ss` {#time-amt-rate-ii-evid-cmt-addl-ss}
+
+2d-array arguments that describe data record for the
+entire population (see also Table [tab:event_args](#tab:event_args) and Table [tab:event_params](#tab:event_params)). They must have same size in the first
+dimension. Take `evid` for example. Let \\(N\\) be the
+population size, then `evid[1,]` to
+`evid[n1,]` specifies events ID for subject 1,
+`evid[n1 + 1,]` to
+`evid[n1 + n2,]` for subject 2, etc. With \\(n\_i\\)
+being the number of events for subject \\(i\\), \\(i=1, 2, \dots, N\\), the
+size of `evid`'s first dimension is \\(\sum\_{i}n\_i\\).
+
+
+#### <span class="section-num">6.3.3</span> `len` {#len}
+
+The length of data for each subject within
+the above events arrays. The size of `len` equals
+to population size \\(N\\).
+
+
+#### <span class="section-num">6.3.4</span> `nCmt` {#ncmt}
+
+The number of compartments. Equivalently, the dimension of the ODE system.
+
+
+#### <span class="section-num">6.3.5</span> `x_r` {#x-r}
+
+2d arary real data to be passed to ODE RHS. If specified, its 1st
+dimension should have the same size as `time`.
+
+
+#### <span class="section-num">6.3.6</span> `x_i` {#x-i}
+
+2d arary integer data to be passed to ODE RHS. If specified, its 1st
+dimension should have the same size as `time`.
+
+
+#### <span class="section-num">6.3.7</span> `rel_tol` {#rel-tol}
+
+The relative tolerance for numerical integration, default to 1.0E-6.
+
+
+#### <span class="section-num">6.3.8</span> `abs_tol` {#abs-tol}
+
+The absolute tolerance for numerical integration, default to 1.0E-6.
+
+
+#### <span class="section-num">6.3.9</span> `max_step` {#max-step}
+
+The maximum number of steps in numerical integration, default to \\(10^6\\).
+
+
+#### <span class="section-num">6.3.10</span> `as_rel_tol` {#as-rel-tol}
+
+The relative tolerance for algebra solver for steady state solution, default to 1.0E-6.
+
+
+#### <span class="section-num">6.3.11</span> `as_abs_tol` {#as-abs-tol}
+
+The absolute tolerance for algebra solver for steady state solution, default to 1.0E-6.
+
+
+#### <span class="section-num">6.3.12</span> `as_max_step` {#as-max-step}
+
+The maximum number of interations in algebra solver for steady state solution, default to \\(10^2\\).
+
+
+### <span class="section-num">6.4</span> Return value {#return-value}
+
+An `nCmt`-by-`nt` matrix, where `nt` is the total size of
+events \\(\sum\_{i}n\_i\\).
+
+
+### <span class="section-num">6.5</span> Note {#note}
+
+\label{sec:ode\_group\_note}
+
+-   Similar to single-subject solvers, three numerical integrator are provided:
+    -   `pmx_solve_group_adams`: Adams-Moulton method,
+    -   `pmx_solve_group_bdf`: Backward-differentiation formular,
+    -   `pmx_solve_group_rk45`: Runge-Kutta 4/5 method.
+-   With optional arguments indicated by square bracket, the following calls are allowed:
+
+<!--listend-->
+
+```stan
+pmx_solve_group_[adams || rk45 || bdf](..., theta);
+pmx_solve_group_[adams || rk45 || bdf](..., theta, rel_tol, abs_tol, max_step);
+pmx_solve_group_[adams || rk45 || bdf](..., theta, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
+pmx_solve_group_[adams || rk45 || bdf](..., theta, biovar);
+pmx_solve_group_[adams || rk45 || bdf](..., theta, biovar, rel_tol, abs_tol, max_step);
+pmx_solve_group_[adams || rk45 || bdf](..., theta, biovar, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
+pmx_solve_group_[adams || rk45 || bdf](..., theta, biovar, tlag);
+pmx_solve_group_[adams || rk45 || bdf](..., theta, biovar, tlag, rel_tol, abs_tol, max_step);
+pmx_solve_group_[adams || rk45 || bdf](..., theta, biovar, tlag, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
+pmx_solve_group_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r);
+pmx_solve_group_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, rel_tol, abs_tol, max_step);
+pmx_solve_group_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
+pmx_solve_group_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, x_i);
+pmx_solve_group_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, x_i, rel_tol, abs_tol, max_step);
+pmx_solve_group_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, x_i, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
+```
+
+-   The group solvers support paralleisation through Message Passing
+    Interface(MPI). One can access this feature through `cmdstan` or
+    `cmdstanr` interface.
+
+<!--listend-->
+
+```bash
+# cmdstan interface user need to add "TORSTEN_MPI=1" and
+# "TBB_CXX_TYPE=gcc" in "cmdstan/make/local" file. In linux & macos
+# this can be done as
+echo "TORSTEN_MPI=1" > cmdstan/make/local
+echo "TBB_CXX_TYPE=gcc" > cmdstan/make/local # "gcc" should be replaced by user's C compiler
+make path-to-model/model_name
+mpiexec -n number_of_processes model_name sample... # additional cmdstan options
+```
+
+```r
+library("cmdstanr")
+cmdstan_make_local(cpp_options = list("TORSTEN_MPI" = "1", "TBB_CXX_TYPE"="gcc"))  # "gcc" should be replaced by user's C compiler
+rebuild_cmdstan()
+mod <- cmdstan_model(path-to-model-file, quiet=FALSE, force_recompile=TRUE)
+f <- mod$sample_mpi(data = ..., chains = 1, mpi_args = list("n" = number_of_processes), refresh = 200)
+```
+
+Here \\(n\\) denotes number of MPI processes, so that \\(N\\)
+ODE systems (each specified by a same RHS function and
+subject-dependent events) are distributed to and solved by \\(n\\)
+processes evenly. Note that to access this feature user must have
+MPI installed, and some MPI installation may require set additional
+compiler arguments, such as `CXXLFAGS` and `LDFLAGS`.
+
+
+## <span class="section-num">7</span> ODE  integrator Function {#ode-integrator-function}
+
+
+### <span class="section-num">7.1</span> Description {#description}
+
+Torsten provides its own implementation of ODE solvers that solves
+
+\begin{equation\*}
+  y'(t) = f(t, y(t)), \quad y(t\_0) = y\_0
+\end{equation\*}
+
+for \\(y\\). These solvers
+are customized for Torsten applications and different from those found
+in Stan. The general ODE PMX solvers in previous sections are internally powered
+by these functions.
+
+
+### <span class="section-num">7.2</span> Usage {#usage}
+
+```stan
+real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]);
+```
+
+
+### <span class="section-num">7.3</span> Arguments {#arguments}
+
+\label{sec:ode\_func\_args}
+
+
+#### <span class="section-num">7.3.1</span> `ODE_rhs` {#ode-rhs}
+
+Function that specifies the right-hand-side \\(f\\).
+It should be defined in
+`functions` block and has the following format
+
+```stan
+vector = f(real t, vector y, real[] param, real[] dat_r, int[] dat_i) {...}
+```
+
+Here `t` is time, `y` the unknowns of ODE, `param` the parameters, `dat\_r` the real data, `dat\_i`
+the integer data.
+
+
+#### <span class="section-num">7.3.2</span> `y0` {#y0}
+
+Initial condition \\(y\_0\\).
+
+
+#### <span class="section-num">7.3.3</span> `t0` {#t0}
+
+Initial time \\(t\_0\\).
+
+
+#### <span class="section-num">7.3.4</span> `ts` {#ts}
+
+Output time when solution is seeked.
+
+
+#### <span class="section-num">7.3.5</span> `theta` {#theta}
+
+Parameters to be passed to `ODE_rhs` function.
+
+
+#### <span class="section-num">7.3.6</span> `x_r` {#x-r}
+
+Real data to be passed to `ODE_rhs` function.
+
+
+#### <span class="section-num">7.3.7</span> `x_i` {#x-i}
+
+Integer data to be passed to `ODE_rhs` function.
+
+
+#### <span class="section-num">7.3.8</span> `rtol` {#rtol}
+
+Relative tolerance, default to 1.e-6(`rk45`) and 1.e-8(`adams` and `bdf`).
+
+
+#### <span class="section-num">7.3.9</span> `atol` {#atol}
+
+Absolute tolerance, default to 1.e-6(`rk45`) and 1.e-8(`adams` and `bdf`).
+
+
+#### <span class="section-num">7.3.10</span> `max_step` {#max-step}
+
+Maximum number of steps allowed between neighboring time in `ts`,
+default to 100000.
+
+
+### <span class="section-num">7.4</span> Return value {#return-value}
+
+An `n`-by-`nd` 2d-array, where `n` is the size of `ts`
+and `nd` the dimension of the system.
+
+
+### <span class="section-num">7.5</span> Note {#note}
+
+\label{sec:ode\_func\_note}
+
+-   Three numerical integrator are provided:
+
+    -   `pmx_integrate_ode_adams`: Adams-Moulton method,
+    -   `pmx_integrate_ode_bdf`: Backward-differentiation formular,
+    -   `pmx_integrate_ode_rk45`: Runge-Kutta 4/5 method.
+
+    When not equipped with further understanding of the ODE system, as a
+    rule of thumb we suggest user try
+    `rk45` integrator first, `bdf`
+    integrator when the system is suspected to be stiff, and
+    `adams` when a non-stiff system needs to be solved
+    with higher accuracy/smaller tolerance.
+
+-   All three integrators support adaptive stepping. To achieve
+    that, at step \\(i\\) estimated error \\(e\_i\\) is calculated and
+    compared with given tolerance so that
+
+    \begin{equation}
+      e\_i < \Vert\text{rtol} \times \tilde{y} + \text{atol}\Vert
+    \end{equation}
+
+    Here \\(\tilde{y}\\) is the numerical solution of \\(y\\) at current
+    step and \\(\Vert \cdot \Vert\\) indicates certain norm. When the above check fails, the solver attempts
+    to reduce step size and retry. The default values of `atol`,
+    `rtol`, and `max_step` are
+    based on Stan's ODE functions and should not be considered as
+    optimal. User should make problem-dependent
+    decision on `rtol` and `atol`,
+    according to estimated scale of the unknowns, so that the error
+    would not affect inference on statistical variance of quantities
+    that enter the Stan model. In particular, when an unknown can be neglected
+    below certain threshold without affecting the rest of
+    the dynamic system, setting
+    `atol` greater than that threshold will avoid
+    spurious and error-prone computation. See
+    <sup id="22a46696f36cafa68984a1b79da368aa"><a href="#hindmarsh_cvodes_2020" title="@manual{hindmarsh_cvodes_2020,
+        Author = {Hindmarsh, Alan C. and Serban, Radu and Balos, Cody
+                      J. and Gardner, David J. and Woodward, Carol S. and
+                      Reynolds, Daniel R.},
+        Title = {User Documentation for cvodes v5.4.0},
+        Year = {2020},
+        }">hindmarsh_cvodes_2020</a></sup> and
+    1.4 of <sup id="5b42fed7488ad403e679e0ba2797e56a"><a href="#shampine_solving_2003" title="Shampine, Gladwell, Shampine \&amp; Thompson, Solving {ODEs} with {MATLAB}, Cambridge University Press (2003).">shampine_solving_2003</a></sup> for details.
+
+-   With optional arguments indicated by square bracket, the following calls are allowed:
+
+<!--listend-->
+
+```stan
+pmx_integrate_ode_[adams || rk45 || bdf](..., x_i);
+pmx_integrate_ode_[adams || rk45 || bdf](..., x_i, rel_tol, abs_tol, max_step);
+```
+
+
+## <span class="section-num">8</span> ODE group  integrator Function {#ode-group-integrator-function}
+
+
+
+### <span class="section-num">8.1</span> Description {#description}
+
+All the preivous functions solves for a single ODE system. Torsten also
+provides group modeling counterparts for ODE integrators. The
+functions solve for a group of ODE systems that share an ODE RHS but with
+different parameters. They have similar
+signatures to single-ODE integration functions.
+
+
+### <span class="section-num">8.2</span> Usage {#usage}
+
+```stan
+matrix pmx_integrate_ode_group_[adams || rk45 || bdf](ODE_system, real[ , ] y0, real t0, int[] len, real[] ts, real[ , ] theta, real[ , ] x_r, int[ , ] x_i, [ real rtol, real atol, int max_step ] );
+```
+
+Here `[adams || rk45 || bdf]` indicates the
+function name can be of any of the three suffixes. See section [sec:ode_func_note](#sec:ode_func_note).
+
+
+#### <span class="section-num">8.2.1</span> `ODE_rhs` {#ode-rhs}
+
+Function that specifies the right-hand-side \\(f\\). See Section [sec:ode_func_args](#sec:ode_func_args).
+
+
+#### <span class="section-num">8.2.2</span> `y0` {#y0}
+
+Initial condition \\(y\_0\\) for each subsystem in the group. The
+first dimension equals to the size of the group.
+
+
+#### <span class="section-num">8.2.3</span> `t0` {#t0}
+
+Initial time \\(t\_0\\).
+
+
+#### <span class="section-num">8.2.4</span> `len` {#len}
+
+A vector that contains the number of output time points for each
+subsystem. The lenght of the vector equals to the size of the group.
+
+
+#### <span class="section-num">8.2.5</span> `ts` {#ts}
+
+Output time when solution is seeked, consisting of
+`ts` of each subsystem concatenated.
+
+
+#### <span class="section-num">8.2.6</span> `theta` {#theta}
+
+2d-array parameters to be passed to `ODE_rhs`
+function. Each row corresponds to one subsystem.
+
+
+#### <span class="section-num">8.2.7</span> `x_r` {#x-r}
+
+2d-array real data to be passed to `ODE_rhs` function.
+Each row corresponds to one subsystem.
+
+
+#### <span class="section-num">8.2.8</span> `x_i` {#x-i}
+
+2d-array integer data to be passed to `ODE_rhs` function.
+Each row corresponds to one subsystem.
+
+
+#### <span class="section-num">8.2.9</span> `rtol` {#rtol}
+
+Relative tolerance.
+
+
+#### <span class="section-num">8.2.10</span> `atol` {#atol}
+
+Absolute tolerance.
+
+
+#### <span class="section-num">8.2.11</span> `max_step` {#max-step}
+
+Maximum number of steps allowed between neighboring time in `ts`.
+
+
+### <span class="section-num">8.3</span> Return value {#return-value}
+
+An `n`-by-`nd` matrix, where `n` is the size of `ts`
+and `nd` the dimension of the system.
+
+
+### <span class="section-num">8.4</span> Note {#note}
+
+\label{sec:ode\_integ\_group\_note}
+
+-   With optional arguments indicated by square bracket, the following calls are allowed:
+
+<!--listend-->
+
+```stan
+pmx_integrate_group_[adams || rk45 || bdf](..., x_i);
+pmx_integrate_group_[adams || rk45 || bdf](..., x_i, rel_tol, abs_tol, max_step);
+```
+
+-   The group integrators support paralleisation through Message Passing
+    Interface(MPI). One can access this feature through `cmdstan` or
+    `cmdstanr` interface.
+
+<!--listend-->
+
+```bash
+# cmdstan interface user need to add "TORSTEN_MPI=1" and
+# "TBB_CXX_TYPE=gcc" in "cmdstan/make/local" file. In linux & macos
+# this can be done as
+echo "TORSTEN_MPI=1" > cmdstan/make/local
+echo "TBB_CXX_TYPE=gcc" > cmdstan/make/local # "gcc" should be replaced by user's C compiler
+make path-to-model/model_name
+mpiexec -n number_of_processes model_name sample... # additional cmdstan options
+```
+
+```r
+library("cmdstanr")
+cmdstan_make_local(cpp_options = list("TORSTEN_MPI" = "1", "TBB_CXX_TYPE"="gcc"))  # "gcc" should be replaced by user's C compiler
+rebuild_cmdstan()
+mod <- cmdstan_model(path-to-model-file, quiet=FALSE, force_recompile=TRUE)
+f <- mod$sample_mpi(data = ..., chains = 1, mpi_args = list("n" = number_of_processes), refresh = 200)
+```
+
+Here \\(n\\) denotes number of MPI processes, so that \\(N\\)
+ODE systems are distributed to and solved by \\(n\\)
+processes evenly. Note that to access this feature user must have
+MPI installed, and some MPI installation may require set additional
+compiler arguments, such as `CXXLFAGS` and `LDFLAGS`.
+
+
+## <span class="section-num">9</span> Univariate integral {#univariate-integral}
+
+```stan
+real univariate_integral_rk45(f, t0, t1, theta, x_r, x_i)
+```
+
+```stan
+real univariate_integral_bdf(f, t0, t1, theta, x_r, x_i)
+```
+
+Based on the ODE solver capability in Stan, Torsten provides functions
+calculating the integral of a univariate function. The integrand function \\(f\\) must follow the signature
+
+```stan
+  real f(real t, real[] theta, real[] x_r, int[] x_i) {
+    /* ... */
+}
+```
+
+
+## <span class="section-num">10</span> Piecewise linear interpolation {#piecewise-linear-interpolation}
+
+```stan
+real linear_interpolation(real xout, real[] x, real[] y)
+```
+
+```stan
+real[] linear_interpolation(real[] xout, real[] x, real[] y)
+```
+
+Torsten also provides function `linear_interpolation` for piecewise linear interpolation over a
+set of x, y pairs. It returns the values of a piecewise linear
+function at specified values `xout` of the first function argument. The
+function is specified in terms of a set of x, y
+pairs. Specifically, `linear_interpolation` implements the following function
+
+\begin{align\*}
+  y\_{\text{out}} = \left\\{\begin{array}{ll}
+                 y\_1, & x\_{\text{out}} < x\_1 \\\\\\
+                 y\_i + \frac{y\_{i+1} - y\_i}{x\_{i+1} - x\_i}
+                 \left(x\_{\text{out}} - x\_i\right), & x\_{\text{out}} \in [x\_i, x\_{i+1}) \\\\\\
+                 y\_n, & x\_{\text{out}} \ge x\_n
+                          \end{array}\right.
+\end{align\*}
+
+-   The x values must be in increasing order, i.e. \\(x\_i < x\_{i+1}\\).
+-   All three arguments may be data or parameters.
