@@ -43,7 +43,7 @@ enableMissingTranslationPlaceholders = false
 
     # Documentation Menu section
     # Menu style settings
-    menu_style = "slide-menu" # "open-menu" or "slide-menu" or "" blank is as no sidebar
+    menu_style = "open-menu" # "open-menu" or "slide-menu" or "" blank is as no sidebar
 
     # Date format
     dateformat = "" # default "2 Jan 2006"
@@ -75,11 +75,6 @@ enableMissingTranslationPlaceholders = false
         name = "Home"
         url = "/"
         weight = 1
-
-    # [[menu.main]]
-    #     name = "Metrum Research Group"
-    #     url = "https://www.metrumrg.com/"
-    #     weight = 2
 
 # Markup configure section
 # See https://gohugo.io/getting-started/configuration-markup/

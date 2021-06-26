@@ -2,12 +2,12 @@
 title = "Using Torsten"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-26T00:13:57-07:00
+lastmod = 2021-06-26T09:38:11-07:00
 draft = false
 weight = 1005
 +++
 
-<a id="org6659f9c"></a>
+<a id="org262cd90"></a>
 
 The reader should have a basic understanding of how Stan works before
 reading this chapter. There are excellent resources online to get
@@ -64,7 +64,7 @@ overloading. In the rest of this document we assume this convention unless indic
 ### <span class="section-num">1.1</span> Description {#description}
 
 Function `pmx_solve_onecpt` solves a one-compartment PK
-model (Figure [1](#org1616883)). The model obtains plasma concentrations of parent drug \\(c=y\_2/V\_2\\)
+model (Figure [1](#org4ae490e)). The model obtains plasma concentrations of parent drug \\(c=y\_2/V\_2\\)
 by solving for the mass of drug in the central compartment
 \\(y\_2\\) from ordinary differential equations(ODEs)
 
@@ -73,7 +73,7 @@ by solving for the mass of drug in the central compartment
   y\_2' &= k\_a y\_1 - \left(\frac{CL}{V\_2} + \frac{Q}{V\_2}\right) y\_2.
 \end{align}
 
-<a id="org1616883"></a>
+<a id="org4ae490e"></a>
 
 {{< figure src="/ox-hugo/cptModels.png" caption="Figure 1: One and two compartment models with first order absorption implemented in Torsten." >}}
 
@@ -113,7 +113,7 @@ pmx_solve_onecpt(..., theta, biovar, tlag);
 
 ## <span class="section-num">2</span> Two Compartment Model {#two-compartment-model}
 
-<a id="orge6084b7"></a>
+<a id="org9307668"></a>
 
 
 ### <span class="section-num">2.1</span> Description {#description}
@@ -434,77 +434,42 @@ function name can be of any of the three suffixes. See section [sec:ode_func_not
 
 ### <span class="section-num">6.3</span> Arguments {#arguments}
 
-
-#### <span class="section-num">6.3.1</span> `ODE_rhs` {#ode-rhs}
-
-Same as in Section [sec:general_ode](#sec:general_ode).
-
-
-#### <span class="section-num">6.3.2</span> `time`, `amt`, `rate`, `ii`, `evid`, `cmt`, `addl`, `ss` {#time-amt-rate-ii-evid-cmt-addl-ss}
-
-2d-array arguments that describe data record for the
-entire population (see also Table [tab:event_args](#tab:event_args) and Table [tab:event_params](#tab:event_params)). They must have same size in the first
-dimension. Take `evid` for example. Let \\(N\\) be the
-population size, then `evid[1,]` to
-`evid[n1,]` specifies events ID for subject 1,
-`evid[n1 + 1,]` to
-`evid[n1 + n2,]` for subject 2, etc. With \\(n\_i\\)
-being the number of events for subject \\(i\\), \\(i=1, 2, \dots, N\\), the
-size of `evid`'s first dimension is \\(\sum\_{i}n\_i\\).
-
-
-#### <span class="section-num">6.3.3</span> `len` {#len}
-
-The length of data for each subject within
-the above events arrays. The size of `len` equals
-to population size \\(N\\).
-
-
-#### <span class="section-num">6.3.4</span> `nCmt` {#ncmt}
-
-The number of compartments. Equivalently, the dimension of the ODE system.
-
-
-#### <span class="section-num">6.3.5</span> `x_r` {#x-r}
-
-2d arary real data to be passed to ODE RHS. If specified, its 1st
-dimension should have the same size as `time`.
-
-
-#### <span class="section-num">6.3.6</span> `x_i` {#x-i}
-
-2d arary integer data to be passed to ODE RHS. If specified, its 1st
-dimension should have the same size as `time`.
-
-
-#### <span class="section-num">6.3.7</span> `rel_tol` {#rel-tol}
-
-The relative tolerance for numerical integration, default to 1.0E-6.
-
-
-#### <span class="section-num">6.3.8</span> `abs_tol` {#abs-tol}
-
-The absolute tolerance for numerical integration, default to 1.0E-6.
-
-
-#### <span class="section-num">6.3.9</span> `max_step` {#max-step}
-
-The maximum number of steps in numerical integration, default to \\(10^6\\).
-
-
-#### <span class="section-num">6.3.10</span> `as_rel_tol` {#as-rel-tol}
-
-The relative tolerance for algebra solver for steady state solution, default to 1.0E-6.
-
-
-#### <span class="section-num">6.3.11</span> `as_abs_tol` {#as-abs-tol}
-
-The absolute tolerance for algebra solver for steady state solution, default to 1.0E-6.
-
-
-#### <span class="section-num">6.3.12</span> `as_max_step` {#as-max-step}
-
-The maximum number of interations in algebra solver for steady state solution, default to \\(10^2\\).
+-   `ODE_rhs`
+    Same as in Section [sec:general_ode](#sec:general_ode).
+-   `time`, `amt`, `rate`, `ii`, `evid`, `cmt`, `addl`, `ss`
+    2d-array arguments that describe data record for the
+    entire population (see also Table [tab:event_args](#tab:event_args) and Table [tab:event_params](#tab:event_params)). They must have same size in the first
+    dimension. Take `evid` for example. Let \\(N\\) be the
+    population size, then `evid[1,]` to
+    `evid[n1,]` specifies events ID for subject 1,
+    `evid[n1 + 1,]` to
+    `evid[n1 + n2,]` for subject 2, etc. With \\(n\_i\\)
+    being the number of events for subject \\(i\\), \\(i=1, 2, \dots, N\\), the
+    size of `evid`'s first dimension is \\(\sum\_{i}n\_i\\).
+-   `len`
+    The length of data for each subject within
+    the above events arrays. The size of `len` equals
+    to population size \\(N\\).
+-   `nCmt`
+    The number of compartments. Equivalently, the dimension of the ODE system.
+-   `x_r`
+    2d arary real data to be passed to ODE RHS. If specified, its 1st
+    dimension should have the same size as `time`.
+-   `x_i`
+    2d arary integer data to be passed to ODE RHS. If specified, its 1st
+    dimension should have the same size as `time`.
+-   `rel_tol`
+    The relative tolerance for numerical integration, default to 1.0E-6.
+-   `abs_tol`
+    The absolute tolerance for numerical integration, default to 1.0E-6.
+-   `max_step`
+    The maximum number of steps in numerical integration, default to \\(10^6\\).
+-   `as_rel_tol`
+    The relative tolerance for algebra solver for steady state solution, default to 1.0E-6.
+-   `as_abs_tol`
+    The absolute tolerance for algebra solver for steady state solution, default to 1.0E-6.
+-   `as_max_step`
+    The maximum number of interations in algebra solver for steady state solution, default to \\(10^2\\).
 
 
 ### <span class="section-num">6.4</span> Return value {#return-value}
@@ -603,12 +568,12 @@ real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0
 
 \label{sec:ode\_func\_args}
 
+-   `ODE_rhs`
+    Function that specifies the right-hand-side \\(f\\).
+    It should be defined in
+    `functions` block and has the following format
 
-#### <span class="section-num">7.3.1</span> `ODE_rhs` {#ode-rhs}
-
-Function that specifies the right-hand-side \\(f\\).
-It should be defined in
-`functions` block and has the following format
+<!--listend-->
 
 ```stan
 vector = f(real t, vector y, real[] param, real[] dat_r, int[] dat_i) {...}
@@ -617,51 +582,25 @@ vector = f(real t, vector y, real[] param, real[] dat_r, int[] dat_i) {...}
 Here `t` is time, `y` the unknowns of ODE, `param` the parameters, `dat\_r` the real data, `dat\_i`
 the integer data.
 
-
-#### <span class="section-num">7.3.2</span> `y0` {#y0}
-
-Initial condition \\(y\_0\\).
-
-
-#### <span class="section-num">7.3.3</span> `t0` {#t0}
-
-Initial time \\(t\_0\\).
-
-
-#### <span class="section-num">7.3.4</span> `ts` {#ts}
-
-Output time when solution is seeked.
-
-
-#### <span class="section-num">7.3.5</span> `theta` {#theta}
-
-Parameters to be passed to `ODE_rhs` function.
-
-
-#### <span class="section-num">7.3.6</span> `x_r` {#x-r}
-
-Real data to be passed to `ODE_rhs` function.
-
-
-#### <span class="section-num">7.3.7</span> `x_i` {#x-i}
-
-Integer data to be passed to `ODE_rhs` function.
-
-
-#### <span class="section-num">7.3.8</span> `rtol` {#rtol}
-
-Relative tolerance, default to 1.e-6(`rk45`) and 1.e-8(`adams` and `bdf`).
-
-
-#### <span class="section-num">7.3.9</span> `atol` {#atol}
-
-Absolute tolerance, default to 1.e-6(`rk45`) and 1.e-8(`adams` and `bdf`).
-
-
-#### <span class="section-num">7.3.10</span> `max_step` {#max-step}
-
-Maximum number of steps allowed between neighboring time in `ts`,
-default to 100000.
+-   `y0`
+    Initial condition \\(y\_0\\).
+-   `t0`
+    Initial time \\(t\_0\\).
+-   `ts`
+    Output time when solution is seeked.
+-   `theta`
+    Parameters to be passed to `ODE_rhs` function.
+-   `x_r`
+    Real data to be passed to `ODE_rhs` function.
+-   `x_i`
+    Integer data to be passed to `ODE_rhs` function.
+-   `rtol`
+    Relative tolerance, default to 1.e-6(`rk45`) and 1.e-8(`adams` and `bdf`).
+-   `atol`
+    Absolute tolerance, default to 1.e-6(`rk45`) and 1.e-8(`adams` and `bdf`).
+-   `max_step`
+    Maximum number of steps allowed between neighboring time in `ts`,
+    default to 100000.
 
 
 ### <span class="section-num">7.4</span> Return value {#return-value}
@@ -750,66 +689,34 @@ matrix pmx_integrate_ode_group_[adams || rk45 || bdf](ODE_system, real[ , ] y0, 
 Here `[adams || rk45 || bdf]` indicates the
 function name can be of any of the three suffixes. See section [sec:ode_func_note](#sec:ode_func_note).
 
-
-#### <span class="section-num">8.2.1</span> `ODE_rhs` {#ode-rhs}
-
-Function that specifies the right-hand-side \\(f\\). See Section [sec:ode_func_args](#sec:ode_func_args).
-
-
-#### <span class="section-num">8.2.2</span> `y0` {#y0}
-
-Initial condition \\(y\_0\\) for each subsystem in the group. The
-first dimension equals to the size of the group.
-
-
-#### <span class="section-num">8.2.3</span> `t0` {#t0}
-
-Initial time \\(t\_0\\).
-
-
-#### <span class="section-num">8.2.4</span> `len` {#len}
-
-A vector that contains the number of output time points for each
-subsystem. The lenght of the vector equals to the size of the group.
-
-
-#### <span class="section-num">8.2.5</span> `ts` {#ts}
-
-Output time when solution is seeked, consisting of
-`ts` of each subsystem concatenated.
-
-
-#### <span class="section-num">8.2.6</span> `theta` {#theta}
-
-2d-array parameters to be passed to `ODE_rhs`
-function. Each row corresponds to one subsystem.
-
-
-#### <span class="section-num">8.2.7</span> `x_r` {#x-r}
-
-2d-array real data to be passed to `ODE_rhs` function.
-Each row corresponds to one subsystem.
-
-
-#### <span class="section-num">8.2.8</span> `x_i` {#x-i}
-
-2d-array integer data to be passed to `ODE_rhs` function.
-Each row corresponds to one subsystem.
-
-
-#### <span class="section-num">8.2.9</span> `rtol` {#rtol}
-
-Relative tolerance.
-
-
-#### <span class="section-num">8.2.10</span> `atol` {#atol}
-
-Absolute tolerance.
-
-
-#### <span class="section-num">8.2.11</span> `max_step` {#max-step}
-
-Maximum number of steps allowed between neighboring time in `ts`.
+-   `ODE_rhs`
+    Function that specifies the right-hand-side \\(f\\). See Section [sec:ode_func_args](#sec:ode_func_args).
+-   `y0`
+    Initial condition \\(y\_0\\) for each subsystem in the group. The
+    first dimension equals to the size of the group.
+-   `t0`
+    Initial time \\(t\_0\\).
+-   `len`
+    A vector that contains the number of output time points for each
+    subsystem. The lenght of the vector equals to the size of the group.
+-   `ts`
+    Output time when solution is seeked, consisting of
+    `ts` of each subsystem concatenated.
+-   `theta`
+    2d-array parameters to be passed to `ODE_rhs`
+    function. Each row corresponds to one subsystem.
+-   `x_r`
+    2d-array real data to be passed to `ODE_rhs` function.
+    Each row corresponds to one subsystem.
+-   `x_i`
+    2d-array integer data to be passed to `ODE_rhs` function.
+    Each row corresponds to one subsystem.
+-   `rtol`
+    Relative tolerance.
+-   `atol`
+    Absolute tolerance.
+-   `max_step`
+    Maximum number of steps allowed between neighboring time in `ts`.
 
 
 ### <span class="section-num">8.3</span> Return value {#return-value}

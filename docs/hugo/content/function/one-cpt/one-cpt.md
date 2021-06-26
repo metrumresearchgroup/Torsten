@@ -2,7 +2,7 @@
 title = "One Compartment Model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-26T00:13:57-07:00
+lastmod = 2021-06-26T09:38:12-07:00
 draft = false
 weight = 2001
 +++
@@ -31,7 +31,7 @@ weight = 2001
 ## <span class="section-num">1</span> Description {#description}
 
 Function `pmx_solve_onecpt` solves a one-compartment PK
-model (Figure [1](#org08990fb)). The model obtains plasma concentrations of parent drug \\(c=y\_2/V\_2\\)
+model (Figure [1](#org92aa0a2)). The model obtains plasma concentrations of parent drug \\(c=y\_2/V\_2\\)
 by solving for the mass of drug in the central compartment
 \\(y\_2\\) from ordinary differential equations(ODEs)
 
@@ -40,7 +40,7 @@ by solving for the mass of drug in the central compartment
   y\_2' &= k\_a y\_1 - \left(\frac{CL}{V\_2} + \frac{Q}{V\_2}\right) y\_2.
 \end{align}
 
-<a id="org08990fb"></a>
+<a id="org92aa0a2"></a>
 
 {{< figure src="/ox-hugo/cptModels.png" caption="Figure 1: One and two compartment models with first order absorption implemented in Torsten." >}}
 
