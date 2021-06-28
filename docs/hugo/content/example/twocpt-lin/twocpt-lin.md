@@ -2,7 +2,7 @@
 title = "Two-compartment model as a linear ODE model for single patient"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-26T09:38:19-07:00
+lastmod = 2021-06-28T14:19:37-07:00
 draft = false
 weight = 2002
 +++

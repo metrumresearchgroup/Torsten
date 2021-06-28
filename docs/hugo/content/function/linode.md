@@ -2,7 +2,7 @@
 title = "General Linear ODE Model Function"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-26T09:38:13-07:00
+lastmod = 2021-06-28T14:25:22-07:00
 draft = false
 weight = 2003
 +++

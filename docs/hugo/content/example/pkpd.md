@@ -2,16 +2,31 @@
 title = "Joint PK-PD model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-26T09:38:20-07:00
+lastmod = 2021-06-28T14:39:36-07:00
 draft = false
 weight = 2004
 +++
+
+<style>
+  .ox-hugo-toc ul {
+    list-style: none;
+  }
+</style>
+<div class="ox-hugo-toc toc">
+<div></div>
+
+<div class="heading">Table of Contents</div>
+
+- <span class="section-num">1</span> [Bibliography](#bibliography)
+
+</div>
+<!--endtoc-->
 
 \label{sec:fk\_model}
 
 Neutropenia is observed in patients receiving an ME-2 drug. Our goal
 is to model the relation between neutrophil counts and drug
-exposure. As shown in Figure [fig:FK_model](#fig:FK_model), the Friberg-Karlsson Semi-Mechanistic model <sup id="4698e09238445a27c4bd926a20f9846e"><a href="#friberg_mechanistic_2003" title="Friberg \&amp; Karlsson, Mechanistic {Models} for {Myelosuppression}, {Investigational New Drugs}, v(2), 183--194 (2003).">friberg_mechanistic_2003</a></sup> couples
+exposure. As shown in Figure [fig:FK_model](#fig:FK_model), the Friberg-Karlsson Semi-Mechanistic model ([Friberg and Karlsson 2003](#org9fe3b78)) couples
 a PK model with a PD
 effect to describe a delayed feedback mechanism that keeps the
 absolute neutrophil count (ANC) at the
@@ -31,16 +46,13 @@ PK model, and set \\(n = 3\\).
   where \\(c\\) is the drug concentration calculated from the PK model, and function \\(f\_{\text{FK}}\\) represents solving the following
 nonlinear ODE for \\(y\_{\text{circ}}\\)
 
-\begin{subequations}
-  \begin{align}
+\begin{align}\label{eq:FK}
   \frac{dy\_\mathrm{prol}}{dt} &= k\_\mathrm{prol} y\_\mathrm{prol} (1 - E\_\mathrm{drug})\left(\frac{\text{Circ}\_0}{y\_\mathrm{circ}}\right)^\gamma - k\_\mathrm{tr}y\_\mathrm{prol}, \\\\\\
   \frac{dy\_\mathrm{trans1}}{dt} &= k\_\mathrm{tr} y\_\mathrm{prol} - k\_\mathrm{tr} y\_\mathrm{trans1}, \\\\\\
   \frac{dy\_\mathrm{trans2}}{dt} &= k\_\mathrm{tr} y\_\mathrm{trans1} - k\_\mathrm{tr} y\_\mathrm{trans2},  \\\\\\
   \frac{dy\_\mathrm{trans3}}{dt} &= k\_\mathrm{tr} y\_\mathrm{trans2} - k\_\mathrm{tr} y\_\mathrm{trans3},  \\\\\\
   \frac{dy\_\mathrm{circ}}{dt} &= k\_\mathrm{tr} y\_\mathrm{trans3} - k\_\mathrm{tr} y\_\mathrm{circ},
-   \label{eq:FK}
-  \end{align}
-\end{subequations}
+\end{align}
 
 We use \\(E\_{\text{drug}} = \alpha c\\) to model the linear effect of drug
 concentration in central compartment, with
@@ -54,9 +66,9 @@ we can specify solve the system using a coupled solver function. We do not
 expect our system to be stiff and use the Runge-Kutta 4th/5th order
 integrator.
 
-<a id="orga297c8f"></a>
+<a id="orge5c3c2e"></a>
 
-{{< figure src="/ox-hugo/neutrophilModel.jpg" caption="Figure 1: Friberg-Karlsson semi-mechanistic Model." >}}
+{{< figure src="./statifc/ox-hugo/neutrophilModel.jpg" caption="Figure 1: Friberg-Karlsson semi-mechanistic Model." >}}
 
 The model fitting is based on simulated data
 
@@ -213,3 +225,8 @@ model {
   logNeutObs ~ normal(log(neutObs), sigmaNeut);
 }
 ```
+
+
+## <span class="section-num">1</span> Bibliography {#bibliography}
+
+<a id="org9fe3b78"></a>Friberg, Lena E., and Mats O. Karlsson. 2003. “Mechanistic Models for Myelosuppression.” _Investigational New Drugs_ 21 (2):183–94. <https://link.springer.com/article/10.1023/A:1023573429626>.

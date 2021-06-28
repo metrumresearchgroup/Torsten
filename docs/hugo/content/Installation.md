@@ -2,7 +2,7 @@
 title = "Installation"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-26T09:38:09-07:00
+lastmod = 2021-06-28T14:19:27-07:00
 draft = false
 weight = 1004
 [menu.main]
@@ -20,10 +20,11 @@ weight = 1004
 
 <div class="heading">Table of Contents</div>
 
-- <span class="section-num">1</span> [Command line interface](#command-line-interface)
-- <span class="section-num">2</span> [R interface](#r-interface)
-- <span class="section-num">3</span> [MPI support](#mpi-support)
-- <span class="section-num">4</span> [Testing](#testing)
+    - <span class="section-num">0.1</span> [Command line interface](#command-line-interface)
+    - <span class="section-num">0.2</span> [R interface](#r-interface)
+    - <span class="section-num">0.3</span> [MPI support](#mpi-support)
+    - <span class="section-num">0.4</span> [Testing](#testing)
+- <span class="section-num">1</span> [Bibliography](#bibliography)
 
 </div>
 <!--endtoc-->
@@ -36,12 +37,7 @@ The latest v0.89rc is
 compatible with Stan v2.27.0. Torsten can be accessed from
 command line for cmdstan interface and `cmdstanr`
 (<https://mc-stan.org/cmdstanr/>) for R interface. It requires
-a modern C++11 compiler as well as a Make utility. See <sup id="8aa45ba469168c91a8faa4436edebb97"><a href="#cmdstan_team_2020" title="@manual{cmdstan_team_2020,
-    Author = {Stan Development Team},
-    Title = {CmdStan User's Guide},
-    Year = {2020},
-    url = {https://mc-stan.org/docs/2_26/cmdstan-guide/index.html},
-    }">cmdstan_team_2020</a></sup> for details of installation and
+a modern C++11 compiler as well as a Make utility. See ([Team 2020](#orge08fb88)) for details of installation and
 required toolchain. In particular, we recommend the folowing versions
 of C++ compilers:
 
@@ -53,7 +49,7 @@ On windows, the Make utility `mingw32-make` can be installed as part
 of RTools.
 
 
-## <span class="section-num">1</span> Command line interface {#command-line-interface}
+### <span class="section-num">0.1</span> Command line interface {#command-line-interface}
 
 The command line interface `cmdstan` is available along with Torsten
 and can be found at `Torsten/cmdstan`.
@@ -66,7 +62,7 @@ make model_path/model_name # replace "make" with "mingw32-make" on Windows platf
 ```
 
 
-## <span class="section-num">2</span> R interface {#r-interface}
+### <span class="section-num">0.2</span> R interface {#r-interface}
 
 After installing cmdstanr from <https://mc-stan.org/cmdstanr/>, use the
 following command to set path
@@ -79,7 +75,7 @@ Then one can follow <https://mc-stan.org/cmdstanr/articles/cmdstanr.html> to com
 and run Torsten models.
 
 
-## <span class="section-num">3</span> MPI support {#mpi-support}
+### <span class="section-num">0.3</span> MPI support {#mpi-support}
 
 \label{sec:mpi\_support}
 Torsten's MPI support is of a different flavour than
@@ -112,7 +108,7 @@ same Stan model, and MPI support is only available through `cmdstan`
 interface.
 
 
-## <span class="section-num">4</span> Testing {#testing}
+### <span class="section-num">0.4</span> Testing {#testing}
 
 Models in `example-models` directory are for tutorial and demonstration.
 The following shows how to build and run the two-compartment model
@@ -132,3 +128,8 @@ fit <- model$sample(data = file.path(file.dir, "pk2cpt.data.R"),
                     refresh = 500)
 bayesplot::mcmc_dens_overlay(fit$draws("CL"))
 ```
+
+
+## <span class="section-num">1</span> Bibliography {#bibliography}
+
+<a id="orge08fb88"></a>Team, Stan Development. 2020. _CmdStan User’s Guide_. <https://mc-stan.org/docs/2%5F26/cmdstan-guide/index.html>.

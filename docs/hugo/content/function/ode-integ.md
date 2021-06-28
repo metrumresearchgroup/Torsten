@@ -1,33 +1,13 @@
 +++
-title = "ODE  integrator Function"
+title = "ODE  integrator function"
 author = ["Yi Zhang"]
-date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-26T09:38:15-07:00
+date = 2021-06-28T00:00:00-07:00
+lastmod = 2021-06-28T14:36:19-07:00
 draft = false
 weight = 2007
 +++
 
-<style>
-  .ox-hugo-toc ul {
-    list-style: none;
-  }
-</style>
-<div class="ox-hugo-toc toc">
-<div></div>
-
-<div class="heading">Table of Contents</div>
-
-- <span class="section-num">1</span> [Description](#description)
-- <span class="section-num">2</span> [Usage](#usage)
-- <span class="section-num">3</span> [Arguments](#arguments)
-- <span class="section-num">4</span> [Return value](#return-value)
-- <span class="section-num">5</span> [Note](#note)
-
-</div>
-<!--endtoc-->
-
-
-## <span class="section-num">1</span> Description {#description}
+#### Description {#description}
 
 Torsten provides its own implementation of ODE solvers that solves
 
@@ -41,14 +21,14 @@ in Stan. The general ODE PMX solvers in previous sections are internally powered
 by these functions.
 
 
-## <span class="section-num">2</span> Usage {#usage}
+#### Usage {#usage}
 
 ```stan
 real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]);
 ```
 
 
-## <span class="section-num">3</span> Arguments {#arguments}
+#### Arguments {#arguments}
 
 \label{sec:ode\_func\_args}
 
@@ -87,13 +67,13 @@ the integer data.
     default to 100000.
 
 
-## <span class="section-num">4</span> Return value {#return-value}
+#### Return value {#return-value}
 
 An `n`-by-`nd` 2d-array, where `n` is the size of `ts`
 and `nd` the dimension of the system.
 
 
-## <span class="section-num">5</span> Note {#note}
+#### Note {#note}
 
 \label{sec:ode\_func\_note}
 
@@ -132,14 +112,8 @@ and `nd` the dimension of the system.
     the dynamic system, setting
     `atol` greater than that threshold will avoid
     spurious and error-prone computation. See
-    <sup id="22a46696f36cafa68984a1b79da368aa"><a href="#hindmarsh_cvodes_2020" title="@manual{hindmarsh_cvodes_2020,
-        Author = {Hindmarsh, Alan C. and Serban, Radu and Balos, Cody
-                      J. and Gardner, David J. and Woodward, Carol S. and
-                      Reynolds, Daniel R.},
-        Title = {User Documentation for cvodes v5.4.0},
-        Year = {2020},
-        }">hindmarsh_cvodes_2020</a></sup> and
-    1.4 of <sup id="5b42fed7488ad403e679e0ba2797e56a"><a href="#shampine_solving_2003" title="Shampine, Gladwell, Shampine \&amp; Thompson, Solving {ODEs} with {MATLAB}, Cambridge University Press (2003).">shampine_solving_2003</a></sup> for details.
+    ([Hindmarsh et al. 2020](#org2f3768a)) and
+    1.4 of ([Shampine et al. 2003](#orgd4f9776)) for details.
 
 -   With optional arguments indicated by square bracket, the following calls are allowed:
 
@@ -149,3 +123,10 @@ and `nd` the dimension of the system.
 pmx_integrate_ode_[adams || rk45 || bdf](..., x_i);
 pmx_integrate_ode_[adams || rk45 || bdf](..., x_i, rel_tol, abs_tol, max_step);
 ```
+
+
+## Bibliography {#bibliography}
+
+<a id="org2f3768a"></a>Hindmarsh, Alan C., Radu Serban, Cody J. Balos, David J. Gardner, Carol S. Woodward, and Daniel R. Reynolds. 2020. _User Documentation for Cvodes V5.4.0_.
+
+<a id="orgd4f9776"></a>Shampine, L. F., I. Gladwell, Larry Shampine, and S. Thompson. 2003. _Solving ODEs with MATLAB_. Cambridge University Press.

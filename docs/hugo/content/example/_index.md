@@ -2,7 +2,7 @@
 title = "Examples"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-26T09:38:18-07:00
+lastmod = 2021-06-28T14:19:36-07:00
 draft = false
 weight = 1006
 +++
@@ -20,7 +20,7 @@ All the PMX models in this chapter can be found in
 -   `Torsten/example-models/FribergKarlsson` (Section [sec:fkpop_model](#sec:fkpop_model)).
 
 
-## <span class="section-num">1</span> Two-compartment model for single patient {#two-compartment-model-for-single-patient}
+### <span class="section-num">0.1</span> Two-compartment model for single patient {#two-compartment-model-for-single-patient}
 
 \label{sec:pk2cpt}
   We model drug absorption in a single patient and simulate plasma drug concentrations:
@@ -39,7 +39,7 @@ two-compartment ODEs in [{{< relref "two-cpt" >}}]({{< relref "two-cpt" >}}), we
   \sigma^2 &= 0.01
 \end{align\*}
 
-The data are generated using the R package `mrgsolve` <sup id="8dd98ac45050f8bfe813328322213083"><a href="#Baron000" title="Kyle Baron \&amp; Marc Gastonguay, Simulation from ODE-Based Population PK/PD and Systems Pharmacology Models in R with mrgsolve, {Journal of Pharmacokinetics and Pharmacodynamics}, v(W-23), S84--S85 (2015).">Baron000</a></sup>.
+The data are generated using the R package `mrgsolve` ([Baron and Gastonguay 2015](#orgacd1a79)).
 
 Code below shows how Torsten function `pmx_solve_twocpt` can be used to fit the above model.
 
@@ -111,13 +111,13 @@ model{
 
 Four MCMC chains of 2000 iterations (1000 warmup iterations and 1000
 sampling iterations) are simulated. 1000 samples per chain were used for the subsequent analyses.
-The MCMC history plots(Figure [1](#orgbe0d7f0))
+The MCMC history plots(Figure [1](#org390d02d))
 suggest that the 4 chains have converged to common distributions for
 all of the key model parameters. The fit to the plasma concentration
-data (Figure [3](#org147efd5)) are in close agreement with the
+data (Figure [3](#org9c1ee27)) are in close agreement with the
 data, which is not surprising since the fitted model is identical to
 the one used to simulate the data. Similarly the parameter posterior
-density can be examined in Figure [2](#orgffecbb9) and shows
+density can be examined in Figure [2](#orge102b99) and shows
 consistency with the values used for simulation. Another way to
 summarize the posterior is through `cmdstanr`'s `summary` method.
 
@@ -136,20 +136,20 @@ summarize the posterior is through `cmdstanr`'s `summary` method.
 6 sigma     0.109  0.108 0.0117 0.0111  0.0911  0.130  1.01    1414.     905.
 ```
 
-<a id="orgbe0d7f0"></a>
+<a id="org390d02d"></a>
 
 </ox-hugo/history.pdf>
 
-<a id="orgffecbb9"></a>
+<a id="orge102b99"></a>
 
 </ox-hugo/density.pdf>
 
-<a id="org147efd5"></a>
+<a id="org9c1ee27"></a>
 
 </ox-hugo/ppc_ribbon.pdf>
 
 
-## <span class="section-num">2</span> Two-compartment model as a linear ODE model for single patient {#two-compartment-model-as-a-linear-ode-model-for-single-patient}
+### <span class="section-num">0.2</span> Two-compartment model as a linear ODE model for single patient {#two-compartment-model-as-a-linear-ode-model-for-single-patient}
 
 \label{sec:pk2cpt\_linode}
 Using `pmx_solve_linode`, the following example fits a two-compartment model
@@ -207,7 +207,7 @@ transformed parameters{
 ```
 
 
-## <span class="section-num">3</span> Two-compartment model solved by numerical integrator for single patient {#two-compartment-model-solved-by-numerical-integrator-for-single-patient}
+### <span class="section-num">0.3</span> Two-compartment model solved by numerical integrator for single patient {#two-compartment-model-solved-by-numerical-integrator-for-single-patient}
 
 \label{sec:pk2cpt\_ode}
 Using `pmx_solve_rk45`, the following example fits a two-compartment model
@@ -282,13 +282,13 @@ model{
 ```
 
 
-## <span class="section-num">4</span> Joint PK-PD model {#joint-pk-pd-model}
+### <span class="section-num">0.4</span> Joint PK-PD model {#joint-pk-pd-model}
 
 \label{sec:fk\_model}
 
 Neutropenia is observed in patients receiving an ME-2 drug. Our goal
 is to model the relation between neutrophil counts and drug
-exposure. As shown in Figure [fig:FK_model](#fig:FK_model), the Friberg-Karlsson Semi-Mechanistic model <sup id="4698e09238445a27c4bd926a20f9846e"><a href="#friberg_mechanistic_2003" title="Friberg \&amp; Karlsson, Mechanistic {Models} for {Myelosuppression}, {Investigational New Drugs}, v(2), 183--194 (2003).">friberg_mechanistic_2003</a></sup> couples
+exposure. As shown in Figure [fig:FK_model](#fig:FK_model), the Friberg-Karlsson Semi-Mechanistic model ([Friberg and Karlsson 2003](#org2060819)) couples
 a PK model with a PD
 effect to describe a delayed feedback mechanism that keeps the
 absolute neutrophil count (ANC) at the
@@ -331,7 +331,7 @@ we can specify solve the system using a coupled solver function. We do not
 expect our system to be stiff and use the Runge-Kutta 4th/5th order
 integrator.
 
-<a id="orgd46b903"></a>
+<a id="orgf6fb439"></a>
 
 {{< figure src="/ox-hugo/neutrophilModel.jpg" caption="Figure 4: Friberg-Karlsson semi-mechanistic Model." >}}
 
@@ -492,7 +492,7 @@ model {
 ```
 
 
-## <span class="section-num">5</span> Two-compartment population model {#two-compartment-population-model}
+### <span class="section-num">0.5</span> Two-compartment population model {#two-compartment-population-model}
 
 \label{sec:twocpt\_population}
 Using `pmx_solve_group_bdf`, the following example fits a
@@ -653,7 +653,7 @@ processes participating ODE solution. For example, with
 parallel, with each process solving 2 subjects.
 
 
-## <span class="section-num">6</span> Lotka-Volterra group model {#lotka-volterra-group-model}
+### <span class="section-num">0.6</span> Lotka-Volterra group model {#lotka-volterra-group-model}
 
 \label{sec:lotka\_volterra}
 Using `pmx_integrate_ode_group_rk45`, the following example fits
@@ -719,7 +719,7 @@ model {
 ```
 
 
-## <span class="section-num">7</span> Univariate integral of a quadratic function {#univariate-integral-of-a-quadratic-function}
+### <span class="section-num">0.7</span> Univariate integral of a quadratic function {#univariate-integral-of-a-quadratic-function}
 
 integral of a quadratic function.
 This example shows how to use `univariate_integral_rk45` to calculate the
@@ -752,7 +752,7 @@ transformed data {
 ```
 
 
-## <span class="section-num">8</span> Linear intepolation {#linear-intepolation}
+### <span class="section-num">0.8</span> Linear intepolation {#linear-intepolation}
 
 This example illustrates how to use `linear_intepolationi`
 to fit a piecewise linear function to a data set consisting
@@ -808,7 +808,7 @@ generated quantities{
 ```
 
 
-## <span class="section-num">9</span> Effect Compartment Population Model {#effect-compartment-population-model}
+### <span class="section-num">0.9</span> Effect Compartment Population Model {#effect-compartment-population-model}
 
 \label{sec:effcpt\_model}
 Here we expand the example in [{{< relref "two-cpt" >}}]({{< relref "two-cpt" >}}) to a population model fitted to the
@@ -818,7 +818,7 @@ both random effects and to the patients' body weight,
 treated as a covariate and denoted \\(bw\\).
 
 
-### <span class="section-num">9.1</span> Population Model for Plasma Drug Concentration \\(c\\) {#population-model-for-plasma-drug-concentration--c}
+#### <span class="section-num">0.9.1</span> Population Model for Plasma Drug Concentration \\(c\\) {#population-model-for-plasma-drug-concentration--c}
 
 \begin{gather\*}
   \log\left(c\_{ij}\right) \sim N\left(\log\left(\widehat{c}\_{ij}\right),\sigma^2\right), \\\\\\
@@ -833,14 +833,14 @@ treated as a covariate and denoted \\(bw\\).
 \end{gather\*}
 
 Furthermore we add a fourth compartment in which we measure
-a PD effect(Figure [5](#org3c0289f)).
+a PD effect(Figure [5](#orgfea730f)).
 
-<a id="org3c0289f"></a>
+<a id="orgfea730f"></a>
 
 {{< figure src="/ox-hugo/effCptModel.png" caption="Figure 5: Effect Compartment Model" >}}
 
 
-### <span class="section-num">9.2</span> Effect Compartment Model for PD response \\(R\\). {#effect-compartment-model-for-pd-response--r--dot}
+#### <span class="section-num">0.9.2</span> Effect Compartment Model for PD response \\(R\\). {#effect-compartment-model-for-pd-response--r--dot}
 
 \begin{gather\*}
 R\_{ij} \sim N\left(\widehat{R}\_{ij},\sigma\_{R}^2\right), \\\\\\
@@ -1022,7 +1022,7 @@ model{
 ```
 
 
-### <span class="section-num">9.3</span> Results {#results}
+#### <span class="section-num">0.9.3</span> Results {#results}
 
 We use the same diagnosis tools as for the
 previous examples. Table [effCptModelParms](#effCptModelParms) summarises the
@@ -1076,52 +1076,52 @@ parameters are consistent with the values used to simulate the data.
 | sigma     | 0.099   | 0.099   | 0.002 | 0.002 | 0.095  | 0.103   | 1.002 | 1726.283  | 2836.027  |
 | sigmaResp | 10.165  | 10.166  | 0.198 | 0.198 | 9.844  | 10.495  | 1.002 | 4788.527  | 2923.203  |
 
-<a id="org41d7191"></a>
+<a id="org2312d20"></a>
 
 </ox-hugo/density.pdf>
 
-<a id="org24095d5"></a>
+<a id="orga04be48"></a>
 
 </ox-hugo/ppc_study_1_5mg.pdf>
 
-<a id="org787a63e"></a>
+<a id="org9d91218"></a>
 
 </ox-hugo/ppc_study_1_10mg.pdf>
 
-<a id="orgaae9f95"></a>
+<a id="org8712bad"></a>
 
 </ox-hugo/ppc_study_1_20mg.pdf>
 
-<a id="org664a06f"></a>
+<a id="org015e256"></a>
 
 </ox-hugo/ppc_study_1_40mg.pdf>
 
-<a id="org9112827"></a>
+<a id="org39b0fa3"></a>
 
 </ox-hugo/ppc_study_2_20mg.pdf>
 
-<a id="orgcb83f04"></a>
+<a id="org6cd0f80"></a>
 
 </ox-hugo/ppc_study_1_5mg_resp.pdf>
 
-<a id="org2436410"></a>
+<a id="org9f39430"></a>
 
 </ox-hugo/ppc_study_1_10mg_resp.pdf>
 
-<a id="orgd08227a"></a>
+<a id="orga1283aa"></a>
 
 </ox-hugo/ppc_study_1_20mg_resp.pdf>
 
-<a id="org096dec3"></a>
+<a id="org982d59c"></a>
 
 </ox-hugo/ppc_study_1_40mg_resp.pdf>
 
-<a id="org8671abd"></a>
+<a id="org40391e3"></a>
 
 </ox-hugo/ppc_study_2_20mg_resp.pdf>
 
 
-## <span class="section-num">10</span> Friberg-Karlsson Semi-Mechanistic Population Model {#friberg-karlsson-semi-mechanistic-population-model}
+### <span class="section-num">0.10</span> Friberg-Karlsson Semi-Mechanistic Population Model {#friberg-karlsson-semi-mechanistic-population-model}
 
 \label{sec:fkpop\_model}
 We now return to the example in Section [sec:fk_model](#sec:fk_model) and extend
@@ -1131,7 +1131,7 @@ as an exercise to the reader to rewrite the model with
 coupled solver.
 
 
-### <span class="section-num">10.1</span> Friberg-Karlsson Population Model for drug-induced myelosuppression (\\(ANC\\)) {#friberg-karlsson-population-model-for-drug-induced-myelosuppression--anc}
+#### <span class="section-num">0.10.1</span> Friberg-Karlsson Population Model for drug-induced myelosuppression (\\(ANC\\)) {#friberg-karlsson-population-model-for-drug-induced-myelosuppression--anc}
 
 \begin{gather\*}
 \log(ANC\_{ij}) \sim N(Circ\_{ij}, \sigma^2\_{ANC}), \\\\\\
@@ -1299,7 +1299,7 @@ mpiexec -n nproc ./FribergKarlsson sample adapt delta=0.95 data file=fribergkarl
 ```
 
 
-### <span class="section-num">10.2</span> Results {#results}
+#### <span class="section-num">0.10.2</span> Results {#results}
 
 Table [FkpopModelParms](#FkpopModelParms) summarizes the sampling and some diagnostics output.
 estimation reflects the real value of the parameters (Table [FkpopModelParms](#FkpopModelParms) and Figure [fkpop_mcmc_density](#fkpop_mcmc_density).
@@ -1333,16 +1333,23 @@ and [fkpop_ppc_pd](#fkpop_ppc_pd) indicate the model is a good fit.
 | sigmaNeut | 0.106   | 0.105   | 0.012    | 0.011    | 0.088   | 0.127   | 1.000 | 2809.059  | 3031.605  |
 | alphaHat  | 2.24e-4 | 2.19e-4 | 3.97e-05 | 3.80e-05 | 1.66e-4 | 2.96e-4 | 1.000 | 5138.105  | 2807.328  |
 
-<a id="org017c598"></a>
+<a id="orgadd625e"></a>
 
 </ox-hugo/density.pdf>
 
-<a id="orgd630694"></a>
+<a id="org65a069e"></a>
 
 </ox-hugo/ppc_pk.pdf>
 
-<a id="orge7cae4e"></a>
+<a id="orga8cdcd5"></a>
 
 </ox-hugo/ppc_pd.pdf>
 
 \appendix
+
+
+## <span class="section-num">1</span> Bibliography {#bibliography}
+
+<a id="orgacd1a79"></a>Baron, Kyle T., and Marc R. Gastonguay. 2015. “Simulation from ODE-Based Population PK/PD and Systems Pharmacology Models in R with Mrgsolve.” _Journal of Pharmacokinetics and Pharmacodynamics_ 42 (W-23):S84–85.
+
+<a id="org2060819"></a>Friberg, Lena E., and Mats O. Karlsson. 2003. “Mechanistic Models for Myelosuppression.” _Investigational New Drugs_ 21 (2):183–94. <https://link.springer.com/article/10.1023/A:1023573429626>.
