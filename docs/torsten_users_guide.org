@@ -1726,17 +1726,20 @@ and [[ref:fkpop_ppc_pd]] indicate the model is a good fit.
 #+CAPTION: Posterior marginal densities of the model parameters of the Friberg-Karlsson population model.
 #+NAME: fkpop_mcmc_density
 #+ATTR_LATEX: :width 0.8\linewidth
-[[../example-models/FribergKarlsson/density.pdf]]
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/FribergKarlsson/density.png]]
 
 #+CAPTION: Predicted (50%, 90% credible interval and median) and observed individual drug plasma concentration.
 #+NAME: fkpop_ppc_pk
 #+ATTR_LATEX: :width 0.8\linewidth
-[[../example-models/FribergKarlsson/ppc_pk.pdf]]
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/FribergKarlsson/ppc_pk.png]]
 
 #+CAPTION: Predicted (50%, 90% credible interval and median) and observed individual Neutrophil counts.
 #+NAME: fkpop_ppc_pd
 #+ATTR_LATEX: :width 0.8\linewidth
-[[../example-models/FribergKarlsson/ppc_pd.pdf]]
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/FribergKarlsson/ppc_pd.png]]
 
 \appendix
 * Compiling constants
