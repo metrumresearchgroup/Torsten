@@ -2,25 +2,10 @@
 title = "Two-compartment model for single patient"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-29T11:51:52-07:00
+lastmod = 2021-06-29T12:05:44-07:00
 draft = false
 weight = 2001
 +++
-
-<style>
-  .ox-hugo-toc ul {
-    list-style: none;
-  }
-</style>
-<div class="ox-hugo-toc toc">
-<div></div>
-
-<div class="heading">Table of Contents</div>
-
-- <span class="section-num">1</span> [Bibliography](#bibliography)
-
-</div>
-<!--endtoc-->
 
 We model drug absorption in a single patient and simulate plasma drug concentrations:
 
@@ -38,7 +23,7 @@ With the plasma concentration \\(\hat{c}\\) using
   \sigma^2 &= 0.01
 \end{align\*}
 
-The data are generated using the R package `mrgsolve` ([Baron and Gastonguay 2015](#org6547005)).
+The data are generated using the R package `mrgsolve` ([Baron and Gastonguay 2015](#org30fa0db)).
 
 Code below shows how Torsten function `pmx_solve_twocpt` can be used to fit the above model.
 
@@ -110,13 +95,13 @@ model{
 
 Four MCMC chains of 2000 iterations (1000 warmup iterations and 1000
 sampling iterations) are simulated. 1000 samples per chain were used for the subsequent analyses.
-The MCMC history plots(Figure [1](#orgd1404d3))
+The MCMC history plots(Figure [1](#orged5f96b))
 suggest that the 4 chains have converged to common distributions for
 all of the key model parameters. The fit to the plasma concentration
-data (Figure [3](#org6340bea)) are in close agreement with the
+data (Figure [3](#org88c41cb)) are in close agreement with the
 data, which is not surprising since the fitted model is identical to
 the one used to simulate the data. Similarly the parameter posterior
-density can be examined in Figure [2](#org47aa6ef) and shows
+density can be examined in Figure [2](#org2ccb177) and shows
 consistency with the values used for simulation. Another way to
 summarize the posterior is through `cmdstanr`'s `summary` method.
 
@@ -135,19 +120,19 @@ summarize the posterior is through `cmdstanr`'s `summary` method.
 6 sigma     0.109  0.108 0.0117 0.0111  0.0911  0.130  1.01    1414.     905.
 ```
 
-<a id="orgd1404d3"></a>
+<a id="orged5f96b"></a>
 
-</ox-hugo/history.pdf>
+{{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/history.png" caption="Figure 1: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)" width="700" >}}
 
-<a id="org47aa6ef"></a>
+<a id="org2ccb177"></a>
 
-</ox-hugo/density.pdf>
+{{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/density.png" caption="Figure 2: Posterior marginal densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)" >}}
 
-<a id="org6340bea"></a>
+<a id="org88c41cb"></a>
 
-</ox-hugo/ppc_ribbon.pdf>
+{{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/ppc_ribbon.png" caption="Figure 3: Predicted (\\(y\_{\text{rep}}\\)) and observed (\\(y\\)) plasma drug concentrations of a two compartment model with first order absorption. \\(y\_{\text{rep}}\\) is shown with posterior median, 50%, 90% credible intervals." >}}
 
 
-## <span class="section-num">1</span> Bibliography {#bibliography}
+## Bibliography {#bibliography}
 
-<a id="org6547005"></a>Baron, Kyle T., and Marc R. Gastonguay. 2015. “Simulation from ODE-Based Population PK/PD and Systems Pharmacology Models in R with Mrgsolve.” _Journal of Pharmacokinetics and Pharmacodynamics_ 42 (W-23):S84–85.
+<a id="org30fa0db"></a>Baron, Kyle T., and Marc R. Gastonguay. 2015. “Simulation from ODE-Based Population PK/PD and Systems Pharmacology Models in R with Mrgsolve.” _Journal of Pharmacokinetics and Pharmacodynamics_ 42 (W-23):S84–85.

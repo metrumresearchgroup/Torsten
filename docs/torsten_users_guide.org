@@ -1151,7 +1151,7 @@ All the PMX models in this chapter can be found in
    :PROPERTIES:
    :EXPORT_FILE_NAME: twocpt
    :EXPORT_DATE: <2021-06-25 Fri>
-   :EXPORT_OPTIONS: toc:t
+   :EXPORT_OPTIONS: toc:nil num:nil
    :END:
   We model drug absorption in a single patient and simulate plasma drug concentrations:
 
@@ -1208,17 +1208,18 @@ summarize the posterior is through =cmdstanr='s =summary= method.
 #+CAPTION: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
 #+NAME: twocpt_mcmc_history
 #+ATTR_LATEX: :width \linewidth
-[[../example-models/pk2cpt/deliv/figure/history.pdf]]
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/history.png]]
 
 #+CAPTION: Posterior marginal densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
 #+NAME: twocpt_mcmc_posterior
 #+ATTR_LATEX: :width \linewidth
-[[../example-models/pk2cpt/deliv/figure/density.pdf]]
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/density.png]]
 
 #+CAPTION: Predicted ($y_{\text{rep}}$) and observed ($y$) plasma drug concentrations of a two compartment model with first order absorption. $y_{\text{rep}}$ is shown with posterior median, 50%, 90% credible intervals.
 #+NAME: twocpt_mcmc_predict
 #+ATTR_LATEX: :width 0.5\linewidth
-[[../example-models/pk2cpt/deliv/figure/ppc_ribbon.pdf]]
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/ppc_ribbon.png]]
 
 ** Two-compartment model as a linear ODE model for single patient 
    :PROPERTIES:
