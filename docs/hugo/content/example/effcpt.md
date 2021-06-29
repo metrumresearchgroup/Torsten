@@ -2,7 +2,7 @@
 title = "Effect Compartment Population Model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-29T11:57:06-07:00
+lastmod = 2021-06-29T12:22:10-07:00
 draft = false
 weight = 2009
 +++
@@ -46,9 +46,9 @@ treated as a covariate and denoted \\(bw\\).
 \end{gather\*}
 
 Furthermore we add a fourth compartment in which we measure
-a PD effect(Figure [1](#orgb43501d)).
+a PD effect(Figure [1](#org98536b8)).
 
-<a id="orgb43501d"></a>
+<a id="org98536b8"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/effCptModel.png" caption="Figure 1: Effect Compartment Model" width="400" >}}
 
@@ -241,14 +241,13 @@ We use the same diagnosis tools as for the
 previous examples. Table [1](#table--effCptModelParms) summarises the
 statistics and diagnostics of the parameters. In particular, `rhat`
 for all parameters being close to 1.0 indicates convergence of the 4
-chains. Figure [effcpt_mcmc_density](#effcpt_mcmc_density) shows the posterior density of
+chains. Figure [2](#orgdf23b71) shows the posterior density of
 the parameters.
 
 Posterior prediction check (PPC) in Figure
-[effcpt_ppc_5mg](#effcpt_ppc_5mg)-[effcpt_ppc_study_2_20mg](#effcpt_ppc_study_2_20mg) show that the fits to the plasma concentration
+[3](#org6e78d15) - [7](#org798e4f7) show that the fits to the plasma concentration
 are in close agreement with the data, notably for the sparse data case (phase IIa study). The fits
-to the PD data (Figure
-[effcpt_ppc_resp_5mg](#effcpt_ppc_resp_5mg)-[effcpt_ppc_resp_study_2_20mg](#effcpt_ppc_resp_study_2_20mg)) look
+to the PD data (Figure [8](#org8e0bc3b) - [12](#org9cfa2bb)) look
 reasonable considering data being more noisy so the model
 produces larger credible intervals. Both the summary table and PPC
 plots show that the estimated values of the
@@ -289,46 +288,46 @@ parameters are consistent with the values used to simulate the data.
 | sigma     | 0.099   | 0.099   | 0.002 | 0.002 | 0.095  | 0.103   | 1.002 | 1726.283  | 2836.027  |
 | sigmaResp | 10.165  | 10.166  | 0.198 | 0.198 | 9.844  | 10.495  | 1.002 | 4788.527  | 2923.203  |
 
-<a id="org15d30e3"></a>
+<a id="orgdf23b71"></a>
 
-</ox-hugo/density.pdf>
+{{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/density.png" caption="Figure 2: Posterior marginal densities of the model parameters of the effect compartment model." width="700" >}}
 
-<a id="orge290685"></a>
+<a id="org6e78d15"></a>
 
-</ox-hugo/ppc_study_1_5mg.pdf>
+{{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_5mg.png" caption="Figure 3: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (5mg dose)." width="700" >}}
 
-<a id="org7dfe3a3"></a>
+<a id="org4b4e346"></a>
 
-</ox-hugo/ppc_study_1_10mg.pdf>
+{{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_10mg.png" caption="Figure 4: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (10mg dose)." width="700" >}}
 
-<a id="org5206c6c"></a>
+<a id="org66337c1"></a>
 
-</ox-hugo/ppc_study_1_20mg.pdf>
+{{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_20mg.png" caption="Figure 5: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (20mg dose)." width="700" >}}
 
-<a id="orgd52b658"></a>
+<a id="orga60d528"></a>
 
-</ox-hugo/ppc_study_1_40mg.pdf>
+{{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_40mg.png" caption="Figure 6: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (40mg dose)." width="700" >}}
 
-<a id="orgd82b480"></a>
+<a id="org798e4f7"></a>
 
-</ox-hugo/ppc_study_2_20mg.pdf>
+{{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_2_20mg.png" caption="Figure 7: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 2 (first 40 subjects)." width="700" >}}
 
-<a id="orgf9b958d"></a>
+<a id="org8e0bc3b"></a>
 
-</ox-hugo/ppc_study_1_5mg_resp.pdf>
+{{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_5mg_resp.png" caption="Figure 8: Predicted (90% credible interval and median) and observed individual PD response in study 1 (5mg dose)." width="700" >}}
 
-<a id="orge83377f"></a>
+<a id="org045be2a"></a>
 
-</ox-hugo/ppc_study_1_10mg_resp.pdf>
+{{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_10mg_resp.png" caption="Figure 9: Predicted (90% credible interval and median) and observed individual PD response in study 1 (10mg dose)." width="700" >}}
 
-<a id="orgc0068cd"></a>
+<a id="org8d3da8e"></a>
 
-</ox-hugo/ppc_study_1_20mg_resp.pdf>
+{{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_20mg_resp.png" caption="Figure 10: Predicted (90% credible interval and median) and observed individual PD response in study 1 (20mg dose)." width="700" >}}
 
-<a id="orgad96ae4"></a>
+<a id="orgc619de0"></a>
 
-</ox-hugo/ppc_study_1_40mg_resp.pdf>
+{{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_40mg_resp.png" caption="Figure 11: Predicted (90% credible interval and median) and observed individual PD response in study 1 (40mg dose)." width="700" >}}
 
-<a id="orgbbf6aa0"></a>
+<a id="org9cfa2bb"></a>
 
-</ox-hugo/ppc_study_2_20mg_resp.pdf>
+{{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_2_20mg_resp.png" caption="Figure 12: Predicted (90% credible interval and median) and observed individual PD response in study 2 (first 40 subjects)." width="700" >}}

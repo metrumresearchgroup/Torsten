@@ -1514,14 +1514,13 @@ We use the same diagnosis tools as for the
 previous examples. Table [[effCptModelParms]] summarises the
 statistics and diagnostics of the parameters. In particular, =rhat=
 for all parameters being close to 1.0 indicates convergence of the 4
-chains. Figure [[ref:effcpt_mcmc_density]] shows the posterior density of
+chains. Figure [[effcpt_mcmc_density]] shows the posterior density of
 the parameters.
 
 Posterior prediction check (PPC) in Figure
-[[ref:effcpt_ppc_5mg]]-[[ref:effcpt_ppc_study_2_20mg]] show that the fits to the plasma concentration
+[[effcpt_ppc_5mg]] - [[effcpt_ppc_study_2_20mg]] show that the fits to the plasma concentration
 are in close agreement with the data, notably for the sparse data case (phase IIa study). The fits
-to the PD data (Figure
-[[ref:effcpt_ppc_resp_5mg]]-[[ref:effcpt_ppc_resp_study_2_20mg]]) look
+to the PD data (Figure [[effcpt_ppc_resp_5mg]] - [[effcpt_ppc_resp_study_2_20mg]]) look
 reasonable considering data being more noisy so the model
 produces larger credible intervals. Both the summary table and PPC
 plots show that the estimated values of the
@@ -1564,59 +1563,70 @@ parameters are consistent with the values used to simulate the data.
 #+CAPTION: Posterior marginal densities of the model parameters of the effect compartment model.
 #+NAME: effcpt_mcmc_density
 #+ATTR_LATEX: :width 0.8\linewidth
-[[../example-models/effCpt/density.pdf]]
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/density.png]]
 
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (5mg dose).
 #+NAME: effcpt_ppc_5mg
 #+ATTR_LATEX: :width \linewidth
-[[../example-models/effCpt/ppc_study_1_5mg.pdf]]
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_5mg.png
 
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (10mg dose).
 #+NAME: effcpt_ppc_10mg
 #+ATTR_LATEX: :width \linewidth
-[[../example-models/effCpt/ppc_study_1_10mg.pdf]]
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_10mg.png
 
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (20mg dose).
 #+NAME: effcpt_ppc_20mg
 #+ATTR_LATEX: :width \linewidth
-[[../example-models/effCpt/ppc_study_1_20mg.pdf]]
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_20mg.png
 
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (40mg dose).
 #+NAME: effcpt_ppc_40mg
 #+ATTR_LATEX: :width \linewidth
-[[../example-models/effCpt/ppc_study_1_40mg.pdf]]
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_40mg.png
 
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 2 (first 40 subjects).
 #+NAME: effcpt_ppc_study_2_20mg
 #+ATTR_LATEX: :width \linewidth
-[[../example-models/effCpt/ppc_study_2_20mg.pdf]]
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_2_20mg.png
 
 # PD
 
 #+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (5mg dose).
 #+NAME: effcpt_ppc_resp_5mg
 #+ATTR_LATEX: :width \linewidth
-[[../example-models/effCpt/ppc_study_1_5mg_resp.pdf]]
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_5mg_resp.png
 
 #+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (10mg dose).
 #+NAME: effcpt_ppc_resp_10mg
 #+ATTR_LATEX: :width \linewidth
-[[../example-models/effCpt/ppc_study_1_10mg_resp.pdf]]
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_10mg_resp.png
 
 #+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (20mg dose).
 #+NAME: effcpt_ppc_resp_20mg
 #+ATTR_LATEX: :width \linewidth
-[[../example-models/effCpt/ppc_study_1_20mg_resp.pdf]]
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_20mg_resp.png
 
 #+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (40mg dose).
 #+NAME: effcpt_ppc_resp_40mg
 #+ATTR_LATEX: :width \linewidth
-[[../example-models/effCpt/ppc_study_1_40mg_resp.pdf]]
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_40mg_resp.png
 
 #+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 2 (first 40 subjects).
 #+NAME: effcpt_ppc_resp_study_2_20mg
 #+ATTR_LATEX: :width \linewidth
-[[../example-models/effCpt/ppc_study_2_20mg_resp.pdf]]
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_2_20mg_resp.png
 
 
 ** Friberg-Karlsson Semi-Mechanistic Population Model
