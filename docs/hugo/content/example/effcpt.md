@@ -2,7 +2,7 @@
 title = "Effect Compartment Population Model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T19:35:24-07:00
+lastmod = 2021-06-28T20:01:05-07:00
 draft = false
 weight = 2009
 +++
@@ -47,11 +47,11 @@ treated as a covariate and denoted \\(bw\\).
 \end{gather\*}
 
 Furthermore we add a fourth compartment in which we measure
-a PD effect(Figure [1](#orgda0e983)).
+a PD effect(Figure [1](#org59e32d0)).
 
-<a id="orgda0e983"></a>
+<a id="org59e32d0"></a>
 
-{{< figure src="/ox-hugo/effCptModel.png" caption="Figure 1: Effect Compartment Model" >}}
+{{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/effCptModel.png" caption="Figure 1: Effect Compartment Model" width="400" >}}
 
 
 ## <span class="section-num">2</span> Effect Compartment Model for PD response \\(R\\). {#effect-compartment-model-for-pd-response--r--dot}
@@ -290,46 +290,46 @@ parameters are consistent with the values used to simulate the data.
 | sigma     | 0.099   | 0.099   | 0.002 | 0.002 | 0.095  | 0.103   | 1.002 | 1726.283  | 2836.027  |
 | sigmaResp | 10.165  | 10.166  | 0.198 | 0.198 | 9.844  | 10.495  | 1.002 | 4788.527  | 2923.203  |
 
-<a id="org4659725"></a>
+<a id="org955f6f9"></a>
 
 </ox-hugo/density.pdf>
 
-<a id="orgdfc7183"></a>
+<a id="orgd7b8aeb"></a>
 
 </ox-hugo/ppc_study_1_5mg.pdf>
 
-<a id="orgb39f287"></a>
+<a id="org044e785"></a>
 
 </ox-hugo/ppc_study_1_10mg.pdf>
 
-<a id="org6995dac"></a>
+<a id="orgab0fae7"></a>
 
 </ox-hugo/ppc_study_1_20mg.pdf>
 
-<a id="org7151a5a"></a>
+<a id="orgebd63c3"></a>
 
 </ox-hugo/ppc_study_1_40mg.pdf>
 
-<a id="orge968b2d"></a>
+<a id="org602b6d5"></a>
 
 </ox-hugo/ppc_study_2_20mg.pdf>
 
-<a id="orgaf7fe73"></a>
+<a id="org63e0193"></a>
 
 </ox-hugo/ppc_study_1_5mg_resp.pdf>
 
-<a id="orgca994e4"></a>
+<a id="org8f219b9"></a>
 
 </ox-hugo/ppc_study_1_10mg_resp.pdf>
 
-<a id="orgeaebba5"></a>
+<a id="org57947e7"></a>
 
 </ox-hugo/ppc_study_1_20mg_resp.pdf>
 
-<a id="orgb494ff6"></a>
+<a id="org0528596"></a>
 
 </ox-hugo/ppc_study_1_40mg_resp.pdf>
 
-<a id="org013a99a"></a>
+<a id="org1f8095d"></a>
 
 </ox-hugo/ppc_study_2_20mg_resp.pdf>

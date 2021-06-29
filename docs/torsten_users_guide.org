@@ -115,62 +115,32 @@ This work was funded in part by the following organizations:
   :PROPERTIES:
   :EXPORT_FILE_NAME: _index
   :EXPORT_DATE: <2021-06-25 Fri>
+  :EXPORT_OPTIONS: toc:nil num:nil
   :END:
-Stan is an open source probabilistic programing language designed
+[[https://mc-stan.org/][Stan]] is an open source probabilistic programing language designed
 primarily to do Bayesian data analysis
-cite:carpenter17_stan. Several of its
-features make it a powerful tool to specify and fit complex
-models. First, its language is very expressive and
-flexible. Secondly, it implements a variant of No U-Turn
+cite:carpenter17_stan. It provides an expressive syntax for statistic
+modeling and contains an efficient variant of No U-Turn
 Sampler(NUTS), an adaptative Hamiltonian Monte Carlo
 algorithm that was proven more efficient than commonly used Monte Carlo Markov Chains
-(MCMC) samplers for complex high dimensional problems cite:hoffman_no-u-turn_2011,betancourt_hmc_2018. Our
-goal is to harness these innovations and make Stan a better
-software for pharmacometrics modeling. Our efforts are twofold:
-1. We contribute to the development of features, such as functions that support differential equations based models, and implement them directly into Stan's core language.
-2. We develop Torsten, an extension with specialized pharmacometrics functions.
+(MCMC) samplers for complex high dimensional problems cite:hoffman_no-u-turn_2011,betancourt_hmc_2018. 
 
-Throughout the process, we work very closely with the Stan Development
-Team. We have benefited immensely from their mentorship, advice, and
-feedback. Just like Stan, Torsten is an open source project that
-fosters collaborative work. Interested in contributing?
-Comment at Torsten repository
+#+ATTR_LATEX: :width 1.5in
+#+attr_html: :width 300
+[[file:https://metrumrg.com/wp-content/uploads/2019/07/torsten-white-stan-cropped.png]]
 
-[[https://github.com/metrumresearchgroup/Torsten][https://github.com/metrumresearchgroup/Torsten]] 
-
-or email us ([[mailto:billg@metrumrg.com][billg@metrumrg.com]], [[mailto:yz@yizh.org][yiz@metrumrg.com]]) and we will help you help us!
-
-Torsten is licensed under the BSD 3-clause license.
-
-#+begin_mdframed
-*WARNING:* The current version of Torsten is a /prototype/. It
-is being released for review and comment, and to support limited
-research applications. It has not been rigorously tested and should
-not be used for critical applications without further testing or
-cross-checking by comparison with other methods.
-
-We encourage interested users to try Torsten out and are happy to
-assist. Please report issues, bugs, and feature requests on
-[[https://github.com/metrumresearchgroup/stan][our GitHub page]].
-#+end_mdframed
-
-** Overview
-   :PROPERTIES:
-   :EXPORT_FILE_NAME: Overview
-   :EXPORT_DATE: <2021-06-25 Fri>
-   :END:
 Torsten is a collection of Stan functions to facilitate analysis of
-pharmacometric data using Stan. The current version
-includes:
+pharmacometric data. Given an event schedule and an ODE system, it calculates amounts
+in each compartment. The current version includes [fn:1]:
 - Specific linear compartment models:
   + One compartment model with first order absorption.
   + Two compartment model with elimination from and first order absorption into central compartment
 - General linear compartment model described by a system of first-order \underline{linear} Ordinary Differential Equations (ODEs).
 - General compartment model described by a system of first order ODEs.
-- Mix compartment model with PK forcing function described by a linear one or two compartment model.
+- Coupled model with PK forcing function described by a linear one or two compartment model and PD components solved by numerical ODE integration.
 
 The models and data format are based on
-NONMEM\textregistered{}[fn::NONMEM\textregistered{} is licensed and distributed by ICON Development Solutions.]/NMTRAN/PREDPP
+NONMEM \textregistered{} [fn::NONMEM\textregistered{} is licensed and distributed by ICON Development Solutions.]/NMTRAN/PREDPP
 conventions including:
 - Recursive calculation of model predictions
   + This permits piecewise constant covariate values
@@ -179,18 +149,11 @@ conventions including:
 - Handles steady state dosing events
 - Implemented NMTRAN data items include: TIME, EVID, CMT, AMT, RATE, ADDL, II, SS
 
-In general, all real variables may be passed as model parameters. A
-few exceptions apply /to functions which use a numerical
-integrator(i.e. the general and the mix compartment
-models). The below listed cases present technical difficulties, which we expect to
-overcome in Torsten's next release:
-- In the case of a multiple truncated infusion rate dosing regimen:
-  + The bioavailability (F) and the amount (AMT) must be fixed.
+All real variable arguments in Torsten functions can be passed as Stan =parameters=.
 
-This library provides Stan language functions that calculate amounts
-in each compartment, given an event schedule and an ODE system.
+[fn:1]  *WARNING:* The current version of Torsten is a /prototype/. It is being released for review and comment, and to support limited research applications. It has not been rigorously tested and should not be used for critical applications without further testing or cross-checking by comparison with other methods. We encourage interested users to try Torsten out and are happy to assist. Please report issues, bugs, and feature requests on [[https://github.com/metrumresearchgroup/stan][our GitHub page]].
 
-** Implementation summary
+*** Implementation summary
     :PROPERTIES:
     :EXPORT_FILE_NAME: Implementation-summary
     :EXPORT_DATE: <2021-06-25 Fri>
@@ -203,7 +166,7 @@ in each compartment, given an event schedule and an ODE system.
 - General compartment models are solved numerically using built-in ODE integrators in Stan. The tuning parameters of the solver are adjustable. The steady state solution is calculated using a numerical algebraic solver.
 - A mix compartment model's PK forcing function is solved analytically, and its forced ODE system is solved numerically.
 
-** Development plans
+*** Development plans
     :PROPERTIES:
     :EXPORT_FILE_NAME: Development-plans
     :EXPORT_DATE: <2021-06-25 Fri>
@@ -226,9 +189,11 @@ following:
     =mrgsolve= and the software NONMEM\textregistered{}
   + Recruit non-developer users to conduct beta testing
 
-** Changelog
+* Changelog
     :PROPERTIES:
     :EXPORT_FILE_NAME: Changelog
+    :EXPORT_HUGO_MENU: :menu "main"
+    :EXPORT_OPTIONS: toc:t num:nil
     :EXPORT_DATE: <2021-06-25 Fri>
     :END:
 *** Version 0.89 <2021-06-15 Tue>
@@ -406,7 +371,7 @@ following:
   :EXPORT_FILE_NAME: Installation
   :EXPORT_DATE: <2021-06-25 Fri>
   :EXPORT_HUGO_MENU: :menu "main"
-  :EXPORT_OPTIONS: toc:t
+  :EXPORT_OPTIONS: toc:nil num:nil
   :END:
 Currently Torsten is based on a forked version of Stan and hosted on GitHub
 - https://github.com/metrumresearchgroup/Torsten
@@ -571,6 +536,7 @@ $y_2$ from ordinary differential equations(ODEs)
 #+CAPTION: One and two compartment models with first order absorption implemented in Torsten.
 #+NAME: one_two_cpt_models
 #+ATTR_LATEX: :width 1.5in
+#+attr_html: :width 300
 [[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/cptModels.png]]
 
 *** Usage
@@ -1031,8 +997,7 @@ by these functions.
      
 ** ODE group  integrator Function
    :PROPERTIES:
-   :EXPORT_HUGO_SECTION*: ode_group_integ
-   :EXPORT_FILE_NAME: ode_group_integ
+   :EXPORT_FILE_NAME: ode-group-integ
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
    :END:
@@ -1174,14 +1139,14 @@ pairs. Specifically, =linear_interpolation= implements the following function
    :END:
 All the PMX models in this chapter can be found in
 =Torsten/example-models= directory:
-- =Torsten/example-models/pk2cpt= (Section [[ref:sec:pk2cpt]]).
-- =Torsten/example-models/pk2cpt_linode= (Section [[ref:sec:pk2cpt_linode]]).
-- =Torsten/example-models/pk2cpt_ode= (Section [[ref:sec:pk2cpt_ode]]).
-- =Torsten/example-models/FK_coupled= (Section [[ref:sec:fk_model]]).
-- =Torsten/example-models/twocpt_population= (Section [[ref:sec:twocpt_population]]).
-- =Torsten/example-models/lotka_volterra_ode_group_model= (Section [[ref:sec:lotka_volterra]]).
-- =Torsten/example-models/effCpt= (Section [[ref:sec:effcpt_model]]).
-- =Torsten/example-models/FribergKarlsson= (Section [[ref:sec:fkpop_model]]).
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/pk2cpt][Two-compartment model]]
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/pk2cpt_linode][Two-compartment model by linear ODEs]]
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/pk2cpt_ode][two-compartment model by numerical ODEs]]
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/FK_coupled][Joint PK/PD model]]
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/twocpt_population][Two-compartment popPK model]]
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/lotka_volterra_ode_group_model][Group of ODEs]]
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/effCpt][Effective compartment model]]
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/FribergKarlsson][PopPKPD model]]
 
 ** Two-compartment model for single patient
    :PROPERTIES:
@@ -1292,8 +1257,9 @@ src_stan[:exports code]{model} block as they are identical to Section [[ref:sec:
    :EXPORT_FILE_NAME: pkpd
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
+   :CUSTOM_ID: sec:fk_model
+   :EXPORT_OPTIONS: toc:nil num:nil
    :END:
-\label{sec:fk_model}
 #+INDEX: Friberg-Karlsson Model
    Neutropenia is observed in patients receiving an ME-2 drug. Our goal
    is to model the relation between neutrophil counts and drug
@@ -1338,7 +1304,8 @@ integrator.
 #+NAME: FK_model
 #+LABEL: fig:FK_model
 #+ATTR_LATEX: :width 0.8\textwidth
-[[file:./statifc/ox-hugo/neutrophilModel.jpg]]
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/neutrophilModel.jpg]]
 
 The model fitting is based on simulated data
 \begin{align*}
@@ -1508,7 +1475,8 @@ a PD effect(Figure [[eff_model]]).
 #+CAPTION: Effect Compartment Model
 #+NAME: eff_model
 #+ATTR_LATEX: :width 0.5\textwidth
-[[file:./graphics/effCptModel.png]]
+#+attr_html: :width 400
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/effCptModel.png]]
 
 *** Effect Compartment Model for PD response $R$.
 \begin{gather*}
