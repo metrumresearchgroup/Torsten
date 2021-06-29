@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Joint PK-PD model - Torsten</title>
+<meta name="description" content="A pharmacokinetics/pharmacodynamics library for Stan">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://metrumresearchgroup.github.io/Torsten//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://metrumresearchgroup.github.io/Torsten/example/pkpd/">
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://metrumresearchgroup.github.io/Torsten/js/bundle.js"></script><style>
+:root {--custom-background-color: #005933;}
+</style>
+<meta property="og:title" content="Joint PK-PD model" />
+<meta property="og:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Bibliography    Neutropenia is observed in patients receiving an ME-2 drug. Our goal is to model the relation between neutrophil counts and drug exposure. As shown in Figure fig:FK_model, the Friberg-Karlsson Semi-Mechanistic model (Friberg and Karlsson 2003) couples a PK model with a PD effect to describe a delayed feedback mechanism that keeps the absolute neutrophil count (ANC) at the baseline in a circulatory compartment (Circ), and the drug&rsquo;s effect in reducing the proliferation rate (prol)." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/example/pkpd/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="example" />
+<meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
+<meta property="article:modified_time" content="2021-06-28T20:25:18-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+
+<meta name="twitter:title" content="Joint PK-PD model"/>
+<meta name="twitter:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Bibliography    Neutropenia is observed in patients receiving an ME-2 drug. Our goal is to model the relation between neutrophil counts and drug exposure. As shown in Figure fig:FK_model, the Friberg-Karlsson Semi-Mechanistic model (Friberg and Karlsson 2003) couples a PK model with a PD effect to describe a delayed feedback mechanism that keeps the absolute neutrophil count (ANC) at the baseline in a circulatory compartment (Circ), and the drug&rsquo;s effect in reducing the proliferation rate (prol)."/>
+<meta itemprop="name" content="Joint PK-PD model">
+<meta itemprop="description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Bibliography    Neutropenia is observed in patients receiving an ME-2 drug. Our goal is to model the relation between neutrophil counts and drug exposure. As shown in Figure fig:FK_model, the Friberg-Karlsson Semi-Mechanistic model (Friberg and Karlsson 2003) couples a PK model with a PD effect to describe a delayed feedback mechanism that keeps the absolute neutrophil count (ANC) at the baseline in a circulatory compartment (Circ), and the drug&rsquo;s effect in reducing the proliferation rate (prol)."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
+<meta itemprop="dateModified" content="2021-06-28T20:25:18-07:00" />
+<meta itemprop="wordCount" content="857"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
+<p class="description">A pharmacokinetics/pharmacodynamics library for Stan</p>
+
+</header>
+<div class="global-menu">
+<nav>
+<ul>
+<li><a href="/Torsten/">Home</a></li>
+<li><a href="/Torsten/dev-team/">Development team</a></li>
+<li><a href="/Torsten/acknowledgements/">Acknowledgements</a></li>
+<li><a href="/Torsten/changelog/">Changelog</a></li>
+<li><a href="/Torsten/installation/">Installation</a></li></ul>
+</nav>
+</div>
+<div class="content-container">
+<main><h1>Joint PK-PD model</h1>
+<style>
+  .ox-hugo-toc ul {
+    list-style: none;
+  }
+</style>
+<div class="ox-hugo-toc toc">
+<div></div>
+<div class="heading">Table of Contents</div>
+<ul>
+<li><span class="section-num">1</span> <a href="#bibliography">Bibliography</a></li>
+</ul>
+</div>
+<!--endtoc-->
+<p>Neutropenia is observed in patients receiving an ME-2 drug. Our goal
+is to model the relation between neutrophil counts and drug
+exposure. As shown in Figure <a href="#fig:FK_model">fig:FK_model</a>, the Friberg-Karlsson Semi-Mechanistic model (<a href="#org239a1d4">Friberg and Karlsson 2003</a>) couples
+a PK model with a PD
+effect to describe a delayed feedback mechanism that keeps the
+absolute neutrophil count (ANC) at the
+baseline in a circulatory compartment (Circ), and
+the drug&rsquo;s effect in
+reducing the proliferation rate (prol).
+The delay between prol and Circ is modeled using \(n\) transit
+comparments with mean transit time MTT = \((n + 1)/k_{\text{tr}}\),
+with \(k_{\text{tr}}\) the transit rate constant. In the current example, we use the two compartment model in section <a href="/Torsten/function/two-cpt/">/Torsten/function/two-cpt/</a> for
+PK model, and set \(n = 3\).</p>
+<p>\begin{align}
+\log(\text{ANC})&amp; \sim N(\log(y_{\text{circ}}), \sigma^2_{\text{ANC}}),  \\\<br>
+y_{\text{circ}}&amp; = f_{\text{FK}}(\text{MTT}, \text{Circ}_{0}, \alpha, \gamma, c),
+\end{align}</p>
+<p>where \(c\) is the drug concentration calculated from the PK model, and function \(f_{\text{FK}}\) represents solving the following
+nonlinear ODE for \(y_{\text{circ}}\)</p>
+<p>\begin{align}\label{eq:FK}
+\frac{dy_\mathrm{prol}}{dt} &amp;= k_\mathrm{prol} y_\mathrm{prol} (1 - E_\mathrm{drug})\left(\frac{\text{Circ}_0}{y_\mathrm{circ}}\right)^\gamma - k_\mathrm{tr}y_\mathrm{prol}, \\\<br>
+\frac{dy_\mathrm{trans1}}{dt} &amp;= k_\mathrm{tr} y_\mathrm{prol} - k_\mathrm{tr} y_\mathrm{trans1}, \\\<br>
+\frac{dy_\mathrm{trans2}}{dt} &amp;= k_\mathrm{tr} y_\mathrm{trans1} - k_\mathrm{tr} y_\mathrm{trans2},  \\\<br>
+\frac{dy_\mathrm{trans3}}{dt} &amp;= k_\mathrm{tr} y_\mathrm{trans2} - k_\mathrm{tr} y_\mathrm{trans3},  \\\<br>
+\frac{dy_\mathrm{circ}}{dt} &amp;= k_\mathrm{tr} y_\mathrm{trans3} - k_\mathrm{tr} y_\mathrm{circ},
+\end{align}</p>
+<p>We use \(E_{\text{drug}} = \alpha c\) to model the linear effect of drug
+concentration in central compartment, with
+\(c=y_{\text{cent}}/V_{\text{cent}}\) based on PK solutions.</p>
+<p>Since the ODEs specifying the Two Compartment Model
+(Equation \eqref{eq:twocpt}) do not depend on the PD ODEs
+(Equation \eqref{eq:FK}) and can be solved analytically
+using Torsten&rsquo;s <code>pmx_solve_twocpt</code> function
+we can specify solve the system using a coupled solver function. We do not
+expect our system to be stiff and use the Runge-Kutta 4th/5th order
+integrator.</p>
+<p><a id="org558dbff"></a></p>
+<figure><img src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/neutrophilModel.jpg"
+         alt="Figure 1: Friberg-Karlsson semi-mechanistic Model." width="700"/><figcaption>
+            <p>Figure 1: Friberg-Karlsson semi-mechanistic Model.</p>
+        </figcaption>
+</figure>
+
+<p>The model fitting is based on simulated data</p>
+<p>\begin{align*}
+(\text{MTT}, \text{Circ}_{0}, \alpha, \gamma, k_{\text{tr}})&amp; = (125, 5.0, 3 \times 10^{-4}, 0.17) \\\<br>
+\sigma^2_{\text{ANC}}&amp; = 0.001.
+\end{align*}</p>
+<pre><code class="language-stan" data-lang="stan">functions{
+  vector FK_ODE(real t, vector y, vector y_pk, real[] theta, real[] rdummy, int[] idummy){
+    /* PK variables */
+    real VC = theta[3];
+
+    /* PD variable */
+    real mtt      = theta[6];
+    real circ0    = theta[7];
+    real alpha    = theta[8];
+    real gamma    = theta[9];
+    real ktr      = 4.0 / mtt;
+    real prol     = y[1] + circ0;
+    real transit1 = y[2] + circ0;
+    real transit2 = y[3] + circ0;
+    real transit3 = y[4] + circ0;
+    real circ     = fmax(machine_precision(), y[5] + circ0);
+    real conc     = y_pk[2] / VC;
+    real EDrug    = alpha * conc;
+
+    vector[5] dydt;
+
+    dydt[1] = ktr * prol * ((1 - EDrug) * ((circ0 / circ)^gamma) - 1);
+    dydt[2] = ktr * (prol - transit1);
+    dydt[3] = ktr * (transit1 - transit2);
+    dydt[4] = ktr * (transit2 - transit3);
+    dydt[5] = ktr * (transit3 - circ);
+
+    return dydt;
+  }
+}
+
+data{
+  int&lt;lower = 1&gt; nt;
+  int&lt;lower = 1&gt; nObsPK;
+  int&lt;lower = 1&gt; nObsPD;
+  int&lt;lower = 1&gt; iObsPK[nObsPK];
+  int&lt;lower = 1&gt; iObsPD[nObsPD];
+  real&lt;lower = 0&gt; amt[nt];
+  int&lt;lower = 1&gt; cmt[nt];
+  int&lt;lower = 0&gt; evid[nt];
+  real&lt;lower = 0&gt; time[nt];
+  real&lt;lower = 0&gt; ii[nt];
+  int&lt;lower = 0&gt; addl[nt];
+  int&lt;lower = 0&gt; ss[nt];
+  real rate[nt];
+  vector&lt;lower = 0&gt;[nObsPK] cObs;
+  vector&lt;lower = 0&gt;[nObsPD] neutObs;
+
+  real&lt;lower = 0&gt; circ0Prior;
+  real&lt;lower = 0&gt; circ0PriorCV;
+  real&lt;lower = 0&gt; mttPrior;
+  real&lt;lower = 0&gt; mttPriorCV;
+  real&lt;lower = 0&gt; gammaPrior;
+  real&lt;lower = 0&gt; gammaPriorCV;
+  real&lt;lower = 0&gt; alphaPrior;
+  real&lt;lower = 0&gt; alphaPriorCV;
+}
+
+transformed data{
+  int nOde = 5;
+  vector[nObsPK] logCObs;
+  vector[nObsPD] logNeutObs;
+
+  int nTheta = 9; // number of parameters
+  int nIIV = 7; // parameters with IIV
+
+  int n = 8;                        /* ODE dimension */
+  real rtol = 1e-8;
+  real atol = 1e-8;;
+  int max_step = 100000;
+
+  logCObs = log(cObs);
+  logNeutObs = log(neutObs);
+}
+
+parameters{
+
+  real&lt;lower = 0&gt; CL;
+  real&lt;lower = 0&gt; Q;
+  real&lt;lower = 0&gt; VC;
+  real&lt;lower = 0&gt; VP;
+  real&lt;lower = 0&gt; ka;
+  real&lt;lower = 0&gt; mtt;
+  real&lt;lower = 0&gt; circ0;
+  real&lt;lower = 0&gt; alpha;
+  real&lt;lower = 0&gt; gamma;
+  real&lt;lower = 0&gt; sigma;
+  real&lt;lower = 0&gt; sigmaNeut;
+
+  // IIV parameters
+  cholesky_factor_corr[nIIV] L;
+  vector&lt;lower = 0&gt;[nIIV] omega;
+}
+
+transformed parameters{
+  row_vector[nt] cHat;
+  vector&lt;lower = 0&gt;[nObsPK] cHatObs;
+  row_vector[nt] neutHat;
+  vector&lt;lower = 0&gt;[nObsPD] neutHatObs;
+  real&lt;lower = 0&gt; theta[nTheta];
+  matrix[nOde + 3, nt] x;
+  real biovar[nTheta] = rep_array(1.0, nTheta);
+  real tlag[nTheta] = rep_array(0.0, nTheta);
+
+  theta[1] = CL;
+  theta[2] = Q;
+  theta[3] = VC;
+  theta[4] = VP;
+  theta[5] = ka;
+  theta[6] = mtt;
+  theta[7] = circ0;
+  theta[8] = alpha;
+  theta[9] = gamma;
+
+  x = pmx_solve_twocpt_rk45(FK_ODE, nOde, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag, rtol, atol, max_step);
+
+  cHat = x[2, ] / VC;
+  neutHat = x[8, ] + circ0;
+
+  for(i in 1:nObsPK) cHatObs[i]    = cHat[iObsPK[i]];
+  for(i in 1:nObsPD) neutHatObs[i] = neutHat[iObsPD[i]];
+}
+
+model {
+  // Priors
+  CL    ~ normal(0, 20);
+  Q     ~ normal(0, 20);
+  VC    ~ normal(0, 100);
+  VP    ~ normal(0, 1000);
+  ka    ~ normal(0, 5);
+  sigma ~ cauchy(0, 1);
+
+  mtt       ~ lognormal(log(mttPrior), mttPriorCV);
+  circ0     ~ lognormal(log(circ0Prior), circ0PriorCV);
+  alpha     ~ lognormal(log(alphaPrior), alphaPriorCV);
+  gamma     ~ lognormal(log(gammaPrior), gammaPriorCV);
+  sigmaNeut ~ cauchy(0, 1);
+
+  // Parameters for Matt's trick
+  L ~ lkj_corr_cholesky(1);
+  omega ~ cauchy(0, 1);
+
+  // observed data likelihood
+  logCObs ~ normal(log(cObs), sigma);
+  logNeutObs ~ normal(log(neutObs), sigmaNeut);
+}
+</code></pre><h2 id="bibliography"><span class="section-num">1</span> Bibliography</h2>
+<p><a id="org239a1d4"></a>Friberg, Lena E., and Mats O. Karlsson. 2003. “Mechanistic Models for Myelosuppression.” <em>Investigational New Drugs</em> 21 (2):183–94. <a href="https://link.springer.com/article/10.1023/A:1023573429626">https://link.springer.com/article/10.1023/A:1023573429626</a>.</p>
+<div class="edit-meta">
+Last updated on 28 Jun 2021
+
+
+<br>
+Published on 25 Jun 2021
+<br><a href="https://github.com/thingsym/hugo-theme-techdoc/edit/master/content/example/pkpd.md" class="edit-page"><i class="fas fa-pen-square"></i>&nbsp;Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-ode/" title="Two-compartment model solved by numerical integrator for single patient"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Two-compartment model solved by numerical integrator for single patient</a>
+<a class="nav nav-next" href="https://metrumresearchgroup.github.io/Torsten/example/twocp-pop/" title="Two-compartment population model">Next - Two-compartment population model <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Exported
+  from <a href="https://www.gnu.org/software/emacs/">Emacs 27.1</a>
+  + <a href="https://orgmode.org/Changes.html">Org mode 9.4</a>
+  + <a href="https://ox-hugo.scripter.co/">ox-hugo</a>. Powered
+  by <a href="https://gohugo.io">Hugo</a>. Theme
+  by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed
+  by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+
+
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/">Home</a></li>
+
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/genode/">General ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/coupled/">Coupled ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-pop/">General ODE-based Population Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-integ/">ODE  integrator function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-group-integ/">ODE group  integrator Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/1d_integ/1d_integ/">Univariate integral</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/pc_lin_interp/pc_lin_interp/">Piecewise linear interpolation</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="https://metrumresearchgroup.github.io/Torsten/example/">Examples</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt/">Two-compartment model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-lin/">Two-compartment model as a linear ODE model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-ode/">Two-compartment model solved by numerical integrator for single patient</a></li>
+<li class="active"><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd/">Joint PK-PD model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocp-pop/">Two-compartment population model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/ode-group/">Lotka-Volterra group model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/1d-intg/">Univariate integral of a quadratic function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/lin-interp/">Linear intepolation</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/effcpt/">Effect Compartment Population Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd-pop/">Friberg-Karlsson Semi-Mechanistic Population Model</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div>
+<a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+
+
+<script src="https://metrumresearchgroup.github.io/Torsten/js/mathjax-config.js"></script>
+
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</div>
+</body>
+</html>

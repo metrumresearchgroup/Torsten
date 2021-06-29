@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Examples on Torsten</title>
+    <link>https://metrumresearchgroup.github.io/Torsten/example/</link>
+    <description>Recent content in Examples on Torsten</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 25 Jun 2021 00:00:00 -0700</lastBuildDate><atom:link href="https://metrumresearchgroup.github.io/Torsten/example/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Two-compartment model for single patient</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/example/twocpt/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/example/twocpt/</guid>
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Bibliography    \label{sec:pk2cpt} We model drug absorption in a single patient and simulate plasma drug concentrations:
+ Multiple Doses: 1250 mg, every 12 hours, for a total of 15 doses PK measured at 0.083, 0.167, 0.25, 0.5, 0.75, 1, 1.5, 2, 4, 6, 8, 10 and 12 hours after 1st, 2nd, and 15th dose. In addition, the PK is measured every 12 hours throughout the trial.</description>
+    </item>
+    
+    <item>
+      <title>Two-compartment model as a linear ODE model for single patient</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/example/twocpt-lin/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/example/twocpt-lin/</guid>
+      <description>\label{sec:pk2cpt_linode} Using pmx_solve_linode, the following example fits a two-compartment model with first order absorption. We omit data and model block as they are identical to Sectiontion sec:pk2cpt.
+transformed data{ row_vector[nObs] logCObs = log(cObs); int nCmt = 3; real biovar[nCmt]; real tlag[nCmt]; for (i in 1:nCmt) { biovar[i] = 1; tlag[i] = 0; } } parameters{ real&amp;lt;lower = 0&amp;gt; CL; real&amp;lt;lower = 0&amp;gt; Q; real&amp;lt;lower = 0&amp;gt; V1; real&amp;lt;lower = 0&amp;gt; V2; real&amp;lt;lower = 0&amp;gt; ka; real&amp;lt;lower = 0&amp;gt; sigma; } transformed parameters{ matrix[3, 3] K; real k10 = CL / V1; real k12 = Q / V1; real k21 = Q / V2; row_vector&amp;lt;lower = 0&amp;gt;[nt] cHat; row_vector&amp;lt;lower = 0&amp;gt;[nObs] cHatObs; matrix&amp;lt;lower = 0&amp;gt;[3, nt] x; K = rep_matrix(0, 3, 3); K[1, 1] = -ka; K[2, 1] = ka; K[2, 2] = -(k10 + k12); K[2, 3] = k21; K[3, 2] = k12; K[3, 3] = -k21; x = pmx_solve_linode(time, amt, rate, ii, evid, cmt, addl, ss, K, biovar, tlag); cHat = row(x, 2) .</description>
+    </item>
+    
+    <item>
+      <title>Two-compartment model solved by numerical integrator for single patient</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/example/twocpt-ode/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/example/twocpt-ode/</guid>
+      <description>\label{sec:pk2cpt_ode} Using pmx_solve_rk45, the following example fits a two-compartment model with first order absorption. User-defined function ode_rhs describes the RHS of the ODEs.
+functions{ vector ode_rhs(real t, vector x, real[] parms, real[] x_r, int[] x_i){ real CL = parms[1]; real Q = parms[2]; real V1 = parms[3]; real V2 = parms[4]; real ka = parms[5]; real k10 = CL / V1; real k12 = Q / V1; real k21 = Q / V2; vector[3] y; y[1] = -ka*x[1]; y[2] = ka*x[1] - (k10 + k12)*x[2] + k21*x[3]; y[3] = k12*x[2] - k21*x[3]; return y; } } We omit data and model block as they are identical to Section sec:pk2cpt.</description>
+    </item>
+    
+    <item>
+      <title>Joint PK-PD model</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/example/pkpd/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/example/pkpd/</guid>
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Bibliography    Neutropenia is observed in patients receiving an ME-2 drug. Our goal is to model the relation between neutrophil counts and drug exposure. As shown in Figure fig:FK_model, the Friberg-Karlsson Semi-Mechanistic model (Friberg and Karlsson 2003) couples a PK model with a PD effect to describe a delayed feedback mechanism that keeps the absolute neutrophil count (ANC) at the baseline in a circulatory compartment (Circ), and the drug&amp;rsquo;s effect in reducing the proliferation rate (prol).</description>
+    </item>
+    
+    <item>
+      <title>Two-compartment population model</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/example/twocp-pop/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/example/twocp-pop/</guid>
+      <description>\label{sec:twocpt_population} Using pmx_solve_group_bdf, the following example fits a two-compartment population model.
+functions{ // define ODE system for two compartmnt model real[] twoCptModelODE(real t, real[] x, real[] parms, real[] rate, // in this example, rate is treated as data int[] dummy){ // Parameters real CL = parms[1]; real Q = parms[2]; real V1 = parms[3]; real V2 = parms[4]; real ka = parms[5]; // Re-parametrization real k10 = CL / V1; real k12 = Q / V1; real k21 = Q / V2; // Return object (derivative) real y[3]; // 1 element per compartment of // the model // PK component of the ODE system y[1] = -ka*x[1]; y[2] = ka*x[1] - (k10 + k12)*x[2] + k21*x[3]; y[3] = k12*x[2] - k21*x[3]; return y; } } data{ int&amp;lt;lower = 1&amp;gt; np; /* population size */ int&amp;lt;lower = 1&amp;gt; nt; // number of events int&amp;lt;lower = 1&amp;gt; nObs; // number of observations int&amp;lt;lower = 1&amp;gt; iObs[nObs]; // index of observation // NONMEM data int&amp;lt;lower = 1&amp;gt; cmt[np * nt]; int evid[np * nt]; int addl[np * nt]; int ss[np * nt]; real amt[np * nt]; real time[np * nt]; real rate[np * nt]; real ii[np * nt]; real&amp;lt;lower = 0&amp;gt; cObs[np*nObs]; // observed concentration (dependent variable) } transformed data { real logCObs[np*nObs]; int&amp;lt;lower = 1&amp;gt; len[np]; int&amp;lt;lower = 1&amp;gt; len_theta[np]; int&amp;lt;lower = 1&amp;gt; len_biovar[np]; int&amp;lt;lower = 1&amp;gt; len_tlag[np]; int nTheta = 5; // number of parameters int nCmt = 3; // number of compartments real biovar[np * nt, nCmt]; real tlag[np * nt, nCmt]; logCObs = log(cObs); for (id in 1:np) { for (j in 1:nt) { for (i in 1:nCmt) { biovar[(id - 1) * nt + j, i] = 1; tlag[(id - 1) * nt + j, i] = 0; } } len[id] = nt; len_theta[id] = nt; len_biovar[id] = nt; len_tlag[id] = nt; } } parameters{ real&amp;lt;lower = 0&amp;gt; CL[np]; real&amp;lt;lower = 0&amp;gt; Q[np]; real&amp;lt;lower = 0&amp;gt; V1[np]; real&amp;lt;lower = 0&amp;gt; V2[np]; real&amp;lt;lower = 0&amp;gt; ka[np]; real&amp;lt;lower = 0&amp;gt; sigma[np]; } transformed parameters{ real theta[np * nt, nTheta]; vector&amp;lt;lower = 0&amp;gt;[nt] cHat[np]; real&amp;lt;lower = 0&amp;gt; cHatObs[np*nObs]; matrix[3, nt * np] x; for (id in 1:np) { for (it in 1:nt) { theta[(id - 1) * nt + it, 1] = CL[id]; theta[(id - 1) * nt + it, 2] = Q[id]; theta[(id - 1) * nt + it, 3] = V1[id]; theta[(id - 1) * nt + it, 4] = V2[id]; theta[(id - 1) * nt + it, 5] = ka[id]; } } x = pmx_solve_group_bdf(twoCptModelODE, 3, len, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag); for (id in 1:np) { for (j in 1:nt) { cHat[id][j] = x[2, (id - 1) * nt + j] .</description>
+    </item>
+    
+    <item>
+      <title>Lotka-Volterra group model</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/example/ode-group/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/example/ode-group/</guid>
+      <description>\label{sec:lotka_volterra} Using pmx_integrate_ode_group_rk45, the following example fits a Lotka-Volterra group model, based on Stan&amp;rsquo;s case study.
+functions { real[] dz_dt(real t, // time real[] z, // system state {prey, predator} real[] theta, // parameters real[] x_r, // unused data int[] x_i) { real u = z[1]; real v = z[2]; real alpha = theta[1]; real beta = theta[2]; real gamma = theta[3]; real delta = theta[4]; real du_dt = (alpha - beta * v) * u; real dv_dt = (-gamma + delta * u) * v; return { du_dt, dv_dt }; } } data { int&amp;lt;lower = 0&amp;gt; N_subj; // number of subjects int&amp;lt;lower = 0&amp;gt; N; // number of measurement times real ts_0[N]; // measurement times &amp;gt; 0 real y0_0[2]; // initial measured populations real&amp;lt;lower = 0&amp;gt; y_0[N, 2]; // measured populations } transformed data { int len[N_subj] = rep_array(N, N_subj); real y0[N_subj, 2] = rep_array(y0_0, N_subj); real y[N_subj, N, 2] = rep_array(y_0, N_subj); real ts[N_subj * N]; for (i in 1:N_subj) { ts[((i-1)*N + 1) : (i*N)] = ts_0; } } parameters { real&amp;lt;lower = 0&amp;gt; theta[N_subj, 4]; // { alpha, beta, gamma, delta } real&amp;lt;lower = 0&amp;gt; z_init[N_subj, 2]; // initial population real&amp;lt;lower = 0&amp;gt; sigma[N_subj, 2]; // measurement errors } transformed parameters { matrix[2, N_subj * N] z; z = pmx_integrate_ode_group_rk45(dz_dt, z_init, 0, len, ts, theta, rep_array(rep_array(0.</description>
+    </item>
+    
+    <item>
+      <title>Univariate integral of a quadratic function</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/example/1d-intg/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/example/1d-intg/</guid>
+      <description>integral of a quadratic function. This example shows how to use univariate_integral_rk45 to calculate the integral of a quadratic function.
+functions { real fun_ord2(real t, real[] theta, real[] x_r, int[] x_i) { real a = 2.3; real b = 2.0; real c = 1.5; real res; res = a + b * t + c * t * t; return res; } } data { real t0; real t1; real dtheta[2]; real x_r[0]; int x_i[0]; } transformed data { real univar_integral; univar_integral = univariate_integral_rk45(func, t0, t1, dtheta, x_r, x_i); } /* .</description>
+    </item>
+    
+    <item>
+      <title>Linear intepolation</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/example/lin-interp/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/example/lin-interp/</guid>
+      <description>This example illustrates how to use linear_intepolationi to fit a piecewise linear function to a data set consisting of \((x, y)\) pairs.
+data{ int nObs; real xObs[nObs]; real yObs[nObs]; int nx; int nPred; real xPred[nPred]; } transformed data{ real xmin = min(xObs); real xmax = max(xObs); } parameters{ real y[nx]; real&amp;lt;lower = 0&amp;gt; sigma; simplex[nx - 1] xSimplex; } transformed parameters{ real yHat[nObs]; real x[nx]; x[1] = xmin; x[nx] = xmax; for(i in 2:(nx-1)) x[i] = x[i-1] + xSimplex[i-1] * (xmax - xmin); yHat = linear_interpolation(xObs, x, y); } model{ xSimplex ~ dirichlet(rep_vector(1, nx - 1)); y ~ normal(0, 25); yObs ~ normal(yHat, sigma); } generated quantities{ real yHatPred[nPred]; real yPred[nPred]; yHatPred = linear_interpolation(xPred, x, y); for(i in 1:nPred) yPred[i] = normal_rng(yHatPred[i], sigma); } </description>
+    </item>
+    
+    <item>
+      <title>Effect Compartment Population Model</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/example/effcpt/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/example/effcpt/</guid>
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Population Model for Plasma Drug Concentration \(c\) 2 Effect Compartment Model for PD response \(R\). 3 Results    \label{sec:effcpt_model} Here we expand the example in /Torsten/function/two-cpt/ to a population model fitted to the combined data from phase I and phase IIa studies. The parameters exhibit inter-individual variations (IIV), due to both random effects and to the patients&#39; body weight, treated as a covariate and denoted \(bw\).</description>
+    </item>
+    
+    <item>
+      <title>Friberg-Karlsson Semi-Mechanistic Population Model</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/example/pkpd-pop/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/example/pkpd-pop/</guid>
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Friberg-Karlsson Population Model for drug-induced myelosuppression (\(ANC\)) 2 Results    \label{sec:fkpop_model} We now return to the example in Section sec:fk_model and extend it to a population model. While we recommend using the coupled solver, and this time we solve it using group solver. We leave it as an exercise to the reader to rewrite the model with coupled solver.</description>
+    </item>
+    
+  </channel>
+</rss>

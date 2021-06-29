@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Introduction - Torsten</title>
+<meta name="description" content="A pharmacokinetics/pharmacodynamics library for Stan">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://metrumresearchgroup.github.io/Torsten//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://metrumresearchgroup.github.io/Torsten/">
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://metrumresearchgroup.github.io/Torsten/js/bundle.js"></script><style>
+:root {--custom-background-color: #005933;}
+</style>
+<meta property="og:title" content="Introduction" />
+<meta property="og:description" content="A pharmacokinetics/pharmacodynamics library for Stan" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="og:site_name" content="Hugo Techdoc Theme" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+
+<meta name="twitter:title" content="Introduction"/>
+<meta name="twitter:description" content="A pharmacokinetics/pharmacodynamics library for Stan"/>
+<meta itemprop="name" content="Introduction">
+<meta itemprop="description" content="A pharmacokinetics/pharmacodynamics library for Stan"></head>
+<body><div class="container"><header>
+<h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
+<p class="description">A pharmacokinetics/pharmacodynamics library for Stan</p>
+
+</header>
+<div class="global-menu">
+<nav>
+<ul>
+<li><a href="/Torsten/">Home</a></li>
+<li><a href="/Torsten/dev-team/">Development team</a></li>
+<li><a href="/Torsten/acknowledgements/">Acknowledgements</a></li>
+<li><a href="/Torsten/changelog/">Changelog</a></li>
+<li><a href="/Torsten/installation/">Installation</a></li></ul>
+</nav>
+</div>
+<div class="content-container">
+<main><p><a href="https://mc-stan.org/">Stan</a> is an open source probabilistic programing language designed
+primarily to do Bayesian data analysis
+(<a href="#orga044fbc">Carpenter et al. 2017</a>). It provides an expressive syntax for statistic
+modeling and contains an efficient variant of No U-Turn
+Sampler(NUTS), an adaptative Hamiltonian Monte Carlo
+algorithm that was proven more efficient than commonly used Monte Carlo Markov Chains
+(MCMC) samplers for complex high dimensional problems (<a href="#org258f4bf">Hoffman and Gelman 2011</a>; <a href="#orgb5cbcee">Betancourt 2018</a>).</p>
+<figure><img src="https://metrumrg.com/wp-content/uploads/2019/07/torsten-white-stan-cropped.png" width="300"/>
+</figure>
+
+<p>Torsten is a collection of Stan functions to facilitate analysis of
+pharmacometric data. Given an event schedule and an ODE system, it calculates amounts
+in each compartment. The current version includes <sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>:</p>
+<ul>
+<li>Specific linear compartment models:
+<ul>
+<li>One compartment model with first order absorption.</li>
+<li>Two compartment model with elimination from and first order absorption into central compartment</li>
+</ul>
+</li>
+<li>General linear compartment model described by a system of first-order \underline{linear} Ordinary Differential Equations (ODEs).</li>
+<li>General compartment model described by a system of first order ODEs.</li>
+<li>Coupled model with PK forcing function described by a linear one or two compartment model and PD components solved by numerical ODE integration.</li>
+</ul>
+<p>The models and data format are based on
+NONMEM \textregistered{} <sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup>/NMTRAN/PREDPP
+conventions including:</p>
+<ul>
+<li>Recursive calculation of model predictions
+<ul>
+<li>This permits piecewise constant covariate values</li>
+</ul>
+</li>
+<li>Bolus or constant rate inputs into any compartment</li>
+<li>Single dose and multiple dose events</li>
+<li>Handles steady state dosing events</li>
+<li>Implemented NMTRAN data items include: TIME, EVID, CMT, AMT, RATE, ADDL, II, SS</li>
+</ul>
+<p>All real variable arguments in Torsten functions can be passed as Stan <code>parameters</code>.</p>
+<h4 id="implementation-summary">Implementation summary</h4>
+<ul>
+<li>Current Torsten v0.89rc is based on Stan v2.27.0.</li>
+<li>All functions are programmed in C++ and are compatible
+with the Stan math automatic differentiation library (<a href="#orgb113eec">Carpenter et al. 2015</a>)</li>
+<li>One and two compartment models are based on analytical solutions of governing ODEs.</li>
+<li>General linear compartment models are based on semi-analytical solutions using the built-in matrix exponential function</li>
+<li>General compartment models are solved numerically using built-in ODE integrators in Stan. The tuning parameters of the solver are adjustable. The steady state solution is calculated using a numerical algebraic solver.</li>
+<li>A mix compartment model&rsquo;s PK forcing function is solved analytically, and its forced ODE system is solved numerically.</li>
+</ul>
+<h4 id="development-plans">Development plans</h4>
+<p>Our current plans for future development of Torsten include the
+following:</p>
+<ul>
+<li>Build a system to easily share packages of Stan functions
+(written in C++ or in the Stan language)</li>
+<li>Optimize Matrix exponential functions
+<ul>
+<li>Function for the action of Matrix Exponential on a vector</li>
+<li>Hand-coded gradients</li>
+<li>Special algorithm for matrices with special properties</li>
+</ul>
+</li>
+<li>Develop new method for large-scale hierarchical models with costly
+ODE solving.</li>
+<li>Fix issue that arises when computing the adjoint of the lag time
+parameter (in a dosing compartment) evaluated at \(t_{\text{lag}} = 0\).</li>
+<li>Extend formal tests
+<ul>
+<li>More unit tests and better CD/CI support.</li>
+<li>Comparison with simulations from the R package
+<code>mrgsolve</code> and the software NONMEM\textregistered{}</li>
+<li>Recruit non-developer users to conduct beta testing</li>
+</ul>
+</li>
+</ul>
+<h2 id="bibliography">Bibliography</h2>
+<p><a id="orgb5cbcee"></a>Betancourt, Michael. 2018. “A Conceptual Introduction to Hamiltonian Monte Carlo.” <a href="https://arxiv.org/abs/1701.02434">https://arxiv.org/abs/1701.02434</a>.</p>
+<p><a id="orga044fbc"></a>Carpenter, Bob, Andrew Gelman, Matthew D. Hoffman, Daniel Lee, Ben Goodrich, Michael Betancourt, Marcus Brubaker, Jiqiang Guo, Peter Li, and Allen Riddell. 2017. “Stan: A Probabilistic Programming Language.” <em>Journal of Statistical Software</em> 76.</p>
+<p><a id="orgb113eec"></a>Carpenter, Bob, Matthew D. Hoffman, Marcus Brubaker, Daniel Lee, Peter Li, and Michael Betancourt. 2015. “The Stan Math Library: Reverse-Mode Automatic Differentiation in C++.” <em>arXiv:1509.07164 [Cs]</em>, September. <a href="http://arxiv.org/abs/1509.07164">http://arxiv.org/abs/1509.07164</a>.</p>
+<p><a id="org258f4bf"></a>Hoffman, Matthew D., and Andrew Gelman. 2011. “The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo.” <em>arXiv:1111.4246 [Cs, Stat]</em>, November. <a href="http://arxiv.org/abs/1111.4246">http://arxiv.org/abs/1111.4246</a>.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1" role="doc-endnote">
+<p><strong>WARNING:</strong> The current version of Torsten is a <em>prototype</em>. It is being released for review and comment, and to support limited research applications. It has not been rigorously tested and should not be used for critical applications without further testing or cross-checking by comparison with other methods. We encourage interested users to try Torsten out and are happy to assist. Please report issues, bugs, and feature requests on <a href="https://github.com/metrumresearchgroup/stan">our GitHub page</a>.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2" role="doc-endnote">
+<p>NONMEM\textregistered{} is licensed and distributed by ICON Development Solutions.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</section>
+<nav class="pagination"><a class="nav nav-next" href="https://metrumresearchgroup.github.io/Torsten/function/" title="Using Torsten">Next - Using Torsten <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><div class="edit-meta">
+Last updated on 28 Jun 2021
+
+
+<br>
+Published on 25 Jun 2021
+<br><a href="https://github.com/thingsym/hugo-theme-techdoc/edit/master/content/_index.md" class="edit-page"><i class="fas fa-pen-square"></i>&nbsp;Edit on GitHub</a></div><footer><p class="powered">Exported
+  from <a href="https://www.gnu.org/software/emacs/">Emacs 27.1</a>
+  + <a href="https://orgmode.org/Changes.html">Org mode 9.4</a>
+  + <a href="https://ox-hugo.scripter.co/">ox-hugo</a>. Powered
+  by <a href="https://gohugo.io">Hugo</a>. Theme
+  by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed
+  by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+
+
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class="active"><a href="https://metrumresearchgroup.github.io/Torsten/">Home</a></li>
+
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/genode/">General ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/coupled/">Coupled ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-pop/">General ODE-based Population Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-integ/">ODE  integrator function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-group-integ/">ODE group  integrator Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/1d_integ/1d_integ/">Univariate integral</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/pc_lin_interp/pc_lin_interp/">Piecewise linear interpolation</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/">Examples</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt/">Two-compartment model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-lin/">Two-compartment model as a linear ODE model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-ode/">Two-compartment model solved by numerical integrator for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd/">Joint PK-PD model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocp-pop/">Two-compartment population model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/ode-group/">Lotka-Volterra group model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/1d-intg/">Univariate integral of a quadratic function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/lin-interp/">Linear intepolation</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/effcpt/">Effect Compartment Population Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd-pop/">Friberg-Karlsson Semi-Mechanistic Population Model</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div>
+<a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+
+
+<script src="https://metrumresearchgroup.github.io/Torsten/js/mathjax-config.js"></script>
+
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</div>
+</body>
+</html>

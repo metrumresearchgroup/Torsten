@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Installation - Torsten</title>
+<meta name="description" content="A pharmacokinetics/pharmacodynamics library for Stan">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://metrumresearchgroup.github.io/Torsten//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://metrumresearchgroup.github.io/Torsten/installation/">
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://metrumresearchgroup.github.io/Torsten/js/bundle.js"></script><style>
+:root {--custom-background-color: #005933;}
+</style>
+<meta property="og:title" content="Installation" />
+<meta property="og:description" content="Currently Torsten is based on a forked version of Stan and hosted on GitHub
+ https://github.com/metrumresearchgroup/Torsten  The latest v0.89rc is compatible with Stan v2.27.0. Torsten can be accessed from command line for cmdstan interface and cmdstanr (https://mc-stan.org/cmdstanr/) for R interface. It requires a modern C&#43;&#43;11 compiler as well as a Make utility. See (Team 2020) for details of installation and required toolchain. In particular, we recommend the folowing versions of C&#43;&#43; compilers:" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/installation/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="" />
+<meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
+<meta property="article:modified_time" content="2021-06-28T20:19:15-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+
+<meta name="twitter:title" content="Installation"/>
+<meta name="twitter:description" content="Currently Torsten is based on a forked version of Stan and hosted on GitHub
+ https://github.com/metrumresearchgroup/Torsten  The latest v0.89rc is compatible with Stan v2.27.0. Torsten can be accessed from command line for cmdstan interface and cmdstanr (https://mc-stan.org/cmdstanr/) for R interface. It requires a modern C&#43;&#43;11 compiler as well as a Make utility. See (Team 2020) for details of installation and required toolchain. In particular, we recommend the folowing versions of C&#43;&#43; compilers:"/>
+<meta itemprop="name" content="Installation">
+<meta itemprop="description" content="Currently Torsten is based on a forked version of Stan and hosted on GitHub
+ https://github.com/metrumresearchgroup/Torsten  The latest v0.89rc is compatible with Stan v2.27.0. Torsten can be accessed from command line for cmdstan interface and cmdstanr (https://mc-stan.org/cmdstanr/) for R interface. It requires a modern C&#43;&#43;11 compiler as well as a Make utility. See (Team 2020) for details of installation and required toolchain. In particular, we recommend the folowing versions of C&#43;&#43; compilers:"><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
+<meta itemprop="dateModified" content="2021-06-28T20:19:15-07:00" />
+<meta itemprop="wordCount" content="364"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
+<p class="description">A pharmacokinetics/pharmacodynamics library for Stan</p>
+
+</header>
+<div class="global-menu">
+<nav>
+<ul>
+<li><a href="/Torsten/">Home</a></li>
+<li><a href="/Torsten/dev-team/">Development team</a></li>
+<li><a href="/Torsten/acknowledgements/">Acknowledgements</a></li>
+<li><a href="/Torsten/changelog/">Changelog</a></li>
+<li><a href="/Torsten/installation/">Installation</a></li></ul>
+</nav>
+</div>
+<div class="content-container">
+<main><h1>Installation</h1>
+<p>Currently Torsten is based on a forked version of Stan and hosted on GitHub</p>
+<ul>
+<li><a href="https://github.com/metrumresearchgroup/Torsten">https://github.com/metrumresearchgroup/Torsten</a></li>
+</ul>
+<p>The latest v0.89rc is
+compatible with Stan v2.27.0. Torsten can be accessed from
+command line for cmdstan interface and <code>cmdstanr</code>
+(<a href="https://mc-stan.org/cmdstanr/">https://mc-stan.org/cmdstanr/</a>) for R interface. It requires
+a modern C++11 compiler as well as a Make utility. See (<a href="#org77b4fee">Team 2020</a>) for details of installation and
+required toolchain. In particular, we recommend the folowing versions
+of C++ compilers:</p>
+<ul>
+<li>Linux: g++ &gt;=7.5 or clang &gt;=8.0,</li>
+<li>macOS: the XCode version of clang,</li>
+<li>Windows: g++ 8.1 (available with RTools 4.0).</li>
+</ul>
+<p>On windows, the Make utility <code>mingw32-make</code> can be installed as part
+of RTools.</p>
+<h3 id="command-line-interface">Command line interface</h3>
+<p>The command line interface <code>cmdstan</code> is available along with Torsten
+and can be found at <code>Torsten/cmdstan</code>.</p>
+<p>After installation, one can use the following command to build a Torsten model <code>model_name</code> in <code>model_path</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">cd Torsten/cmdstan
+make model_path/model_name <span style="color:#75715e"># replace &#34;make&#34; with &#34;mingw32-make&#34; on Windows platform</span>
+</code></pre></div><h3 id="r-interface">R interface</h3>
+<p>After installing cmdstanr from <a href="https://mc-stan.org/cmdstanr/">https://mc-stan.org/cmdstanr/</a>, use the
+following command to set path</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r">cmdstanr<span style="color:#f92672">::</span><span style="color:#a6e22e">set_cmdstan_path</span>(<span style="color:#e6db74">&#34;Torsten/cmdstan&#34;</span>)
+</code></pre></div><p>Then one can follow <a href="https://mc-stan.org/cmdstanr/articles/cmdstanr.html">https://mc-stan.org/cmdstanr/articles/cmdstanr.html</a> to compile
+and run Torsten models.</p>
+<h3 id="mpi-support">MPI support</h3>
+<p>\label{sec:mpi_support}
+Torsten&rsquo;s MPI support is of a different flavour than
+<code>reduce_sum</code> found in Stan. To be able to utilize MPI
+parallelisation, one first needs to ensure an MPI library
+such as</p>
+<ul>
+<li><a href="https://www.mpich.org/downloads/">https://www.mpich.org/downloads/</a></li>
+<li><a href="https://www.open-mpi.org/software/ompi/">https://www.open-mpi.org/software/ompi/</a></li>
+</ul>
+<p>is available. Torsen&rsquo;s implementation is tested on
+both <code>MPICH</code> and <code>OpenMPI</code>.</p>
+<p>To use MPI-supported population/group solvers,
+add/edit <code>make/local</code></p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">TORSTEN_MPI<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>
+
+<span style="color:#75715e"># path to MPI headers</span>
+CXXFLAGS <span style="color:#f92672">+=</span> -isystem /usr/local/include
+<span style="color:#75715e"># if you are using Metrum&#39;s metworx platform, add MPICH3&#39;s</span>
+<span style="color:#75715e"># headers with</span>
+<span style="color:#75715e"># CXXFLAGS += -isystem /usr/local/mpich3/include</span>
+</code></pre></div><p>Note that currently <code>TORSTEN_MPI</code> and <code>STAN_MPI</code> flags
+conflict on processes management and cannot be used in a
+same Stan model, and MPI support is only available through <code>cmdstan</code>
+interface.</p>
+<h3 id="testing">Testing</h3>
+<p>Models in <code>example-models</code> directory are for tutorial and demonstration.
+The following shows how to build and run the two-compartment model
+using <code>cmdstanr</code>, and use <code>bayesplot</code> to examine posterior density of <code>CL</code>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">library</span>(<span style="color:#e6db74">&#34;cmdstanr&#34;</span>)
+<span style="color:#a6e22e">set_cmdstan_path</span>(<span style="color:#e6db74">&#34;Torsten/cmdstan&#34;</span>)
+file.dir <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">file.path</span>(<span style="color:#e6db74">&#34;Torsten&#34;</span>, <span style="color:#e6db74">&#34;example-models&#34;</span>, <span style="color:#e6db74">&#34;pk2cpt&#34;</span>)
+file  <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">file.path</span>(file.dir, <span style="color:#e6db74">&#34;pk2cpt.stan&#34;</span>)
+model <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">cmdstan_model</span>(file)
+fit <span style="color:#f92672">&lt;-</span> model<span style="color:#f92672">$</span><span style="color:#a6e22e">sample</span>(data <span style="color:#f92672">=</span> <span style="color:#a6e22e">file.path</span>(file.dir, <span style="color:#e6db74">&#34;pk2cpt.data.R&#34;</span>),
+                    init <span style="color:#f92672">=</span> <span style="color:#a6e22e">file.path</span>(file.dir, <span style="color:#e6db74">&#34;pk2cpt.init.R&#34;</span>),
+                    seed <span style="color:#f92672">=</span> <span style="color:#ae81ff">123</span>,
+                    chains <span style="color:#f92672">=</span> <span style="color:#ae81ff">4</span>,
+                    parallel_chains <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>,
+                    refresh <span style="color:#f92672">=</span> <span style="color:#ae81ff">500</span>)
+bayesplot<span style="color:#f92672">::</span><span style="color:#a6e22e">mcmc_dens_overlay</span>(fit<span style="color:#f92672">$</span><span style="color:#a6e22e">draws</span>(<span style="color:#e6db74">&#34;CL&#34;</span>))
+</code></pre></div><h2 id="bibliography">Bibliography</h2>
+<p><a id="org77b4fee"></a>Team, Stan Development. 2020. <em>CmdStan User’s Guide</em>. <a href="https://mc-stan.org/docs/2%5F26/cmdstan-guide/index.html">https://mc-stan.org/docs/2%5F26/cmdstan-guide/index.html</a>.</p>
+<div class="edit-meta">
+Last updated on 28 Jun 2021
+
+
+<br>
+Published on 25 Jun 2021
+<br><a href="https://github.com/thingsym/hugo-theme-techdoc/edit/master/content/Installation.md" class="edit-page"><i class="fas fa-pen-square"></i>&nbsp;Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-next" href="https://metrumresearchgroup.github.io/Torsten/function/" title="Using Torsten">Next - Using Torsten <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Exported
+  from <a href="https://www.gnu.org/software/emacs/">Emacs 27.1</a>
+  + <a href="https://orgmode.org/Changes.html">Org mode 9.4</a>
+  + <a href="https://ox-hugo.scripter.co/">ox-hugo</a>. Powered
+  by <a href="https://gohugo.io">Hugo</a>. Theme
+  by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed
+  by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+
+
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/">Home</a></li>
+
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/genode/">General ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/coupled/">Coupled ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-pop/">General ODE-based Population Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-integ/">ODE  integrator function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-group-integ/">ODE group  integrator Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/1d_integ/1d_integ/">Univariate integral</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/pc_lin_interp/pc_lin_interp/">Piecewise linear interpolation</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/">Examples</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt/">Two-compartment model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-lin/">Two-compartment model as a linear ODE model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-ode/">Two-compartment model solved by numerical integrator for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd/">Joint PK-PD model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocp-pop/">Two-compartment population model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/ode-group/">Lotka-Volterra group model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/1d-intg/">Univariate integral of a quadratic function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/lin-interp/">Linear intepolation</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/effcpt/">Effect Compartment Population Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd-pop/">Friberg-Karlsson Semi-Mechanistic Population Model</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div>
+<a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+
+
+<script src="https://metrumresearchgroup.github.io/Torsten/js/mathjax-config.js"></script>
+
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</div>
+</body>
+</html>

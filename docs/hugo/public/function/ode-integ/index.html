@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ODE  integrator function - Torsten</title>
+<meta name="description" content="A pharmacokinetics/pharmacodynamics library for Stan">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://metrumresearchgroup.github.io/Torsten//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://metrumresearchgroup.github.io/Torsten/function/ode-integ/">
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://metrumresearchgroup.github.io/Torsten/js/bundle.js"></script><style>
+:root {--custom-background-color: #005933;}
+</style>
+<meta property="og:title" content="ODE  integrator function" />
+<meta property="og:description" content="Description Torsten provides its own implementation of ODE solvers that solves
+\begin{equation*} y&#39;(t) = f(t, y(t)), \quad y(t_0) = y_0 \end{equation*}
+for \(y\). These solvers are customized for Torsten applications and different from those found in Stan. The general ODE PMX solvers in previous sections are internally powered by these functions.
+Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]); Arguments \label{sec:ode_func_args}" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/function/ode-integ/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="function" />
+<meta property="article:published_time" content="2021-06-28T00:00:00-07:00" />
+<meta property="article:modified_time" content="2021-06-28T19:35:17-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+
+<meta name="twitter:title" content="ODE  integrator function"/>
+<meta name="twitter:description" content="Description Torsten provides its own implementation of ODE solvers that solves
+\begin{equation*} y&#39;(t) = f(t, y(t)), \quad y(t_0) = y_0 \end{equation*}
+for \(y\). These solvers are customized for Torsten applications and different from those found in Stan. The general ODE PMX solvers in previous sections are internally powered by these functions.
+Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]); Arguments \label{sec:ode_func_args}"/>
+<meta itemprop="name" content="ODE  integrator function">
+<meta itemprop="description" content="Description Torsten provides its own implementation of ODE solvers that solves
+\begin{equation*} y&#39;(t) = f(t, y(t)), \quad y(t_0) = y_0 \end{equation*}
+for \(y\). These solvers are customized for Torsten applications and different from those found in Stan. The general ODE PMX solvers in previous sections are internally powered by these functions.
+Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]); Arguments \label{sec:ode_func_args}"><meta itemprop="datePublished" content="2021-06-28T00:00:00-07:00" />
+<meta itemprop="dateModified" content="2021-06-28T19:35:17-07:00" />
+<meta itemprop="wordCount" content="529"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
+<p class="description">A pharmacokinetics/pharmacodynamics library for Stan</p>
+
+</header>
+<div class="global-menu">
+<nav>
+<ul>
+<li><a href="/Torsten/">Home</a></li>
+<li><a href="/Torsten/dev-team/">Development team</a></li>
+<li><a href="/Torsten/acknowledgements/">Acknowledgements</a></li>
+<li><a href="/Torsten/changelog/">Changelog</a></li>
+<li><a href="/Torsten/installation/">Installation</a></li></ul>
+</nav>
+</div>
+<div class="content-container">
+<main><h1>ODE  integrator function</h1>
+<h4 id="description">Description</h4>
+<p>Torsten provides its own implementation of ODE solvers that solves</p>
+<p>\begin{equation*}
+y'(t) = f(t, y(t)), \quad y(t_0) = y_0
+\end{equation*}</p>
+<p>for \(y\). These solvers
+are customized for Torsten applications and different from those found
+in Stan. The general ODE PMX solvers in previous sections are internally powered
+by these functions.</p>
+<h4 id="usage">Usage</h4>
+<pre><code class="language-stan" data-lang="stan">real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]);
+</code></pre><h4 id="arguments">Arguments</h4>
+<p>\label{sec:ode_func_args}</p>
+<ul>
+<li><code>ODE_rhs</code>
+Function that specifies the right-hand-side \(f\).
+It should be defined in
+<code>functions</code> block and has the following format</li>
+</ul>
+<!--listend-->
+<pre><code class="language-stan" data-lang="stan">vector = f(real t, vector y, real[] param, real[] dat_r, int[] dat_i) {...}
+</code></pre><p>Here <code>t</code> is time, <code>y</code> the unknowns of ODE, <code>param</code> the parameters, <code>dat\_r</code> the real data, <code>dat\_i</code>
+the integer data.</p>
+<ul>
+<li><code>y0</code>
+Initial condition \(y_0\).</li>
+<li><code>t0</code>
+Initial time \(t_0\).</li>
+<li><code>ts</code>
+Output time when solution is seeked.</li>
+<li><code>theta</code>
+Parameters to be passed to <code>ODE_rhs</code> function.</li>
+<li><code>x_r</code>
+Real data to be passed to <code>ODE_rhs</code> function.</li>
+<li><code>x_i</code>
+Integer data to be passed to <code>ODE_rhs</code> function.</li>
+<li><code>rtol</code>
+Relative tolerance, default to 1.e-6(<code>rk45</code>) and 1.e-8(<code>adams</code> and <code>bdf</code>).</li>
+<li><code>atol</code>
+Absolute tolerance, default to 1.e-6(<code>rk45</code>) and 1.e-8(<code>adams</code> and <code>bdf</code>).</li>
+<li><code>max_step</code>
+Maximum number of steps allowed between neighboring time in <code>ts</code>,
+default to 100000.</li>
+</ul>
+<h4 id="return-value">Return value</h4>
+<p>An <code>n</code>-by-<code>nd</code> 2d-array, where <code>n</code> is the size of <code>ts</code>
+and <code>nd</code> the dimension of the system.</p>
+<h4 id="note">Note</h4>
+<p>\label{sec:ode_func_note}</p>
+<ul>
+<li>
+<p>Three numerical integrator are provided:</p>
+<ul>
+<li><code>pmx_integrate_ode_adams</code>: Adams-Moulton method,</li>
+<li><code>pmx_integrate_ode_bdf</code>: Backward-differentiation formular,</li>
+<li><code>pmx_integrate_ode_rk45</code>: Runge-Kutta 4/5 method.</li>
+</ul>
+<p>When not equipped with further understanding of the ODE system, as a
+rule of thumb we suggest user try
+<code>rk45</code> integrator first, <code>bdf</code>
+integrator when the system is suspected to be stiff, and
+<code>adams</code> when a non-stiff system needs to be solved
+with higher accuracy/smaller tolerance.</p>
+</li>
+<li>
+<p>All three integrators support adaptive stepping. To achieve
+that, at step \(i\) estimated error \(e_i\) is calculated and
+compared with given tolerance so that</p>
+<p>\begin{equation}
+e_i &lt; \Vert\text{rtol} \times \tilde{y} + \text{atol}\Vert
+\end{equation}</p>
+<p>Here \(\tilde{y}\) is the numerical solution of \(y\) at current
+step and \(\Vert \cdot \Vert\) indicates certain norm. When the above check fails, the solver attempts
+to reduce step size and retry. The default values of <code>atol</code>,
+<code>rtol</code>, and <code>max_step</code> are
+based on Stan&rsquo;s ODE functions and should not be considered as
+optimal. User should make problem-dependent
+decision on <code>rtol</code> and <code>atol</code>,
+according to estimated scale of the unknowns, so that the error
+would not affect inference on statistical variance of quantities
+that enter the Stan model. In particular, when an unknown can be neglected
+below certain threshold without affecting the rest of
+the dynamic system, setting
+<code>atol</code> greater than that threshold will avoid
+spurious and error-prone computation. See
+(<a href="#org60e7038">Hindmarsh et al. 2020</a>) and
+1.4 of (<a href="#org924bd17">Shampine et al. 2003</a>) for details.</p>
+</li>
+<li>
+<p>With optional arguments indicated by square bracket, the following calls are allowed:</p>
+</li>
+</ul>
+<!--listend-->
+<pre><code class="language-stan" data-lang="stan">pmx_integrate_ode_[adams || rk45 || bdf](..., x_i);
+pmx_integrate_ode_[adams || rk45 || bdf](..., x_i, rel_tol, abs_tol, max_step);
+</code></pre><h2 id="bibliography">Bibliography</h2>
+<p><a id="org60e7038"></a>Hindmarsh, Alan C., Radu Serban, Cody J. Balos, David J. Gardner, Carol S. Woodward, and Daniel R. Reynolds. 2020. <em>User Documentation for Cvodes V5.4.0</em>.</p>
+<p><a id="org924bd17"></a>Shampine, L. F., I. Gladwell, Larry Shampine, and S. Thompson. 2003. <em>Solving ODEs with MATLAB</em>. Cambridge University Press.</p>
+<div class="edit-meta">
+Last updated on 28 Jun 2021
+
+
+<br>
+Published on 28 Jun 2021
+<br><a href="https://github.com/thingsym/hugo-theme-techdoc/edit/master/content/function/ode-integ.md" class="edit-page"><i class="fas fa-pen-square"></i>&nbsp;Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="https://metrumresearchgroup.github.io/Torsten/function/ode-pop/" title="General ODE-based Population Model Function"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - General ODE-based Population Model Function</a>
+<a class="nav nav-next" href="https://metrumresearchgroup.github.io/Torsten/function/ode-group-integ/" title="ODE group  integrator Function">Next - ODE group  integrator Function <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Exported
+  from <a href="https://www.gnu.org/software/emacs/">Emacs 27.1</a>
+  + <a href="https://orgmode.org/Changes.html">Org mode 9.4</a>
+  + <a href="https://ox-hugo.scripter.co/">ox-hugo</a>. Powered
+  by <a href="https://gohugo.io">Hugo</a>. Theme
+  by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed
+  by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+
+
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/">Home</a></li>
+
+<li class="parent"><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/genode/">General ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/coupled/">Coupled ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-pop/">General ODE-based Population Model Function</a></li>
+<li class="active"><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-integ/">ODE  integrator function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-group-integ/">ODE group  integrator Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/1d_integ/1d_integ/">Univariate integral</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/pc_lin_interp/pc_lin_interp/">Piecewise linear interpolation</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/">Examples</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt/">Two-compartment model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-lin/">Two-compartment model as a linear ODE model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-ode/">Two-compartment model solved by numerical integrator for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd/">Joint PK-PD model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocp-pop/">Two-compartment population model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/ode-group/">Lotka-Volterra group model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/1d-intg/">Univariate integral of a quadratic function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/lin-interp/">Linear intepolation</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/effcpt/">Effect Compartment Population Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd-pop/">Friberg-Karlsson Semi-Mechanistic Population Model</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div>
+<a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+
+
+<script src="https://metrumresearchgroup.github.io/Torsten/js/mathjax-config.js"></script>
+
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</div>
+</body>
+</html>

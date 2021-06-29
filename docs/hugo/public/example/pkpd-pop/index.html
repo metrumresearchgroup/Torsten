@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Friberg-Karlsson Semi-Mechanistic Population Model - Torsten</title>
+<meta name="description" content="A pharmacokinetics/pharmacodynamics library for Stan">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://metrumresearchgroup.github.io/Torsten//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://metrumresearchgroup.github.io/Torsten/example/pkpd-pop/">
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://metrumresearchgroup.github.io/Torsten/js/bundle.js"></script><style>
+:root {--custom-background-color: #005933;}
+</style>
+<meta property="og:title" content="Friberg-Karlsson Semi-Mechanistic Population Model" />
+<meta property="og:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Friberg-Karlsson Population Model for drug-induced myelosuppression (\(ANC\)) 2 Results    \label{sec:fkpop_model} We now return to the example in Section sec:fk_model and extend it to a population model. While we recommend using the coupled solver, and this time we solve it using group solver. We leave it as an exercise to the reader to rewrite the model with coupled solver." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/example/pkpd-pop/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="example" />
+<meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
+<meta property="article:modified_time" content="2021-06-28T19:35:24-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+
+<meta name="twitter:title" content="Friberg-Karlsson Semi-Mechanistic Population Model"/>
+<meta name="twitter:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Friberg-Karlsson Population Model for drug-induced myelosuppression (\(ANC\)) 2 Results    \label{sec:fkpop_model} We now return to the example in Section sec:fk_model and extend it to a population model. While we recommend using the coupled solver, and this time we solve it using group solver. We leave it as an exercise to the reader to rewrite the model with coupled solver."/>
+<meta itemprop="name" content="Friberg-Karlsson Semi-Mechanistic Population Model">
+<meta itemprop="description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Friberg-Karlsson Population Model for drug-induced myelosuppression (\(ANC\)) 2 Results    \label{sec:fkpop_model} We now return to the example in Section sec:fk_model and extend it to a population model. While we recommend using the coupled solver, and this time we solve it using group solver. We leave it as an exercise to the reader to rewrite the model with coupled solver."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
+<meta itemprop="dateModified" content="2021-06-28T19:35:24-07:00" />
+<meta itemprop="wordCount" content="1149"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
+<p class="description">A pharmacokinetics/pharmacodynamics library for Stan</p>
+
+</header>
+<div class="global-menu">
+<nav>
+<ul>
+<li><a href="/Torsten/">Home</a></li>
+<li><a href="/Torsten/dev-team/">Development team</a></li>
+<li><a href="/Torsten/acknowledgements/">Acknowledgements</a></li>
+<li><a href="/Torsten/changelog/">Changelog</a></li>
+<li><a href="/Torsten/installation/">Installation</a></li></ul>
+</nav>
+</div>
+<div class="content-container">
+<main><h1>Friberg-Karlsson Semi-Mechanistic Population Model</h1>
+<style>
+  .ox-hugo-toc ul {
+    list-style: none;
+  }
+</style>
+<div class="ox-hugo-toc toc">
+<div></div>
+<div class="heading">Table of Contents</div>
+<ul>
+<li><span class="section-num">1</span> <a href="#friberg-karlsson-population-model-for-drug-induced-myelosuppression--anc">Friberg-Karlsson Population Model for drug-induced myelosuppression (\(ANC\))</a></li>
+<li><span class="section-num">2</span> <a href="#results">Results</a></li>
+</ul>
+</div>
+<!--endtoc-->
+<p>\label{sec:fkpop_model}
+We now return to the example in Section <a href="#sec:fk_model">sec:fk_model</a> and extend
+it to a population model. While we recommend using the coupled
+solver, and this time we solve it using group solver. We leave it
+as an exercise to the reader to rewrite the model with
+coupled solver.</p>
+<h2 id="friberg-karlsson-population-model-for-drug-induced-myelosuppression--anc"><span class="section-num">1</span> Friberg-Karlsson Population Model for drug-induced myelosuppression (\(ANC\))</h2>
+<p>\begin{gather*}
+\log(ANC_{ij}) \sim N(Circ_{ij}, \sigma^2_{ANC}), \\\<br>
+\log\left(MTT_j, Circ_{0j}, \alpha_j\right) \sim N\left(\log\left(\widehat{MTT}, \widehat{Circ_0}, \widehat{\alpha}\right), \Omega_{ANC}\right), \\\<br>
+\left(\widehat{MTT}, \widehat{Circ}_0,\widehat{\alpha}, \gamma \right) = \left(125, 5, 2, 0.17\right), \\\<br>
+\Omega_{ANC} = \left(\begin{array}{ccc} 0.2^2 &amp; 0 &amp; 0 \ 0 &amp; 0.35^2 &amp; 0 \ 0 &amp; 0 &amp; 0.2^2 \end{array}\right), \\\<br>
+\sigma_{ANC} = 0.1, \\\<br>
+\Omega_{PK} = \left(\begin{array}{ccccc} 0.25^2 &amp; 0 &amp;a 0 &amp; 0 &amp; 0 \ 0 &amp; 0.4^2 &amp; 0 &amp; 0 &amp; 0 \\\<br>
+0 &amp; 0 &amp; 0.25^2 &amp; 0 &amp; 0 \ 0 &amp; 0 &amp; 0 &amp; 0.4^2 &amp; 0 \ 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0.25^2  \end{array}\right)
+\end{gather*}</p>
+<p>The PK and the PD data are simulated using the following treatment.</p>
+<ul>
+<li>Phase IIa trial in patients
+<ul>
+<li>Multiple doses: 80,000 mg</li>
+<li>Parallel dose escalation design</li>
+<li>15 subjects</li>
+<li>PK: plasma concentration of parent drug (\(c\))</li>
+<li>PD response: Neutrophil count (\(ANC\))</li>
+<li>PK measured at 0.083, 0.167, 0.25, 0.5, 0.75, 1, 2, 3, 4, 6, 8, 12, 18, and 24 hours</li>
+<li>PD measured once every two days for 28 days.</li>
+</ul>
+</li>
+</ul>
+<p>Once again, we simultaneously fit the model to the PK and the PD
+data. It pays off to construct informative priors. For instance, we could
+fit the PK data first, as was done in  example 1, and get informative
+priors on the PK parameters. The PD parameters are drug independent,
+so we can use information from the neutropenia literature. In this
+example, we choose to use strongly informative priors on both PK and PD
+parameters.</p>
+<p>The ODE is defined as</p>
+<pre><code class="language-stan" data-lang="stan">functions{
+    vector twoCptNeutModelODE(real t, vector x, real[] parms, real[] rdummy, int[] idummy){
+    real k10;
+    real k12;
+    real k21;
+    real CL;
+    real Q;
+    real V1;
+    real V2;
+    real ka;
+    real mtt;
+    real circ0;
+    real gamma;
+    real alpha;
+    real ktr;
+    vector[8] dxdt;
+    real conc;
+    real EDrug;
+    real transit1;
+    real transit2;
+    real transit3;
+    real circ;
+    real prol;
+
+    CL = parms[1];
+    Q = parms[2];
+    V1 = parms[3];
+    V2 = parms[4];
+    ka = parms[5];
+    mtt = parms[6];
+    circ0 = parms[7];
+    gamma = parms[8];
+    alpha = parms[9];
+
+    k10 = CL / V1;
+    k12 = Q / V1;
+    k21 = Q / V2;
+
+    ktr = 4 / mtt;
+
+    dxdt[1] = -ka * x[1];
+    dxdt[2] = ka * x[1] - (k10 + k12) * x[2] + k21 * x[3];
+    dxdt[3] = k12 * x[2] - k21 * x[3];
+    conc = x[2]/V1;
+    EDrug = alpha * conc;
+    // x[4], x[5], x[6], x[7] and x[8] are differences from circ0.
+    prol = x[4] + circ0;
+    transit1 = x[5] + circ0;
+    transit2 = x[6] + circ0;
+    transit3 = x[7] + circ0;
+    circ = fmax(machine_precision(), x[8] + circ0); // Device for implementing a modeled
+                                                    // initial condition
+    dxdt[4] = ktr * prol * ((1 - EDrug) * ((circ0 / circ)^gamma) - 1);
+    dxdt[5] = ktr * (prol - transit1);
+    dxdt[6] = ktr * (transit1 - transit2);
+    dxdt[7] = ktr * (transit2 - transit3);
+    dxdt[8] = ktr * (transit3 - circ);
+
+    return dxdt;
+  }
+}
+</code></pre><p>We use the <code>pmx_solve_group_rk45</code> function to
+solve the entire population&rsquo;s events.</p>
+<pre><code class="language-stan" data-lang="stan">transformed parameters{
+  row_vector[nt] cHat;
+  vector[nObsPK] cHatObs;
+  row_vector[nt] neutHat;
+  vector[nObsPD] neutHatObs;
+  matrix[8, nt] x;
+  real&lt;lower = 0&gt; parms[nSubjects, nTheta]; // The [1] indicates the parameters are constant
+
+  // variables for Matt's trick
+  vector&lt;lower = 0&gt;[nIIV] thetaHat;
+  matrix&lt;lower = 0&gt;[nSubjects, nIIV] thetaM;
+
+  // Matt's trick to use unit scale
+  thetaHat[1] = CLHat;
+  thetaHat[2] = QHat;
+  thetaHat[3] = V1Hat;
+  thetaHat[4] = V2Hat;
+  thetaHat[5] = mttHat;
+  thetaHat[6] = circ0Hat;
+  thetaHat[7] = alphaHat;
+  thetaM = (rep_matrix(thetaHat, nSubjects) .*
+             exp(diag_pre_multiply(omega, L * etaStd)))';
+
+  for(i in 1:nSubjects) {
+    parms[i, 1] = thetaM[i, 1] * (weight[i] / 70)^0.75; // CL
+    parms[i, 2] = thetaM[i, 2] * (weight[i] / 70)^0.75; // Q
+    parms[i, 3] = thetaM[i, 3] * (weight[i] / 70); // V1
+    parms[i, 4] = thetaM[i, 4] * (weight[i] / 70); // V2
+    parms[i, 5] = kaHat; // ka
+    parms[i, 6] = thetaM[i, 5]; // mtt
+    parms[i, 7] = thetaM[i, 6]; // circ0
+    parms[i, 8] = gamma;
+    parms[i, 9] = thetaM[i, 7]; // alpha
+  }
+
+  /* group solver */
+  x = pmx_solve_group_rk45(twoCptNeutModelODE, 8, len,
+                           time, amt, rate, ii, evid, cmt, addl, ss,
+                           parms,
+                           1e-6, 1e-6, 500);
+
+  for(i in 1:nSubjects) {
+    cHat[start[i]:end[i]] = x[2, start[i]:end[i]] / parms[i, 3]; // divide by V1
+    neutHat[start[i]:end[i]] = x[8, start[i]:end[i]] + parms[i, 7]; // Add baseline
+  }
+
+  for(i in 1:nObsPK) cHatObs[i] = cHat[iObsPK[i]];
+  for(i in 1:nObsPD) neutHatObs[i] = neutHat[iObsPD[i]];
+}
+</code></pre><p>This allows us to use within-chain paralleleisation to reduce
+simulation time. When run from cmdstan, each MPI run generates one
+chain, and we use 4 MPI runs to generate 4 chains.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># chain 1</span>
+mpiexec -n nproc ./FribergKarlsson sample adapt delta<span style="color:#f92672">=</span>0.95 data file<span style="color:#f92672">=</span>fribergkarlsson.data.R init<span style="color:#f92672">=</span>fribergkarlsson.init.R random seed<span style="color:#f92672">=</span><span style="color:#ae81ff">8765</span> id<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> output file<span style="color:#f92672">=</span>output.1.csv
+<span style="color:#75715e"># chain 2</span>
+mpiexec -n nproc ./FribergKarlsson sample adapt delta<span style="color:#f92672">=</span>0.95 data file<span style="color:#f92672">=</span>fribergkarlsson.data.R init<span style="color:#f92672">=</span>fribergkarlsson.init.R random seed<span style="color:#f92672">=</span><span style="color:#ae81ff">8765</span> id<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span> output file<span style="color:#f92672">=</span>output.2.csv
+<span style="color:#75715e"># chain 3</span>
+mpiexec -n nproc ./FribergKarlsson sample adapt delta<span style="color:#f92672">=</span>0.95 data file<span style="color:#f92672">=</span>fribergkarlsson.data.R init<span style="color:#f92672">=</span>fribergkarlsson.init.R random seed<span style="color:#f92672">=</span><span style="color:#ae81ff">8765</span> id<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span> output file<span style="color:#f92672">=</span>output.3.csv
+<span style="color:#75715e"># chain 4</span>
+mpiexec -n nproc ./FribergKarlsson sample adapt delta<span style="color:#f92672">=</span>0.95 data file<span style="color:#f92672">=</span>fribergkarlsson.data.R init<span style="color:#f92672">=</span>fribergkarlsson.init.R random seed<span style="color:#f92672">=</span><span style="color:#ae81ff">8765</span> id<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span> output file<span style="color:#f92672">=</span>output.4.csv
+</code></pre></div><h2 id="results"><span class="section-num">2</span> Results</h2>
+<p>Table <a href="#FkpopModelParms">FkpopModelParms</a> summarizes the sampling and some diagnostics output.
+estimation reflects the real value of the parameters (Table <a href="#FkpopModelParms">FkpopModelParms</a> and Figure <a href="#fkpop_mcmc_density">fkpop_mcmc_density</a>.
+Similar to the previous example, PPCs shown in Figure <a href="#fkpop_ppc_pk">fkpop_ppc_pk</a>
+and <a href="#fkpop_ppc_pd">fkpop_ppc_pd</a> indicate the model is a good fit.</p>
+<p><a id="table--FkpopModelParms"></a></p>
+<div class="table-caption">
+  <span class="table-number"><a href="#table--FkpopModelParms">Table 1</a></span>:
+  Summary of the MCMC simulations of the marginal posterior distributions of the model parameters for the Friberg-Karlsson population model example.
+</div>
+<table>
+<thead>
+<tr>
+<th>variable</th>
+<th>mean</th>
+<th>median</th>
+<th>sd</th>
+<th>mad</th>
+<th>q5</th>
+<th>q95</th>
+<th>rhat</th>
+<th>ess_bulk</th>
+<th>ess_tail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CLHat</td>
+<td>9.539</td>
+<td>9.535</td>
+<td>0.522</td>
+<td>0.487</td>
+<td>8.692</td>
+<td>10.401</td>
+<td>1.006</td>
+<td>971.369</td>
+<td>1655.449</td>
+</tr>
+<tr>
+<td>QHat</td>
+<td>15.401</td>
+<td>15.386</td>
+<td>1.018</td>
+<td>1.000</td>
+<td>13.742</td>
+<td>17.090</td>
+<td>1.000</td>
+<td>2263.843</td>
+<td>2447.006</td>
+</tr>
+<tr>
+<td>V1Hat</td>
+<td>37.396</td>
+<td>37.360</td>
+<td>2.244</td>
+<td>2.228</td>
+<td>33.762</td>
+<td>41.058</td>
+<td>1.001</td>
+<td>1936.476</td>
+<td>2372.815</td>
+</tr>
+<tr>
+<td>V2Hat</td>
+<td>101.698</td>
+<td>101.394</td>
+<td>6.503</td>
+<td>6.119</td>
+<td>91.529</td>
+<td>112.538</td>
+<td>1.001</td>
+<td>2580.227</td>
+<td>2592.925</td>
+</tr>
+<tr>
+<td>kaHat</td>
+<td>1.997</td>
+<td>1.997</td>
+<td>0.074</td>
+<td>0.074</td>
+<td>1.873</td>
+<td>2.115</td>
+<td>1.001</td>
+<td>7056.877</td>
+<td>2993.406</td>
+</tr>
+<tr>
+<td>mttHat</td>
+<td>113.681</td>
+<td>113.204</td>
+<td>11.506</td>
+<td>10.910</td>
+<td>95.807</td>
+<td>133.514</td>
+<td>1.001</td>
+<td>4255.900</td>
+<td>3269.646</td>
+</tr>
+<tr>
+<td>circ0Hat</td>
+<td>4.760</td>
+<td>4.752</td>
+<td>0.241</td>
+<td>0.229</td>
+<td>4.375</td>
+<td>5.163</td>
+<td>1.002</td>
+<td>3774.920</td>
+<td>2783.663</td>
+</tr>
+<tr>
+<td>omega[1]</td>
+<td>0.223</td>
+<td>0.217</td>
+<td>0.047</td>
+<td>0.042</td>
+<td>0.160</td>
+<td>0.307</td>
+<td>1.000</td>
+<td>1751.864</td>
+<td>2235.607</td>
+</tr>
+<tr>
+<td>omega[2]</td>
+<td>0.339</td>
+<td>0.329</td>
+<td>0.073</td>
+<td>0.067</td>
+<td>0.239</td>
+<td>0.473</td>
+<td>1.001</td>
+<td>2363.843</td>
+<td>2607.056</td>
+</tr>
+<tr>
+<td>omega[3]</td>
+<td>0.264</td>
+<td>0.256</td>
+<td>0.057</td>
+<td>0.051</td>
+<td>0.186</td>
+<td>0.367</td>
+<td>1.002</td>
+<td>2128.660</td>
+<td>2018.425</td>
+</tr>
+<tr>
+<td>omega[4]</td>
+<td>0.257</td>
+<td>0.249</td>
+<td>0.056</td>
+<td>0.051</td>
+<td>0.182</td>
+<td>0.361</td>
+<td>1.003</td>
+<td>2293.877</td>
+<td>2937.673</td>
+</tr>
+<tr>
+<td>omega[5]</td>
+<td>0.177</td>
+<td>0.169</td>
+<td>0.112</td>
+<td>0.118</td>
+<td>0.019</td>
+<td>0.376</td>
+<td>1.000</td>
+<td>1550.483</td>
+<td>2045.025</td>
+</tr>
+<tr>
+<td>omega[6]</td>
+<td>0.188</td>
+<td>0.183</td>
+<td>0.044</td>
+<td>0.041</td>
+<td>0.127</td>
+<td>0.269</td>
+<td>1.000</td>
+<td>2377.698</td>
+<td>2965.713</td>
+</tr>
+<tr>
+<td>omega[7]</td>
+<td>0.409</td>
+<td>0.394</td>
+<td>0.256</td>
+<td>0.259</td>
+<td>0.045</td>
+<td>0.865</td>
+<td>1.003</td>
+<td>1386.987</td>
+<td>2015.873</td>
+</tr>
+<tr>
+<td>gamma</td>
+<td>0.171</td>
+<td>0.168</td>
+<td>0.035</td>
+<td>0.033</td>
+<td>0.121</td>
+<td>0.235</td>
+<td>1.000</td>
+<td>8809.668</td>
+<td>3189.676</td>
+</tr>
+<tr>
+<td>sigma</td>
+<td>0.097</td>
+<td>0.096</td>
+<td>0.003</td>
+<td>0.003</td>
+<td>0.093</td>
+<td>0.101</td>
+<td>1.002</td>
+<td>5436.508</td>
+<td>2899.706</td>
+</tr>
+<tr>
+<td>sigmaNeut</td>
+<td>0.106</td>
+<td>0.105</td>
+<td>0.012</td>
+<td>0.011</td>
+<td>0.088</td>
+<td>0.127</td>
+<td>1.000</td>
+<td>2809.059</td>
+<td>3031.605</td>
+</tr>
+<tr>
+<td>alphaHat</td>
+<td>2.24e-4</td>
+<td>2.19e-4</td>
+<td>3.97e-05</td>
+<td>3.80e-05</td>
+<td>1.66e-4</td>
+<td>2.96e-4</td>
+<td>1.000</td>
+<td>5138.105</td>
+<td>2807.328</td>
+</tr>
+</tbody>
+</table>
+<p><a id="orgd22a948"></a></p>
+<p>&lt;/ox-hugo/density.pdf&gt;</p>
+<p><a id="org75d2f49"></a></p>
+<p>&lt;/ox-hugo/ppc_pk.pdf&gt;</p>
+<p><a id="org04b032f"></a></p>
+<p>&lt;/ox-hugo/ppc_pd.pdf&gt;</p>
+<p>\appendix</p>
+<div class="edit-meta">
+Last updated on 28 Jun 2021
+
+
+<br>
+Published on 25 Jun 2021
+<br><a href="https://github.com/thingsym/hugo-theme-techdoc/edit/master/content/example/pkpd-pop.md" class="edit-page"><i class="fas fa-pen-square"></i>&nbsp;Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="https://metrumresearchgroup.github.io/Torsten/example/effcpt/" title="Effect Compartment Population Model"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Effect Compartment Population Model</a>
+<a class="nav nav-next" href="https://metrumresearchgroup.github.io/Torsten/example/twocpt/" title="Two-compartment model for single patient">Next - Two-compartment model for single patient <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Exported
+  from <a href="https://www.gnu.org/software/emacs/">Emacs 27.1</a>
+  + <a href="https://orgmode.org/Changes.html">Org mode 9.4</a>
+  + <a href="https://ox-hugo.scripter.co/">ox-hugo</a>. Powered
+  by <a href="https://gohugo.io">Hugo</a>. Theme
+  by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed
+  by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+
+
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/">Home</a></li>
+
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/genode/">General ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/coupled/">Coupled ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-pop/">General ODE-based Population Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-integ/">ODE  integrator function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-group-integ/">ODE group  integrator Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/1d_integ/1d_integ/">Univariate integral</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/pc_lin_interp/pc_lin_interp/">Piecewise linear interpolation</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="https://metrumresearchgroup.github.io/Torsten/example/">Examples</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt/">Two-compartment model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-lin/">Two-compartment model as a linear ODE model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-ode/">Two-compartment model solved by numerical integrator for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd/">Joint PK-PD model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocp-pop/">Two-compartment population model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/ode-group/">Lotka-Volterra group model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/1d-intg/">Univariate integral of a quadratic function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/lin-interp/">Linear intepolation</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/effcpt/">Effect Compartment Population Model</a></li>
+<li class="active"><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd-pop/">Friberg-Karlsson Semi-Mechanistic Population Model</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div>
+<a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+
+
+<script src="https://metrumresearchgroup.github.io/Torsten/js/mathjax-config.js"></script>
+
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</div>
+</body>
+</html>
