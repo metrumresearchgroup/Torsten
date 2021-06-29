@@ -409,7 +409,9 @@ After installation, one can use the following command to build a Torsten model ~
  and run Torsten models.
 
 ** MPI support
-\label{sec:mpi_support}
+   :PROPERTIES:
+   :CUSTOM_ID: mpi-support
+   :END:
 Torsten's MPI support is of a different flavour than
 =reduce_sum= found in Stan. To be able to utilize MPI
 parallelisation, one first needs to ensure an MPI library
@@ -475,19 +477,23 @@ using =cmdstanr=, and use =bayesplot= to examine posterior density of =CL=.
    :EXPORT_HUGO_SECTION: function
    :EXPORT_FILE_NAME: _index
    :EXPORT_DATE: <2021-06-25 Fri>
+   :CUSTOM_ID: using-torsten
    :END:
-#+label: sec:using_torsten
-The reader should have a basic understanding of how Stan works before
-reading this chapter. There are excellent resources online to get
-started with Stan ([[http://mc-stan.org/documentation][http://mc-stan.org/documentation]]).
+The reader should have a basic understanding of [[https://mc-stan.org/users/documentation/][how Stan works]].
 In this section we go through the different functions Torsten adds to
-Stan. The code for the examples can be found at the =example-models= folder. 
+Stan. The code for the examples can be found at Torsten's [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models][example models]].
+
+** Events specification
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: events
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :END:
 
 Torsten's functions are prefixed with =pmx_=. 
 For some of their arguments we adopt NM-TRAN format for events
-specification(Table [[ref:tab:event_args]]).
+specification(Table [[tab:event_args]]).
+
 #+CAPTION: NM-TRAN compatible event specification arguments. All arrays should have the same length corresponding to the number of events.
-#+label: tab:event_args
 #+NAME: tab:event_args
 | Argument Name | Definition                  | Stan data type |
 |---------------+-----------------------------+----------------|
@@ -507,6 +513,7 @@ support optional arguments and overloaded signatures.
 Optional arguments are indicated by surrounding square bracket =[]=.
 Table below shows three commonly used PMX model arguments that support
 overloading. In the rest of this document we assume this convention unless indicated otherwise.
+
 #+CAPTION: PMX model parameter overloadings. One can use 1d array src_stan[:exports code ]{real[]} to indicate constants of all events, or 2d array src_stan[:exports code ]{real[ , ]} so that the \(i\)th row of the array describes the model arguments for time interval $(t_{i-1}, t_i)$, and the number of the rows equals to the size of =time=.
 #+NAME: tab:event_params
 | Argument Name | Definition               | Stan data type          | Optional           |
@@ -522,7 +529,6 @@ overloading. In the rest of this document we assume this convention unless indic
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
    :END:
-#+LABEL: sec:onecpt
 #+INDEX: One Compartment Model
 *** Description
 Function =pmx_solve_onecpt= solves a one-compartment PK
@@ -545,7 +551,7 @@ $y_2$ from ordinary differential equations(ODEs)
 #+END_SRC
 
 *** Arguments
-    See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]].
+    See Tables in Section [[*Events specification]].
 *** Return value
     An =ncmt=-by-=nt= matrix, where =nt= is the number of time steps and =ncmt=2= is the number of compartments.    
 *** Note
@@ -564,7 +570,6 @@ $y_2$ from ordinary differential equations(ODEs)
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
    :END:
-<<sec:twocpt>>
 *** Description
 Function =pmx_solve_twocpt= solves a two-compartment PK
 model (Figure [[one_two_cpt_models]]). The model obtains plasma concentrations of parent drug $c=y_2/V_2$
@@ -577,15 +582,13 @@ $y_2$ from ordinary differential equations(ODEs)
 \end{align}
 
 *** Usage
-#+LABEL: sec:TwoCpt
 #+INDEX: Two Compartment Model
 #+BEGIN_SRC stan
   matrix = pmx_solve_twocpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, biovar, tlag ] )
 #+END_SRC
 
 *** Arguments
-    See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]].
-
+    See Tables in Section [[*Events specification]].
 *** Return value
     An =ncmt=-by-=nt= matrix, where =nt= is the number of time steps and =ncmt=3= is the number of compartments.
 
@@ -630,12 +633,11 @@ where $k_{10}=CL/V_2$, $k_{12}=Q/V_2$, and $k_{21}=Q/V_3$.
 *** Arguments
 - =K=
       System parameters. =K= can be either
-      - a src_stan[:exports code ]{matrix} for constant parameters in all events, or
-      - an array of matrices src_stan[:exports code ]{matrix K[nt]} so that the \(i\)th entry of the array describes
-        the model parameters for time interval $(t_{i-1}, t_i)$,
-        and the number of the rows equals to the number of event time =nt=.
-- See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]] for the rest of arguments.
-
+  - a src_stan[:exports code ]{matrix} for constant parameters in all events, or
+  - an array of matrices src_stan[:exports code ]{matrix K[nt]} so that the \(i\)th entry of the array describes
+    the model parameters for time interval $(t_{i-1}, t_i)$,
+    and the number of the rows equals to the number of event time =nt=.
+  - See Tables in Section [[*Events specification]] for the rest of arguments.
 *** Return value
     An =n=-by-=nt= matrix, where =nt= is the number of time steps and =n= is the number of rows(columns) of square matrix =K=.
 
@@ -699,19 +701,18 @@ function name can use any of the three suffixes. See below.
      The absolute tolerance for algebra solver for steady state solution, default to 1.0E-6.
 - =as_max_step=
      The maximum number of interations in algebra solver for steady state solution, default to $10^2$.
-- See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]] for the rest of arguments.
+- See Tables in Section [[*Events specification]] for the rest of arguments.
 
 *** Return value
     An =nCmt=-by-=nt= matrix, where =nt= is the size of =time=.
 *** Note
-    - See section [[ref:sec:ode_func_note]] for different types of integrator and general guidance.
-    - See section [[ref:sec:ode_func_note]] for comments on accuracy and tolerance.
+    - See Section [[*ODE integrator function]] for different types of integrator and general guidance.
+    - See Section [[*ODE integrator function]] for comments on accuracy and tolerance.
     - The default values of =atol=,
       =rtol=, and =max_step= are
       based on a limited amount of PKPD test problems and should not be considered as
       universally applicable. We strongly recommend user to set these values
-      according to physical intuition and numerical tests. See also Secion
-      [[ref:sec:ode_func_note]].
+      according to physical intuition and numerical tests. See also Section [[*ODE integrator function]].
     - With optional arguments indicated by square bracket, the following calls are allowed:
 #+BEGIN_SRC stan
   pmx_solve_[adams || rk45 || bdf](..., theta);
@@ -780,7 +781,7 @@ integrator. In the context, currently the couple solver supports one-
      The absolute tolerance for numerical integration, default to 1.0E-6.
 - =max_step=
      The maximum number of steps in numerical integration, default to $10^6$.
-- See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]] for the rest of arguments.
+- See Tables in Section [[*Events specification]] for the rest of arguments.
 *** Return value
     An =(nPk + nOde)= \times =nt= matrix, where =nt= is the size of
     =time=, and =nPk= equals to 2 in
@@ -809,13 +810,13 @@ population, one subject after another.
   matrix pmx_solve_group_[adams || rk45 || bdf](ODE_rhs, int nCmt, int[] len, time, amt, rate, ii, evid, cmt, addl, ss, theta, [ biovar, tlag, real[,] x_r, int [,] x_i, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
 #+END_SRC
 Here src_stan[:exports code]{[adams || rk45 || bdf]} indicates the
-function name can be of any of the three suffixes. See section [[ref:sec:ode_func_note]].
+function name can be of any of the three suffixes. See Section [[*ODE integrator function]].
 *** Arguments
 - =ODE_rhs=
-     Same as in Section [[ref:sec:general_ode]].
+     Same as in Section [[*ODE integrator function]].
 - =time=, =amt=, =rate=, =ii=, =evid=, =cmt=, =addl=, =ss=
      2d-array arguments that describe data record for the
-     entire population (see also Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]]). They must have same size in the first
+     entire population (see also Tables in Section [[*Events specification]]). They must have same size in the first
      dimension. Take =evid= for example. Let $N$ be the
      population size, then =evid[1,]= to
      =evid[n1,]= specifies events ID for subject 1,
@@ -851,7 +852,9 @@ function name can be of any of the three suffixes. See section [[ref:sec:ode_fun
     An =nCmt=-by-=nt= matrix, where =nt= is the total size of
     events $\sum_{i}n_i$.
 *** Note
-\label{sec:ode_group_note}
+   :PROPERTIES:
+   :CUSTOM_ID: sec:ode_pop_note
+   :END:
     - Similar to single-subject solvers, three numerical integrator are provided:
       + =pmx_solve_group_adams=: Adams-Moulton method,
       + =pmx_solve_group_bdf=: Backward-differentiation formular,
@@ -921,7 +924,6 @@ by these functions.
   real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]);
 #+END_SRC
 *** Arguments
-\label{sec:ode_func_args}
 - =ODE_rhs=
      Function that specifies the right-hand-side $f$.
      It should be defined in
@@ -954,7 +956,6 @@ by these functions.
     An =n=-by-=nd= 2d-array, where =n= is the size of =ts=
     and =nd= the dimension of the system.
 *** Note
-\label{sec:ode_func_note}
     - Three numerical integrator are provided:
       + =pmx_integrate_ode_adams=: Adams-Moulton method,
       + =pmx_integrate_ode_bdf=: Backward-differentiation formular,
@@ -1013,10 +1014,9 @@ signatures to single-ODE integration functions.
   matrix pmx_integrate_ode_group_[adams || rk45 || bdf](ODE_system, real[ , ] y0, real t0, int[] len, real[] ts, real[ , ] theta, real[ , ] x_r, int[ , ] x_i, [ real rtol, real atol, int max_step ] );
 #+END_SRC
 Here src_stan[:exports code]{[adams || rk45 || bdf]} indicates the
-function name can be of any of the three suffixes. See section [[ref:sec:ode_func_note]].
-
+function name can be of any of the three suffixes. See Section [[*ODE integrator function]].
 - =ODE_rhs=
-     Function that specifies the right-hand-side $f$. See Section [[ref:sec:ode_func_args]].
+     Function that specifies the right-hand-side $f$. See Section [[*ODE integrator function]].
 - =y0=
      Initial condition $y_0$ for each subsystem in the group. The
      first dimension equals to the size of the group.
@@ -1048,7 +1048,6 @@ function name can be of any of the three suffixes. See section [[ref:sec:ode_fun
     An =n=-by-=nd= matrix, where =n= is the size of =ts=
     and =nd= the dimension of the system.
 *** Note
-\label{sec:ode_integ_group_note}
     - With optional arguments indicated by square bracket, the following calls are allowed:
 #+BEGIN_SRC stan
   pmx_integrate_group_[adams || rk45 || bdf](..., x_i);
@@ -1154,7 +1153,6 @@ All the PMX models in this chapter can be found in
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
    :END:
-\label{sec:pk2cpt}
   We model drug absorption in a single patient and simulate plasma drug concentrations:
 
   - Multiple Doses: 1250 mg, every 12 hours, for a total of 15 doses
@@ -1162,8 +1160,8 @@ All the PMX models in this chapter can be found in
     8, 10 and 12 hours after 1st, 2nd, and 15th dose. In addition, the
     PK is measured every 12 hours throughout the trial.
 
-  With the plasma concentration $\hat{c}$ solved from
-  two-compartment ODEs in [[sec:twocpt]], we simulate $c$ according to:
+  With the plasma concentration $\hat{c}$ using
+  [[*Two Compartment Model]], we simulate $c$ according to:
   \begin{align*}
     \log\left(c\right) &\sim N\left(\log\left(\widehat{c}\right),\sigma^2\right) \\
     \left(CL, Q, V_2, V_3, ka\right) &= \left(5\ {\rm L/h}, 8\  {\rm L/h}, 20\  {\rm L},  70\ {\rm L}, 1.2\ {\rm h^{-1}} \right) \\
@@ -1228,10 +1226,9 @@ summarize the posterior is through =cmdstanr='s =summary= method.
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
    :END:
-\label{sec:pk2cpt_linode}
 Using =pmx_solve_linode=, the following example fits a two-compartment model
 with first order absorption. We omit src_stan[:exports code]{data} and
-src_stan[:exports code]{model} block as they are identical to Sectiontion [[ref:sec:pk2cpt]].
+src_stan[:exports code]{model} block as they are identical to [[*Two-compartment model for single patient]] Example.
 
 #+include: "../example-models/pk2cpt_linode/pk2cpt_linode.stan" :lines "23-70" src stan
 
@@ -1241,14 +1238,13 @@ src_stan[:exports code]{model} block as they are identical to Sectiontion [[ref:
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
    :END:
-\label{sec:pk2cpt_ode}
 Using =pmx_solve_rk45=, the following example fits a two-compartment model
 with first order absorption. User-defined function
 =ode_rhs= describes the RHS of the ODEs. 
 #+include: "../example-models/pk2cpt_ode/pk2cpt_ode.stan" :lines "1-22" src stan
 
 We omit src_stan[:exports code]{data} and
-src_stan[:exports code]{model} block as they are identical to Section [[ref:sec:pk2cpt]].
+src_stan[:exports code]{model} block as they are identical to [[*Two-compartment model for single patient]] Example.
 
 #+include: "../example-models/pk2cpt_ode/pk2cpt_ode.stan" :lines "41-78" src stan
 
@@ -1263,7 +1259,7 @@ src_stan[:exports code]{model} block as they are identical to Section [[ref:sec:
 #+INDEX: Friberg-Karlsson Model
    Neutropenia is observed in patients receiving an ME-2 drug. Our goal
    is to model the relation between neutrophil counts and drug
-   exposure. As shown in Figure [[ref:fig:FK_model]], the Friberg-Karlsson Semi-Mechanistic model cite:friberg_mechanistic_2003 couples
+   exposure. As shown in Figure [[fig:FK_model]], the Friberg-Karlsson Semi-Mechanistic model cite:friberg_mechanistic_2003 couples
    a PK model with a PD
    effect to describe a delayed feedback mechanism that keeps the
    absolute neutrophil count (ANC) at the
@@ -1272,7 +1268,8 @@ src_stan[:exports code]{model} block as they are identical to Section [[ref:sec:
    reducing the proliferation rate (prol).
    The delay between prol and Circ is modeled using $n$ transit
    comparments with mean transit time MTT = $(n + 1)/k_{\text{tr}}$,
-   with $k_{\text{tr}}$ the transit rate constant. In the current example, we use the two compartment model in section [[sec:twocpt]] for
+   with $k_{\text{tr}}$ the transit rate constant. In the current
+   example, we use the [[*Two Compartment Model]] for
    PK model, and set $n = 3$.
 
 \begin{align}
@@ -1301,8 +1298,7 @@ expect our system to be stiff and use the Runge-Kutta 4th/5th order
 integrator.
 
 #+CAPTION: Friberg-Karlsson semi-mechanistic Model.
-#+NAME: FK_model
-#+LABEL: fig:FK_model
+#+NAME: fig:FK_model
 #+ATTR_LATEX: :width 0.8\textwidth
 #+attr_html: :width 700
 [[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/neutrophilModel.jpg]]
@@ -1321,15 +1317,13 @@ The model fitting is based on simulated data
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
    :END:
-\label{sec:twocpt_population}
 Using =pmx_solve_group_bdf=, the following example fits a
 two-compartment population model.
 
 #+include: "../example-models/twocpt_population/twocpt_population.stan" :lines "1-145" src stan
 
 When the above model is compiled with MPI support(see Section
-[[ref:sec:mpi_support]]), one can run it with within-chain
-parallelization:
+[[#mpi-support][MPI support]]), one can run it using within-chain parallelization:
 #+BEGIN_SRC bash
 mpiexec -n nproc ./twocpt_population sample data file=twocpt_population.data.R init=twocpt_population.init.R
 #+END_SRC
@@ -1345,7 +1339,6 @@ parallel, with each process solving 2 subjects.
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
    :END:
-\label{sec:lotka_volterra}
 Using =pmx_integrate_ode_group_rk45=, the following example fits
 a Lotka-Volterra group model, based on [[https://mc-stan.org/users/documentation/case-studies/lotka-volterra-predator-prey.html][Stan's case study]].
 
@@ -1450,8 +1443,7 @@ generated quantities{
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
    :END:
-\label{sec:effcpt_model}
-Here we expand the example in [[sec:twocpt]] to a population model fitted to the
+Here we expand the [[*Two-compartment model for single patient]] to a population model fitted to the
 combined data from phase I and phase IIa studies. The
 parameters exhibit inter-individual variations (IIV), due to
 both random effects and to the patients' body weight,
@@ -1518,7 +1510,7 @@ the PK IIV.
 
 *** Results
 We use the same diagnosis tools as for the
-previous examples. Table [[ref:effCptModelParms]] summarises the
+previous examples. Table [[effCptModelParms]] summarises the
 statistics and diagnostics of the parameters. In particular, =rhat=
 for all parameters being close to 1.0 indicates convergence of the 4
 chains. Figure [[ref:effcpt_mcmc_density]] shows the posterior density of
@@ -1537,7 +1529,6 @@ parameters are consistent with the values used to simulate the data.
 # import from "summary_pars.csv"
 #+CAPTION: Summary of the MCMC simulations of the marginal posterior distributions of the model parameters for the effect compartment model example.
 #+ATTR_LATEX: :font \footnotesize :align  r r r r r r r r r r r
-#+LABEL: effCptModelParms
 #+NAME: effCptModelParms
 | variable  |    mean |  median |    sd |   mad |     q5 |     q95 |  rhat | ess_bulk | ess_tail |
 |-----------+---------+---------+-------+-------+--------+---------+-------+----------+----------|
@@ -1633,8 +1624,7 @@ parameters are consistent with the values used to simulate the data.
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
    :END:
-\label{sec:fkpop_model}
-We now return to the example in Section [[ref:sec:fk_model]] and extend
+We now return to the example of [[*Joint PK-PD model]] and extend
 it to a population model. While we recommend using the coupled
 solver, and this time we solve it using group solver. We leave it
 as an exercise to the reader to rewrite the model with
@@ -1747,7 +1737,7 @@ be used in =cmdstan/make/local= file, or use =set_make_local= command
 in =cmdstanr=.
 - =TORSTEN_MPI=1= turns on within-chain parallelsation of MPI-enable
   functions. To use this option one must also point
-  =TBB\_CXX\_TYPE= to proper C compiler. See also section [[ref:sec:ode_group_note]] and [[ref:sec:ode_integ_group_note]].
+  =TBB_CXX_TYPE= to proper C compiler. See also Section [[*General ODE-based Population Model Function]] and [[*ODE group integrator Function]].
 - =TORSTEN_CVS_JAC_AD=1= makes BDF and Adams
   integrator use Stan's automatic differentiation to calculate
   Jacobian matrix in nonlinear solver cite:hindmarsh_cvodes_2020.

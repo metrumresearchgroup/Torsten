@@ -2,7 +2,7 @@
 title = "Effect Compartment Population Model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T20:01:05-07:00
+lastmod = 2021-06-29T11:57:06-07:00
 draft = false
 weight = 2009
 +++
@@ -24,8 +24,7 @@ weight = 2009
 </div>
 <!--endtoc-->
 
-\label{sec:effcpt\_model}
-Here we expand the example in [{{< relref "two-cpt" >}}]({{< relref "two-cpt" >}}) to a population model fitted to the
+Here we expand the [Two-compartment model for single patient]({{< relref "twocpt" >}}) to a population model fitted to the
 combined data from phase I and phase IIa studies. The
 parameters exhibit inter-individual variations (IIV), due to
 both random effects and to the patients' body weight,
@@ -47,9 +46,9 @@ treated as a covariate and denoted \\(bw\\).
 \end{gather\*}
 
 Furthermore we add a fourth compartment in which we measure
-a PD effect(Figure [1](#org59e32d0)).
+a PD effect(Figure [1](#orgb43501d)).
 
-<a id="org59e32d0"></a>
+<a id="orgb43501d"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/effCptModel.png" caption="Figure 1: Effect Compartment Model" width="400" >}}
 
@@ -239,7 +238,7 @@ model{
 ## <span class="section-num">3</span> Results {#results}
 
 We use the same diagnosis tools as for the
-previous examples. Table [effCptModelParms](#effCptModelParms) summarises the
+previous examples. Table [1](#table--effCptModelParms) summarises the
 statistics and diagnostics of the parameters. In particular, `rhat`
 for all parameters being close to 1.0 indicates convergence of the 4
 chains. Figure [effcpt_mcmc_density](#effcpt_mcmc_density) shows the posterior density of
@@ -290,46 +289,46 @@ parameters are consistent with the values used to simulate the data.
 | sigma     | 0.099   | 0.099   | 0.002 | 0.002 | 0.095  | 0.103   | 1.002 | 1726.283  | 2836.027  |
 | sigmaResp | 10.165  | 10.166  | 0.198 | 0.198 | 9.844  | 10.495  | 1.002 | 4788.527  | 2923.203  |
 
-<a id="org955f6f9"></a>
+<a id="org15d30e3"></a>
 
 </ox-hugo/density.pdf>
 
-<a id="orgd7b8aeb"></a>
+<a id="orge290685"></a>
 
 </ox-hugo/ppc_study_1_5mg.pdf>
 
-<a id="org044e785"></a>
+<a id="org7dfe3a3"></a>
 
 </ox-hugo/ppc_study_1_10mg.pdf>
 
-<a id="orgab0fae7"></a>
+<a id="org5206c6c"></a>
 
 </ox-hugo/ppc_study_1_20mg.pdf>
 
-<a id="orgebd63c3"></a>
+<a id="orgd52b658"></a>
 
 </ox-hugo/ppc_study_1_40mg.pdf>
 
-<a id="org602b6d5"></a>
+<a id="orgd82b480"></a>
 
 </ox-hugo/ppc_study_2_20mg.pdf>
 
-<a id="org63e0193"></a>
+<a id="orgf9b958d"></a>
 
 </ox-hugo/ppc_study_1_5mg_resp.pdf>
 
-<a id="org8f219b9"></a>
+<a id="orge83377f"></a>
 
 </ox-hugo/ppc_study_1_10mg_resp.pdf>
 
-<a id="org57947e7"></a>
+<a id="orgc0068cd"></a>
 
 </ox-hugo/ppc_study_1_20mg_resp.pdf>
 
-<a id="org0528596"></a>
+<a id="orgad96ae4"></a>
 
 </ox-hugo/ppc_study_1_40mg_resp.pdf>
 
-<a id="org1f8095d"></a>
+<a id="orgbbf6aa0"></a>
 
 </ox-hugo/ppc_study_2_20mg_resp.pdf>

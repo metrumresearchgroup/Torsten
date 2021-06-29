@@ -2,9 +2,9 @@
 title = "General Linear ODE Model Function"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T19:35:15-07:00
+lastmod = 2021-06-29T11:51:46-07:00
 draft = false
-weight = 2003
+weight = 2004
 +++
 
 <style>
@@ -63,7 +63,7 @@ matrix = pmx_solve_linode(time, amt, rate, ii, evid, cmt, addl, ss, K, biovar, t
     -   an array of matrices `matrix K[nt]` so that the \\(i\\)th entry of the array describes
         the model parameters for time interval \\((t\_{i-1}, t\_i)\\),
         and the number of the rows equals to the number of event time `nt`.
--   See Table [tab:event_args](#tab:event_args) and Table [tab:event_params](#tab:event_params) for the rest of arguments.
+    -   See Tables in Section [Events specification]({{< relref "events" >}}) for the rest of arguments.
 
 
 ## <span class="section-num">4</span> Return value {#return-value}

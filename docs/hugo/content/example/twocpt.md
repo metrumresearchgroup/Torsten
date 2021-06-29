@@ -2,7 +2,7 @@
 title = "Two-compartment model for single patient"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T19:35:20-07:00
+lastmod = 2021-06-29T11:51:52-07:00
 draft = false
 weight = 2001
 +++
@@ -22,16 +22,15 @@ weight = 2001
 </div>
 <!--endtoc-->
 
-\label{sec:pk2cpt}
-  We model drug absorption in a single patient and simulate plasma drug concentrations:
+We model drug absorption in a single patient and simulate plasma drug concentrations:
 
 -   Multiple Doses: 1250 mg, every 12 hours, for a total of 15 doses
 -   PK measured at 0.083, 0.167, 0.25, 0.5, 0.75, 1, 1.5, 2, 4, 6,
     8, 10 and 12 hours after 1st, 2nd, and 15th dose. In addition, the
     PK is measured every 12 hours throughout the trial.
 
-With the plasma concentration \\(\hat{c}\\) solved from
-two-compartment ODEs in [{{< relref "two-cpt" >}}]({{< relref "two-cpt" >}}), we simulate \\(c\\) according to:
+With the plasma concentration \\(\hat{c}\\) using
+[Two Compartment Model]({{< relref "two-cpt" >}}), we simulate \\(c\\) according to:
 
 \begin{align\*}
   \log\left(c\right) &\sim N\left(\log\left(\widehat{c}\right),\sigma^2\right) \\\\\\
@@ -39,7 +38,7 @@ two-compartment ODEs in [{{< relref "two-cpt" >}}]({{< relref "two-cpt" >}}), we
   \sigma^2 &= 0.01
 \end{align\*}
 
-The data are generated using the R package `mrgsolve` ([Baron and Gastonguay 2015](#orgcc7b785)).
+The data are generated using the R package `mrgsolve` ([Baron and Gastonguay 2015](#org6547005)).
 
 Code below shows how Torsten function `pmx_solve_twocpt` can be used to fit the above model.
 
@@ -111,13 +110,13 @@ model{
 
 Four MCMC chains of 2000 iterations (1000 warmup iterations and 1000
 sampling iterations) are simulated. 1000 samples per chain were used for the subsequent analyses.
-The MCMC history plots(Figure [1](#org8d830f4))
+The MCMC history plots(Figure [1](#orgd1404d3))
 suggest that the 4 chains have converged to common distributions for
 all of the key model parameters. The fit to the plasma concentration
-data (Figure [3](#org459b17a)) are in close agreement with the
+data (Figure [3](#org6340bea)) are in close agreement with the
 data, which is not surprising since the fitted model is identical to
 the one used to simulate the data. Similarly the parameter posterior
-density can be examined in Figure [2](#org80140e1) and shows
+density can be examined in Figure [2](#org47aa6ef) and shows
 consistency with the values used for simulation. Another way to
 summarize the posterior is through `cmdstanr`'s `summary` method.
 
@@ -136,19 +135,19 @@ summarize the posterior is through `cmdstanr`'s `summary` method.
 6 sigma     0.109  0.108 0.0117 0.0111  0.0911  0.130  1.01    1414.     905.
 ```
 
-<a id="org8d830f4"></a>
+<a id="orgd1404d3"></a>
 
 </ox-hugo/history.pdf>
 
-<a id="org80140e1"></a>
+<a id="org47aa6ef"></a>
 
 </ox-hugo/density.pdf>
 
-<a id="org459b17a"></a>
+<a id="org6340bea"></a>
 
 </ox-hugo/ppc_ribbon.pdf>
 
 
 ## <span class="section-num">1</span> Bibliography {#bibliography}
 
-<a id="orgcc7b785"></a>Baron, Kyle T., and Marc R. Gastonguay. 2015. “Simulation from ODE-Based Population PK/PD and Systems Pharmacology Models in R with Mrgsolve.” _Journal of Pharmacokinetics and Pharmacodynamics_ 42 (W-23):S84–85.
+<a id="org6547005"></a>Baron, Kyle T., and Marc R. Gastonguay. 2015. “Simulation from ODE-Based Population PK/PD and Systems Pharmacology Models in R with Mrgsolve.” _Journal of Pharmacokinetics and Pharmacodynamics_ 42 (W-23):S84–85.

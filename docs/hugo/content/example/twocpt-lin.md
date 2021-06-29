@@ -2,15 +2,14 @@
 title = "Two-compartment model as a linear ODE model for single patient"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T19:35:21-07:00
+lastmod = 2021-06-29T11:51:52-07:00
 draft = false
 weight = 2002
 +++
 
-\label{sec:pk2cpt\_linode}
 Using `pmx_solve_linode`, the following example fits a two-compartment model
 with first order absorption. We omit `data` and
-`model` block as they are identical to Sectiontion [sec:pk2cpt](#sec:pk2cpt).
+`model` block as they are identical to [Two-compartment model for single patient]({{< relref "twocpt" >}}) Example.
 
 ```stan
 transformed data{

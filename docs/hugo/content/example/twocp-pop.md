@@ -2,12 +2,11 @@
 title = "Two-compartment population model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T19:35:22-07:00
+lastmod = 2021-06-29T11:51:54-07:00
 draft = false
 weight = 2005
 +++
 
-\label{sec:twocpt\_population}
 Using `pmx_solve_group_bdf`, the following example fits a
 two-compartment population model.
 
@@ -152,8 +151,7 @@ model{
 ```
 
 When the above model is compiled with MPI support(see Section
-[sec:mpi_support](#sec:mpi_support)), one can run it with within-chain
-parallelization:
+[MPI support]({{< relref "Installation#mpi-support" >}})), one can run it using within-chain parallelization:
 
 ```bash
 mpiexec -n nproc ./twocpt_population sample data file=twocpt_population.data.R init=twocpt_population.init.R

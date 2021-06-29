@@ -2,9 +2,9 @@
 title = "One Compartment Model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T20:39:29-07:00
+lastmod = 2021-06-29T11:51:45-07:00
 draft = false
-weight = 2001
+weight = 2002
 +++
 
 <style>
@@ -31,7 +31,7 @@ weight = 2001
 ## <span class="section-num">1</span> Description {#description}
 
 Function `pmx_solve_onecpt` solves a one-compartment PK
-model (Figure [1](#org869d19c)). The model obtains plasma concentrations of parent drug \\(c=y\_2/V\_2\\)
+model (Figure [1](#orgb9536dc)). The model obtains plasma concentrations of parent drug \\(c=y\_2/V\_2\\)
 by solving for the mass of drug in the central compartment
 \\(y\_2\\) from ordinary differential equations(ODEs)
 
@@ -40,7 +40,7 @@ by solving for the mass of drug in the central compartment
   y\_2' &= k\_a y\_1 - \left(\frac{CL}{V\_2} + \frac{Q}{V\_2}\right) y\_2.
 \end{align}
 
-<a id="org869d19c"></a>
+<a id="orgb9536dc"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/cptModels.png" caption="Figure 1: One and two compartment models with first order absorption implemented in Torsten." width="300" >}}
 
@@ -54,7 +54,7 @@ matrix = pmx_solve_onecpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, bio
 
 ## <span class="section-num">3</span> Arguments {#arguments}
 
-See Table [tab:event_args](#tab:event_args) and Table [tab:event_params](#tab:event_params).
+See Tables in Section [Events specification]({{< relref "events" >}}).
 
 
 ## <span class="section-num">4</span> Return value {#return-value}

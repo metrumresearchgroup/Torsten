@@ -2,9 +2,9 @@
 title = "Two Compartment Model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T19:35:14-07:00
+lastmod = 2021-06-29T11:51:45-07:00
 draft = false
-weight = 2002
+weight = 2003
 +++
 
 <style>
@@ -25,8 +25,6 @@ weight = 2002
 
 </div>
 <!--endtoc-->
-
-<a id="org1030393"></a>
 
 
 ## <span class="section-num">1</span> Description {#description}
@@ -52,7 +50,7 @@ matrix = pmx_solve_twocpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, bio
 
 ## <span class="section-num">3</span> Arguments {#arguments}
 
-See Table [tab:event_args](#tab:event_args) and Table [tab:event_params](#tab:event_params).
+See Tables in Section [Events specification]({{< relref "events" >}}).
 
 
 ## <span class="section-num">4</span> Return value {#return-value}

@@ -2,7 +2,7 @@
 title = "Friberg-Karlsson Semi-Mechanistic Population Model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T19:35:24-07:00
+lastmod = 2021-06-29T11:51:57-07:00
 draft = false
 weight = 2010
 +++
@@ -24,7 +24,7 @@ weight = 2010
 <!--endtoc-->
 
 \label{sec:fkpop\_model}
-We now return to the example in Section [sec:fk_model](#sec:fk_model) and extend
+We now return to the example of [Joint PK-PD model]({{< relref "pkpd" >}}) and extend
 it to a population model. While we recommend using the coupled
 solver, and this time we solve it using group solver. We leave it
 as an exercise to the reader to rewrite the model with
@@ -233,15 +233,15 @@ and [fkpop_ppc_pd](#fkpop_ppc_pd) indicate the model is a good fit.
 | sigmaNeut | 0.106   | 0.105   | 0.012    | 0.011    | 0.088   | 0.127   | 1.000 | 2809.059  | 3031.605  |
 | alphaHat  | 2.24e-4 | 2.19e-4 | 3.97e-05 | 3.80e-05 | 1.66e-4 | 2.96e-4 | 1.000 | 5138.105  | 2807.328  |
 
-<a id="orgd22a948"></a>
+<a id="org0b7dd92"></a>
 
 </ox-hugo/density.pdf>
 
-<a id="org75d2f49"></a>
+<a id="org042a002"></a>
 
 </ox-hugo/ppc_pk.pdf>
 
-<a id="org04b032f"></a>
+<a id="org84a56c6"></a>
 
 </ox-hugo/ppc_pd.pdf>
 

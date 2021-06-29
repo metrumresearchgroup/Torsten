@@ -2,9 +2,9 @@
 title = "Coupled ODE Model Function"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T19:35:16-07:00
+lastmod = 2021-06-29T11:51:47-07:00
 draft = false
-weight = 2005
+weight = 2006
 +++
 
 <style>
@@ -79,7 +79,7 @@ matrix pmx_solve_twocpt_[ rk45 || bdf ](reduced_ODE_system, int nOde, time, amt,
     The absolute tolerance for numerical integration, default to 1.0E-6.
 -   `max_step`
     The maximum number of steps in numerical integration, default to \\(10^6\\).
--   See Table [tab:event_args](#tab:event_args) and Table [tab:event_params](#tab:event_params) for the rest of arguments.
+-   See Tables in Section [Events specification]({{< relref "events" >}}) for the rest of arguments.
 
 
 ## <span class="section-num">4</span> Return value {#return-value}

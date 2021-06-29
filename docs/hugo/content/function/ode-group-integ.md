@@ -2,9 +2,9 @@
 title = "ODE group  integrator Function"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T20:40:58-07:00
+lastmod = 2021-06-29T11:51:49-07:00
 draft = false
-weight = 2008
+weight = 2009
 +++
 
 <style>
@@ -43,10 +43,10 @@ matrix pmx_integrate_ode_group_[adams || rk45 || bdf](ODE_system, real[ , ] y0, 
 ```
 
 Here `[adams || rk45 || bdf]` indicates the
-function name can be of any of the three suffixes. See section [sec:ode_func_note](#sec:ode_func_note).
+function name can be of any of the three suffixes. See Section [ODE  integrator function]({{< relref "ode-integ" >}}).
 
 -   `ODE_rhs`
-    Function that specifies the right-hand-side \\(f\\). See Section [sec:ode_func_args](#sec:ode_func_args).
+    Function that specifies the right-hand-side \\(f\\). See Section [ODE  integrator function]({{< relref "ode-integ" >}}).
 -   `y0`
     Initial condition \\(y\_0\\) for each subsystem in the group. The
     first dimension equals to the size of the group.
@@ -82,8 +82,6 @@ and `nd` the dimension of the system.
 
 
 ## <span class="section-num">4</span> Note {#note}
-
-\label{sec:ode\_integ\_group\_note}
 
 -   With optional arguments indicated by square bracket, the following calls are allowed:
 

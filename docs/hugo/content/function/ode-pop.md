@@ -2,9 +2,9 @@
 title = "General ODE-based Population Model Function"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T19:35:17-07:00
+lastmod = 2021-06-29T11:51:48-07:00
 draft = false
-weight = 2006
+weight = 2007
 +++
 
 <style>
@@ -21,7 +21,7 @@ weight = 2006
 - <span class="section-num">2</span> [Usage](#usage)
 - <span class="section-num">3</span> [Arguments](#arguments)
 - <span class="section-num">4</span> [Return value](#return-value)
-- <span class="section-num">5</span> [Note](#note)
+- <span class="section-num">5</span> [Note](#sec:ode_pop_note)
 
 </div>
 <!--endtoc-->
@@ -47,16 +47,16 @@ matrix pmx_solve_group_[adams || rk45 || bdf](ODE_rhs, int nCmt, int[] len, time
 ```
 
 Here `[adams || rk45 || bdf]` indicates the
-function name can be of any of the three suffixes. See section [sec:ode_func_note](#sec:ode_func_note).
+function name can be of any of the three suffixes. See Section [ODE  integrator function]({{< relref "ode-integ" >}}).
 
 
 ## <span class="section-num">3</span> Arguments {#arguments}
 
 -   `ODE_rhs`
-    Same as in Section [sec:general_ode](#sec:general_ode).
+    Same as in Section [ODE  integrator function]({{< relref "ode-integ" >}}).
 -   `time`, `amt`, `rate`, `ii`, `evid`, `cmt`, `addl`, `ss`
     2d-array arguments that describe data record for the
-    entire population (see also Table [tab:event_args](#tab:event_args) and Table [tab:event_params](#tab:event_params)). They must have same size in the first
+    entire population (see also Tables in Section [Events specification]({{< relref "events" >}})). They must have same size in the first
     dimension. Take `evid` for example. Let \\(N\\) be the
     population size, then `evid[1,]` to
     `evid[n1,]` specifies events ID for subject 1,
@@ -96,9 +96,7 @@ An `nCmt`-by-`nt` matrix, where `nt` is the total size of
 events \\(\sum\_{i}n\_i\\).
 
 
-## <span class="section-num">5</span> Note {#note}
-
-\label{sec:ode\_group\_note}
+## <span class="section-num">5</span> Note {#sec:ode_pop_note}
 
 -   Similar to single-subject solvers, three numerical integrator are provided:
     -   `pmx_solve_group_adams`: Adams-Moulton method,

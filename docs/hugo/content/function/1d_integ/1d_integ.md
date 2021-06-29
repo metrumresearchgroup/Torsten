@@ -2,9 +2,9 @@
 title = "Univariate integral"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T19:35:18-07:00
+lastmod = 2021-06-29T11:51:49-07:00
 draft = false
-weight = 2009
+weight = 2010
 +++
 
 ```stan

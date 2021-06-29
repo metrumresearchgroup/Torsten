@@ -2,9 +2,9 @@
 title = "General ODE Model Function"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T19:35:16-07:00
+lastmod = 2021-06-29T11:51:47-07:00
 draft = false
-weight = 2004
+weight = 2005
 +++
 
 <style>
@@ -95,7 +95,7 @@ when the corresponding event indicates infusion dosage.
     The absolute tolerance for algebra solver for steady state solution, default to 1.0E-6.
 -   `as_max_step`
     The maximum number of interations in algebra solver for steady state solution, default to \\(10^2\\).
--   See Table [tab:event_args](#tab:event_args) and Table [tab:event_params](#tab:event_params) for the rest of arguments.
+-   See Tables in Section [Events specification]({{< relref "events" >}}) for the rest of arguments.
 
 
 ## <span class="section-num">4</span> Return value {#return-value}
@@ -105,14 +105,13 @@ An `nCmt`-by-`nt` matrix, where `nt` is the size of `time`.
 
 ## <span class="section-num">5</span> Note {#note}
 
--   See section [sec:ode_func_note](#sec:ode_func_note) for different types of integrator and general guidance.
--   See section [sec:ode_func_note](#sec:ode_func_note) for comments on accuracy and tolerance.
+-   See Section [ODE  integrator function]({{< relref "ode-integ" >}}) for different types of integrator and general guidance.
+-   See Section [ODE  integrator function]({{< relref "ode-integ" >}}) for comments on accuracy and tolerance.
 -   The default values of `atol`,
     `rtol`, and `max_step` are
     based on a limited amount of PKPD test problems and should not be considered as
     universally applicable. We strongly recommend user to set these values
-    according to physical intuition and numerical tests. See also Secion
-    [sec:ode_func_note](#sec:ode_func_note).
+    according to physical intuition and numerical tests. See also Section [ODE  integrator function]({{< relref "ode-integ" >}}).
 -   With optional arguments indicated by square bracket, the following calls are allowed:
 
 <!--listend-->

@@ -2,9 +2,9 @@
 title = "ODE  integrator function"
 author = ["Yi Zhang"]
 date = 2021-06-28T00:00:00-07:00
-lastmod = 2021-06-28T19:35:17-07:00
+lastmod = 2021-06-29T11:51:48-07:00
 draft = false
-weight = 2007
+weight = 2008
 +++
 
 #### Description {#description}
@@ -29,8 +29,6 @@ real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0
 
 
 #### Arguments {#arguments}
-
-\label{sec:ode\_func\_args}
 
 -   `ODE_rhs`
     Function that specifies the right-hand-side \\(f\\).
@@ -75,8 +73,6 @@ and `nd` the dimension of the system.
 
 #### Note {#note}
 
-\label{sec:ode\_func\_note}
-
 -   Three numerical integrator are provided:
 
     -   `pmx_integrate_ode_adams`: Adams-Moulton method,
@@ -112,8 +108,8 @@ and `nd` the dimension of the system.
     the dynamic system, setting
     `atol` greater than that threshold will avoid
     spurious and error-prone computation. See
-    ([Hindmarsh et al. 2020](#org60e7038)) and
-    1.4 of ([Shampine et al. 2003](#org924bd17)) for details.
+    ([Hindmarsh et al. 2020](#orgf3cad96)) and
+    1.4 of ([Shampine et al. 2003](#orgfb581ad)) for details.
 
 -   With optional arguments indicated by square bracket, the following calls are allowed:
 
@@ -127,6 +123,6 @@ pmx_integrate_ode_[adams || rk45 || bdf](..., x_i, rel_tol, abs_tol, max_step);
 
 ## Bibliography {#bibliography}
 
-<a id="org60e7038"></a>Hindmarsh, Alan C., Radu Serban, Cody J. Balos, David J. Gardner, Carol S. Woodward, and Daniel R. Reynolds. 2020. _User Documentation for Cvodes V5.4.0_.
+<a id="orgf3cad96"></a>Hindmarsh, Alan C., Radu Serban, Cody J. Balos, David J. Gardner, Carol S. Woodward, and Daniel R. Reynolds. 2020. _User Documentation for Cvodes V5.4.0_.
 
-<a id="org924bd17"></a>Shampine, L. F., I. Gladwell, Larry Shampine, and S. Thompson. 2003. _Solving ODEs with MATLAB_. Cambridge University Press.
+<a id="orgfb581ad"></a>Shampine, L. F., I. Gladwell, Larry Shampine, and S. Thompson. 2003. _Solving ODEs with MATLAB_. Cambridge University Press.

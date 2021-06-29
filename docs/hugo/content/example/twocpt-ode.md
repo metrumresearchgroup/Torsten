@@ -2,12 +2,11 @@
 title = "Two-compartment model solved by numerical integrator for single patient"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T19:35:21-07:00
+lastmod = 2021-06-29T11:51:53-07:00
 draft = false
 weight = 2003
 +++
 
-\label{sec:pk2cpt\_ode}
 Using `pmx_solve_rk45`, the following example fits a two-compartment model
 with first order absorption. User-defined function
 `ode_rhs` describes the RHS of the ODEs.
@@ -37,7 +36,7 @@ functions{
 ```
 
 We omit `data` and
-`model` block as they are identical to Section [sec:pk2cpt](#sec:pk2cpt).
+`model` block as they are identical to [Two-compartment model for single patient]({{< relref "twocpt" >}}) Example.
 
 ```stan
 transformed data {
