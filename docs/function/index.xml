@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Using Torsten on Torsten</title>
+    <link>https://metrumresearchgroup.github.io/Torsten/function/</link>
+    <description>Recent content in Using Torsten on Torsten</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 25 Jun 2021 00:00:00 -0700</lastBuildDate><atom:link href="https://metrumresearchgroup.github.io/Torsten/function/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>One Compartment Model</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/function/one-cpt/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/function/one-cpt/</guid>
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_onecpt solves a one-compartment PK model (Figure 1). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\) by solving for the mass of drug in the central compartment \(y_2\) from ordinary differential equations(ODEs)
+\begin{align}\label{eq:onecpt} y_1&#39; &amp;amp;= -k_a y_1, \\\
+y_2&#39; &amp;amp;= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2.</description>
+    </item>
+    
+    <item>
+      <title>Two Compartment Model</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/function/two-cpt/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/function/two-cpt/</guid>
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    
+1 Description Function pmx_solve_twocpt solves a two-compartment PK model (Figure /Torsten/function/one-cpt/). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\) by solving for the mass of drug in the central compartment \(y_2\) from ordinary differential equations(ODEs)
+\begin{align} \label{eq:twocpt} y_1&#39; &amp;amp;= -k_a y_1 \\\</description>
+    </item>
+    
+    <item>
+      <title>General Linear ODE Model Function</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/function/linode/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/function/linode/</guid>
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value    1 Description Function pmx_solve_linode solves a (piecewise) linear ODEs model with coefficients in form of matrix \(K\)
+\begin{equation} y^\prime\left(t\right) = Ky\left(t\right) \end{equation}
+For example, in a two-compartment model with first order absorption, \(K\) is
+\begin{equation} K = \left[\begin{array}{ccc} -k_a &amp;amp; 0 &amp;amp; 0 \\\
+k_a &amp;amp; -\left(k_{10} + k_{12}\right) &amp;amp; k_{21} \\\</description>
+    </item>
+    
+    <item>
+      <title>General ODE Model Function</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/function/genode/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/function/genode/</guid>
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_adams, pmx_solve_bdf, and pmx_solve_rk45 solve a first-order ODE system specified by user-specified right-hand-side function ODE_rhs \(f\)
+\begin{equation*} y&#39;(t) = f(t, y(t)) \end{equation*}
+In the case where the rate vector \(r\) is non-zero, this equation becomes:
+\begin{equation*} y&#39;(t) = f(t, y(t)) + r \end{equation*}</description>
+    </item>
+    
+    <item>
+      <title>Coupled ODE Model Function</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/function/coupled/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/function/coupled/</guid>
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value    1 Description When the ODE system consists of two subsystems in form of
+\begin{align*} y_1^\prime &amp;amp;= f_1(t, y_1), \\\
+y_2^\prime &amp;amp;= f_2(t, y_1, y_2), \end{align*}
+with \(y_1\), \(y_2\), \(f_1\), and \(f_2\) being vector-valued functions, and \(y_1^\prime\) independent of \(y_2\), the solution can be accelerated if \(y_1\) admits an analytical solution which can be introduced into the ODE for \(y_2\) for numerical integration.</description>
+    </item>
+    
+    <item>
+      <title>General ODE-based Population Model Function</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/function/ode-pop/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/function/ode-pop/</guid>
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description All the preivous functions solves for a single sunject. Torsten also provides population modeling counterparts for ODE solutions. The functions solve for a population that share an ODE model but with subject-level parameters and event specifications and have similar signatures to single-subject functions, except that now events arguments time, amt, rate, ii, evid, cmt, addl, ss specifies the entire population, one subject after another.</description>
+    </item>
+    
+    <item>
+      <title>ODE  integrator function</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/function/ode-integ/</link>
+      <pubDate>Mon, 28 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/function/ode-integ/</guid>
+      <description>Description Torsten provides its own implementation of ODE solvers that solves
+\begin{equation*} y&#39;(t) = f(t, y(t)), \quad y(t_0) = y_0 \end{equation*}
+for \(y\). These solvers are customized for Torsten applications and different from those found in Stan. The general ODE PMX solvers in previous sections are internally powered by these functions.
+Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]); Arguments \label{sec:ode_func_args}</description>
+    </item>
+    
+    <item>
+      <title>ODE group  integrator Function</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/function/ode-group-integ/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/function/ode-group-integ/</guid>
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Return value 4 Note    1 Description All the preivous functions solves for a single ODE system. Torsten also provides group modeling counterparts for ODE integrators. The functions solve for a group of ODE systems that share an ODE RHS but with different parameters. They have similar signatures to single-ODE integration functions.</description>
+    </item>
+    
+    <item>
+      <title>Univariate integral</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/function/1d_integ/1d_integ/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/function/1d_integ/1d_integ/</guid>
+      <description>real univariate_integral_rk45(f, t0, t1, theta, x_r, x_i) real univariate_integral_bdf(f, t0, t1, theta, x_r, x_i) Based on the ODE solver capability in Stan, Torsten provides functions calculating the integral of a univariate function. The integrand function \(f\) must follow the signature
+real f(real t, real[] theta, real[] x_r, int[] x_i) { /* ... */ } </description>
+    </item>
+    
+    <item>
+      <title>Piecewise linear interpolation</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/function/pc_lin_interp/pc_lin_interp/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/function/pc_lin_interp/pc_lin_interp/</guid>
+      <description>real linear_interpolation(real xout, real[] x, real[] y) real[] linear_interpolation(real[] xout, real[] x, real[] y) Torsten also provides function linear_interpolation for piecewise linear interpolation over a set of x, y pairs. It returns the values of a piecewise linear function at specified values xout of the first function argument. The function is specified in terms of a set of x, y pairs. Specifically, linear_interpolation implements the following function
+\begin{align*} y_{\text{out}} = \left\{\begin{array}{ll} y_1, &amp;amp; x_{\text{out}} &amp;lt; x_1 \\\</description>
+    </item>
+    
+  </channel>
+</rss>

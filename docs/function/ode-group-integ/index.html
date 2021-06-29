@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>ODE group  integrator Function - Torsten</title>
+<meta name="description" content="A pharmacokinetics/pharmacodynamics library for Stan">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://metrumresearchgroup.github.io/Torsten//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://metrumresearchgroup.github.io/Torsten/function/ode-group-integ/">
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://metrumresearchgroup.github.io/Torsten/js/bundle.js"></script><style>
+:root {--custom-background-color: #005933;}
+</style>
+<meta property="og:title" content="ODE group  integrator Function" />
+<meta property="og:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Return value 4 Note    1 Description All the preivous functions solves for a single ODE system. Torsten also provides group modeling counterparts for ODE integrators. The functions solve for a group of ODE systems that share an ODE RHS but with different parameters. They have similar signatures to single-ODE integration functions." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/function/ode-group-integ/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="function" />
+<meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
+<meta property="article:modified_time" content="2021-06-28T20:40:58-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+
+<meta name="twitter:title" content="ODE group  integrator Function"/>
+<meta name="twitter:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Return value 4 Note    1 Description All the preivous functions solves for a single ODE system. Torsten also provides group modeling counterparts for ODE integrators. The functions solve for a group of ODE systems that share an ODE RHS but with different parameters. They have similar signatures to single-ODE integration functions."/>
+<meta itemprop="name" content="ODE group  integrator Function">
+<meta itemprop="description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Return value 4 Note    1 Description All the preivous functions solves for a single ODE system. Torsten also provides group modeling counterparts for ODE integrators. The functions solve for a group of ODE systems that share an ODE RHS but with different parameters. They have similar signatures to single-ODE integration functions."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
+<meta itemprop="dateModified" content="2021-06-28T20:40:58-07:00" />
+<meta itemprop="wordCount" content="469"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
+<p class="description">A pharmacokinetics/pharmacodynamics library for Stan</p>
+
+</header>
+<div class="global-menu">
+<nav>
+<ul>
+<li><a href="/Torsten/">Home</a></li>
+<li><a href="/Torsten/dev-team/">Development team</a></li>
+<li><a href="/Torsten/acknowledgements/">Acknowledgements</a></li>
+<li><a href="/Torsten/changelog/">Changelog</a></li>
+<li><a href="/Torsten/installation/">Installation</a></li></ul>
+</nav>
+</div>
+<div class="content-container">
+<main><h1>ODE group  integrator Function</h1>
+<style>
+  .ox-hugo-toc ul {
+    list-style: none;
+  }
+</style>
+<div class="ox-hugo-toc toc">
+<div></div>
+<div class="heading">Table of Contents</div>
+<ul>
+<li><span class="section-num">1</span> <a href="#description">Description</a></li>
+<li><span class="section-num">2</span> <a href="#usage">Usage</a></li>
+<li><span class="section-num">3</span> <a href="#return-value">Return value</a></li>
+<li><span class="section-num">4</span> <a href="#note">Note</a></li>
+</ul>
+</div>
+<!--endtoc-->
+<h2 id="description"><span class="section-num">1</span> Description</h2>
+<p>All the preivous functions solves for a single ODE system. Torsten also
+provides group modeling counterparts for ODE integrators. The
+functions solve for a group of ODE systems that share an ODE RHS but with
+different parameters. They have similar
+signatures to single-ODE integration functions.</p>
+<h2 id="usage"><span class="section-num">2</span> Usage</h2>
+<pre><code class="language-stan" data-lang="stan">matrix pmx_integrate_ode_group_[adams || rk45 || bdf](ODE_system, real[ , ] y0, real t0, int[] len, real[] ts, real[ , ] theta, real[ , ] x_r, int[ , ] x_i, [ real rtol, real atol, int max_step ] );
+</code></pre><p>Here <code>[adams || rk45 || bdf]</code> indicates the
+function name can be of any of the three suffixes. See section <a href="#sec:ode_func_note">sec:ode_func_note</a>.</p>
+<ul>
+<li><code>ODE_rhs</code>
+Function that specifies the right-hand-side \(f\). See Section <a href="#sec:ode_func_args">sec:ode_func_args</a>.</li>
+<li><code>y0</code>
+Initial condition \(y_0\) for each subsystem in the group. The
+first dimension equals to the size of the group.</li>
+<li><code>t0</code>
+Initial time \(t_0\).</li>
+<li><code>len</code>
+A vector that contains the number of output time points for each
+subsystem. The lenght of the vector equals to the size of the group.</li>
+<li><code>ts</code>
+Output time when solution is seeked, consisting of
+<code>ts</code> of each subsystem concatenated.</li>
+<li><code>theta</code>
+2d-array parameters to be passed to <code>ODE_rhs</code>
+function. Each row corresponds to one subsystem.</li>
+<li><code>x_r</code>
+2d-array real data to be passed to <code>ODE_rhs</code> function.
+Each row corresponds to one subsystem.</li>
+<li><code>x_i</code>
+2d-array integer data to be passed to <code>ODE_rhs</code> function.
+Each row corresponds to one subsystem.</li>
+<li><code>rtol</code>
+Relative tolerance.</li>
+<li><code>atol</code>
+Absolute tolerance.</li>
+<li><code>max_step</code>
+Maximum number of steps allowed between neighboring time in <code>ts</code>.</li>
+</ul>
+<h2 id="return-value"><span class="section-num">3</span> Return value</h2>
+<p>An <code>n</code>-by-<code>nd</code> matrix, where <code>n</code> is the size of <code>ts</code>
+and <code>nd</code> the dimension of the system.</p>
+<h2 id="note"><span class="section-num">4</span> Note</h2>
+<p>\label{sec:ode_integ_group_note}</p>
+<ul>
+<li>With optional arguments indicated by square bracket, the following calls are allowed:</li>
+</ul>
+<!--listend-->
+<pre><code class="language-stan" data-lang="stan">pmx_integrate_group_[adams || rk45 || bdf](..., x_i);
+pmx_integrate_group_[adams || rk45 || bdf](..., x_i, rel_tol, abs_tol, max_step);
+</code></pre><ul>
+<li>The group integrators support paralleisation through Message Passing
+Interface(MPI). One can access this feature through <code>cmdstan</code> or
+<code>cmdstanr</code> interface.</li>
+</ul>
+<!--listend-->
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># cmdstan interface user need to add &#34;TORSTEN_MPI=1&#34; and</span>
+<span style="color:#75715e"># &#34;TBB_CXX_TYPE=gcc&#34; in &#34;cmdstan/make/local&#34; file. In linux &amp; macos</span>
+<span style="color:#75715e"># this can be done as</span>
+echo <span style="color:#e6db74">&#34;TORSTEN_MPI=1&#34;</span> &gt; cmdstan/make/local
+echo <span style="color:#e6db74">&#34;TBB_CXX_TYPE=gcc&#34;</span> &gt; cmdstan/make/local <span style="color:#75715e"># &#34;gcc&#34; should be replaced by user&#39;s C compiler</span>
+make path-to-model/model_name
+mpiexec -n number_of_processes model_name sample... <span style="color:#75715e"># additional cmdstan options</span>
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#a6e22e">library</span>(<span style="color:#e6db74">&#34;cmdstanr&#34;</span>)
+<span style="color:#a6e22e">cmdstan_make_local</span>(cpp_options <span style="color:#f92672">=</span> <span style="color:#a6e22e">list</span>(<span style="color:#e6db74">&#34;TORSTEN_MPI&#34;</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;1&#34;</span>, <span style="color:#e6db74">&#34;TBB_CXX_TYPE&#34;</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;gcc&#34;</span>))  <span style="color:#75715e"># &#34;gcc&#34; should be replaced by user&#39;s C compiler</span>
+<span style="color:#a6e22e">rebuild_cmdstan</span>()
+mod <span style="color:#f92672">&lt;-</span> <span style="color:#a6e22e">cmdstan_model</span>(path<span style="color:#f92672">-</span>to<span style="color:#f92672">-</span>model<span style="color:#f92672">-</span>file, quiet<span style="color:#f92672">=</span><span style="color:#66d9ef">FALSE</span>, force_recompile<span style="color:#f92672">=</span><span style="color:#66d9ef">TRUE</span>)
+f <span style="color:#f92672">&lt;-</span> mod<span style="color:#f92672">$</span><span style="color:#a6e22e">sample_mpi</span>(data <span style="color:#f92672">=</span> <span style="color:#66d9ef">...</span>, chains <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>, mpi_args <span style="color:#f92672">=</span> <span style="color:#a6e22e">list</span>(<span style="color:#e6db74">&#34;n&#34;</span> <span style="color:#f92672">=</span> number_of_processes), refresh <span style="color:#f92672">=</span> <span style="color:#ae81ff">200</span>)
+</code></pre></div><p>Here \(n\) denotes number of MPI processes, so that \(N\)
+ODE systems are distributed to and solved by \(n\)
+processes evenly. Note that to access this feature user must have
+MPI installed, and some MPI installation may require set additional
+compiler arguments, such as <code>CXXLFAGS</code> and <code>LDFLAGS</code>.</p>
+<div class="edit-meta">
+Last updated on 28 Jun 2021
+
+
+<br>
+Published on 25 Jun 2021
+<br><a href="https://github.com/thingsym/hugo-theme-techdoc/edit/master/content/function/ode-group-integ.md" class="edit-page"><i class="fas fa-pen-square"></i>&nbsp;Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="https://metrumresearchgroup.github.io/Torsten/function/ode-integ/" title="ODE  integrator function"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - ODE  integrator function</a>
+<a class="nav nav-next" href="https://metrumresearchgroup.github.io/Torsten/function/1d_integ/1d_integ/" title="Univariate integral">Next - Univariate integral <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Exported
+  from <a href="https://www.gnu.org/software/emacs/">Emacs 27.1</a>
+  + <a href="https://orgmode.org/Changes.html">Org mode 9.4</a>
+  + <a href="https://ox-hugo.scripter.co/">ox-hugo</a>. Powered
+  by <a href="https://gohugo.io">Hugo</a>. Theme
+  by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed
+  by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+
+
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/">Home</a></li>
+
+<li class="parent"><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/genode/">General ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/coupled/">Coupled ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-pop/">General ODE-based Population Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-integ/">ODE  integrator function</a></li>
+<li class="active"><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-group-integ/">ODE group  integrator Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/1d_integ/1d_integ/">Univariate integral</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/pc_lin_interp/pc_lin_interp/">Piecewise linear interpolation</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/">Examples</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt/">Two-compartment model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-lin/">Two-compartment model as a linear ODE model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-ode/">Two-compartment model solved by numerical integrator for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd/">Joint PK-PD model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocp-pop/">Two-compartment population model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/ode-group/">Lotka-Volterra group model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/1d-intg/">Univariate integral of a quadratic function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/lin-interp/">Linear intepolation</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/effcpt/">Effect Compartment Population Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd-pop/">Friberg-Karlsson Semi-Mechanistic Population Model</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div>
+<a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+
+
+<script src="https://metrumresearchgroup.github.io/Torsten/js/mathjax-config.js"></script>
+
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</div>
+</body>
+</html>

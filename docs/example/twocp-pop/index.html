@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Two-compartment population model - Torsten</title>
+<meta name="description" content="A pharmacokinetics/pharmacodynamics library for Stan">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://metrumresearchgroup.github.io/Torsten//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://metrumresearchgroup.github.io/Torsten/example/twocp-pop/">
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://metrumresearchgroup.github.io/Torsten/js/bundle.js"></script><style>
+:root {--custom-background-color: #005933;}
+</style>
+<meta property="og:title" content="Two-compartment population model" />
+<meta property="og:description" content="\label{sec:twocpt_population} Using pmx_solve_group_bdf, the following example fits a two-compartment population model.
+functions{ // define ODE system for two compartmnt model real[] twoCptModelODE(real t, real[] x, real[] parms, real[] rate, // in this example, rate is treated as data int[] dummy){ // Parameters real CL = parms[1]; real Q = parms[2]; real V1 = parms[3]; real V2 = parms[4]; real ka = parms[5]; // Re-parametrization real k10 = CL / V1; real k12 = Q / V1; real k21 = Q / V2; // Return object (derivative) real y[3]; // 1 element per compartment of // the model // PK component of the ODE system y[1] = -ka*x[1]; y[2] = ka*x[1] - (k10 &#43; k12)*x[2] &#43; k21*x[3]; y[3] = k12*x[2] - k21*x[3]; return y; } } data{ int&lt;lower = 1&gt; np; /* population size */ int&lt;lower = 1&gt; nt; // number of events int&lt;lower = 1&gt; nObs; // number of observations int&lt;lower = 1&gt; iObs[nObs]; // index of observation // NONMEM data int&lt;lower = 1&gt; cmt[np * nt]; int evid[np * nt]; int addl[np * nt]; int ss[np * nt]; real amt[np * nt]; real time[np * nt]; real rate[np * nt]; real ii[np * nt]; real&lt;lower = 0&gt; cObs[np*nObs]; // observed concentration (dependent variable) } transformed data { real logCObs[np*nObs]; int&lt;lower = 1&gt; len[np]; int&lt;lower = 1&gt; len_theta[np]; int&lt;lower = 1&gt; len_biovar[np]; int&lt;lower = 1&gt; len_tlag[np]; int nTheta = 5; // number of parameters int nCmt = 3; // number of compartments real biovar[np * nt, nCmt]; real tlag[np * nt, nCmt]; logCObs = log(cObs); for (id in 1:np) { for (j in 1:nt) { for (i in 1:nCmt) { biovar[(id - 1) * nt &#43; j, i] = 1; tlag[(id - 1) * nt &#43; j, i] = 0; } } len[id] = nt; len_theta[id] = nt; len_biovar[id] = nt; len_tlag[id] = nt; } } parameters{ real&lt;lower = 0&gt; CL[np]; real&lt;lower = 0&gt; Q[np]; real&lt;lower = 0&gt; V1[np]; real&lt;lower = 0&gt; V2[np]; real&lt;lower = 0&gt; ka[np]; real&lt;lower = 0&gt; sigma[np]; } transformed parameters{ real theta[np * nt, nTheta]; vector&lt;lower = 0&gt;[nt] cHat[np]; real&lt;lower = 0&gt; cHatObs[np*nObs]; matrix[3, nt * np] x; for (id in 1:np) { for (it in 1:nt) { theta[(id - 1) * nt &#43; it, 1] = CL[id]; theta[(id - 1) * nt &#43; it, 2] = Q[id]; theta[(id - 1) * nt &#43; it, 3] = V1[id]; theta[(id - 1) * nt &#43; it, 4] = V2[id]; theta[(id - 1) * nt &#43; it, 5] = ka[id]; } } x = pmx_solve_group_bdf(twoCptModelODE, 3, len, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag); for (id in 1:np) { for (j in 1:nt) { cHat[id][j] = x[2, (id - 1) * nt &#43; j] ." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/example/twocp-pop/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="example" />
+<meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
+<meta property="article:modified_time" content="2021-06-28T19:35:22-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+
+<meta name="twitter:title" content="Two-compartment population model"/>
+<meta name="twitter:description" content="\label{sec:twocpt_population} Using pmx_solve_group_bdf, the following example fits a two-compartment population model.
+functions{ // define ODE system for two compartmnt model real[] twoCptModelODE(real t, real[] x, real[] parms, real[] rate, // in this example, rate is treated as data int[] dummy){ // Parameters real CL = parms[1]; real Q = parms[2]; real V1 = parms[3]; real V2 = parms[4]; real ka = parms[5]; // Re-parametrization real k10 = CL / V1; real k12 = Q / V1; real k21 = Q / V2; // Return object (derivative) real y[3]; // 1 element per compartment of // the model // PK component of the ODE system y[1] = -ka*x[1]; y[2] = ka*x[1] - (k10 &#43; k12)*x[2] &#43; k21*x[3]; y[3] = k12*x[2] - k21*x[3]; return y; } } data{ int&lt;lower = 1&gt; np; /* population size */ int&lt;lower = 1&gt; nt; // number of events int&lt;lower = 1&gt; nObs; // number of observations int&lt;lower = 1&gt; iObs[nObs]; // index of observation // NONMEM data int&lt;lower = 1&gt; cmt[np * nt]; int evid[np * nt]; int addl[np * nt]; int ss[np * nt]; real amt[np * nt]; real time[np * nt]; real rate[np * nt]; real ii[np * nt]; real&lt;lower = 0&gt; cObs[np*nObs]; // observed concentration (dependent variable) } transformed data { real logCObs[np*nObs]; int&lt;lower = 1&gt; len[np]; int&lt;lower = 1&gt; len_theta[np]; int&lt;lower = 1&gt; len_biovar[np]; int&lt;lower = 1&gt; len_tlag[np]; int nTheta = 5; // number of parameters int nCmt = 3; // number of compartments real biovar[np * nt, nCmt]; real tlag[np * nt, nCmt]; logCObs = log(cObs); for (id in 1:np) { for (j in 1:nt) { for (i in 1:nCmt) { biovar[(id - 1) * nt &#43; j, i] = 1; tlag[(id - 1) * nt &#43; j, i] = 0; } } len[id] = nt; len_theta[id] = nt; len_biovar[id] = nt; len_tlag[id] = nt; } } parameters{ real&lt;lower = 0&gt; CL[np]; real&lt;lower = 0&gt; Q[np]; real&lt;lower = 0&gt; V1[np]; real&lt;lower = 0&gt; V2[np]; real&lt;lower = 0&gt; ka[np]; real&lt;lower = 0&gt; sigma[np]; } transformed parameters{ real theta[np * nt, nTheta]; vector&lt;lower = 0&gt;[nt] cHat[np]; real&lt;lower = 0&gt; cHatObs[np*nObs]; matrix[3, nt * np] x; for (id in 1:np) { for (it in 1:nt) { theta[(id - 1) * nt &#43; it, 1] = CL[id]; theta[(id - 1) * nt &#43; it, 2] = Q[id]; theta[(id - 1) * nt &#43; it, 3] = V1[id]; theta[(id - 1) * nt &#43; it, 4] = V2[id]; theta[(id - 1) * nt &#43; it, 5] = ka[id]; } } x = pmx_solve_group_bdf(twoCptModelODE, 3, len, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag); for (id in 1:np) { for (j in 1:nt) { cHat[id][j] = x[2, (id - 1) * nt &#43; j] ."/>
+<meta itemprop="name" content="Two-compartment population model">
+<meta itemprop="description" content="\label{sec:twocpt_population} Using pmx_solve_group_bdf, the following example fits a two-compartment population model.
+functions{ // define ODE system for two compartmnt model real[] twoCptModelODE(real t, real[] x, real[] parms, real[] rate, // in this example, rate is treated as data int[] dummy){ // Parameters real CL = parms[1]; real Q = parms[2]; real V1 = parms[3]; real V2 = parms[4]; real ka = parms[5]; // Re-parametrization real k10 = CL / V1; real k12 = Q / V1; real k21 = Q / V2; // Return object (derivative) real y[3]; // 1 element per compartment of // the model // PK component of the ODE system y[1] = -ka*x[1]; y[2] = ka*x[1] - (k10 &#43; k12)*x[2] &#43; k21*x[3]; y[3] = k12*x[2] - k21*x[3]; return y; } } data{ int&lt;lower = 1&gt; np; /* population size */ int&lt;lower = 1&gt; nt; // number of events int&lt;lower = 1&gt; nObs; // number of observations int&lt;lower = 1&gt; iObs[nObs]; // index of observation // NONMEM data int&lt;lower = 1&gt; cmt[np * nt]; int evid[np * nt]; int addl[np * nt]; int ss[np * nt]; real amt[np * nt]; real time[np * nt]; real rate[np * nt]; real ii[np * nt]; real&lt;lower = 0&gt; cObs[np*nObs]; // observed concentration (dependent variable) } transformed data { real logCObs[np*nObs]; int&lt;lower = 1&gt; len[np]; int&lt;lower = 1&gt; len_theta[np]; int&lt;lower = 1&gt; len_biovar[np]; int&lt;lower = 1&gt; len_tlag[np]; int nTheta = 5; // number of parameters int nCmt = 3; // number of compartments real biovar[np * nt, nCmt]; real tlag[np * nt, nCmt]; logCObs = log(cObs); for (id in 1:np) { for (j in 1:nt) { for (i in 1:nCmt) { biovar[(id - 1) * nt &#43; j, i] = 1; tlag[(id - 1) * nt &#43; j, i] = 0; } } len[id] = nt; len_theta[id] = nt; len_biovar[id] = nt; len_tlag[id] = nt; } } parameters{ real&lt;lower = 0&gt; CL[np]; real&lt;lower = 0&gt; Q[np]; real&lt;lower = 0&gt; V1[np]; real&lt;lower = 0&gt; V2[np]; real&lt;lower = 0&gt; ka[np]; real&lt;lower = 0&gt; sigma[np]; } transformed parameters{ real theta[np * nt, nTheta]; vector&lt;lower = 0&gt;[nt] cHat[np]; real&lt;lower = 0&gt; cHatObs[np*nObs]; matrix[3, nt * np] x; for (id in 1:np) { for (it in 1:nt) { theta[(id - 1) * nt &#43; it, 1] = CL[id]; theta[(id - 1) * nt &#43; it, 2] = Q[id]; theta[(id - 1) * nt &#43; it, 3] = V1[id]; theta[(id - 1) * nt &#43; it, 4] = V2[id]; theta[(id - 1) * nt &#43; it, 5] = ka[id]; } } x = pmx_solve_group_bdf(twoCptModelODE, 3, len, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag); for (id in 1:np) { for (j in 1:nt) { cHat[id][j] = x[2, (id - 1) * nt &#43; j] ."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
+<meta itemprop="dateModified" content="2021-06-28T19:35:22-07:00" />
+<meta itemprop="wordCount" content="587"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
+<p class="description">A pharmacokinetics/pharmacodynamics library for Stan</p>
+
+</header>
+<div class="global-menu">
+<nav>
+<ul>
+<li><a href="/Torsten/">Home</a></li>
+<li><a href="/Torsten/dev-team/">Development team</a></li>
+<li><a href="/Torsten/acknowledgements/">Acknowledgements</a></li>
+<li><a href="/Torsten/changelog/">Changelog</a></li>
+<li><a href="/Torsten/installation/">Installation</a></li></ul>
+</nav>
+</div>
+<div class="content-container">
+<main><h1>Two-compartment population model</h1>
+<p>\label{sec:twocpt_population}
+Using <code>pmx_solve_group_bdf</code>, the following example fits a
+two-compartment population model.</p>
+<pre><code class="language-stan" data-lang="stan">functions{
+
+  // define ODE system for two compartmnt model
+  real[] twoCptModelODE(real t,
+                        real[] x,
+                        real[] parms,
+                        real[] rate,  // in this example, rate is treated as data
+                        int[] dummy){
+
+    // Parameters
+    real CL = parms[1];
+    real Q = parms[2];
+    real V1 = parms[3];
+    real V2 = parms[4];
+    real ka = parms[5];
+
+    // Re-parametrization
+    real k10 = CL / V1;
+    real k12 = Q / V1;
+    real k21 = Q / V2;
+
+    // Return object (derivative)
+    real y[3];  // 1 element per compartment of
+                // the model
+
+    // PK component of the ODE system
+    y[1] = -ka*x[1];
+    y[2] = ka*x[1] - (k10 + k12)*x[2] + k21*x[3];
+    y[3] = k12*x[2] - k21*x[3];
+
+    return y;
+  }
+}
+data{
+  int&lt;lower = 1&gt; np;            /* population size */
+  int&lt;lower = 1&gt; nt;  // number of events
+  int&lt;lower = 1&gt; nObs;  // number of observations
+  int&lt;lower = 1&gt; iObs[nObs];  // index of observation
+
+  // NONMEM data
+  int&lt;lower = 1&gt; cmt[np * nt];
+  int evid[np * nt];
+  int addl[np * nt];
+  int ss[np * nt];
+  real amt[np * nt];
+  real time[np * nt];
+  real rate[np * nt];
+  real ii[np * nt];
+
+  real&lt;lower = 0&gt; cObs[np*nObs];  // observed concentration (dependent variable)
+}
+
+transformed data {
+  real logCObs[np*nObs];
+  int&lt;lower = 1&gt; len[np];
+  int&lt;lower = 1&gt; len_theta[np];
+  int&lt;lower = 1&gt; len_biovar[np];
+  int&lt;lower = 1&gt; len_tlag[np];
+
+  int nTheta = 5;   // number of parameters
+  int nCmt = 3;   // number of compartments
+  real biovar[np * nt, nCmt];
+  real tlag[np * nt, nCmt];
+
+  logCObs = log(cObs);
+
+  for (id in 1:np) {
+    for (j in 1:nt) {
+      for (i in 1:nCmt) {
+        biovar[(id - 1) * nt + j, i] = 1;
+        tlag[(id - 1) * nt + j, i] = 0;
+      }
+    }
+    len[id] = nt;
+    len_theta[id] = nt;
+    len_biovar[id] = nt;
+    len_tlag[id] = nt;
+  }
+}
+
+parameters{
+  real&lt;lower = 0&gt; CL[np];
+  real&lt;lower = 0&gt; Q[np];
+  real&lt;lower = 0&gt; V1[np];
+  real&lt;lower = 0&gt; V2[np];
+  real&lt;lower = 0&gt; ka[np];
+  real&lt;lower = 0&gt; sigma[np];
+}
+
+transformed parameters{
+  real theta[np * nt, nTheta];
+  vector&lt;lower = 0&gt;[nt] cHat[np];
+  real&lt;lower = 0&gt; cHatObs[np*nObs];
+  matrix[3, nt * np] x;
+
+  for (id in 1:np) {
+    for (it in 1:nt) {
+      theta[(id - 1) * nt + it, 1] = CL[id];
+      theta[(id - 1) * nt + it, 2] = Q[id];
+      theta[(id - 1) * nt + it, 3] = V1[id];
+      theta[(id - 1) * nt + it, 4] = V2[id];
+      theta[(id - 1) * nt + it, 5] = ka[id];
+    }
+  }
+
+  x = pmx_solve_group_bdf(twoCptModelODE, 3, len,
+                          time, amt, rate, ii, evid, cmt, addl, ss,
+                          theta, biovar, tlag);
+
+  for (id in 1:np) {
+    for (j in 1:nt) {
+      cHat[id][j] = x[2, (id - 1) * nt + j] ./ V1[id];
+    }
+  }
+
+  for (id in 1:np) {
+    for(i in 1:nObs){
+      cHatObs[(id - 1)*nObs + i] = cHat[id][iObs[i]];  // predictions for observed data records
+    }
+  }
+}
+
+model{
+  // informative prior
+  for(id in 1:np){
+    CL[id] ~ lognormal(log(10), 0.25);
+    Q[id] ~ lognormal(log(15), 0.5);
+    V1[id] ~ lognormal(log(35), 0.25);
+    V2[id] ~ lognormal(log(105), 0.5);
+    ka[id] ~ lognormal(log(2.5), 1);
+    sigma[id] ~ cauchy(0, 1);
+
+    for(i in 1:nObs){
+      logCObs[(id - 1)*nObs + i] ~ normal(log(cHatObs[(id - 1)*nObs + i]), sigma[id]);
+    }
+  }
+}
+</code></pre><p>When the above model is compiled with MPI support(see Section
+<a href="#sec:mpi_support">sec:mpi_support</a>), one can run it with within-chain
+parallelization:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mpiexec -n nproc ./twocpt_population sample data file<span style="color:#f92672">=</span>twocpt_population.data.R init<span style="color:#f92672">=</span>twocpt_population.init.R
+</code></pre></div><p>Here <code>nproc</code> indicates the number of parallel
+processes participating ODE solution. For example, with
+<code>np=8</code> for a population of 8,
+<code>nproc=4</code> indicates solving 8 subjects' ODEs in
+parallel, with each process solving 2 subjects.</p>
+<div class="edit-meta">
+Last updated on 28 Jun 2021
+
+
+<br>
+Published on 25 Jun 2021
+<br><a href="https://github.com/thingsym/hugo-theme-techdoc/edit/master/content/example/twocp-pop.md" class="edit-page"><i class="fas fa-pen-square"></i>&nbsp;Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="https://metrumresearchgroup.github.io/Torsten/example/pkpd/" title="Joint PK-PD model"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Joint PK-PD model</a>
+<a class="nav nav-next" href="https://metrumresearchgroup.github.io/Torsten/example/ode-group/" title="Lotka-Volterra group model">Next - Lotka-Volterra group model <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Exported
+  from <a href="https://www.gnu.org/software/emacs/">Emacs 27.1</a>
+  + <a href="https://orgmode.org/Changes.html">Org mode 9.4</a>
+  + <a href="https://ox-hugo.scripter.co/">ox-hugo</a>. Powered
+  by <a href="https://gohugo.io">Hugo</a>. Theme
+  by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed
+  by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+
+
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/">Home</a></li>
+
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/genode/">General ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/coupled/">Coupled ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-pop/">General ODE-based Population Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-integ/">ODE  integrator function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-group-integ/">ODE group  integrator Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/1d_integ/1d_integ/">Univariate integral</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/pc_lin_interp/pc_lin_interp/">Piecewise linear interpolation</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="https://metrumresearchgroup.github.io/Torsten/example/">Examples</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt/">Two-compartment model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-lin/">Two-compartment model as a linear ODE model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-ode/">Two-compartment model solved by numerical integrator for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd/">Joint PK-PD model</a></li>
+<li class="active"><a href="https://metrumresearchgroup.github.io/Torsten/example/twocp-pop/">Two-compartment population model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/ode-group/">Lotka-Volterra group model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/1d-intg/">Univariate integral of a quadratic function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/lin-interp/">Linear intepolation</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/effcpt/">Effect Compartment Population Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd-pop/">Friberg-Karlsson Semi-Mechanistic Population Model</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div>
+<a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+
+
+<script src="https://metrumresearchgroup.github.io/Torsten/js/mathjax-config.js"></script>
+
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</div>
+</body>
+</html>

@@ -12,8 +12,4 @@ _minted*
 *.d
 
 # doc
-docs/torsten_manual.*
-!docs/torsten_manual.pdf
-!docs/torsten_manual.org
-!docs/torsten_manual.tex
 docs/auto

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Coupled ODE Model Function - Torsten</title>
+<meta name="description" content="A pharmacokinetics/pharmacodynamics library for Stan">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://metrumresearchgroup.github.io/Torsten//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://metrumresearchgroup.github.io/Torsten/function/coupled/">
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://metrumresearchgroup.github.io/Torsten/js/bundle.js"></script><style>
+:root {--custom-background-color: #005933;}
+</style>
+<meta property="og:title" content="Coupled ODE Model Function" />
+<meta property="og:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value    1 Description When the ODE system consists of two subsystems in form of
+\begin{align*} y_1^\prime &amp;= f_1(t, y_1), \\\
+y_2^\prime &amp;= f_2(t, y_1, y_2), \end{align*}
+with \(y_1\), \(y_2\), \(f_1\), and \(f_2\) being vector-valued functions, and \(y_1^\prime\) independent of \(y_2\), the solution can be accelerated if \(y_1\) admits an analytical solution which can be introduced into the ODE for \(y_2\) for numerical integration." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/function/coupled/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="function" />
+<meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
+<meta property="article:modified_time" content="2021-06-28T19:35:16-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+
+<meta name="twitter:title" content="Coupled ODE Model Function"/>
+<meta name="twitter:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value    1 Description When the ODE system consists of two subsystems in form of
+\begin{align*} y_1^\prime &amp;= f_1(t, y_1), \\\
+y_2^\prime &amp;= f_2(t, y_1, y_2), \end{align*}
+with \(y_1\), \(y_2\), \(f_1\), and \(f_2\) being vector-valued functions, and \(y_1^\prime\) independent of \(y_2\), the solution can be accelerated if \(y_1\) admits an analytical solution which can be introduced into the ODE for \(y_2\) for numerical integration."/>
+<meta itemprop="name" content="Coupled ODE Model Function">
+<meta itemprop="description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value    1 Description When the ODE system consists of two subsystems in form of
+\begin{align*} y_1^\prime &amp;= f_1(t, y_1), \\\
+y_2^\prime &amp;= f_2(t, y_1, y_2), \end{align*}
+with \(y_1\), \(y_2\), \(f_1\), and \(f_2\) being vector-valued functions, and \(y_1^\prime\) independent of \(y_2\), the solution can be accelerated if \(y_1\) admits an analytical solution which can be introduced into the ODE for \(y_2\) for numerical integration."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
+<meta itemprop="dateModified" content="2021-06-28T19:35:16-07:00" />
+<meta itemprop="wordCount" content="381"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
+<p class="description">A pharmacokinetics/pharmacodynamics library for Stan</p>
+
+</header>
+<div class="global-menu">
+<nav>
+<ul>
+<li><a href="/Torsten/">Home</a></li>
+<li><a href="/Torsten/dev-team/">Development team</a></li>
+<li><a href="/Torsten/acknowledgements/">Acknowledgements</a></li>
+<li><a href="/Torsten/changelog/">Changelog</a></li>
+<li><a href="/Torsten/installation/">Installation</a></li></ul>
+</nav>
+</div>
+<div class="content-container">
+<main><h1>Coupled ODE Model Function</h1>
+<style>
+  .ox-hugo-toc ul {
+    list-style: none;
+  }
+</style>
+<div class="ox-hugo-toc toc">
+<div></div>
+<div class="heading">Table of Contents</div>
+<ul>
+<li><span class="section-num">1</span> <a href="#description">Description</a></li>
+<li><span class="section-num">2</span> <a href="#usage">Usage</a></li>
+<li><span class="section-num">3</span> <a href="#arguments">Arguments</a></li>
+<li><span class="section-num">4</span> <a href="#return-value">Return value</a></li>
+</ul>
+</div>
+<!--endtoc-->
+<h2 id="description"><span class="section-num">1</span> Description</h2>
+<p>When the ODE system consists of two subsystems in form of</p>
+<p>\begin{align*}
+y_1^\prime &amp;= f_1(t, y_1), \\\<br>
+y_2^\prime &amp;= f_2(t, y_1, y_2),
+\end{align*}</p>
+<p>with \(y_1\), \(y_2\), \(f_1\), and \(f_2\) being vector-valued functions, and
+\(y_1^\prime\) independent of \(y_2\), the solution can be
+accelerated if \(y_1\) admits an analytical solution which can
+be introduced into the ODE for \(y_2\) for numerical
+integration. This structure arises in PK/PD
+models, where \(y_1\) describes a forcing PK function and \(y_2\) the PD
+effects. In the example of a Friberg-Karlsson
+semi-mechanistic model(see below), we observe an average speedup of
+\(\sim 47 \pm 18 %\) when using the mix solver in lieu of the numerical
+integrator. In the context, currently the couple solver supports one-
+&amp; two-compartment for PK model, and <code>rk45</code> &amp;
+<code>bdf</code> integrator for nonlinear PD model.</p>
+<h2 id="usage"><span class="section-num">2</span> Usage</h2>
+<pre><code class="language-stan" data-lang="stan">matrix pmx_solve_onecpt_[ rk45 || bdf ](reduced_ODE_system, int nOde, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag [, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
+matrix pmx_solve_twocpt_[ rk45 || bdf ](reduced_ODE_system, int nOde, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag [, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
+</code></pre><h2 id="arguments"><span class="section-num">3</span> Arguments</h2>
+<ul>
+<li>
+<p><code>reduced\_ODE\_rhs</code>
+The system  numerically solve (\(y_2\) in the above discussion, also called the
+<em>reduced system</em> and <code>nOde</code> the number of equations in
+the \underline{reduced} system. The function that defines a reduced
+system has an almost identical signature to that used for a full
+system, but takes one additional argument: \(y_1\), the PK states,
+i.e. solution to the PK ODEs.</p>
+<pre><code class="language-stan" data-lang="stan">vector reduced_ODE_rhs(real t, vector y2, vector y1, real[] theta, real[] x_r, int[] x_i)
+</code></pre></li>
+<li>
+<p><code>nCmt</code>
+The number of compartments. Equivalently, the dimension of the ODE system.</p>
+</li>
+<li>
+<p><code>rel_tol</code>
+The relative tolerance for numerical integration, default to 1.0E-6.</p>
+</li>
+<li>
+<p><code>abs_tol</code>
+The absolute tolerance for numerical integration, default to 1.0E-6.</p>
+</li>
+<li>
+<p><code>max_step</code>
+The maximum number of steps in numerical integration, default to \(10^6\).</p>
+</li>
+<li>
+<p>See Table <a href="#tab:event_args">tab:event_args</a> and Table <a href="#tab:event_params">tab:event_params</a> for the rest of arguments.</p>
+</li>
+</ul>
+<h2 id="return-value"><span class="section-num">4</span> Return value</h2>
+<p>An <code>(nPk + nOde)</code> × <code>nt</code> matrix, where <code>nt</code> is the size of
+<code>time</code>, and <code>nPk</code> equals to 2 in
+<code>pmx_solve_onecpt_</code> functions
+and 3 in <code>pmx_solve_twocpt_</code> functions.</p>
+<div class="edit-meta">
+Last updated on 28 Jun 2021
+
+
+<br>
+Published on 25 Jun 2021
+<br><a href="https://github.com/thingsym/hugo-theme-techdoc/edit/master/content/function/coupled.md" class="edit-page"><i class="fas fa-pen-square"></i>&nbsp;Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="https://metrumresearchgroup.github.io/Torsten/function/genode/" title="General ODE Model Function"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - General ODE Model Function</a>
+<a class="nav nav-next" href="https://metrumresearchgroup.github.io/Torsten/function/ode-pop/" title="General ODE-based Population Model Function">Next - General ODE-based Population Model Function <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Exported
+  from <a href="https://www.gnu.org/software/emacs/">Emacs 27.1</a>
+  + <a href="https://orgmode.org/Changes.html">Org mode 9.4</a>
+  + <a href="https://ox-hugo.scripter.co/">ox-hugo</a>. Powered
+  by <a href="https://gohugo.io">Hugo</a>. Theme
+  by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed
+  by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+
+
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/">Home</a></li>
+
+<li class="parent"><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/genode/">General ODE Model Function</a></li>
+<li class="active"><a href="https://metrumresearchgroup.github.io/Torsten/function/coupled/">Coupled ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-pop/">General ODE-based Population Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-integ/">ODE  integrator function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-group-integ/">ODE group  integrator Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/1d_integ/1d_integ/">Univariate integral</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/pc_lin_interp/pc_lin_interp/">Piecewise linear interpolation</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/">Examples</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt/">Two-compartment model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-lin/">Two-compartment model as a linear ODE model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-ode/">Two-compartment model solved by numerical integrator for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd/">Joint PK-PD model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocp-pop/">Two-compartment population model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/ode-group/">Lotka-Volterra group model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/1d-intg/">Univariate integral of a quadratic function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/lin-interp/">Linear intepolation</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/effcpt/">Effect Compartment Population Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd-pop/">Friberg-Karlsson Semi-Mechanistic Population Model</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div>
+<a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+
+
+<script src="https://metrumresearchgroup.github.io/Torsten/js/mathjax-config.js"></script>
+
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</div>
+</body>
+</html>

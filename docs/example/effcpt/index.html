@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Effect Compartment Population Model - Torsten</title>
+<meta name="description" content="A pharmacokinetics/pharmacodynamics library for Stan">
+<meta name="generator" content="Hugo 0.83.1" />
+<link href="https://metrumresearchgroup.github.io/Torsten//index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://metrumresearchgroup.github.io/Torsten/example/effcpt/">
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://metrumresearchgroup.github.io/Torsten/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.6/dist/clipboard.min.js"></script>
+<script src="https://metrumresearchgroup.github.io/Torsten/js/bundle.js"></script><style>
+:root {--custom-background-color: #005933;}
+</style>
+<meta property="og:title" content="Effect Compartment Population Model" />
+<meta property="og:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Population Model for Plasma Drug Concentration \(c\) 2 Effect Compartment Model for PD response \(R\). 3 Results    \label{sec:effcpt_model} Here we expand the example in /Torsten/function/two-cpt/ to a population model fitted to the combined data from phase I and phase IIa studies. The parameters exhibit inter-individual variations (IIV), due to both random effects and to the patients&#39; body weight, treated as a covariate and denoted \(bw\)." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/example/effcpt/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="example" />
+<meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
+<meta property="article:modified_time" content="2021-06-28T20:01:05-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+
+<meta name="twitter:title" content="Effect Compartment Population Model"/>
+<meta name="twitter:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Population Model for Plasma Drug Concentration \(c\) 2 Effect Compartment Model for PD response \(R\). 3 Results    \label{sec:effcpt_model} Here we expand the example in /Torsten/function/two-cpt/ to a population model fitted to the combined data from phase I and phase IIa studies. The parameters exhibit inter-individual variations (IIV), due to both random effects and to the patients&#39; body weight, treated as a covariate and denoted \(bw\)."/>
+<meta itemprop="name" content="Effect Compartment Population Model">
+<meta itemprop="description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Population Model for Plasma Drug Concentration \(c\) 2 Effect Compartment Model for PD response \(R\). 3 Results    \label{sec:effcpt_model} Here we expand the example in /Torsten/function/two-cpt/ to a population model fitted to the combined data from phase I and phase IIa studies. The parameters exhibit inter-individual variations (IIV), due to both random effects and to the patients&#39; body weight, treated as a covariate and denoted \(bw\)."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
+<meta itemprop="dateModified" content="2021-06-28T20:01:05-07:00" />
+<meta itemprop="wordCount" content="1362"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+<meta itemprop="keywords" content="" /></head>
+<body><div class="container"><header>
+<h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
+<p class="description">A pharmacokinetics/pharmacodynamics library for Stan</p>
+
+</header>
+<div class="global-menu">
+<nav>
+<ul>
+<li><a href="/Torsten/">Home</a></li>
+<li><a href="/Torsten/dev-team/">Development team</a></li>
+<li><a href="/Torsten/acknowledgements/">Acknowledgements</a></li>
+<li><a href="/Torsten/changelog/">Changelog</a></li>
+<li><a href="/Torsten/installation/">Installation</a></li></ul>
+</nav>
+</div>
+<div class="content-container">
+<main><h1>Effect Compartment Population Model</h1>
+<style>
+  .ox-hugo-toc ul {
+    list-style: none;
+  }
+</style>
+<div class="ox-hugo-toc toc">
+<div></div>
+<div class="heading">Table of Contents</div>
+<ul>
+<li><span class="section-num">1</span> <a href="#population-model-for-plasma-drug-concentration--c">Population Model for Plasma Drug Concentration \(c\)</a></li>
+<li><span class="section-num">2</span> <a href="#effect-compartment-model-for-pd-response--r--dot">Effect Compartment Model for PD response \(R\).</a></li>
+<li><span class="section-num">3</span> <a href="#results">Results</a></li>
+</ul>
+</div>
+<!--endtoc-->
+<p>\label{sec:effcpt_model}
+Here we expand the example in <a href="/Torsten/function/two-cpt/">/Torsten/function/two-cpt/</a> to a population model fitted to the
+combined data from phase I and phase IIa studies. The
+parameters exhibit inter-individual variations (IIV), due to
+both random effects and to the patients' body weight,
+treated as a covariate and denoted \(bw\).</p>
+<h2 id="population-model-for-plasma-drug-concentration--c"><span class="section-num">1</span> Population Model for Plasma Drug Concentration \(c\)</h2>
+<p>\begin{gather*}
+\log\left(c_{ij}\right) \sim N\left(\log\left(\widehat{c}_{ij}\right),\sigma^2\right), \\\<br>
+\widehat{c}_{ij} = f_{2cpt}\left(t_{ij},D_j,\tau_j,CL_j,Q_j,V_{1j},V_{2j},k_{aj}\right), \\\<br>
+\log\left(CL_j,Q_j,V_{ssj},k_{aj}\right) \sim N\left(\log\left(\widehat{CL}\left(\frac{bw_j}{70}\right)^{0.75},\widehat{Q}\left(\frac{bw_j}{70}\right)^{0.75}, \widehat{V}_{ss}\left(\frac{bw_j}{70}\right),\widehat{k}_a\right),\Omega\right), \\\<br>
+V_{1j} = f_{V_1}V_{ssj}, \\\<br>
+V_{2j} = \left(1 - f_{V_1}\right)V_{ssj}, \\\<br>
+\left(\widehat{CL},\widehat{Q},\widehat{V}_{ss},\widehat{k}_a, f_{V_1}\right) = \left(10\ {\rm L/h},15\  {\rm L/h},140\  {\rm L},2\ {\rm h^{-1}}, 0.25 \right), \\\<br>
+\Omega = \left(\begin{array}{cccc} 0.25^2 &amp; 0 &amp; 0 &amp; 0 \ 0 &amp; 0.25^2 &amp; 0 &amp; 0 \\\<br>
+0 &amp; 0 &amp; 0.25^2 &amp; 0 \ 0 &amp; 0 &amp; 0 &amp; 0.25^2  \end{array}\right), \\\<br>
+\sigma = 0.1
+\end{gather*}</p>
+<p>Furthermore we add a fourth compartment in which we measure
+a PD effect(Figure <a href="#org59e32d0">1</a>).</p>
+<p><a id="org59e32d0"></a></p>
+<figure><img src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/effCptModel.png"
+         alt="Figure 1: Effect Compartment Model" width="400"/><figcaption>
+            <p>Figure 1: Effect Compartment Model</p>
+        </figcaption>
+</figure>
+
+<h2 id="effect-compartment-model-for-pd-response--r--dot"><span class="section-num">2</span> Effect Compartment Model for PD response \(R\).</h2>
+<p>\begin{gather*}
+R_{ij} \sim N\left(\widehat{R}_{ij},\sigma_{R}^2\right), \\\<br>
+\widehat{R}_{ij} = \frac{E_{max}c_{eij}}{EC_{50j} + c_{eij}}, \\\<br>
+c_{e\cdot j}^\prime = k_{e0j}\left(c_{\cdot j} - c_{e\cdot j}\right), \\\<br>
+\log\left(EC_{50j}, k_{e0j}\right) \sim N\left(\log\left(\widehat{EC}_{50}, \widehat{k}_{e0}\right),\Omega_R\right), \\\<br>
+\left(E_{max}, \widehat{EC}_{50},\widehat{k}_{e0}\right) = \left(100, 100.7, 1\right), \\\<br>
+\Omega_R = \left(\begin{array}{cc} 0.2^2 &amp; 0 \ 0 &amp; 0.25^2  \end{array}\right), \ \ \ \sigma_R = 10.
+\end{gather*}</p>
+<p>The PK and the PD data are simulated using the following
+treatment.</p>
+<ul>
+<li>Phase I study
+<ul>
+<li>Single dose and multiple doses</li>
+<li>Parallel dose escalation design</li>
+<li>25 subjects per dose</li>
+<li>Single doses: 5, 10, 20, and 40 mg</li>
+<li>PK: plasma concentration of parent drug (\(c\))</li>
+<li>PD response: Emax function of effect compartment concentration (\(R\))</li>
+<li>PK and PD measured at 0.125, 0.25, 0.5, 0.75, 1, 2, 3, 4, 6, 8, 12, 18, and 24 hours</li>
+</ul>
+</li>
+<li>Phase IIa trial in patients
+<ul>
+<li>100 subjects</li>
+<li>Multiple doses: 20 mg</li>
+<li>sparse PK and PD data (3-6 samples per patient)</li>
+</ul>
+</li>
+</ul>
+<p>The model is simultaneously fitted to the PK and the PD
+data. For this effect compartment model, we construct a
+constant rate matrix and use <code>pmx_solve_linode</code>. Correct use of
+Torsten requires the user pass the entire event history
+(observation and dosing events) for an individual to the
+function. Thus the Stan model shows the call to <code>pmx_solve_linode</code>
+within a loop over the individual subjects rather than over
+the individual observations. Note that the correlation matrix \(\rho\) does not explicitly appear
+in the model, but it is used to construct \(\Omega\), which parametrizes
+the PK IIV.</p>
+<pre><code class="language-stan" data-lang="stan">data{
+  int&lt;lower = 1&gt; nSubjects;
+  int&lt;lower = 1&gt; nt;
+  int&lt;lower = 1&gt; nObs;
+  int&lt;lower = 1&gt; iObs[nObs];
+  real&lt;lower = 0&gt; amt[nt];
+  int&lt;lower = 1&gt; cmt[nt];
+  int&lt;lower = 0&gt; evid[nt];
+  int&lt;lower = 1&gt; start[nSubjects];
+  int&lt;lower = 1&gt; end[nSubjects];
+  real&lt;lower = 0&gt; time[nt];
+  vector&lt;lower = 0&gt;[nObs] cObs;
+  vector[nObs] respObs;
+  real&lt;lower = 0&gt; weight[nSubjects];
+  real&lt;lower = 0&gt; rate[nt];
+  real&lt;lower = 0&gt; ii[nt];
+  int&lt;lower = 0&gt; addl[nt];
+  int&lt;lower = 0&gt; ss[nt];
+}
+
+transformed data{
+  vector[nObs] logCObs = log(cObs);
+  int&lt;lower = 1&gt; nRandom = 5;
+  int nCmt = 4;
+  real biovar[nCmt] = rep_array(1.0, nCmt);
+  real tlag[nCmt] = rep_array(0.0, nCmt);
+}
+
+parameters{
+  real&lt;lower = 0&gt; CLHat;
+  real&lt;lower = 0&gt; QHat;
+  real&lt;lower = 0&gt; V1Hat;
+  real&lt;lower = 0&gt; V2Hat;
+  //  real&lt;lower = 0&gt; kaHat;
+  real&lt;lower = (CLHat / V1Hat + QHat / V1Hat + QHat / V2Hat +
+                sqrt((CLHat / V1Hat + QHat / V1Hat + QHat / V2Hat)^2 -
+                     4 * CLHat / V1Hat * QHat / V2Hat)) / 2&gt; kaHat; // ka &gt; lambda_1
+  real&lt;lower = 0&gt; ke0Hat;
+  real&lt;lower = 0&gt; EC50Hat;
+  vector&lt;lower = 0&gt;[nRandom] omega;
+  corr_matrix[nRandom] rho;
+  real&lt;lower = 0&gt; omegaKe0;
+  real&lt;lower = 0&gt; omegaEC50;
+  real&lt;lower = 0&gt; sigma;
+  real&lt;lower = 0&gt; sigmaResp;
+
+  // reparameterization
+  vector[nRandom] logtheta_raw[nSubjects];
+  real logKe0_raw[nSubjects];
+  real logEC50_raw[nSubjects];
+}
+
+transformed parameters{
+  vector&lt;lower = 0&gt;[nRandom] thetaHat;
+  cov_matrix[nRandom] Omega;
+  real&lt;lower = 0&gt; CL[nSubjects];
+  real&lt;lower = 0&gt; Q[nSubjects];
+  real&lt;lower = 0&gt; V1[nSubjects];
+  real&lt;lower = 0&gt; V2[nSubjects];
+  real&lt;lower = 0&gt; ka[nSubjects];
+  real&lt;lower = 0&gt; ke0[nSubjects];
+  real&lt;lower = 0&gt; EC50[nSubjects];
+  matrix[nCmt, nCmt] K;
+  real k10;
+  real k12;
+  real k21;
+  row_vector&lt;lower = 0&gt;[nt] cHat;
+  row_vector&lt;lower = 0&gt;[nObs] cHatObs;
+  row_vector&lt;lower = 0&gt;[nt] respHat;
+  row_vector&lt;lower = 0&gt;[nObs] respHatObs;
+  row_vector&lt;lower = 0&gt;[nt] ceHat;
+  matrix[nCmt, nt] x;
+
+  matrix[nRandom, nRandom] L;
+  vector[nRandom] logtheta[nSubjects];
+  real logKe0[nSubjects];
+  real logEC50[nSubjects];
+
+  thetaHat[1] = CLHat;
+  thetaHat[2] = QHat;
+  thetaHat[3] = V1Hat;
+  thetaHat[4] = V2Hat;
+  thetaHat[5] = kaHat;
+
+  Omega = quad_form_diag(rho, omega); // diag_matrix(omega) * rho * diag_matrix(omega)
+  L = cholesky_decompose(Omega);
+
+  for(j in 1:nSubjects){
+    logtheta[j] = log(thetaHat) + L * logtheta_raw[j];
+    logKe0[j] = log(ke0Hat) + logKe0_raw[j] * omegaKe0;
+    logEC50[j] = log(EC50Hat) + logEC50_raw[j] * omegaEC50;
+
+    CL[j] = exp(logtheta[j, 1]) * (weight[j] / 70)^0.75;
+    Q[j] = exp(logtheta[j, 2]) * (weight[j] / 70)^0.75;
+    V1[j] = exp(logtheta[j, 3]) * weight[j] / 70;
+    V2[j] = exp(logtheta[j, 4]) * weight[j] / 70;
+    ka[j] = exp(logtheta[j, 5]);
+    ke0[j] = exp(logKe0[j]);
+    EC50[j] = exp(logEC50[j]);
+
+    k10 = CL[j] / V1[j];
+    k12 = Q[j] / V1[j];
+    k21 = Q[j] / V2[j];
+
+    K = rep_matrix(0, nCmt, nCmt);
+
+    K[1, 1] = -ka[j];
+    K[2, 1] = ka[j];
+    K[2, 2] = -(k10 + k12);
+    K[2, 3] = k21;
+    K[3, 2] = k12;
+    K[3, 3] = -k21;
+    K[4, 2] = ke0[j];
+    K[4, 4] = -ke0[j];
+
+    x[, start[j]:end[j] ] = pmx_solve_linode(time[start[j]:end[j]], amt[start[j]:end[j]],
+                                             rate[start[j]:end[j]], ii[start[j]:end[j]],
+                                             evid[start[j]:end[j]], cmt[start[j]:end[j]],
+                                             addl[start[j]:end[j]], ss[start[j]:end[j]], K, biovar, tlag);
+
+    cHat[start[j]:end[j]] = 1000 * x[2, start[j]:end[j]] ./ V1[j];
+    ceHat[start[j]:end[j]] = 1000 * x[4, start[j]:end[j]] ./ V1[j];
+    respHat[start[j]:end[j]] = 100 * ceHat[start[j]:end[j]] ./
+       (EC50[j] + ceHat[start[j]:end[j]]);
+  }
+
+  cHatObs = cHat[iObs];
+  respHatObs = respHat[iObs];
+}
+
+model{
+  // Prior
+  CLHat ~ lognormal(log(10), 0.2);
+  QHat ~ lognormal(log(15), 0.2);
+  V1Hat ~ lognormal(log(30), 0.2);
+  V2Hat ~ lognormal(log(100), 0.2);
+  kaHat ~ lognormal(log(5), 0.25);
+  ke0Hat ~ lognormal(log(10), 0.25);
+  EC50Hat ~ lognormal(log(1.0), 0.2);
+  omega ~ normal(0, 0.2);
+</code></pre><h2 id="results"><span class="section-num">3</span> Results</h2>
+<p>We use the same diagnosis tools as for the
+previous examples. Table <a href="#effCptModelParms">effCptModelParms</a> summarises the
+statistics and diagnostics of the parameters. In particular, <code>rhat</code>
+for all parameters being close to 1.0 indicates convergence of the 4
+chains. Figure <a href="#effcpt_mcmc_density">effcpt_mcmc_density</a> shows the posterior density of
+the parameters.</p>
+<p>Posterior prediction check (PPC) in Figure
+<a href="#effcpt_ppc_5mg">effcpt_ppc_5mg</a>-<a href="#effcpt_ppc_study_2_20mg">effcpt_ppc_study_2_20mg</a> show that the fits to the plasma concentration
+are in close agreement with the data, notably for the sparse data case (phase IIa study). The fits
+to the PD data (Figure
+<a href="#effcpt_ppc_resp_5mg">effcpt_ppc_resp_5mg</a>-<a href="#effcpt_ppc_resp_study_2_20mg">effcpt_ppc_resp_study_2_20mg</a>) look
+reasonable considering data being more noisy so the model
+produces larger credible intervals. Both the summary table and PPC
+plots show that the estimated values of the
+parameters are consistent with the values used to simulate the data.</p>
+<p><a id="table--effCptModelParms"></a></p>
+<div class="table-caption">
+  <span class="table-number"><a href="#table--effCptModelParms">Table 1</a></span>:
+  Summary of the MCMC simulations of the marginal posterior distributions of the model parameters for the effect compartment model example.
+</div>
+<table>
+<thead>
+<tr>
+<th>variable</th>
+<th>mean</th>
+<th>median</th>
+<th>sd</th>
+<th>mad</th>
+<th>q5</th>
+<th>q95</th>
+<th>rhat</th>
+<th>ess_bulk</th>
+<th>ess_tail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CLHat</td>
+<td>10.121</td>
+<td>10.120</td>
+<td>0.195</td>
+<td>0.192</td>
+<td>9.797</td>
+<td>10.445</td>
+<td>1.007</td>
+<td>319.942</td>
+<td>630.619</td>
+</tr>
+<tr>
+<td>QHat</td>
+<td>14.858</td>
+<td>14.853</td>
+<td>0.347</td>
+<td>0.344</td>
+<td>14.301</td>
+<td>15.432</td>
+<td>1.000</td>
+<td>1106.126</td>
+<td>1712.821</td>
+</tr>
+<tr>
+<td>V1Hat</td>
+<td>34.493</td>
+<td>34.516</td>
+<td>1.004</td>
+<td>0.995</td>
+<td>32.814</td>
+<td>36.086</td>
+<td>1.004</td>
+<td>671.777</td>
+<td>1563.396</td>
+</tr>
+<tr>
+<td>V2Hat</td>
+<td>103.269</td>
+<td>103.291</td>
+<td>2.876</td>
+<td>2.878</td>
+<td>98.568</td>
+<td>108.019</td>
+<td>1.002</td>
+<td>1689.165</td>
+<td>2580.382</td>
+</tr>
+<tr>
+<td>kaHat</td>
+<td>1.968</td>
+<td>1.969</td>
+<td>0.076</td>
+<td>0.074</td>
+<td>1.843</td>
+<td>2.087</td>
+<td>1.001</td>
+<td>1204.531</td>
+<td>1747.427</td>
+</tr>
+<tr>
+<td>ke0Hat</td>
+<td>1.102</td>
+<td>1.100</td>
+<td>0.046</td>
+<td>0.045</td>
+<td>1.030</td>
+<td>1.180</td>
+<td>1.001</td>
+<td>4008.337</td>
+<td>3167.030</td>
+</tr>
+<tr>
+<td>EC50Hat</td>
+<td>99.512</td>
+<td>99.542</td>
+<td>2.124</td>
+<td>2.098</td>
+<td>95.981</td>
+<td>102.987</td>
+<td>1.000</td>
+<td>2557.436</td>
+<td>2773.519</td>
+</tr>
+<tr>
+<td>omega[1]</td>
+<td>0.268</td>
+<td>0.267</td>
+<td>0.016</td>
+<td>0.016</td>
+<td>0.242</td>
+<td>0.295</td>
+<td>1.008</td>
+<td>594.842</td>
+<td>978.297</td>
+</tr>
+<tr>
+<td>omega[2]</td>
+<td>0.229</td>
+<td>0.228</td>
+<td>0.021</td>
+<td>0.021</td>
+<td>0.195</td>
+<td>0.264</td>
+<td>1.002</td>
+<td>1245.453</td>
+<td>1966.911</td>
+</tr>
+<tr>
+<td>omega[3]</td>
+<td>0.212</td>
+<td>0.211</td>
+<td>0.029</td>
+<td>0.029</td>
+<td>0.165</td>
+<td>0.261</td>
+<td>1.005</td>
+<td>623.820</td>
+<td>1692.248</td>
+</tr>
+<tr>
+<td>omega[4]</td>
+<td>0.263</td>
+<td>0.262</td>
+<td>0.026</td>
+<td>0.026</td>
+<td>0.221</td>
+<td>0.306</td>
+<td>1.002</td>
+<td>1396.611</td>
+<td>2260.425</td>
+</tr>
+<tr>
+<td>omega[5]</td>
+<td>0.272</td>
+<td>0.271</td>
+<td>0.036</td>
+<td>0.035</td>
+<td>0.217</td>
+<td>0.335</td>
+<td>1.008</td>
+<td>293.132</td>
+<td>728.867</td>
+</tr>
+<tr>
+<td>rho[1,2]</td>
+<td>0.197</td>
+<td>0.200</td>
+<td>0.100</td>
+<td>0.101</td>
+<td>0.029</td>
+<td>0.360</td>
+<td>1.003</td>
+<td>1322.261</td>
+<td>1955.862</td>
+</tr>
+<tr>
+<td>rho[1,3]</td>
+<td>-0.161</td>
+<td>-0.161</td>
+<td>0.122</td>
+<td>0.121</td>
+<td>-0.361</td>
+<td>0.042</td>
+<td>1.001</td>
+<td>1609.160</td>
+<td>2270.515</td>
+</tr>
+<tr>
+<td>rho[1,4]</td>
+<td>-0.101</td>
+<td>-0.105</td>
+<td>0.107</td>
+<td>0.107</td>
+<td>-0.270</td>
+<td>0.083</td>
+<td>1.001</td>
+<td>1685.591</td>
+<td>2353.498</td>
+</tr>
+<tr>
+<td>rho[1,5]</td>
+<td>0.016</td>
+<td>0.015</td>
+<td>0.128</td>
+<td>0.128</td>
+<td>-0.192</td>
+<td>0.226</td>
+<td>1.000</td>
+<td>2039.767</td>
+<td>2939.988</td>
+</tr>
+<tr>
+<td>rho[2,3]</td>
+<td>0.091</td>
+<td>0.092</td>
+<td>0.144</td>
+<td>0.148</td>
+<td>-0.143</td>
+<td>0.328</td>
+<td>1.008</td>
+<td>718.187</td>
+<td>1550.836</td>
+</tr>
+<tr>
+<td>rho[2,4]</td>
+<td>0.186</td>
+<td>0.190</td>
+<td>0.125</td>
+<td>0.125</td>
+<td>-0.025</td>
+<td>0.384</td>
+<td>1.005</td>
+<td>948.704</td>
+<td>1819.199</td>
+</tr>
+<tr>
+<td>rho[2,5]</td>
+<td>0.146</td>
+<td>0.145</td>
+<td>0.157</td>
+<td>0.161</td>
+<td>-0.111</td>
+<td>0.402</td>
+<td>1.003</td>
+<td>626.620</td>
+<td>1546.157</td>
+</tr>
+<tr>
+<td>rho[3,4]</td>
+<td>0.815</td>
+<td>0.827</td>
+<td>0.093</td>
+<td>0.094</td>
+<td>0.646</td>
+<td>0.947</td>
+<td>1.010</td>
+<td>309.098</td>
+<td>736.635</td>
+</tr>
+<tr>
+<td>rho[3,5]</td>
+<td>-0.318</td>
+<td>-0.323</td>
+<td>0.219</td>
+<td>0.228</td>
+<td>-0.678</td>
+<td>0.055</td>
+<td>1.016</td>
+<td>200.806</td>
+<td>607.958</td>
+</tr>
+<tr>
+<td>rho[4,5]</td>
+<td>-0.295</td>
+<td>-0.299</td>
+<td>0.161</td>
+<td>0.162</td>
+<td>-0.551</td>
+<td>-0.019</td>
+<td>1.008</td>
+<td>546.998</td>
+<td>1151.092</td>
+</tr>
+<tr>
+<td>omegaKe0</td>
+<td>0.265</td>
+<td>0.265</td>
+<td>0.047</td>
+<td>0.047</td>
+<td>0.188</td>
+<td>0.346</td>
+<td>1.001</td>
+<td>1731.276</td>
+<td>2049.892</td>
+</tr>
+<tr>
+<td>omegaEC50</td>
+<td>0.216</td>
+<td>0.216</td>
+<td>0.020</td>
+<td>0.020</td>
+<td>0.182</td>
+<td>0.249</td>
+<td>1.001</td>
+<td>1599.567</td>
+<td>1844.056</td>
+</tr>
+<tr>
+<td>sigma</td>
+<td>0.099</td>
+<td>0.099</td>
+<td>0.002</td>
+<td>0.002</td>
+<td>0.095</td>
+<td>0.103</td>
+<td>1.002</td>
+<td>1726.283</td>
+<td>2836.027</td>
+</tr>
+<tr>
+<td>sigmaResp</td>
+<td>10.165</td>
+<td>10.166</td>
+<td>0.198</td>
+<td>0.198</td>
+<td>9.844</td>
+<td>10.495</td>
+<td>1.002</td>
+<td>4788.527</td>
+<td>2923.203</td>
+</tr>
+</tbody>
+</table>
+<p><a id="org955f6f9"></a></p>
+<p>&lt;/ox-hugo/density.pdf&gt;</p>
+<p><a id="orgd7b8aeb"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_5mg.pdf&gt;</p>
+<p><a id="org044e785"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_10mg.pdf&gt;</p>
+<p><a id="orgab0fae7"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_20mg.pdf&gt;</p>
+<p><a id="orgebd63c3"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_40mg.pdf&gt;</p>
+<p><a id="org602b6d5"></a></p>
+<p>&lt;/ox-hugo/ppc_study_2_20mg.pdf&gt;</p>
+<p><a id="org63e0193"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_5mg_resp.pdf&gt;</p>
+<p><a id="org8f219b9"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_10mg_resp.pdf&gt;</p>
+<p><a id="org57947e7"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_20mg_resp.pdf&gt;</p>
+<p><a id="org0528596"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_40mg_resp.pdf&gt;</p>
+<p><a id="org1f8095d"></a></p>
+<p>&lt;/ox-hugo/ppc_study_2_20mg_resp.pdf&gt;</p>
+<div class="edit-meta">
+Last updated on 28 Jun 2021
+
+
+<br>
+Published on 25 Jun 2021
+<br><a href="https://github.com/thingsym/hugo-theme-techdoc/edit/master/content/example/effcpt.md" class="edit-page"><i class="fas fa-pen-square"></i>&nbsp;Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="https://metrumresearchgroup.github.io/Torsten/example/lin-interp/" title="Linear intepolation"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Linear intepolation</a>
+<a class="nav nav-next" href="https://metrumresearchgroup.github.io/Torsten/example/pkpd-pop/" title="Friberg-Karlsson Semi-Mechanistic Population Model">Next - Friberg-Karlsson Semi-Mechanistic Population Model <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Exported
+  from <a href="https://www.gnu.org/software/emacs/">Emacs 27.1</a>
+  + <a href="https://orgmode.org/Changes.html">Org mode 9.4</a>
+  + <a href="https://ox-hugo.scripter.co/">ox-hugo</a>. Powered
+  by <a href="https://gohugo.io">Hugo</a>. Theme
+  by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed
+  by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+
+
+</footer>
+</main>
+<div class="sidebar">
+
+<nav class="open-menu">
+<ul>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/">Home</a></li>
+
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/genode/">General ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/coupled/">Coupled ODE Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-pop/">General ODE-based Population Model Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-integ/">ODE  integrator function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/ode-group-integ/">ODE group  integrator Function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/1d_integ/1d_integ/">Univariate integral</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/pc_lin_interp/pc_lin_interp/">Piecewise linear interpolation</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="https://metrumresearchgroup.github.io/Torsten/example/">Examples</a>
+  
+<ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt/">Two-compartment model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-lin/">Two-compartment model as a linear ODE model for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocpt-ode/">Two-compartment model solved by numerical integrator for single patient</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd/">Joint PK-PD model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/twocp-pop/">Two-compartment population model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/ode-group/">Lotka-Volterra group model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/1d-intg/">Univariate integral of a quadratic function</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/lin-interp/">Linear intepolation</a></li>
+<li class="active"><a href="https://metrumresearchgroup.github.io/Torsten/example/effcpt/">Effect Compartment Population Model</a></li>
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/example/pkpd-pop/">Friberg-Karlsson Semi-Mechanistic Population Model</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+
+<div class="sidebar-footer"></div>
+</div>
+
+</div>
+<a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+
+
+<script src="https://metrumresearchgroup.github.io/Torsten/js/mathjax-config.js"></script>
+
+
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</div>
+</body>
+</html>
