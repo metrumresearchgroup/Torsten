@@ -2,7 +2,7 @@
 title = "Two Compartment Model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T14:24:51-07:00
+lastmod = 2021-06-28T19:35:14-07:00
 draft = false
 weight = 2002
 +++
@@ -26,7 +26,7 @@ weight = 2002
 </div>
 <!--endtoc-->
 
-<a id="org29a107b"></a>
+<a id="org1030393"></a>
 
 
 ## <span class="section-num">1</span> Description {#description}

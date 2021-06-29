@@ -2,20 +2,20 @@
 title = "Introduction"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T14:19:24-07:00
+lastmod = 2021-06-28T19:35:09-07:00
 draft = false
 weight = 1003
 +++
 
 Stan is an open source probabilistic programing language designed
 primarily to do Bayesian data analysis
-([Carpenter et al. 2017](#org535d69f)). Several of its
+([Carpenter et al. 2017](#org0c58acb)). Several of its
 features make it a powerful tool to specify and fit complex
 models. First, its language is very expressive and
 flexible. Secondly, it implements a variant of No U-Turn
 Sampler(NUTS), an adaptative Hamiltonian Monte Carlo
 algorithm that was proven more efficient than commonly used Monte Carlo Markov Chains
-(MCMC) samplers for complex high dimensional problems ([Hoffman and Gelman 2011](#orgca0d9d2); [Betancourt 2018](#org6c7e7f4)). Our
+(MCMC) samplers for complex high dimensional problems ([Hoffman and Gelman 2011](#orgf904b54); [Betancourt 2018](#org0930e0b)). Our
 goal is to harness these innovations and make Stan a better
 software for pharmacometrics modeling. Our efforts are twofold:
 
@@ -91,7 +91,7 @@ in each compartment, given an event schedule and an ODE system.
 
 -   Current Torsten v0.89rc is based on Stan v2.27.0.
 -   All functions are programmed in C++ and are compatible
-    with the Stan math automatic differentiation library ([Carpenter et al. 2015](#org177c092))
+    with the Stan math automatic differentiation library ([Carpenter et al. 2015](#org6fdb67f))
 -   One and two compartment models are based on analytical solutions of governing ODEs.
 -   General linear compartment models are based on semi-analytical solutions using the built-in matrix exponential function
 -   General compartment models are solved numerically using built-in ODE integrators in Stan. The tuning parameters of the solver are adjustable. The steady state solution is calculated using a numerical algebraic solver.
@@ -326,12 +326,12 @@ following:
 
 ## <span class="section-num">1</span> Bibliography {#bibliography}
 
-<a id="org6c7e7f4"></a>Betancourt, Michael. 2018. “A Conceptual Introduction to Hamiltonian Monte Carlo.” <https://arxiv.org/abs/1701.02434>.
+<a id="org0930e0b"></a>Betancourt, Michael. 2018. “A Conceptual Introduction to Hamiltonian Monte Carlo.” <https://arxiv.org/abs/1701.02434>.
 
-<a id="org535d69f"></a>Carpenter, Bob, Andrew Gelman, Matthew D. Hoffman, Daniel Lee, Ben Goodrich, Michael Betancourt, Marcus Brubaker, Jiqiang Guo, Peter Li, and Allen Riddell. 2017. “Stan: A Probabilistic Programming Language.” _Journal of Statistical Software_ 76.
+<a id="org0c58acb"></a>Carpenter, Bob, Andrew Gelman, Matthew D. Hoffman, Daniel Lee, Ben Goodrich, Michael Betancourt, Marcus Brubaker, Jiqiang Guo, Peter Li, and Allen Riddell. 2017. “Stan: A Probabilistic Programming Language.” _Journal of Statistical Software_ 76.
 
-<a id="org177c092"></a>Carpenter, Bob, Matthew D. Hoffman, Marcus Brubaker, Daniel Lee, Peter Li, and Michael Betancourt. 2015. “The Stan Math Library: Reverse-Mode Automatic Differentiation in C++.” _arXiv:1509.07164 [Cs]_, September. <http://arxiv.org/abs/1509.07164>.
+<a id="org6fdb67f"></a>Carpenter, Bob, Matthew D. Hoffman, Marcus Brubaker, Daniel Lee, Peter Li, and Michael Betancourt. 2015. “The Stan Math Library: Reverse-Mode Automatic Differentiation in C++.” _arXiv:1509.07164 [Cs]_, September. <http://arxiv.org/abs/1509.07164>.
 
-<a id="orgca0d9d2"></a>Hoffman, Matthew D., and Andrew Gelman. 2011. “The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo.” _arXiv:1111.4246 [Cs, Stat]_, November. <http://arxiv.org/abs/1111.4246>.
+<a id="orgf904b54"></a>Hoffman, Matthew D., and Andrew Gelman. 2011. “The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo.” _arXiv:1111.4246 [Cs, Stat]_, November. <http://arxiv.org/abs/1111.4246>.
 
 [^fn:1]: NONMEM\textregistered{} is licensed and distributed by ICON Development Solutions.

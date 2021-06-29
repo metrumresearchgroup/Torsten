@@ -571,7 +571,7 @@ $y_2$ from ordinary differential equations(ODEs)
 #+CAPTION: One and two compartment models with first order absorption implemented in Torsten.
 #+NAME: one_two_cpt_models
 #+ATTR_LATEX: :width 1.5in
-[[file:static/ox-hugo/cptModels.png]]
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/cptModels.png]]
 
 *** Usage
 #+BEGIN_SRC stan
@@ -1185,7 +1185,6 @@ All the PMX models in this chapter can be found in
 
 ** Two-compartment model for single patient
    :PROPERTIES:
-   :EXPORT_HUGO_SECTION*: twocpt
    :EXPORT_FILE_NAME: twocpt
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
@@ -1260,7 +1259,6 @@ summarize the posterior is through =cmdstanr='s =summary= method.
 
 ** Two-compartment model as a linear ODE model for single patient 
    :PROPERTIES:
-   :EXPORT_HUGO_SECTION*: twocpt-lin
    :EXPORT_FILE_NAME: twocpt-lin
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
@@ -1274,7 +1272,6 @@ src_stan[:exports code]{model} block as they are identical to Sectiontion [[ref:
 
 ** Two-compartment model solved by numerical integrator for single patient 
    :PROPERTIES:
-   :EXPORT_HUGO_SECTION*: twocpt-ode
    :EXPORT_FILE_NAME: twocpt-ode
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
@@ -1353,7 +1350,6 @@ The model fitting is based on simulated data
 
 ** Two-compartment population model
    :PROPERTIES:
-   :EXPORT_HUGO_SECTION*: twocp-pop
    :EXPORT_FILE_NAME: twocp-pop
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
@@ -1378,7 +1374,6 @@ parallel, with each process solving 2 subjects.
 
 ** Lotka-Volterra group model
    :PROPERTIES:
-   :EXPORT_HUGO_SECTION*: ode-group
    :EXPORT_FILE_NAME: ode-group
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
@@ -1391,7 +1386,6 @@ a Lotka-Volterra group model, based on [[https://mc-stan.org/users/documentation
 
 ** Univariate integral of a quadratic function
    :PROPERTIES:
-   :EXPORT_HUGO_SECTION*: 1d-intg
    :EXPORT_FILE_NAME: 1d-intg
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
@@ -1427,7 +1421,6 @@ integral of a quadratic function.
 
 ** Linear intepolation
    :PROPERTIES:
-   :EXPORT_HUGO_SECTION*: lin-interp
    :EXPORT_FILE_NAME: lin-interp
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
@@ -1486,7 +1479,6 @@ generated quantities{
 
 ** Effect Compartment Population Model
    :PROPERTIES:
-   :EXPORT_HUGO_SECTION*: effcpt
    :EXPORT_FILE_NAME: effcpt
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t
@@ -1669,7 +1661,6 @@ parameters are consistent with the values used to simulate the data.
 
 ** Friberg-Karlsson Semi-Mechanistic Population Model
    :PROPERTIES:
-   :EXPORT_HUGO_SECTION*: pkpd-pop
    :EXPORT_FILE_NAME: pkpd-pop
    :EXPORT_DATE: <2021-06-25 Fri>
    :EXPORT_OPTIONS: toc:t

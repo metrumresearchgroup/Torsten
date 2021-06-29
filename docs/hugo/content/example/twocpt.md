@@ -2,7 +2,7 @@
 title = "Two-compartment model for single patient"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T14:19:37-07:00
+lastmod = 2021-06-28T19:35:20-07:00
 draft = false
 weight = 2001
 +++
@@ -39,7 +39,7 @@ two-compartment ODEs in [{{< relref "two-cpt" >}}]({{< relref "two-cpt" >}}), we
   \sigma^2 &= 0.01
 \end{align\*}
 
-The data are generated using the R package `mrgsolve` ([Baron and Gastonguay 2015](#org54124f4)).
+The data are generated using the R package `mrgsolve` ([Baron and Gastonguay 2015](#orgcc7b785)).
 
 Code below shows how Torsten function `pmx_solve_twocpt` can be used to fit the above model.
 
@@ -111,13 +111,13 @@ model{
 
 Four MCMC chains of 2000 iterations (1000 warmup iterations and 1000
 sampling iterations) are simulated. 1000 samples per chain were used for the subsequent analyses.
-The MCMC history plots(Figure [1](#org73c5712))
+The MCMC history plots(Figure [1](#org8d830f4))
 suggest that the 4 chains have converged to common distributions for
 all of the key model parameters. The fit to the plasma concentration
-data (Figure [3](#org938c758)) are in close agreement with the
+data (Figure [3](#org459b17a)) are in close agreement with the
 data, which is not surprising since the fitted model is identical to
 the one used to simulate the data. Similarly the parameter posterior
-density can be examined in Figure [2](#orga130b92) and shows
+density can be examined in Figure [2](#org80140e1) and shows
 consistency with the values used for simulation. Another way to
 summarize the posterior is through `cmdstanr`'s `summary` method.
 
@@ -136,19 +136,19 @@ summarize the posterior is through `cmdstanr`'s `summary` method.
 6 sigma     0.109  0.108 0.0117 0.0111  0.0911  0.130  1.01    1414.     905.
 ```
 
-<a id="org73c5712"></a>
+<a id="org8d830f4"></a>
 
 </ox-hugo/history.pdf>
 
-<a id="orga130b92"></a>
+<a id="org80140e1"></a>
 
 </ox-hugo/density.pdf>
 
-<a id="org938c758"></a>
+<a id="org459b17a"></a>
 
 </ox-hugo/ppc_ribbon.pdf>
 
 
 ## <span class="section-num">1</span> Bibliography {#bibliography}
 
-<a id="org54124f4"></a>Baron, Kyle T., and Marc R. Gastonguay. 2015. “Simulation from ODE-Based Population PK/PD and Systems Pharmacology Models in R with Mrgsolve.” _Journal of Pharmacokinetics and Pharmacodynamics_ 42 (W-23):S84–85.
+<a id="orgcc7b785"></a>Baron, Kyle T., and Marc R. Gastonguay. 2015. “Simulation from ODE-Based Population PK/PD and Systems Pharmacology Models in R with Mrgsolve.” _Journal of Pharmacokinetics and Pharmacodynamics_ 42 (W-23):S84–85.

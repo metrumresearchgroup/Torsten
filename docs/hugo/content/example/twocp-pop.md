@@ -2,7 +2,7 @@
 title = "Two-compartment population model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T14:19:39-07:00
+lastmod = 2021-06-28T19:35:22-07:00
 draft = false
 weight = 2005
 +++

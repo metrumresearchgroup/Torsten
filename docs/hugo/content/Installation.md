@@ -2,7 +2,7 @@
 title = "Installation"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T14:19:27-07:00
+lastmod = 2021-06-28T19:35:11-07:00
 draft = false
 weight = 1004
 [menu.main]
@@ -37,7 +37,7 @@ The latest v0.89rc is
 compatible with Stan v2.27.0. Torsten can be accessed from
 command line for cmdstan interface and `cmdstanr`
 (<https://mc-stan.org/cmdstanr/>) for R interface. It requires
-a modern C++11 compiler as well as a Make utility. See ([Team 2020](#orge08fb88)) for details of installation and
+a modern C++11 compiler as well as a Make utility. See ([Team 2020](#orgc9f4843)) for details of installation and
 required toolchain. In particular, we recommend the folowing versions
 of C++ compilers:
 
@@ -132,4 +132,4 @@ bayesplot::mcmc_dens_overlay(fit$draws("CL"))
 
 ## <span class="section-num">1</span> Bibliography {#bibliography}
 
-<a id="orge08fb88"></a>Team, Stan Development. 2020. _CmdStan User’s Guide_. <https://mc-stan.org/docs/2%5F26/cmdstan-guide/index.html>.
+<a id="orgc9f4843"></a>Team, Stan Development. 2020. _CmdStan User’s Guide_. <https://mc-stan.org/docs/2%5F26/cmdstan-guide/index.html>.

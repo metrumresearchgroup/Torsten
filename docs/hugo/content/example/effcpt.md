@@ -2,7 +2,7 @@
 title = "Effect Compartment Population Model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-28T14:19:41-07:00
+lastmod = 2021-06-28T19:35:24-07:00
 draft = false
 weight = 2009
 +++
@@ -47,9 +47,9 @@ treated as a covariate and denoted \\(bw\\).
 \end{gather\*}
 
 Furthermore we add a fourth compartment in which we measure
-a PD effect(Figure [1](#org87f9c18)).
+a PD effect(Figure [1](#orgda0e983)).
 
-<a id="org87f9c18"></a>
+<a id="orgda0e983"></a>
 
 {{< figure src="/ox-hugo/effCptModel.png" caption="Figure 1: Effect Compartment Model" >}}
 
@@ -290,46 +290,46 @@ parameters are consistent with the values used to simulate the data.
 | sigma     | 0.099   | 0.099   | 0.002 | 0.002 | 0.095  | 0.103   | 1.002 | 1726.283  | 2836.027  |
 | sigmaResp | 10.165  | 10.166  | 0.198 | 0.198 | 9.844  | 10.495  | 1.002 | 4788.527  | 2923.203  |
 
-<a id="orgadcda1a"></a>
+<a id="org4659725"></a>
 
 </ox-hugo/density.pdf>
 
-<a id="orgc4ec4fe"></a>
+<a id="orgdfc7183"></a>
 
 </ox-hugo/ppc_study_1_5mg.pdf>
 
-<a id="org9997e76"></a>
+<a id="orgb39f287"></a>
 
 </ox-hugo/ppc_study_1_10mg.pdf>
 
-<a id="org4144810"></a>
+<a id="org6995dac"></a>
 
 </ox-hugo/ppc_study_1_20mg.pdf>
 
-<a id="org17b13d6"></a>
+<a id="org7151a5a"></a>
 
 </ox-hugo/ppc_study_1_40mg.pdf>
 
-<a id="org05d317c"></a>
+<a id="orge968b2d"></a>
 
 </ox-hugo/ppc_study_2_20mg.pdf>
 
-<a id="orga274f4d"></a>
+<a id="orgaf7fe73"></a>
 
 </ox-hugo/ppc_study_1_5mg_resp.pdf>
 
-<a id="org0c65340"></a>
+<a id="orgca994e4"></a>
 
 </ox-hugo/ppc_study_1_10mg_resp.pdf>
 
-<a id="orgb3e59e1"></a>
+<a id="orgeaebba5"></a>
 
 </ox-hugo/ppc_study_1_20mg_resp.pdf>
 
-<a id="org351bff3"></a>
+<a id="orgb494ff6"></a>
 
 </ox-hugo/ppc_study_1_40mg_resp.pdf>
 
-<a id="orgcad220b"></a>
+<a id="org013a99a"></a>
 
 </ox-hugo/ppc_study_2_20mg_resp.pdf>
