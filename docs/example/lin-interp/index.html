@@ -23,7 +23,7 @@ data{ int nObs; real xObs[nObs]; real yObs[nObs]; int nx; int nPred; real xPred[
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/example/lin-interp/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="example" />
 <meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-28T19:35:23-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-29T11:51:55-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
@@ -34,7 +34,7 @@ data{ int nObs; real xObs[nObs]; real yObs[nObs]; int nx; int nPred; real xPred[
 <meta itemprop="name" content="Linear intepolation">
 <meta itemprop="description" content="This example illustrates how to use linear_intepolationi to fit a piecewise linear function to a data set consisting of \((x, y)\) pairs.
 data{ int nObs; real xObs[nObs]; real yObs[nObs]; int nx; int nPred; real xPred[nPred]; } transformed data{ real xmin = min(xObs); real xmax = max(xObs); } parameters{ real y[nx]; real&lt;lower = 0&gt; sigma; simplex[nx - 1] xSimplex; } transformed parameters{ real yHat[nObs]; real x[nx]; x[1] = xmin; x[nx] = xmax; for(i in 2:(nx-1)) x[i] = x[i-1] &#43; xSimplex[i-1] * (xmax - xmin); yHat = linear_interpolation(xObs, x, y); } model{ xSimplex ~ dirichlet(rep_vector(1, nx - 1)); y ~ normal(0, 25); yObs ~ normal(yHat, sigma); } generated quantities{ real yHatPred[nPred]; real yPred[nPred]; yHatPred = linear_interpolation(xPred, x, y); for(i in 1:nPred) yPred[i] = normal_rng(yHatPred[i], sigma); } "><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-28T19:35:23-07:00" />
+<meta itemprop="dateModified" content="2021-06-29T11:51:55-07:00" />
 <meta itemprop="wordCount" content="124"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
@@ -104,7 +104,7 @@ generated quantities{
     yPred[i] = normal_rng(yHatPred[i], sigma);
 }
 </code></pre><div class="edit-meta">
-Last updated on 28 Jun 2021
+Last updated on 29 Jun 2021
 
 
 <br>
@@ -131,6 +131,7 @@ Published on 25 Jun 2021
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
   
 <ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/events/">Events specification</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>

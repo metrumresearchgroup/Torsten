@@ -22,7 +22,7 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/function/ode-group-integ/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="function" />
 <meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-28T20:40:58-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-29T11:51:49-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
@@ -31,8 +31,8 @@
 <meta name="twitter:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Return value 4 Note    1 Description All the preivous functions solves for a single ODE system. Torsten also provides group modeling counterparts for ODE integrators. The functions solve for a group of ODE systems that share an ODE RHS but with different parameters. They have similar signatures to single-ODE integration functions."/>
 <meta itemprop="name" content="ODE group  integrator Function">
 <meta itemprop="description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Return value 4 Note    1 Description All the preivous functions solves for a single ODE system. Torsten also provides group modeling counterparts for ODE integrators. The functions solve for a group of ODE systems that share an ODE RHS but with different parameters. They have similar signatures to single-ODE integration functions."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-28T20:40:58-07:00" />
-<meta itemprop="wordCount" content="469"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+<meta itemprop="dateModified" content="2021-06-29T11:51:49-07:00" />
+<meta itemprop="wordCount" content="472"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
@@ -76,10 +76,10 @@ signatures to single-ODE integration functions.</p>
 <h2 id="usage"><span class="section-num">2</span> Usage</h2>
 <pre><code class="language-stan" data-lang="stan">matrix pmx_integrate_ode_group_[adams || rk45 || bdf](ODE_system, real[ , ] y0, real t0, int[] len, real[] ts, real[ , ] theta, real[ , ] x_r, int[ , ] x_i, [ real rtol, real atol, int max_step ] );
 </code></pre><p>Here <code>[adams || rk45 || bdf]</code> indicates the
-function name can be of any of the three suffixes. See section <a href="#sec:ode_func_note">sec:ode_func_note</a>.</p>
+function name can be of any of the three suffixes. See Section <a href="/Torsten/function/ode-integ/">ODE  integrator function</a>.</p>
 <ul>
 <li><code>ODE_rhs</code>
-Function that specifies the right-hand-side \(f\). See Section <a href="#sec:ode_func_args">sec:ode_func_args</a>.</li>
+Function that specifies the right-hand-side \(f\). See Section <a href="/Torsten/function/ode-integ/">ODE  integrator function</a>.</li>
 <li><code>y0</code>
 Initial condition \(y_0\) for each subsystem in the group. The
 first dimension equals to the size of the group.</li>
@@ -111,7 +111,6 @@ Maximum number of steps allowed between neighboring time in <code>ts</code>.</li
 <p>An <code>n</code>-by-<code>nd</code> matrix, where <code>n</code> is the size of <code>ts</code>
 and <code>nd</code> the dimension of the system.</p>
 <h2 id="note"><span class="section-num">4</span> Note</h2>
-<p>\label{sec:ode_integ_group_note}</p>
 <ul>
 <li>With optional arguments indicated by square bracket, the following calls are allowed:</li>
 </ul>
@@ -142,7 +141,7 @@ processes evenly. Note that to access this feature user must have
 MPI installed, and some MPI installation may require set additional
 compiler arguments, such as <code>CXXLFAGS</code> and <code>LDFLAGS</code>.</p>
 <div class="edit-meta">
-Last updated on 28 Jun 2021
+Last updated on 29 Jun 2021
 
 
 <br>
@@ -169,6 +168,7 @@ Published on 25 Jun 2021
 <li class="parent"><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
   
 <ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/events/">Events specification</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>

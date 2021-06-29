@@ -26,7 +26,7 @@ k_a &amp; -\left(k_{10} &#43; k_{12}\right) &amp; k_{21} \\\" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/function/linode/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="function" />
 <meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-28T19:35:15-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-29T11:51:46-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
@@ -43,7 +43,7 @@ k_a &amp; -\left(k_{10} &#43; k_{12}\right) &amp; k_{21} \\\"/>
 For example, in a two-compartment model with first order absorption, \(K\) is
 \begin{equation} K = \left[\begin{array}{ccc} -k_a &amp; 0 &amp; 0 \\\
 k_a &amp; -\left(k_{10} &#43; k_{12}\right) &amp; k_{21} \\\"><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-28T19:35:15-07:00" />
+<meta itemprop="dateModified" content="2021-06-29T11:51:46-07:00" />
 <meta itemprop="wordCount" content="189"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
@@ -105,14 +105,14 @@ System parameters. <code>K</code> can be either
 <li>an array of matrices <code>matrix K[nt]</code> so that the \(i\)th entry of the array describes
 the model parameters for time interval \((t_{i-1}, t_i)\),
 and the number of the rows equals to the number of event time <code>nt</code>.</li>
+<li>See Tables in Section <a href="/Torsten/function/events/">Events specification</a> for the rest of arguments.</li>
 </ul>
 </li>
-<li>See Table <a href="#tab:event_args">tab:event_args</a> and Table <a href="#tab:event_params">tab:event_params</a> for the rest of arguments.</li>
 </ul>
 <h2 id="return-value"><span class="section-num">4</span> Return value</h2>
 <p>An <code>n</code>-by-<code>nt</code> matrix, where <code>nt</code> is the number of time steps and <code>n</code> is the number of rows(columns) of square matrix <code>K</code>.</p>
 <div class="edit-meta">
-Last updated on 28 Jun 2021
+Last updated on 29 Jun 2021
 
 
 <br>
@@ -139,6 +139,7 @@ Published on 25 Jun 2021
 <li class="parent"><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
   
 <ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/events/">Events specification</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
 <li class="active"><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>

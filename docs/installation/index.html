@@ -23,7 +23,7 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/installation/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="" />
 <meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-28T20:19:15-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-29T11:51:41-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
@@ -34,8 +34,8 @@
 <meta itemprop="name" content="Installation">
 <meta itemprop="description" content="Currently Torsten is based on a forked version of Stan and hosted on GitHub
  https://github.com/metrumresearchgroup/Torsten  The latest v0.89rc is compatible with Stan v2.27.0. Torsten can be accessed from command line for cmdstan interface and cmdstanr (https://mc-stan.org/cmdstanr/) for R interface. It requires a modern C&#43;&#43;11 compiler as well as a Make utility. See (Team 2020) for details of installation and required toolchain. In particular, we recommend the folowing versions of C&#43;&#43; compilers:"><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-28T20:19:15-07:00" />
-<meta itemprop="wordCount" content="364"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+<meta itemprop="dateModified" content="2021-06-29T11:51:41-07:00" />
+<meta itemprop="wordCount" content="363"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
@@ -62,7 +62,7 @@
 compatible with Stan v2.27.0. Torsten can be accessed from
 command line for cmdstan interface and <code>cmdstanr</code>
 (<a href="https://mc-stan.org/cmdstanr/">https://mc-stan.org/cmdstanr/</a>) for R interface. It requires
-a modern C++11 compiler as well as a Make utility. See (<a href="#org77b4fee">Team 2020</a>) for details of installation and
+a modern C++11 compiler as well as a Make utility. See (<a href="#org22b1af0">Team 2020</a>) for details of installation and
 required toolchain. In particular, we recommend the folowing versions
 of C++ compilers:</p>
 <ul>
@@ -85,8 +85,7 @@ following command to set path</p>
 </code></pre></div><p>Then one can follow <a href="https://mc-stan.org/cmdstanr/articles/cmdstanr.html">https://mc-stan.org/cmdstanr/articles/cmdstanr.html</a> to compile
 and run Torsten models.</p>
 <h3 id="mpi-support">MPI support</h3>
-<p>\label{sec:mpi_support}
-Torsten&rsquo;s MPI support is of a different flavour than
+<p>Torsten&rsquo;s MPI support is of a different flavour than
 <code>reduce_sum</code> found in Stan. To be able to utilize MPI
 parallelisation, one first needs to ensure an MPI library
 such as</p>
@@ -126,9 +125,9 @@ fit <span style="color:#f92672">&lt;-</span> model<span style="color:#f92672">$<
                     refresh <span style="color:#f92672">=</span> <span style="color:#ae81ff">500</span>)
 bayesplot<span style="color:#f92672">::</span><span style="color:#a6e22e">mcmc_dens_overlay</span>(fit<span style="color:#f92672">$</span><span style="color:#a6e22e">draws</span>(<span style="color:#e6db74">&#34;CL&#34;</span>))
 </code></pre></div><h2 id="bibliography">Bibliography</h2>
-<p><a id="org77b4fee"></a>Team, Stan Development. 2020. <em>CmdStan User’s Guide</em>. <a href="https://mc-stan.org/docs/2%5F26/cmdstan-guide/index.html">https://mc-stan.org/docs/2%5F26/cmdstan-guide/index.html</a>.</p>
+<p><a id="org22b1af0"></a>Team, Stan Development. 2020. <em>CmdStan User’s Guide</em>. <a href="https://mc-stan.org/docs/2%5F26/cmdstan-guide/index.html">https://mc-stan.org/docs/2%5F26/cmdstan-guide/index.html</a>.</p>
 <div class="edit-meta">
-Last updated on 28 Jun 2021
+Last updated on 29 Jun 2021
 
 
 <br>
@@ -154,6 +153,7 @@ Published on 25 Jun 2021
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
   
 <ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/events/">Events specification</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>

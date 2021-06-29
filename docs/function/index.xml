@@ -8,6 +8,17 @@
     <language>en-us</language>
     <lastBuildDate>Fri, 25 Jun 2021 00:00:00 -0700</lastBuildDate><atom:link href="https://metrumresearchgroup.github.io/Torsten/function/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>Events specification</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/function/events/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/function/events/</guid>
+      <description>Torsten&amp;rsquo;s functions are prefixed with pmx_. For some of their arguments we adopt NM-TRAN format for events specification(Table 1).
+
+Table 1: NM-TRAN compatible event specification arguments. All arrays should have the same length corresponding to the number of events.     Argument Name Definition Stan data type     time event time real[]   amt dosing amount real[]   rate infusion rate real[]   ii interdose interval real[]   evid event ID int[]   cmt event compartment int[]   addl additionial identical doses int[]   ss steady-state dosing flag int[]    All the real[] arguments above are allowed to be parameters in a Stan model.</description>
+    </item>
+    
+    <item>
       <title>One Compartment Model</title>
       <link>https://metrumresearchgroup.github.io/Torsten/function/one-cpt/</link>
       <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
@@ -24,8 +35,7 @@ y_2&#39; &amp;amp;= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2.</
       <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
       
       <guid>https://metrumresearchgroup.github.io/Torsten/function/two-cpt/</guid>
-      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    
-1 Description Function pmx_solve_twocpt solves a two-compartment PK model (Figure /Torsten/function/one-cpt/). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\) by solving for the mass of drug in the central compartment \(y_2\) from ordinary differential equations(ODEs)
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_twocpt solves a two-compartment PK model (Figure /Torsten/function/one-cpt/). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\) by solving for the mass of drug in the central compartment \(y_2\) from ordinary differential equations(ODEs)
 \begin{align} \label{eq:twocpt} y_1&#39; &amp;amp;= -k_a y_1 \\\</description>
     </item>
     
@@ -84,7 +94,7 @@ with \(y_1\), \(y_2\), \(f_1\), and \(f_2\) being vector-valued functions, and \
       <description>Description Torsten provides its own implementation of ODE solvers that solves
 \begin{equation*} y&#39;(t) = f(t, y(t)), \quad y(t_0) = y_0 \end{equation*}
 for \(y\). These solvers are customized for Torsten applications and different from those found in Stan. The general ODE PMX solvers in previous sections are internally powered by these functions.
-Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]); Arguments \label{sec:ode_func_args}</description>
+Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]); Arguments  ODE_rhs Function that specifies the right-hand-side \(f\).</description>
     </item>
     
     <item>

@@ -57,8 +57,1711 @@
 <li><a href="https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/effCpt">Effective compartment model</a></li>
 <li><a href="https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/FribergKarlsson">PopPKPD model</a></li>
 </ul>
+<h3 id="two-compartment-model-for-single-patient"><span class="section-num">0.1</span> Two-compartment model for single patient</h3>
+<p>We model drug absorption in a single patient and simulate plasma drug concentrations:</p>
+<ul>
+<li>Multiple Doses: 1250 mg, every 12 hours, for a total of 15 doses</li>
+<li>PK measured at 0.083, 0.167, 0.25, 0.5, 0.75, 1, 1.5, 2, 4, 6,
+8, 10 and 12 hours after 1st, 2nd, and 15th dose. In addition, the
+PK is measured every 12 hours throughout the trial.</li>
+</ul>
+<p>With the plasma concentration \(\hat{c}\) using
+<a href="/Torsten/function/two-cpt/">Two Compartment Model</a>, we simulate \(c\) according to:</p>
+<p>\begin{align*}
+\log\left(c\right) &amp;\sim N\left(\log\left(\widehat{c}\right),\sigma^2\right) \\\<br>
+\left(CL, Q, V_2, V_3, ka\right) &amp;= \left(5\ {\rm L/h}, 8\  {\rm L/h}, 20\  {\rm L},  70\ {\rm L}, 1.2\ {\rm h^{-1}} \right) \\\<br>
+\sigma^2 &amp;= 0.01
+\end{align*}</p>
+<p>The data are generated using the R package <code>mrgsolve</code> (<a href="#org200243c">Baron and Gastonguay 2015</a>).</p>
+<p>Code below shows how Torsten function <code>pmx_solve_twocpt</code> can be used to fit the above model.</p>
+<pre><code class="language-stan" data-lang="stan">data{
+  int&lt;lower = 1&gt; nt;  // number of events
+  int&lt;lower = 1&gt; nObs;  // number of observation
+  int&lt;lower = 1&gt; iObs[nObs];  // index of observation
+
+  // NONMEM data
+  int&lt;lower = 1&gt; cmt[nt];
+  int evid[nt];
+  int addl[nt];
+  int ss[nt];
+  real amt[nt];
+  real time[nt];
+  real rate[nt];
+  real ii[nt];
+
+  vector&lt;lower = 0&gt;[nObs] cObs;  // observed concentration (Dependent Variable)
+}
+
+transformed data{
+  vector[nObs] logCObs = log(cObs);
+  int nTheta = 5;  // number of ODE parameters in Two Compartment Model
+  int nCmt = 3;  // number of compartments in model
+}
+
+parameters{
+  real&lt;lower = 0&gt; CL;
+  real&lt;lower = 0&gt; Q;
+  real&lt;lower = 0&gt; V1;
+  real&lt;lower = 0&gt; V2;
+  real&lt;lower = 0&gt; ka;
+  real&lt;lower = 0&gt; sigma;
+}
+
+transformed parameters{
+  real theta[nTheta];  // ODE parameters
+  row_vector&lt;lower = 0&gt;[nt] cHat;
+  vector&lt;lower = 0&gt;[nObs] cHatObs;
+  matrix&lt;lower = 0&gt;[nCmt, nt] x;
+
+  theta[1] = CL;
+  theta[2] = Q;
+  theta[3] = V1;
+  theta[4] = V2;
+  theta[5] = ka;
+
+  x = pmx_solve_twocpt(time, amt, rate, ii, evid, cmt, addl, ss, theta);
+
+  cHat = x[2, :] ./ V1; // we're interested in the amount in the second compartment
+
+  cHatObs = cHat'[iObs]; // predictions for observed data recors
+}
+
+model{
+  // informative prior
+  CL ~ lognormal(log(10), 0.25);
+  Q ~ lognormal(log(15), 0.5);
+  V1 ~ lognormal(log(35), 0.25);
+  V2 ~ lognormal(log(105), 0.5);
+  ka ~ lognormal(log(2.5), 1);
+  sigma ~ cauchy(0, 1);
+
+  logCObs ~ normal(log(cHatObs), sigma);
+}
+</code></pre><p>Four MCMC chains of 2000 iterations (1000 warmup iterations and 1000
+sampling iterations) are simulated. 1000 samples per chain were used for the subsequent analyses.
+The MCMC history plots(Figure <a href="#orge4f19a6">1</a>)
+suggest that the 4 chains have converged to common distributions for
+all of the key model parameters. The fit to the plasma concentration
+data (Figure <a href="#org6adaa7c">3</a>) are in close agreement with the
+data, which is not surprising since the fitted model is identical to
+the one used to simulate the data. Similarly the parameter posterior
+density can be examined in Figure <a href="#org3a4aae5">2</a> and shows
+consistency with the values used for simulation. Another way to
+summarize the posterior is through <code>cmdstanr</code>&rsquo;s <code>summary</code> method.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#75715e">## fit is a CmdStanMCMC object returned by sampling. See cmdstanr reference.</span>
+<span style="color:#f92672">&gt;</span> pars <span style="color:#f92672">=</span> <span style="color:#a6e22e">c</span>(<span style="color:#e6db74">&#34;CL&#34;</span>, <span style="color:#e6db74">&#34;Q&#34;</span>, <span style="color:#e6db74">&#34;V1&#34;</span>, <span style="color:#e6db74">&#34;V2&#34;</span>, <span style="color:#e6db74">&#34;ka&#34;</span>, <span style="color:#e6db74">&#34;sigma&#34;</span>)
+<span style="color:#f92672">&gt;</span> fit<span style="color:#f92672">$</span><span style="color:#a6e22e">summary</span>(pars)
+<span style="color:#75715e"># A tibble: 6 x 10</span>
+  variable   mean median     sd    mad      q5    q95  rhat ess_bulk ess_tail
+  <span style="color:#f92672">&lt;</span>chr<span style="color:#f92672">&gt;</span>     <span style="color:#f92672">&lt;</span>dbl<span style="color:#f92672">&gt;</span>  <span style="color:#f92672">&lt;</span>dbl<span style="color:#f92672">&gt;</span>  <span style="color:#f92672">&lt;</span>dbl<span style="color:#f92672">&gt;</span>  <span style="color:#f92672">&lt;</span>dbl<span style="color:#f92672">&gt;</span>   <span style="color:#f92672">&lt;</span>dbl<span style="color:#f92672">&gt;</span>  <span style="color:#f92672">&lt;</span>dbl<span style="color:#f92672">&gt;</span> <span style="color:#f92672">&lt;</span>dbl<span style="color:#f92672">&gt;</span>    <span style="color:#f92672">&lt;</span>dbl<span style="color:#f92672">&gt;</span>    <span style="color:#f92672">&lt;</span>dbl<span style="color:#f92672">&gt;</span>
+<span style="color:#ae81ff">1</span> CL        <span style="color:#ae81ff">4.82</span>   <span style="color:#ae81ff">4.83</span>  <span style="color:#ae81ff">0.0910</span> <span style="color:#ae81ff">0.0870</span>  <span style="color:#ae81ff">4.68</span>    <span style="color:#ae81ff">4.97</span>   <span style="color:#ae81ff">1.00</span>    <span style="color:#ae81ff">1439</span>.    <span style="color:#ae81ff">1067</span>.
+2 Q         <span style="color:#ae81ff">7.56</span>   <span style="color:#ae81ff">7.55</span>  <span style="color:#ae81ff">0.588</span>  <span style="color:#ae81ff">0.586</span>   <span style="color:#ae81ff">6.61</span>    <span style="color:#ae81ff">8.56</span>   <span style="color:#ae81ff">1.00</span>    <span style="color:#ae81ff">1256</span>.    <span style="color:#ae81ff">1235</span>.
+3 V1       <span style="color:#ae81ff">21.1</span>   <span style="color:#ae81ff">21.1</span>   <span style="color:#ae81ff">2.50</span>   <span style="color:#ae81ff">2.45</span>   <span style="color:#ae81ff">17.1</span>    <span style="color:#ae81ff">25.3</span>    <span style="color:#ae81ff">1.00</span>    <span style="color:#ae81ff">1057</span>.    <span style="color:#ae81ff">1177</span>.
+4 V2       <span style="color:#ae81ff">76.1</span>   <span style="color:#ae81ff">76.1</span>   <span style="color:#ae81ff">5.33</span>   <span style="color:#ae81ff">4.93</span>   <span style="color:#ae81ff">67.5</span>    <span style="color:#ae81ff">84.9</span>    <span style="color:#ae81ff">1.01</span>    <span style="color:#ae81ff">1585</span>.    <span style="color:#ae81ff">1372</span>.
+5 ka        <span style="color:#ae81ff">1.23</span>   <span style="color:#ae81ff">1.23</span>  <span style="color:#ae81ff">0.175</span>  <span style="color:#ae81ff">0.174</span>   <span style="color:#ae81ff">0.958</span>   <span style="color:#ae81ff">1.52</span>   <span style="color:#ae81ff">1.00</span>    <span style="color:#ae81ff">1070</span>.    <span style="color:#ae81ff">1122</span>.
+6 sigma     <span style="color:#ae81ff">0.109</span>  <span style="color:#ae81ff">0.108</span> <span style="color:#ae81ff">0.0117</span> <span style="color:#ae81ff">0.0111</span>  <span style="color:#ae81ff">0.0911</span>  <span style="color:#ae81ff">0.130</span>  <span style="color:#ae81ff">1.01</span>    <span style="color:#ae81ff">1414</span>.     <span style="color:#ae81ff">905</span>.
+</code></pre></div><p><a id="orge4f19a6"></a></p>
+<p>&lt;/ox-hugo/history.pdf&gt;</p>
+<p><a id="org3a4aae5"></a></p>
+<p>&lt;/ox-hugo/density.pdf&gt;</p>
+<p><a id="org6adaa7c"></a></p>
+<p>&lt;/ox-hugo/ppc_ribbon.pdf&gt;</p>
+<h3 id="two-compartment-model-as-a-linear-ode-model-for-single-patient"><span class="section-num">0.2</span> Two-compartment model as a linear ODE model for single patient</h3>
+<p>Using <code>pmx_solve_linode</code>, the following example fits a two-compartment model
+with first order absorption. We omit <code>data</code> and
+<code>model</code> block as they are identical to <a href="/Torsten/example/twocpt/">Two-compartment model for single patient</a> Example.</p>
+<pre><code class="language-stan" data-lang="stan">transformed data{
+  row_vector[nObs] logCObs = log(cObs);
+  int nCmt = 3;
+  real biovar[nCmt];
+  real tlag[nCmt];
+
+  for (i in 1:nCmt) {
+    biovar[i] = 1;
+    tlag[i] = 0;
+  }
+}
+
+parameters{
+  real&lt;lower = 0&gt; CL;
+  real&lt;lower = 0&gt; Q;
+  real&lt;lower = 0&gt; V1;
+  real&lt;lower = 0&gt; V2;
+  real&lt;lower = 0&gt; ka;
+  real&lt;lower = 0&gt; sigma;
+}
+
+transformed parameters{
+  matrix[3, 3] K;
+  real k10 = CL / V1;
+  real k12 = Q / V1;
+  real k21 = Q / V2;
+  row_vector&lt;lower = 0&gt;[nt] cHat;
+  row_vector&lt;lower = 0&gt;[nObs] cHatObs;
+  matrix&lt;lower = 0&gt;[3, nt] x;
+
+  K = rep_matrix(0, 3, 3);
+
+  K[1, 1] = -ka;
+  K[2, 1] = ka;
+  K[2, 2] = -(k10 + k12);
+  K[2, 3] = k21;
+  K[3, 2] = k12;
+  K[3, 3] = -k21;
+
+  x = pmx_solve_linode(time, amt, rate, ii, evid, cmt, addl, ss, K, biovar, tlag);
+
+  cHat = row(x, 2) ./ V1;
+
+  for(i in 1:nObs){
+    cHatObs[i] = cHat[iObs[i]];  // predictions for observed data records
+  }
+}
+</code></pre><h3 id="two-compartment-model-solved-by-numerical-integrator-for-single-patient"><span class="section-num">0.3</span> Two-compartment model solved by numerical integrator for single patient</h3>
+<p>Using <code>pmx_solve_rk45</code>, the following example fits a two-compartment model
+with first order absorption. User-defined function
+<code>ode_rhs</code> describes the RHS of the ODEs.</p>
+<pre><code class="language-stan" data-lang="stan">functions{
+  vector ode_rhs(real t, vector x, real[] parms, real[] x_r, int[] x_i){
+    real CL = parms[1];
+    real Q = parms[2];
+    real V1 = parms[3];
+    real V2 = parms[4];
+    real ka = parms[5];
+
+    real k10 = CL / V1;
+    real k12 = Q / V1;
+    real k21 = Q / V2;
+
+    vector[3] y;
+
+    y[1] = -ka*x[1];
+    y[2] = ka*x[1] - (k10 + k12)*x[2] + k21*x[3];
+    y[3] = k12*x[2] - k21*x[3];
+
+    return y;
+  }
+}
+</code></pre><p>We omit <code>data</code> and
+<code>model</code> block as they are identical to <a href="/Torsten/example/twocpt/">Two-compartment model for single patient</a> Example.</p>
+<pre><code class="language-stan" data-lang="stan">transformed data {
+  row_vector[nObs] logCObs = log(cObs);
+  int nTheta = 5;   // number of parameters
+  int nCmt = 3;   // number of compartments
+}
+
+parameters {
+  real&lt;lower = 0&gt; CL;
+  real&lt;lower = 0&gt; Q;
+  real&lt;lower = 0&gt; V1;
+  real&lt;lower = 0&gt; V2;
+  real&lt;lower = 0&gt; ka;
+  real&lt;lower = 0&gt; sigma;
+}
+
+transformed parameters {
+  real theta[nTheta];
+  row_vector&lt;lower = 0&gt;[nt] cHat;
+  row_vector&lt;lower = 0&gt;[nObs] cHatObs;
+  matrix&lt;lower = 0&gt;[3, nt] x;
+
+  theta[1] = CL;
+  theta[2] = Q;
+  theta[3] = V1;
+  theta[4] = V2;
+  theta[5] = ka;
+
+  x = pmx_solve_rk45(ode_rhs, 3, time, amt, rate, ii, evid, cmt, addl, ss, theta, 1e-5, 1e-8, 1e5);
+
+  cHat = x[2, ] ./ V1;
+
+  for(i in 1:nObs){
+    cHatObs[i] = cHat[iObs[i]];  // predictions for observed data records
+  }
+}
+
+model{
+</code></pre><h3 id="span-classsection-num04span-joint-pk-pd-model-secfk_model"><span class="section-num">0.4</span> Joint PK-PD model {#sec:fk_model}</h3>
+<p>Neutropenia is observed in patients receiving an ME-2 drug. Our goal
+is to model the relation between neutrophil counts and drug
+exposure. As shown in Figure <a href="#fig:FK_model">fig:FK_model</a>, the Friberg-Karlsson Semi-Mechanistic model (<a href="#org49ff31c">Friberg and Karlsson 2003</a>) couples
+a PK model with a PD
+effect to describe a delayed feedback mechanism that keeps the
+absolute neutrophil count (ANC) at the
+baseline in a circulatory compartment (Circ), and
+the drug&rsquo;s effect in
+reducing the proliferation rate (prol).
+The delay between prol and Circ is modeled using \(n\) transit
+comparments with mean transit time MTT = \((n + 1)/k_{\text{tr}}\),
+with \(k_{\text{tr}}\) the transit rate constant. In the current
+example, we use the <a href="/Torsten/function/two-cpt/">Two Compartment Model</a> for
+PK model, and set \(n = 3\).</p>
+<p>\begin{align}
+\log(\text{ANC})&amp; \sim N(\log(y_{\text{circ}}), \sigma^2_{\text{ANC}}),  \\\<br>
+y_{\text{circ}}&amp; = f_{\text{FK}}(\text{MTT}, \text{Circ}_{0}, \alpha, \gamma, c),
+\end{align}</p>
+<p>where \(c\) is the drug concentration calculated from the PK model, and function \(f_{\text{FK}}\) represents solving the following
+nonlinear ODE for \(y_{\text{circ}}\)</p>
+<p>\begin{align}\label{eq:FK}
+\frac{dy_\mathrm{prol}}{dt} &amp;= k_\mathrm{prol} y_\mathrm{prol} (1 - E_\mathrm{drug})\left(\frac{\text{Circ}_0}{y_\mathrm{circ}}\right)^\gamma - k_\mathrm{tr}y_\mathrm{prol}, \\\<br>
+\frac{dy_\mathrm{trans1}}{dt} &amp;= k_\mathrm{tr} y_\mathrm{prol} - k_\mathrm{tr} y_\mathrm{trans1}, \\\<br>
+\frac{dy_\mathrm{trans2}}{dt} &amp;= k_\mathrm{tr} y_\mathrm{trans1} - k_\mathrm{tr} y_\mathrm{trans2},  \\\<br>
+\frac{dy_\mathrm{trans3}}{dt} &amp;= k_\mathrm{tr} y_\mathrm{trans2} - k_\mathrm{tr} y_\mathrm{trans3},  \\\<br>
+\frac{dy_\mathrm{circ}}{dt} &amp;= k_\mathrm{tr} y_\mathrm{trans3} - k_\mathrm{tr} y_\mathrm{circ},
+\end{align}</p>
+<p>We use \(E_{\text{drug}} = \alpha c\) to model the linear effect of drug
+concentration in central compartment, with
+\(c=y_{\text{cent}}/V_{\text{cent}}\) based on PK solutions.</p>
+<p>Since the ODEs specifying the Two Compartment Model
+(Equation \eqref{eq:twocpt}) do not depend on the PD ODEs
+(Equation \eqref{eq:FK}) and can be solved analytically
+using Torsten&rsquo;s <code>pmx_solve_twocpt</code> function
+we can specify solve the system using a coupled solver function. We do not
+expect our system to be stiff and use the Runge-Kutta 4th/5th order
+integrator.</p>
+<p><a id="org0d99ec9"></a></p>
+<figure><img src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/neutrophilModel.jpg"
+         alt="Figure 4: Friberg-Karlsson semi-mechanistic Model." width="700"/><figcaption>
+            <p>Figure 4: Friberg-Karlsson semi-mechanistic Model.</p>
+        </figcaption>
+</figure>
+
+<p>The model fitting is based on simulated data</p>
+<p>\begin{align*}
+(\text{MTT}, \text{Circ}_{0}, \alpha, \gamma, k_{\text{tr}})&amp; = (125, 5.0, 3 \times 10^{-4}, 0.17) \\\<br>
+\sigma^2_{\text{ANC}}&amp; = 0.001.
+\end{align*}</p>
+<pre><code class="language-stan" data-lang="stan">functions{
+  vector FK_ODE(real t, vector y, vector y_pk, real[] theta, real[] rdummy, int[] idummy){
+    /* PK variables */
+    real VC = theta[3];
+
+    /* PD variable */
+    real mtt      = theta[6];
+    real circ0    = theta[7];
+    real alpha    = theta[8];
+    real gamma    = theta[9];
+    real ktr      = 4.0 / mtt;
+    real prol     = y[1] + circ0;
+    real transit1 = y[2] + circ0;
+    real transit2 = y[3] + circ0;
+    real transit3 = y[4] + circ0;
+    real circ     = fmax(machine_precision(), y[5] + circ0);
+    real conc     = y_pk[2] / VC;
+    real EDrug    = alpha * conc;
+
+    vector[5] dydt;
+
+    dydt[1] = ktr * prol * ((1 - EDrug) * ((circ0 / circ)^gamma) - 1);
+    dydt[2] = ktr * (prol - transit1);
+    dydt[3] = ktr * (transit1 - transit2);
+    dydt[4] = ktr * (transit2 - transit3);
+    dydt[5] = ktr * (transit3 - circ);
+
+    return dydt;
+  }
+}
+
+data{
+  int&lt;lower = 1&gt; nt;
+  int&lt;lower = 1&gt; nObsPK;
+  int&lt;lower = 1&gt; nObsPD;
+  int&lt;lower = 1&gt; iObsPK[nObsPK];
+  int&lt;lower = 1&gt; iObsPD[nObsPD];
+  real&lt;lower = 0&gt; amt[nt];
+  int&lt;lower = 1&gt; cmt[nt];
+  int&lt;lower = 0&gt; evid[nt];
+  real&lt;lower = 0&gt; time[nt];
+  real&lt;lower = 0&gt; ii[nt];
+  int&lt;lower = 0&gt; addl[nt];
+  int&lt;lower = 0&gt; ss[nt];
+  real rate[nt];
+  vector&lt;lower = 0&gt;[nObsPK] cObs;
+  vector&lt;lower = 0&gt;[nObsPD] neutObs;
+
+  real&lt;lower = 0&gt; circ0Prior;
+  real&lt;lower = 0&gt; circ0PriorCV;
+  real&lt;lower = 0&gt; mttPrior;
+  real&lt;lower = 0&gt; mttPriorCV;
+  real&lt;lower = 0&gt; gammaPrior;
+  real&lt;lower = 0&gt; gammaPriorCV;
+  real&lt;lower = 0&gt; alphaPrior;
+  real&lt;lower = 0&gt; alphaPriorCV;
+}
+
+transformed data{
+  int nOde = 5;
+  vector[nObsPK] logCObs;
+  vector[nObsPD] logNeutObs;
+
+  int nTheta = 9; // number of parameters
+  int nIIV = 7; // parameters with IIV
+
+  int n = 8;                        /* ODE dimension */
+  real rtol = 1e-8;
+  real atol = 1e-8;;
+  int max_step = 100000;
+
+  logCObs = log(cObs);
+  logNeutObs = log(neutObs);
+}
+
+parameters{
+
+  real&lt;lower = 0&gt; CL;
+  real&lt;lower = 0&gt; Q;
+  real&lt;lower = 0&gt; VC;
+  real&lt;lower = 0&gt; VP;
+  real&lt;lower = 0&gt; ka;
+  real&lt;lower = 0&gt; mtt;
+  real&lt;lower = 0&gt; circ0;
+  real&lt;lower = 0&gt; alpha;
+  real&lt;lower = 0&gt; gamma;
+  real&lt;lower = 0&gt; sigma;
+  real&lt;lower = 0&gt; sigmaNeut;
+
+  // IIV parameters
+  cholesky_factor_corr[nIIV] L;
+  vector&lt;lower = 0&gt;[nIIV] omega;
+}
+
+transformed parameters{
+  row_vector[nt] cHat;
+  vector&lt;lower = 0&gt;[nObsPK] cHatObs;
+  row_vector[nt] neutHat;
+  vector&lt;lower = 0&gt;[nObsPD] neutHatObs;
+  real&lt;lower = 0&gt; theta[nTheta];
+  matrix[nOde + 3, nt] x;
+  real biovar[nTheta] = rep_array(1.0, nTheta);
+  real tlag[nTheta] = rep_array(0.0, nTheta);
+
+  theta[1] = CL;
+  theta[2] = Q;
+  theta[3] = VC;
+  theta[4] = VP;
+  theta[5] = ka;
+  theta[6] = mtt;
+  theta[7] = circ0;
+  theta[8] = alpha;
+  theta[9] = gamma;
+
+  x = pmx_solve_twocpt_rk45(FK_ODE, nOde, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag, rtol, atol, max_step);
+
+  cHat = x[2, ] / VC;
+  neutHat = x[8, ] + circ0;
+
+  for(i in 1:nObsPK) cHatObs[i]    = cHat[iObsPK[i]];
+  for(i in 1:nObsPD) neutHatObs[i] = neutHat[iObsPD[i]];
+}
+
+model {
+  // Priors
+  CL    ~ normal(0, 20);
+  Q     ~ normal(0, 20);
+  VC    ~ normal(0, 100);
+  VP    ~ normal(0, 1000);
+  ka    ~ normal(0, 5);
+  sigma ~ cauchy(0, 1);
+
+  mtt       ~ lognormal(log(mttPrior), mttPriorCV);
+  circ0     ~ lognormal(log(circ0Prior), circ0PriorCV);
+  alpha     ~ lognormal(log(alphaPrior), alphaPriorCV);
+  gamma     ~ lognormal(log(gammaPrior), gammaPriorCV);
+  sigmaNeut ~ cauchy(0, 1);
+
+  // Parameters for Matt's trick
+  L ~ lkj_corr_cholesky(1);
+  omega ~ cauchy(0, 1);
+
+  // observed data likelihood
+  logCObs ~ normal(log(cObs), sigma);
+  logNeutObs ~ normal(log(neutObs), sigmaNeut);
+}
+</code></pre><h3 id="two-compartment-population-model"><span class="section-num">0.5</span> Two-compartment population model</h3>
+<p>Using <code>pmx_solve_group_bdf</code>, the following example fits a
+two-compartment population model.</p>
+<pre><code class="language-stan" data-lang="stan">functions{
+
+  // define ODE system for two compartmnt model
+  real[] twoCptModelODE(real t,
+                        real[] x,
+                        real[] parms,
+                        real[] rate,  // in this example, rate is treated as data
+                        int[] dummy){
+
+    // Parameters
+    real CL = parms[1];
+    real Q = parms[2];
+    real V1 = parms[3];
+    real V2 = parms[4];
+    real ka = parms[5];
+
+    // Re-parametrization
+    real k10 = CL / V1;
+    real k12 = Q / V1;
+    real k21 = Q / V2;
+
+    // Return object (derivative)
+    real y[3];  // 1 element per compartment of
+                // the model
+
+    // PK component of the ODE system
+    y[1] = -ka*x[1];
+    y[2] = ka*x[1] - (k10 + k12)*x[2] + k21*x[3];
+    y[3] = k12*x[2] - k21*x[3];
+
+    return y;
+  }
+}
+data{
+  int&lt;lower = 1&gt; np;            /* population size */
+  int&lt;lower = 1&gt; nt;  // number of events
+  int&lt;lower = 1&gt; nObs;  // number of observations
+  int&lt;lower = 1&gt; iObs[nObs];  // index of observation
+
+  // NONMEM data
+  int&lt;lower = 1&gt; cmt[np * nt];
+  int evid[np * nt];
+  int addl[np * nt];
+  int ss[np * nt];
+  real amt[np * nt];
+  real time[np * nt];
+  real rate[np * nt];
+  real ii[np * nt];
+
+  real&lt;lower = 0&gt; cObs[np*nObs];  // observed concentration (dependent variable)
+}
+
+transformed data {
+  real logCObs[np*nObs];
+  int&lt;lower = 1&gt; len[np];
+  int&lt;lower = 1&gt; len_theta[np];
+  int&lt;lower = 1&gt; len_biovar[np];
+  int&lt;lower = 1&gt; len_tlag[np];
+
+  int nTheta = 5;   // number of parameters
+  int nCmt = 3;   // number of compartments
+  real biovar[np * nt, nCmt];
+  real tlag[np * nt, nCmt];
+
+  logCObs = log(cObs);
+
+  for (id in 1:np) {
+    for (j in 1:nt) {
+      for (i in 1:nCmt) {
+        biovar[(id - 1) * nt + j, i] = 1;
+        tlag[(id - 1) * nt + j, i] = 0;
+      }
+    }
+    len[id] = nt;
+    len_theta[id] = nt;
+    len_biovar[id] = nt;
+    len_tlag[id] = nt;
+  }
+}
+
+parameters{
+  real&lt;lower = 0&gt; CL[np];
+  real&lt;lower = 0&gt; Q[np];
+  real&lt;lower = 0&gt; V1[np];
+  real&lt;lower = 0&gt; V2[np];
+  real&lt;lower = 0&gt; ka[np];
+  real&lt;lower = 0&gt; sigma[np];
+}
+
+transformed parameters{
+  real theta[np * nt, nTheta];
+  vector&lt;lower = 0&gt;[nt] cHat[np];
+  real&lt;lower = 0&gt; cHatObs[np*nObs];
+  matrix[3, nt * np] x;
+
+  for (id in 1:np) {
+    for (it in 1:nt) {
+      theta[(id - 1) * nt + it, 1] = CL[id];
+      theta[(id - 1) * nt + it, 2] = Q[id];
+      theta[(id - 1) * nt + it, 3] = V1[id];
+      theta[(id - 1) * nt + it, 4] = V2[id];
+      theta[(id - 1) * nt + it, 5] = ka[id];
+    }
+  }
+
+  x = pmx_solve_group_bdf(twoCptModelODE, 3, len,
+                          time, amt, rate, ii, evid, cmt, addl, ss,
+                          theta, biovar, tlag);
+
+  for (id in 1:np) {
+    for (j in 1:nt) {
+      cHat[id][j] = x[2, (id - 1) * nt + j] ./ V1[id];
+    }
+  }
+
+  for (id in 1:np) {
+    for(i in 1:nObs){
+      cHatObs[(id - 1)*nObs + i] = cHat[id][iObs[i]];  // predictions for observed data records
+    }
+  }
+}
+
+model{
+  // informative prior
+  for(id in 1:np){
+    CL[id] ~ lognormal(log(10), 0.25);
+    Q[id] ~ lognormal(log(15), 0.5);
+    V1[id] ~ lognormal(log(35), 0.25);
+    V2[id] ~ lognormal(log(105), 0.5);
+    ka[id] ~ lognormal(log(2.5), 1);
+    sigma[id] ~ cauchy(0, 1);
+
+    for(i in 1:nObs){
+      logCObs[(id - 1)*nObs + i] ~ normal(log(cHatObs[(id - 1)*nObs + i]), sigma[id]);
+    }
+  }
+}
+</code></pre><p>When the above model is compiled with MPI support(see Section
+<a href="/Torsten/installation/#mpi-support">MPI support</a>), one can run it using within-chain parallelization:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">mpiexec -n nproc ./twocpt_population sample data file<span style="color:#f92672">=</span>twocpt_population.data.R init<span style="color:#f92672">=</span>twocpt_population.init.R
+</code></pre></div><p>Here <code>nproc</code> indicates the number of parallel
+processes participating ODE solution. For example, with
+<code>np=8</code> for a population of 8,
+<code>nproc=4</code> indicates solving 8 subjects' ODEs in
+parallel, with each process solving 2 subjects.</p>
+<h3 id="lotka-volterra-group-model"><span class="section-num">0.6</span> Lotka-Volterra group model</h3>
+<p>\label{sec:lotka_volterra}
+Using <code>pmx_integrate_ode_group_rk45</code>, the following example fits
+a Lotka-Volterra group model, based on <a href="https://mc-stan.org/users/documentation/case-studies/lotka-volterra-predator-prey.html">Stan&rsquo;s case study</a>.</p>
+<pre><code class="language-stan" data-lang="stan">functions {
+  real[] dz_dt(real t,       // time
+               real[] z,     // system state {prey, predator}
+               real[] theta, // parameters
+               real[] x_r,   // unused data
+               int[] x_i) {
+    real u = z[1];
+    real v = z[2];
+
+    real alpha = theta[1];
+    real beta = theta[2];
+    real gamma = theta[3];
+    real delta = theta[4];
+
+    real du_dt = (alpha - beta * v) * u;
+    real dv_dt = (-gamma + delta * u) * v;
+    return { du_dt, dv_dt };
+  }
+}
+data {
+  int&lt;lower = 0&gt; N_subj;      // number of subjects
+  int&lt;lower = 0&gt; N;           // number of measurement times
+  real ts_0[N];                 // measurement times &gt; 0
+  real y0_0[2];     // initial measured populations
+  real&lt;lower = 0&gt; y_0[N, 2];    // measured populations
+}
+transformed data {
+  int len[N_subj] = rep_array(N, N_subj);
+  real y0[N_subj, 2] = rep_array(y0_0, N_subj);
+  real y[N_subj, N, 2] = rep_array(y_0, N_subj);
+  real ts[N_subj * N];
+  for (i in 1:N_subj) {
+    ts[((i-1)*N + 1) : (i*N)] = ts_0;
+  }
+}
+
+parameters {
+  real&lt;lower = 0&gt; theta[N_subj, 4];   // { alpha, beta, gamma, delta }
+  real&lt;lower = 0&gt; z_init[N_subj, 2];  // initial population
+  real&lt;lower = 0&gt; sigma[N_subj, 2];   // measurement errors
+}
+transformed parameters {
+  matrix[2, N_subj * N] z;
+  z = pmx_integrate_ode_group_rk45(dz_dt, z_init, 0, len, ts, theta, rep_array(rep_array(0.0, 0), N_subj), rep_array(rep_array(0, 0),N_subj));
+}
+model {
+  for (isub in 1:N_subj) {
+    theta[isub, {1, 3}] ~ normal(1, 0.5);
+    theta[isub, {2, 4}] ~ normal(0.05, 0.05);
+    sigma[isub] ~ lognormal(-1, 1);
+    z_init[isub] ~ lognormal(10, 1);
+    for (k in 1:2) {
+      y0[isub, k] ~ lognormal(log(z_init[isub, k]), sigma[isub, k]);
+      y[isub, , k] ~ lognormal(log(z[k, ((isub-1)*N + 1):(isub*N)]), sigma[isub, k]);
+    }
+  }
+</code></pre><h3 id="univariate-integral-of-a-quadratic-function"><span class="section-num">0.7</span> Univariate integral of a quadratic function</h3>
+<p>integral of a quadratic function.
+This example shows how to use <code>univariate_integral_rk45</code> to calculate the
+integral of a quadratic function.</p>
+<pre><code class="language-stan" data-lang="stan">functions {
+  real fun_ord2(real t, real[] theta, real[] x_r, int[] x_i) {
+    real a = 2.3;
+    real b = 2.0;
+    real c = 1.5;
+    real res;
+    res = a + b * t + c * t * t;
+    return res;
+  }
+}
+data {
+  real t0;
+  real t1;
+  real dtheta[2];
+  real x_r[0];
+  int x_i[0];
+}
+transformed data {
+  real univar_integral;
+  univar_integral = univariate_integral_rk45(func, t0, t1, dtheta,
+                          x_r, x_i);
+}
+/* ... */
+</code></pre><h3 id="linear-intepolation"><span class="section-num">0.8</span> Linear intepolation</h3>
+<p>This example illustrates how to use <code>linear_intepolationi</code>
+to fit a piecewise linear function to a data set consisting
+of \((x, y)\) pairs.</p>
+<pre><code class="language-stan" data-lang="stan">data{
+  int nObs;
+  real xObs[nObs];
+  real yObs[nObs];
+  int nx;
+  int nPred;
+  real xPred[nPred];
+}
+
+transformed data{
+  real xmin = min(xObs);
+  real xmax = max(xObs);
+}
+
+parameters{
+  real y[nx];
+  real&lt;lower = 0&gt; sigma;
+  simplex[nx - 1] xSimplex;
+}
+
+transformed parameters{
+  real yHat[nObs];
+  real x[nx];
+
+  x[1] = xmin;
+  x[nx] = xmax;
+  for(i in 2:(nx-1))
+    x[i] = x[i-1] + xSimplex[i-1] * (xmax - xmin);
+
+  yHat = linear_interpolation(xObs, x, y);
+}
+
+model{
+  xSimplex ~ dirichlet(rep_vector(1, nx - 1));
+  y ~ normal(0, 25);
+  yObs ~ normal(yHat, sigma);
+}
+
+generated quantities{
+  real yHatPred[nPred];
+  real yPred[nPred];
+
+  yHatPred = linear_interpolation(xPred, x, y);
+  for(i in 1:nPred)
+    yPred[i] = normal_rng(yHatPred[i], sigma);
+}
+</code></pre><h3 id="effect-compartment-population-model"><span class="section-num">0.9</span> Effect Compartment Population Model</h3>
+<p>\label{sec:effcpt_model}
+Here we expand the <a href="/Torsten/example/twocpt/">Two-compartment model for single patient</a> to a population model fitted to the
+combined data from phase I and phase IIa studies. The
+parameters exhibit inter-individual variations (IIV), due to
+both random effects and to the patients' body weight,
+treated as a covariate and denoted \(bw\).</p>
+<h4 id="population-model-for-plasma-drug-concentration--c"><span class="section-num">0.9.1</span> Population Model for Plasma Drug Concentration \(c\)</h4>
+<p>\begin{gather*}
+\log\left(c_{ij}\right) \sim N\left(\log\left(\widehat{c}_{ij}\right),\sigma^2\right), \\\<br>
+\widehat{c}_{ij} = f_{2cpt}\left(t_{ij},D_j,\tau_j,CL_j,Q_j,V_{1j},V_{2j},k_{aj}\right), \\\<br>
+\log\left(CL_j,Q_j,V_{ssj},k_{aj}\right) \sim N\left(\log\left(\widehat{CL}\left(\frac{bw_j}{70}\right)^{0.75},\widehat{Q}\left(\frac{bw_j}{70}\right)^{0.75}, \widehat{V}_{ss}\left(\frac{bw_j}{70}\right),\widehat{k}_a\right),\Omega\right), \\\<br>
+V_{1j} = f_{V_1}V_{ssj}, \\\<br>
+V_{2j} = \left(1 - f_{V_1}\right)V_{ssj}, \\\<br>
+\left(\widehat{CL},\widehat{Q},\widehat{V}_{ss},\widehat{k}_a, f_{V_1}\right) = \left(10\ {\rm L/h},15\  {\rm L/h},140\  {\rm L},2\ {\rm h^{-1}}, 0.25 \right), \\\<br>
+\Omega = \left(\begin{array}{cccc} 0.25^2 &amp; 0 &amp; 0 &amp; 0 \ 0 &amp; 0.25^2 &amp; 0 &amp; 0 \\\<br>
+0 &amp; 0 &amp; 0.25^2 &amp; 0 \ 0 &amp; 0 &amp; 0 &amp; 0.25^2  \end{array}\right), \\\<br>
+\sigma = 0.1
+\end{gather*}</p>
+<p>Furthermore we add a fourth compartment in which we measure
+a PD effect(Figure <a href="#org1f99f90">5</a>).</p>
+<p><a id="org1f99f90"></a></p>
+<figure><img src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/effCptModel.png"
+         alt="Figure 5: Effect Compartment Model" width="400"/><figcaption>
+            <p>Figure 5: Effect Compartment Model</p>
+        </figcaption>
+</figure>
+
+<h4 id="effect-compartment-model-for-pd-response--r--dot"><span class="section-num">0.9.2</span> Effect Compartment Model for PD response \(R\).</h4>
+<p>\begin{gather*}
+R_{ij} \sim N\left(\widehat{R}_{ij},\sigma_{R}^2\right), \\\<br>
+\widehat{R}_{ij} = \frac{E_{max}c_{eij}}{EC_{50j} + c_{eij}}, \\\<br>
+c_{e\cdot j}^\prime = k_{e0j}\left(c_{\cdot j} - c_{e\cdot j}\right), \\\<br>
+\log\left(EC_{50j}, k_{e0j}\right) \sim N\left(\log\left(\widehat{EC}_{50}, \widehat{k}_{e0}\right),\Omega_R\right), \\\<br>
+\left(E_{max}, \widehat{EC}_{50},\widehat{k}_{e0}\right) = \left(100, 100.7, 1\right), \\\<br>
+\Omega_R = \left(\begin{array}{cc} 0.2^2 &amp; 0 \ 0 &amp; 0.25^2  \end{array}\right), \ \ \ \sigma_R = 10.
+\end{gather*}</p>
+<p>The PK and the PD data are simulated using the following
+treatment.</p>
+<ul>
+<li>Phase I study
+<ul>
+<li>Single dose and multiple doses</li>
+<li>Parallel dose escalation design</li>
+<li>25 subjects per dose</li>
+<li>Single doses: 5, 10, 20, and 40 mg</li>
+<li>PK: plasma concentration of parent drug (\(c\))</li>
+<li>PD response: Emax function of effect compartment concentration (\(R\))</li>
+<li>PK and PD measured at 0.125, 0.25, 0.5, 0.75, 1, 2, 3, 4, 6, 8, 12, 18, and 24 hours</li>
+</ul>
+</li>
+<li>Phase IIa trial in patients
+<ul>
+<li>100 subjects</li>
+<li>Multiple doses: 20 mg</li>
+<li>sparse PK and PD data (3-6 samples per patient)</li>
+</ul>
+</li>
+</ul>
+<p>The model is simultaneously fitted to the PK and the PD
+data. For this effect compartment model, we construct a
+constant rate matrix and use <code>pmx_solve_linode</code>. Correct use of
+Torsten requires the user pass the entire event history
+(observation and dosing events) for an individual to the
+function. Thus the Stan model shows the call to <code>pmx_solve_linode</code>
+within a loop over the individual subjects rather than over
+the individual observations. Note that the correlation matrix \(\rho\) does not explicitly appear
+in the model, but it is used to construct \(\Omega\), which parametrizes
+the PK IIV.</p>
+<pre><code class="language-stan" data-lang="stan">data{
+  int&lt;lower = 1&gt; nSubjects;
+  int&lt;lower = 1&gt; nt;
+  int&lt;lower = 1&gt; nObs;
+  int&lt;lower = 1&gt; iObs[nObs];
+  real&lt;lower = 0&gt; amt[nt];
+  int&lt;lower = 1&gt; cmt[nt];
+  int&lt;lower = 0&gt; evid[nt];
+  int&lt;lower = 1&gt; start[nSubjects];
+  int&lt;lower = 1&gt; end[nSubjects];
+  real&lt;lower = 0&gt; time[nt];
+  vector&lt;lower = 0&gt;[nObs] cObs;
+  vector[nObs] respObs;
+  real&lt;lower = 0&gt; weight[nSubjects];
+  real&lt;lower = 0&gt; rate[nt];
+  real&lt;lower = 0&gt; ii[nt];
+  int&lt;lower = 0&gt; addl[nt];
+  int&lt;lower = 0&gt; ss[nt];
+}
+
+transformed data{
+  vector[nObs] logCObs = log(cObs);
+  int&lt;lower = 1&gt; nRandom = 5;
+  int nCmt = 4;
+  real biovar[nCmt] = rep_array(1.0, nCmt);
+  real tlag[nCmt] = rep_array(0.0, nCmt);
+}
+
+parameters{
+  real&lt;lower = 0&gt; CLHat;
+  real&lt;lower = 0&gt; QHat;
+  real&lt;lower = 0&gt; V1Hat;
+  real&lt;lower = 0&gt; V2Hat;
+  //  real&lt;lower = 0&gt; kaHat;
+  real&lt;lower = (CLHat / V1Hat + QHat / V1Hat + QHat / V2Hat +
+                sqrt((CLHat / V1Hat + QHat / V1Hat + QHat / V2Hat)^2 -
+                     4 * CLHat / V1Hat * QHat / V2Hat)) / 2&gt; kaHat; // ka &gt; lambda_1
+  real&lt;lower = 0&gt; ke0Hat;
+  real&lt;lower = 0&gt; EC50Hat;
+  vector&lt;lower = 0&gt;[nRandom] omega;
+  corr_matrix[nRandom] rho;
+  real&lt;lower = 0&gt; omegaKe0;
+  real&lt;lower = 0&gt; omegaEC50;
+  real&lt;lower = 0&gt; sigma;
+  real&lt;lower = 0&gt; sigmaResp;
+
+  // reparameterization
+  vector[nRandom] logtheta_raw[nSubjects];
+  real logKe0_raw[nSubjects];
+  real logEC50_raw[nSubjects];
+}
+
+transformed parameters{
+  vector&lt;lower = 0&gt;[nRandom] thetaHat;
+  cov_matrix[nRandom] Omega;
+  real&lt;lower = 0&gt; CL[nSubjects];
+  real&lt;lower = 0&gt; Q[nSubjects];
+  real&lt;lower = 0&gt; V1[nSubjects];
+  real&lt;lower = 0&gt; V2[nSubjects];
+  real&lt;lower = 0&gt; ka[nSubjects];
+  real&lt;lower = 0&gt; ke0[nSubjects];
+  real&lt;lower = 0&gt; EC50[nSubjects];
+  matrix[nCmt, nCmt] K;
+  real k10;
+  real k12;
+  real k21;
+  row_vector&lt;lower = 0&gt;[nt] cHat;
+  row_vector&lt;lower = 0&gt;[nObs] cHatObs;
+  row_vector&lt;lower = 0&gt;[nt] respHat;
+  row_vector&lt;lower = 0&gt;[nObs] respHatObs;
+  row_vector&lt;lower = 0&gt;[nt] ceHat;
+  matrix[nCmt, nt] x;
+
+  matrix[nRandom, nRandom] L;
+  vector[nRandom] logtheta[nSubjects];
+  real logKe0[nSubjects];
+  real logEC50[nSubjects];
+
+  thetaHat[1] = CLHat;
+  thetaHat[2] = QHat;
+  thetaHat[3] = V1Hat;
+  thetaHat[4] = V2Hat;
+  thetaHat[5] = kaHat;
+
+  Omega = quad_form_diag(rho, omega); // diag_matrix(omega) * rho * diag_matrix(omega)
+  L = cholesky_decompose(Omega);
+
+  for(j in 1:nSubjects){
+    logtheta[j] = log(thetaHat) + L * logtheta_raw[j];
+    logKe0[j] = log(ke0Hat) + logKe0_raw[j] * omegaKe0;
+    logEC50[j] = log(EC50Hat) + logEC50_raw[j] * omegaEC50;
+
+    CL[j] = exp(logtheta[j, 1]) * (weight[j] / 70)^0.75;
+    Q[j] = exp(logtheta[j, 2]) * (weight[j] / 70)^0.75;
+    V1[j] = exp(logtheta[j, 3]) * weight[j] / 70;
+    V2[j] = exp(logtheta[j, 4]) * weight[j] / 70;
+    ka[j] = exp(logtheta[j, 5]);
+    ke0[j] = exp(logKe0[j]);
+    EC50[j] = exp(logEC50[j]);
+
+    k10 = CL[j] / V1[j];
+    k12 = Q[j] / V1[j];
+    k21 = Q[j] / V2[j];
+
+    K = rep_matrix(0, nCmt, nCmt);
+
+    K[1, 1] = -ka[j];
+    K[2, 1] = ka[j];
+    K[2, 2] = -(k10 + k12);
+    K[2, 3] = k21;
+    K[3, 2] = k12;
+    K[3, 3] = -k21;
+    K[4, 2] = ke0[j];
+    K[4, 4] = -ke0[j];
+
+    x[, start[j]:end[j] ] = pmx_solve_linode(time[start[j]:end[j]], amt[start[j]:end[j]],
+                                             rate[start[j]:end[j]], ii[start[j]:end[j]],
+                                             evid[start[j]:end[j]], cmt[start[j]:end[j]],
+                                             addl[start[j]:end[j]], ss[start[j]:end[j]], K, biovar, tlag);
+
+    cHat[start[j]:end[j]] = 1000 * x[2, start[j]:end[j]] ./ V1[j];
+    ceHat[start[j]:end[j]] = 1000 * x[4, start[j]:end[j]] ./ V1[j];
+    respHat[start[j]:end[j]] = 100 * ceHat[start[j]:end[j]] ./
+       (EC50[j] + ceHat[start[j]:end[j]]);
+  }
+
+  cHatObs = cHat[iObs];
+  respHatObs = respHat[iObs];
+}
+
+model{
+  // Prior
+  CLHat ~ lognormal(log(10), 0.2);
+  QHat ~ lognormal(log(15), 0.2);
+  V1Hat ~ lognormal(log(30), 0.2);
+  V2Hat ~ lognormal(log(100), 0.2);
+  kaHat ~ lognormal(log(5), 0.25);
+  ke0Hat ~ lognormal(log(10), 0.25);
+  EC50Hat ~ lognormal(log(1.0), 0.2);
+  omega ~ normal(0, 0.2);
+</code></pre><h4 id="results"><span class="section-num">0.9.3</span> Results</h4>
+<p>We use the same diagnosis tools as for the
+previous examples. Table <a href="#effCptModelParms">effCptModelParms</a> summarises the
+statistics and diagnostics of the parameters. In particular, <code>rhat</code>
+for all parameters being close to 1.0 indicates convergence of the 4
+chains. Figure <a href="#effcpt_mcmc_density">effcpt_mcmc_density</a> shows the posterior density of
+the parameters.</p>
+<p>Posterior prediction check (PPC) in Figure
+<a href="#effcpt_ppc_5mg">effcpt_ppc_5mg</a>-<a href="#effcpt_ppc_study_2_20mg">effcpt_ppc_study_2_20mg</a> show that the fits to the plasma concentration
+are in close agreement with the data, notably for the sparse data case (phase IIa study). The fits
+to the PD data (Figure
+<a href="#effcpt_ppc_resp_5mg">effcpt_ppc_resp_5mg</a>-<a href="#effcpt_ppc_resp_study_2_20mg">effcpt_ppc_resp_study_2_20mg</a>) look
+reasonable considering data being more noisy so the model
+produces larger credible intervals. Both the summary table and PPC
+plots show that the estimated values of the
+parameters are consistent with the values used to simulate the data.</p>
+<p><a id="table--effCptModelParms"></a></p>
+<div class="table-caption">
+  <span class="table-number"><a href="#table--effCptModelParms">Table 1</a></span>:
+  Summary of the MCMC simulations of the marginal posterior distributions of the model parameters for the effect compartment model example.
+</div>
+<table>
+<thead>
+<tr>
+<th>variable</th>
+<th>mean</th>
+<th>median</th>
+<th>sd</th>
+<th>mad</th>
+<th>q5</th>
+<th>q95</th>
+<th>rhat</th>
+<th>ess_bulk</th>
+<th>ess_tail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CLHat</td>
+<td>10.121</td>
+<td>10.120</td>
+<td>0.195</td>
+<td>0.192</td>
+<td>9.797</td>
+<td>10.445</td>
+<td>1.007</td>
+<td>319.942</td>
+<td>630.619</td>
+</tr>
+<tr>
+<td>QHat</td>
+<td>14.858</td>
+<td>14.853</td>
+<td>0.347</td>
+<td>0.344</td>
+<td>14.301</td>
+<td>15.432</td>
+<td>1.000</td>
+<td>1106.126</td>
+<td>1712.821</td>
+</tr>
+<tr>
+<td>V1Hat</td>
+<td>34.493</td>
+<td>34.516</td>
+<td>1.004</td>
+<td>0.995</td>
+<td>32.814</td>
+<td>36.086</td>
+<td>1.004</td>
+<td>671.777</td>
+<td>1563.396</td>
+</tr>
+<tr>
+<td>V2Hat</td>
+<td>103.269</td>
+<td>103.291</td>
+<td>2.876</td>
+<td>2.878</td>
+<td>98.568</td>
+<td>108.019</td>
+<td>1.002</td>
+<td>1689.165</td>
+<td>2580.382</td>
+</tr>
+<tr>
+<td>kaHat</td>
+<td>1.968</td>
+<td>1.969</td>
+<td>0.076</td>
+<td>0.074</td>
+<td>1.843</td>
+<td>2.087</td>
+<td>1.001</td>
+<td>1204.531</td>
+<td>1747.427</td>
+</tr>
+<tr>
+<td>ke0Hat</td>
+<td>1.102</td>
+<td>1.100</td>
+<td>0.046</td>
+<td>0.045</td>
+<td>1.030</td>
+<td>1.180</td>
+<td>1.001</td>
+<td>4008.337</td>
+<td>3167.030</td>
+</tr>
+<tr>
+<td>EC50Hat</td>
+<td>99.512</td>
+<td>99.542</td>
+<td>2.124</td>
+<td>2.098</td>
+<td>95.981</td>
+<td>102.987</td>
+<td>1.000</td>
+<td>2557.436</td>
+<td>2773.519</td>
+</tr>
+<tr>
+<td>omega[1]</td>
+<td>0.268</td>
+<td>0.267</td>
+<td>0.016</td>
+<td>0.016</td>
+<td>0.242</td>
+<td>0.295</td>
+<td>1.008</td>
+<td>594.842</td>
+<td>978.297</td>
+</tr>
+<tr>
+<td>omega[2]</td>
+<td>0.229</td>
+<td>0.228</td>
+<td>0.021</td>
+<td>0.021</td>
+<td>0.195</td>
+<td>0.264</td>
+<td>1.002</td>
+<td>1245.453</td>
+<td>1966.911</td>
+</tr>
+<tr>
+<td>omega[3]</td>
+<td>0.212</td>
+<td>0.211</td>
+<td>0.029</td>
+<td>0.029</td>
+<td>0.165</td>
+<td>0.261</td>
+<td>1.005</td>
+<td>623.820</td>
+<td>1692.248</td>
+</tr>
+<tr>
+<td>omega[4]</td>
+<td>0.263</td>
+<td>0.262</td>
+<td>0.026</td>
+<td>0.026</td>
+<td>0.221</td>
+<td>0.306</td>
+<td>1.002</td>
+<td>1396.611</td>
+<td>2260.425</td>
+</tr>
+<tr>
+<td>omega[5]</td>
+<td>0.272</td>
+<td>0.271</td>
+<td>0.036</td>
+<td>0.035</td>
+<td>0.217</td>
+<td>0.335</td>
+<td>1.008</td>
+<td>293.132</td>
+<td>728.867</td>
+</tr>
+<tr>
+<td>rho[1,2]</td>
+<td>0.197</td>
+<td>0.200</td>
+<td>0.100</td>
+<td>0.101</td>
+<td>0.029</td>
+<td>0.360</td>
+<td>1.003</td>
+<td>1322.261</td>
+<td>1955.862</td>
+</tr>
+<tr>
+<td>rho[1,3]</td>
+<td>-0.161</td>
+<td>-0.161</td>
+<td>0.122</td>
+<td>0.121</td>
+<td>-0.361</td>
+<td>0.042</td>
+<td>1.001</td>
+<td>1609.160</td>
+<td>2270.515</td>
+</tr>
+<tr>
+<td>rho[1,4]</td>
+<td>-0.101</td>
+<td>-0.105</td>
+<td>0.107</td>
+<td>0.107</td>
+<td>-0.270</td>
+<td>0.083</td>
+<td>1.001</td>
+<td>1685.591</td>
+<td>2353.498</td>
+</tr>
+<tr>
+<td>rho[1,5]</td>
+<td>0.016</td>
+<td>0.015</td>
+<td>0.128</td>
+<td>0.128</td>
+<td>-0.192</td>
+<td>0.226</td>
+<td>1.000</td>
+<td>2039.767</td>
+<td>2939.988</td>
+</tr>
+<tr>
+<td>rho[2,3]</td>
+<td>0.091</td>
+<td>0.092</td>
+<td>0.144</td>
+<td>0.148</td>
+<td>-0.143</td>
+<td>0.328</td>
+<td>1.008</td>
+<td>718.187</td>
+<td>1550.836</td>
+</tr>
+<tr>
+<td>rho[2,4]</td>
+<td>0.186</td>
+<td>0.190</td>
+<td>0.125</td>
+<td>0.125</td>
+<td>-0.025</td>
+<td>0.384</td>
+<td>1.005</td>
+<td>948.704</td>
+<td>1819.199</td>
+</tr>
+<tr>
+<td>rho[2,5]</td>
+<td>0.146</td>
+<td>0.145</td>
+<td>0.157</td>
+<td>0.161</td>
+<td>-0.111</td>
+<td>0.402</td>
+<td>1.003</td>
+<td>626.620</td>
+<td>1546.157</td>
+</tr>
+<tr>
+<td>rho[3,4]</td>
+<td>0.815</td>
+<td>0.827</td>
+<td>0.093</td>
+<td>0.094</td>
+<td>0.646</td>
+<td>0.947</td>
+<td>1.010</td>
+<td>309.098</td>
+<td>736.635</td>
+</tr>
+<tr>
+<td>rho[3,5]</td>
+<td>-0.318</td>
+<td>-0.323</td>
+<td>0.219</td>
+<td>0.228</td>
+<td>-0.678</td>
+<td>0.055</td>
+<td>1.016</td>
+<td>200.806</td>
+<td>607.958</td>
+</tr>
+<tr>
+<td>rho[4,5]</td>
+<td>-0.295</td>
+<td>-0.299</td>
+<td>0.161</td>
+<td>0.162</td>
+<td>-0.551</td>
+<td>-0.019</td>
+<td>1.008</td>
+<td>546.998</td>
+<td>1151.092</td>
+</tr>
+<tr>
+<td>omegaKe0</td>
+<td>0.265</td>
+<td>0.265</td>
+<td>0.047</td>
+<td>0.047</td>
+<td>0.188</td>
+<td>0.346</td>
+<td>1.001</td>
+<td>1731.276</td>
+<td>2049.892</td>
+</tr>
+<tr>
+<td>omegaEC50</td>
+<td>0.216</td>
+<td>0.216</td>
+<td>0.020</td>
+<td>0.020</td>
+<td>0.182</td>
+<td>0.249</td>
+<td>1.001</td>
+<td>1599.567</td>
+<td>1844.056</td>
+</tr>
+<tr>
+<td>sigma</td>
+<td>0.099</td>
+<td>0.099</td>
+<td>0.002</td>
+<td>0.002</td>
+<td>0.095</td>
+<td>0.103</td>
+<td>1.002</td>
+<td>1726.283</td>
+<td>2836.027</td>
+</tr>
+<tr>
+<td>sigmaResp</td>
+<td>10.165</td>
+<td>10.166</td>
+<td>0.198</td>
+<td>0.198</td>
+<td>9.844</td>
+<td>10.495</td>
+<td>1.002</td>
+<td>4788.527</td>
+<td>2923.203</td>
+</tr>
+</tbody>
+</table>
+<p><a id="org5082d7f"></a></p>
+<p>&lt;/ox-hugo/density.pdf&gt;</p>
+<p><a id="org70f8e48"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_5mg.pdf&gt;</p>
+<p><a id="org19c8784"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_10mg.pdf&gt;</p>
+<p><a id="orgeafa383"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_20mg.pdf&gt;</p>
+<p><a id="org72835cf"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_40mg.pdf&gt;</p>
+<p><a id="org70aa6ef"></a></p>
+<p>&lt;/ox-hugo/ppc_study_2_20mg.pdf&gt;</p>
+<p><a id="org35a7ea5"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_5mg_resp.pdf&gt;</p>
+<p><a id="orgba1b737"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_10mg_resp.pdf&gt;</p>
+<p><a id="org7eaaed3"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_20mg_resp.pdf&gt;</p>
+<p><a id="org4de2133"></a></p>
+<p>&lt;/ox-hugo/ppc_study_1_40mg_resp.pdf&gt;</p>
+<p><a id="org0c10370"></a></p>
+<p>&lt;/ox-hugo/ppc_study_2_20mg_resp.pdf&gt;</p>
+<h3 id="friberg-karlsson-semi-mechanistic-population-model"><span class="section-num">0.10</span> Friberg-Karlsson Semi-Mechanistic Population Model</h3>
+<p>\label{sec:fkpop_model}
+We now return to the example of <a href="/Torsten/example/pkpd/">Joint PK-PD model</a> and extend
+it to a population model. While we recommend using the coupled
+solver, and this time we solve it using group solver. We leave it
+as an exercise to the reader to rewrite the model with
+coupled solver.</p>
+<h4 id="friberg-karlsson-population-model-for-drug-induced-myelosuppression--anc"><span class="section-num">0.10.1</span> Friberg-Karlsson Population Model for drug-induced myelosuppression (\(ANC\))</h4>
+<p>\begin{gather*}
+\log(ANC_{ij}) \sim N(Circ_{ij}, \sigma^2_{ANC}), \\\<br>
+\log\left(MTT_j, Circ_{0j}, \alpha_j\right) \sim N\left(\log\left(\widehat{MTT}, \widehat{Circ_0}, \widehat{\alpha}\right), \Omega_{ANC}\right), \\\<br>
+\left(\widehat{MTT}, \widehat{Circ}_0,\widehat{\alpha}, \gamma \right) = \left(125, 5, 2, 0.17\right), \\\<br>
+\Omega_{ANC} = \left(\begin{array}{ccc} 0.2^2 &amp; 0 &amp; 0 \ 0 &amp; 0.35^2 &amp; 0 \ 0 &amp; 0 &amp; 0.2^2 \end{array}\right), \\\<br>
+\sigma_{ANC} = 0.1, \\\<br>
+\Omega_{PK} = \left(\begin{array}{ccccc} 0.25^2 &amp; 0 &amp;a 0 &amp; 0 &amp; 0 \ 0 &amp; 0.4^2 &amp; 0 &amp; 0 &amp; 0 \\\<br>
+0 &amp; 0 &amp; 0.25^2 &amp; 0 &amp; 0 \ 0 &amp; 0 &amp; 0 &amp; 0.4^2 &amp; 0 \ 0 &amp; 0 &amp; 0 &amp; 0 &amp; 0.25^2  \end{array}\right)
+\end{gather*}</p>
+<p>The PK and the PD data are simulated using the following treatment.</p>
+<ul>
+<li>Phase IIa trial in patients
+<ul>
+<li>Multiple doses: 80,000 mg</li>
+<li>Parallel dose escalation design</li>
+<li>15 subjects</li>
+<li>PK: plasma concentration of parent drug (\(c\))</li>
+<li>PD response: Neutrophil count (\(ANC\))</li>
+<li>PK measured at 0.083, 0.167, 0.25, 0.5, 0.75, 1, 2, 3, 4, 6, 8, 12, 18, and 24 hours</li>
+<li>PD measured once every two days for 28 days.</li>
+</ul>
+</li>
+</ul>
+<p>Once again, we simultaneously fit the model to the PK and the PD
+data. It pays off to construct informative priors. For instance, we could
+fit the PK data first, as was done in  example 1, and get informative
+priors on the PK parameters. The PD parameters are drug independent,
+so we can use information from the neutropenia literature. In this
+example, we choose to use strongly informative priors on both PK and PD
+parameters.</p>
+<p>The ODE is defined as</p>
+<pre><code class="language-stan" data-lang="stan">functions{
+    vector twoCptNeutModelODE(real t, vector x, real[] parms, real[] rdummy, int[] idummy){
+    real k10;
+    real k12;
+    real k21;
+    real CL;
+    real Q;
+    real V1;
+    real V2;
+    real ka;
+    real mtt;
+    real circ0;
+    real gamma;
+    real alpha;
+    real ktr;
+    vector[8] dxdt;
+    real conc;
+    real EDrug;
+    real transit1;
+    real transit2;
+    real transit3;
+    real circ;
+    real prol;
+
+    CL = parms[1];
+    Q = parms[2];
+    V1 = parms[3];
+    V2 = parms[4];
+    ka = parms[5];
+    mtt = parms[6];
+    circ0 = parms[7];
+    gamma = parms[8];
+    alpha = parms[9];
+
+    k10 = CL / V1;
+    k12 = Q / V1;
+    k21 = Q / V2;
+
+    ktr = 4 / mtt;
+
+    dxdt[1] = -ka * x[1];
+    dxdt[2] = ka * x[1] - (k10 + k12) * x[2] + k21 * x[3];
+    dxdt[3] = k12 * x[2] - k21 * x[3];
+    conc = x[2]/V1;
+    EDrug = alpha * conc;
+    // x[4], x[5], x[6], x[7] and x[8] are differences from circ0.
+    prol = x[4] + circ0;
+    transit1 = x[5] + circ0;
+    transit2 = x[6] + circ0;
+    transit3 = x[7] + circ0;
+    circ = fmax(machine_precision(), x[8] + circ0); // Device for implementing a modeled
+                                                    // initial condition
+    dxdt[4] = ktr * prol * ((1 - EDrug) * ((circ0 / circ)^gamma) - 1);
+    dxdt[5] = ktr * (prol - transit1);
+    dxdt[6] = ktr * (transit1 - transit2);
+    dxdt[7] = ktr * (transit2 - transit3);
+    dxdt[8] = ktr * (transit3 - circ);
+
+    return dxdt;
+  }
+}
+</code></pre><p>We use the <code>pmx_solve_group_rk45</code> function to
+solve the entire population&rsquo;s events.</p>
+<pre><code class="language-stan" data-lang="stan">transformed parameters{
+  row_vector[nt] cHat;
+  vector[nObsPK] cHatObs;
+  row_vector[nt] neutHat;
+  vector[nObsPD] neutHatObs;
+  matrix[8, nt] x;
+  real&lt;lower = 0&gt; parms[nSubjects, nTheta]; // The [1] indicates the parameters are constant
+
+  // variables for Matt's trick
+  vector&lt;lower = 0&gt;[nIIV] thetaHat;
+  matrix&lt;lower = 0&gt;[nSubjects, nIIV] thetaM;
+
+  // Matt's trick to use unit scale
+  thetaHat[1] = CLHat;
+  thetaHat[2] = QHat;
+  thetaHat[3] = V1Hat;
+  thetaHat[4] = V2Hat;
+  thetaHat[5] = mttHat;
+  thetaHat[6] = circ0Hat;
+  thetaHat[7] = alphaHat;
+  thetaM = (rep_matrix(thetaHat, nSubjects) .*
+             exp(diag_pre_multiply(omega, L * etaStd)))';
+
+  for(i in 1:nSubjects) {
+    parms[i, 1] = thetaM[i, 1] * (weight[i] / 70)^0.75; // CL
+    parms[i, 2] = thetaM[i, 2] * (weight[i] / 70)^0.75; // Q
+    parms[i, 3] = thetaM[i, 3] * (weight[i] / 70); // V1
+    parms[i, 4] = thetaM[i, 4] * (weight[i] / 70); // V2
+    parms[i, 5] = kaHat; // ka
+    parms[i, 6] = thetaM[i, 5]; // mtt
+    parms[i, 7] = thetaM[i, 6]; // circ0
+    parms[i, 8] = gamma;
+    parms[i, 9] = thetaM[i, 7]; // alpha
+  }
+
+  /* group solver */
+  x = pmx_solve_group_rk45(twoCptNeutModelODE, 8, len,
+                           time, amt, rate, ii, evid, cmt, addl, ss,
+                           parms,
+                           1e-6, 1e-6, 500);
+
+  for(i in 1:nSubjects) {
+    cHat[start[i]:end[i]] = x[2, start[i]:end[i]] / parms[i, 3]; // divide by V1
+    neutHat[start[i]:end[i]] = x[8, start[i]:end[i]] + parms[i, 7]; // Add baseline
+  }
+
+  for(i in 1:nObsPK) cHatObs[i] = cHat[iObsPK[i]];
+  for(i in 1:nObsPD) neutHatObs[i] = neutHat[iObsPD[i]];
+}
+</code></pre><p>This allows us to use within-chain paralleleisation to reduce
+simulation time. When run from cmdstan, each MPI run generates one
+chain, and we use 4 MPI runs to generate 4 chains.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash"><span style="color:#75715e"># chain 1</span>
+mpiexec -n nproc ./FribergKarlsson sample adapt delta<span style="color:#f92672">=</span>0.95 data file<span style="color:#f92672">=</span>fribergkarlsson.data.R init<span style="color:#f92672">=</span>fribergkarlsson.init.R random seed<span style="color:#f92672">=</span><span style="color:#ae81ff">8765</span> id<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span> output file<span style="color:#f92672">=</span>output.1.csv
+<span style="color:#75715e"># chain 2</span>
+mpiexec -n nproc ./FribergKarlsson sample adapt delta<span style="color:#f92672">=</span>0.95 data file<span style="color:#f92672">=</span>fribergkarlsson.data.R init<span style="color:#f92672">=</span>fribergkarlsson.init.R random seed<span style="color:#f92672">=</span><span style="color:#ae81ff">8765</span> id<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span> output file<span style="color:#f92672">=</span>output.2.csv
+<span style="color:#75715e"># chain 3</span>
+mpiexec -n nproc ./FribergKarlsson sample adapt delta<span style="color:#f92672">=</span>0.95 data file<span style="color:#f92672">=</span>fribergkarlsson.data.R init<span style="color:#f92672">=</span>fribergkarlsson.init.R random seed<span style="color:#f92672">=</span><span style="color:#ae81ff">8765</span> id<span style="color:#f92672">=</span><span style="color:#ae81ff">3</span> output file<span style="color:#f92672">=</span>output.3.csv
+<span style="color:#75715e"># chain 4</span>
+mpiexec -n nproc ./FribergKarlsson sample adapt delta<span style="color:#f92672">=</span>0.95 data file<span style="color:#f92672">=</span>fribergkarlsson.data.R init<span style="color:#f92672">=</span>fribergkarlsson.init.R random seed<span style="color:#f92672">=</span><span style="color:#ae81ff">8765</span> id<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span> output file<span style="color:#f92672">=</span>output.4.csv
+</code></pre></div><h4 id="results"><span class="section-num">0.10.2</span> Results</h4>
+<p>Table <a href="#FkpopModelParms">FkpopModelParms</a> summarizes the sampling and some diagnostics output.
+estimation reflects the real value of the parameters (Table <a href="#FkpopModelParms">FkpopModelParms</a> and Figure <a href="#fkpop_mcmc_density">fkpop_mcmc_density</a>.
+Similar to the previous example, PPCs shown in Figure <a href="#fkpop_ppc_pk">fkpop_ppc_pk</a>
+and <a href="#fkpop_ppc_pd">fkpop_ppc_pd</a> indicate the model is a good fit.</p>
+<p><a id="table--FkpopModelParms"></a></p>
+<div class="table-caption">
+  <span class="table-number"><a href="#table--FkpopModelParms">Table 2</a></span>:
+  Summary of the MCMC simulations of the marginal posterior distributions of the model parameters for the Friberg-Karlsson population model example.
+</div>
+<table>
+<thead>
+<tr>
+<th>variable</th>
+<th>mean</th>
+<th>median</th>
+<th>sd</th>
+<th>mad</th>
+<th>q5</th>
+<th>q95</th>
+<th>rhat</th>
+<th>ess_bulk</th>
+<th>ess_tail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CLHat</td>
+<td>9.539</td>
+<td>9.535</td>
+<td>0.522</td>
+<td>0.487</td>
+<td>8.692</td>
+<td>10.401</td>
+<td>1.006</td>
+<td>971.369</td>
+<td>1655.449</td>
+</tr>
+<tr>
+<td>QHat</td>
+<td>15.401</td>
+<td>15.386</td>
+<td>1.018</td>
+<td>1.000</td>
+<td>13.742</td>
+<td>17.090</td>
+<td>1.000</td>
+<td>2263.843</td>
+<td>2447.006</td>
+</tr>
+<tr>
+<td>V1Hat</td>
+<td>37.396</td>
+<td>37.360</td>
+<td>2.244</td>
+<td>2.228</td>
+<td>33.762</td>
+<td>41.058</td>
+<td>1.001</td>
+<td>1936.476</td>
+<td>2372.815</td>
+</tr>
+<tr>
+<td>V2Hat</td>
+<td>101.698</td>
+<td>101.394</td>
+<td>6.503</td>
+<td>6.119</td>
+<td>91.529</td>
+<td>112.538</td>
+<td>1.001</td>
+<td>2580.227</td>
+<td>2592.925</td>
+</tr>
+<tr>
+<td>kaHat</td>
+<td>1.997</td>
+<td>1.997</td>
+<td>0.074</td>
+<td>0.074</td>
+<td>1.873</td>
+<td>2.115</td>
+<td>1.001</td>
+<td>7056.877</td>
+<td>2993.406</td>
+</tr>
+<tr>
+<td>mttHat</td>
+<td>113.681</td>
+<td>113.204</td>
+<td>11.506</td>
+<td>10.910</td>
+<td>95.807</td>
+<td>133.514</td>
+<td>1.001</td>
+<td>4255.900</td>
+<td>3269.646</td>
+</tr>
+<tr>
+<td>circ0Hat</td>
+<td>4.760</td>
+<td>4.752</td>
+<td>0.241</td>
+<td>0.229</td>
+<td>4.375</td>
+<td>5.163</td>
+<td>1.002</td>
+<td>3774.920</td>
+<td>2783.663</td>
+</tr>
+<tr>
+<td>omega[1]</td>
+<td>0.223</td>
+<td>0.217</td>
+<td>0.047</td>
+<td>0.042</td>
+<td>0.160</td>
+<td>0.307</td>
+<td>1.000</td>
+<td>1751.864</td>
+<td>2235.607</td>
+</tr>
+<tr>
+<td>omega[2]</td>
+<td>0.339</td>
+<td>0.329</td>
+<td>0.073</td>
+<td>0.067</td>
+<td>0.239</td>
+<td>0.473</td>
+<td>1.001</td>
+<td>2363.843</td>
+<td>2607.056</td>
+</tr>
+<tr>
+<td>omega[3]</td>
+<td>0.264</td>
+<td>0.256</td>
+<td>0.057</td>
+<td>0.051</td>
+<td>0.186</td>
+<td>0.367</td>
+<td>1.002</td>
+<td>2128.660</td>
+<td>2018.425</td>
+</tr>
+<tr>
+<td>omega[4]</td>
+<td>0.257</td>
+<td>0.249</td>
+<td>0.056</td>
+<td>0.051</td>
+<td>0.182</td>
+<td>0.361</td>
+<td>1.003</td>
+<td>2293.877</td>
+<td>2937.673</td>
+</tr>
+<tr>
+<td>omega[5]</td>
+<td>0.177</td>
+<td>0.169</td>
+<td>0.112</td>
+<td>0.118</td>
+<td>0.019</td>
+<td>0.376</td>
+<td>1.000</td>
+<td>1550.483</td>
+<td>2045.025</td>
+</tr>
+<tr>
+<td>omega[6]</td>
+<td>0.188</td>
+<td>0.183</td>
+<td>0.044</td>
+<td>0.041</td>
+<td>0.127</td>
+<td>0.269</td>
+<td>1.000</td>
+<td>2377.698</td>
+<td>2965.713</td>
+</tr>
+<tr>
+<td>omega[7]</td>
+<td>0.409</td>
+<td>0.394</td>
+<td>0.256</td>
+<td>0.259</td>
+<td>0.045</td>
+<td>0.865</td>
+<td>1.003</td>
+<td>1386.987</td>
+<td>2015.873</td>
+</tr>
+<tr>
+<td>gamma</td>
+<td>0.171</td>
+<td>0.168</td>
+<td>0.035</td>
+<td>0.033</td>
+<td>0.121</td>
+<td>0.235</td>
+<td>1.000</td>
+<td>8809.668</td>
+<td>3189.676</td>
+</tr>
+<tr>
+<td>sigma</td>
+<td>0.097</td>
+<td>0.096</td>
+<td>0.003</td>
+<td>0.003</td>
+<td>0.093</td>
+<td>0.101</td>
+<td>1.002</td>
+<td>5436.508</td>
+<td>2899.706</td>
+</tr>
+<tr>
+<td>sigmaNeut</td>
+<td>0.106</td>
+<td>0.105</td>
+<td>0.012</td>
+<td>0.011</td>
+<td>0.088</td>
+<td>0.127</td>
+<td>1.000</td>
+<td>2809.059</td>
+<td>3031.605</td>
+</tr>
+<tr>
+<td>alphaHat</td>
+<td>2.24e-4</td>
+<td>2.19e-4</td>
+<td>3.97e-05</td>
+<td>3.80e-05</td>
+<td>1.66e-4</td>
+<td>2.96e-4</td>
+<td>1.000</td>
+<td>5138.105</td>
+<td>2807.328</td>
+</tr>
+</tbody>
+</table>
+<p><a id="orgcd784c3"></a></p>
+<p>&lt;/ox-hugo/density.pdf&gt;</p>
+<p><a id="orgfdff2bc"></a></p>
+<p>&lt;/ox-hugo/ppc_pk.pdf&gt;</p>
+<p><a id="orgf891c9c"></a></p>
+<p>&lt;/ox-hugo/ppc_pd.pdf&gt;</p>
+<p>\appendix</p>
+<h2 id="bibliography"><span class="section-num">1</span> Bibliography</h2>
+<p><a id="org200243c"></a>Baron, Kyle T., and Marc R. Gastonguay. 2015. “Simulation from ODE-Based Population PK/PD and Systems Pharmacology Models in R with Mrgsolve.” <em>Journal of Pharmacokinetics and Pharmacodynamics</em> 42 (W-23):S84–85.</p>
+<p><a id="org49ff31c"></a>Friberg, Lena E., and Mats O. Karlsson. 2003. “Mechanistic Models for Myelosuppression.” <em>Investigational New Drugs</em> 21 (2):183–94. <a href="https://link.springer.com/article/10.1023/A:1023573429626">https://link.springer.com/article/10.1023/A:1023573429626</a>.</p>
 <div class="edit-meta">
-Last updated on 28 Jun 2021
+Last updated on 29 Jun 2021
 
 
 <br>
@@ -85,6 +1788,7 @@ Published on 25 Jun 2021
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
   
 <ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/events/">Events specification</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>

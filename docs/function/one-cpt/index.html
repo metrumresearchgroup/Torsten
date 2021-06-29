@@ -24,7 +24,7 @@ y_2&#39; &amp;= k_a y_1 - \left(\frac{CL}{V_2} &#43; \frac{Q}{V_2}\right) y_2." 
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="function" />
 <meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-28T20:39:29-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-29T11:51:45-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
@@ -37,7 +37,7 @@ y_2&#39; &amp;= k_a y_1 - \left(\frac{CL}{V_2} &#43; \frac{Q}{V_2}\right) y_2."/
 <meta itemprop="description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_onecpt solves a one-compartment PK model (Figure 1). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\) by solving for the mass of drug in the central compartment \(y_2\) from ordinary differential equations(ODEs)
 \begin{align}\label{eq:onecpt} y_1&#39; &amp;= -k_a y_1, \\\
 y_2&#39; &amp;= k_a y_1 - \left(\frac{CL}{V_2} &#43; \frac{Q}{V_2}\right) y_2."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-28T20:39:29-07:00" />
+<meta itemprop="dateModified" content="2021-06-29T11:51:45-07:00" />
 <meta itemprop="wordCount" content="175"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
@@ -76,14 +76,14 @@ y_2&#39; &amp;= k_a y_1 - \left(\frac{CL}{V_2} &#43; \frac{Q}{V_2}\right) y_2.">
 <!--endtoc-->
 <h2 id="description"><span class="section-num">1</span> Description</h2>
 <p>Function <code>pmx_solve_onecpt</code> solves a one-compartment PK
-model (Figure <a href="#org869d19c">1</a>). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\)
+model (Figure <a href="#orgb9536dc">1</a>). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\)
 by solving for the mass of drug in the central compartment
 \(y_2\) from ordinary differential equations(ODEs)</p>
 <p>\begin{align}\label{eq:onecpt}
 y_1' &amp;= -k_a y_1, \\\<br>
 y_2' &amp;= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2.
 \end{align}</p>
-<p><a id="org869d19c"></a></p>
+<p><a id="orgb9536dc"></a></p>
 <figure><img src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/cptModels.png"
          alt="Figure 1: One and two compartment models with first order absorption implemented in Torsten." width="300"/><figcaption>
             <p>Figure 1: One and two compartment models with first order absorption implemented in Torsten.</p>
@@ -93,7 +93,7 @@ y_2' &amp;= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2.
 <h2 id="usage"><span class="section-num">2</span> Usage</h2>
 <pre><code class="language-stan" data-lang="stan">matrix = pmx_solve_onecpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, biovar, tlag ] )
 </code></pre><h2 id="arguments"><span class="section-num">3</span> Arguments</h2>
-<p>See Table <a href="#tab:event_args">tab:event_args</a> and Table <a href="#tab:event_params">tab:event_params</a>.</p>
+<p>See Tables in Section <a href="/Torsten/function/events/">Events specification</a>.</p>
 <h2 id="return-value"><span class="section-num">4</span> Return value</h2>
 <p>An <code>ncmt</code>-by-<code>nt</code> matrix, where <code>nt</code> is the number of time steps and <code>ncmt=2</code> is the number of compartments.</p>
 <h2 id="note"><span class="section-num">5</span> Note</h2>
@@ -109,12 +109,12 @@ pmx_solve_onecpt(..., theta, biovar, tlag);
 <li>Setting \(k_a = 0\) eliminates the first-order absorption.</li>
 </ul>
 <div class="edit-meta">
-Last updated on 28 Jun 2021
+Last updated on 29 Jun 2021
 
 
 <br>
 Published on 25 Jun 2021
-<br><a href="https://github.com/thingsym/hugo-theme-techdoc/edit/master/content/function/one-cpt.md" class="edit-page"><i class="fas fa-pen-square"></i>&nbsp;Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="https://metrumresearchgroup.github.io/Torsten/function/" title="Using Torsten"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Using Torsten</a>
+<br><a href="https://github.com/thingsym/hugo-theme-techdoc/edit/master/content/function/one-cpt.md" class="edit-page"><i class="fas fa-pen-square"></i>&nbsp;Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="https://metrumresearchgroup.github.io/Torsten/function/events/" title="Events specification"><i class="fas fa-arrow-left" aria-hidden="true"></i>&nbsp;Prev - Events specification</a>
 <a class="nav nav-next" href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/" title="Two Compartment Model">Next - Two Compartment Model <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
 </nav><footer><p class="powered">Exported
   from <a href="https://www.gnu.org/software/emacs/">Emacs 27.1</a>
@@ -136,6 +136,7 @@ Published on 25 Jun 2021
 <li class="parent"><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
   
 <ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/events/">Events specification</a></li>
 <li class="active"><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>

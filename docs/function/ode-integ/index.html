@@ -21,11 +21,11 @@
 <meta property="og:description" content="Description Torsten provides its own implementation of ODE solvers that solves
 \begin{equation*} y&#39;(t) = f(t, y(t)), \quad y(t_0) = y_0 \end{equation*}
 for \(y\). These solvers are customized for Torsten applications and different from those found in Stan. The general ODE PMX solvers in previous sections are internally powered by these functions.
-Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]); Arguments \label{sec:ode_func_args}" />
+Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]); Arguments  ODE_rhs Function that specifies the right-hand-side \(f\)." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/function/ode-integ/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="function" />
 <meta property="article:published_time" content="2021-06-28T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-28T19:35:17-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-29T11:51:48-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
@@ -34,14 +34,14 @@ Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, r
 <meta name="twitter:description" content="Description Torsten provides its own implementation of ODE solvers that solves
 \begin{equation*} y&#39;(t) = f(t, y(t)), \quad y(t_0) = y_0 \end{equation*}
 for \(y\). These solvers are customized for Torsten applications and different from those found in Stan. The general ODE PMX solvers in previous sections are internally powered by these functions.
-Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]); Arguments \label{sec:ode_func_args}"/>
+Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]); Arguments  ODE_rhs Function that specifies the right-hand-side \(f\)."/>
 <meta itemprop="name" content="ODE  integrator function">
 <meta itemprop="description" content="Description Torsten provides its own implementation of ODE solvers that solves
 \begin{equation*} y&#39;(t) = f(t, y(t)), \quad y(t_0) = y_0 \end{equation*}
 for \(y\). These solvers are customized for Torsten applications and different from those found in Stan. The general ODE PMX solvers in previous sections are internally powered by these functions.
-Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]); Arguments \label{sec:ode_func_args}"><meta itemprop="datePublished" content="2021-06-28T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-28T19:35:17-07:00" />
-<meta itemprop="wordCount" content="529"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]); Arguments  ODE_rhs Function that specifies the right-hand-side \(f\)."><meta itemprop="datePublished" content="2021-06-28T00:00:00-07:00" />
+<meta itemprop="dateModified" content="2021-06-29T11:51:48-07:00" />
+<meta itemprop="wordCount" content="527"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
@@ -72,7 +72,6 @@ by these functions.</p>
 <h4 id="usage">Usage</h4>
 <pre><code class="language-stan" data-lang="stan">real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]);
 </code></pre><h4 id="arguments">Arguments</h4>
-<p>\label{sec:ode_func_args}</p>
 <ul>
 <li><code>ODE_rhs</code>
 Function that specifies the right-hand-side \(f\).
@@ -108,7 +107,6 @@ default to 100000.</li>
 <p>An <code>n</code>-by-<code>nd</code> 2d-array, where <code>n</code> is the size of <code>ts</code>
 and <code>nd</code> the dimension of the system.</p>
 <h4 id="note">Note</h4>
-<p>\label{sec:ode_func_note}</p>
 <ul>
 <li>
 <p>Three numerical integrator are provided:</p>
@@ -145,8 +143,8 @@ below certain threshold without affecting the rest of
 the dynamic system, setting
 <code>atol</code> greater than that threshold will avoid
 spurious and error-prone computation. See
-(<a href="#org60e7038">Hindmarsh et al. 2020</a>) and
-1.4 of (<a href="#org924bd17">Shampine et al. 2003</a>) for details.</p>
+(<a href="#orgf3cad96">Hindmarsh et al. 2020</a>) and
+1.4 of (<a href="#orgfb581ad">Shampine et al. 2003</a>) for details.</p>
 </li>
 <li>
 <p>With optional arguments indicated by square bracket, the following calls are allowed:</p>
@@ -156,10 +154,10 @@ spurious and error-prone computation. See
 <pre><code class="language-stan" data-lang="stan">pmx_integrate_ode_[adams || rk45 || bdf](..., x_i);
 pmx_integrate_ode_[adams || rk45 || bdf](..., x_i, rel_tol, abs_tol, max_step);
 </code></pre><h2 id="bibliography">Bibliography</h2>
-<p><a id="org60e7038"></a>Hindmarsh, Alan C., Radu Serban, Cody J. Balos, David J. Gardner, Carol S. Woodward, and Daniel R. Reynolds. 2020. <em>User Documentation for Cvodes V5.4.0</em>.</p>
-<p><a id="org924bd17"></a>Shampine, L. F., I. Gladwell, Larry Shampine, and S. Thompson. 2003. <em>Solving ODEs with MATLAB</em>. Cambridge University Press.</p>
+<p><a id="orgf3cad96"></a>Hindmarsh, Alan C., Radu Serban, Cody J. Balos, David J. Gardner, Carol S. Woodward, and Daniel R. Reynolds. 2020. <em>User Documentation for Cvodes V5.4.0</em>.</p>
+<p><a id="orgfb581ad"></a>Shampine, L. F., I. Gladwell, Larry Shampine, and S. Thompson. 2003. <em>Solving ODEs with MATLAB</em>. Cambridge University Press.</p>
 <div class="edit-meta">
-Last updated on 28 Jun 2021
+Last updated on 29 Jun 2021
 
 
 <br>
@@ -186,6 +184,7 @@ Published on 28 Jun 2021
 <li class="parent"><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
   
 <ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/events/">Events specification</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>

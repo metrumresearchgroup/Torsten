@@ -25,7 +25,7 @@ In the case where the rate vector \(r\) is non-zero, this equation becomes:
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/function/genode/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="function" />
 <meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-28T19:35:16-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-29T11:51:47-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
@@ -40,8 +40,8 @@ In the case where the rate vector \(r\) is non-zero, this equation becomes:
 \begin{equation*} y&#39;(t) = f(t, y(t)) \end{equation*}
 In the case where the rate vector \(r\) is non-zero, this equation becomes:
 \begin{equation*} y&#39;(t) = f(t, y(t)) &#43; r \end{equation*}"><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-28T19:35:16-07:00" />
-<meta itemprop="wordCount" content="617"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+<meta itemprop="dateModified" content="2021-06-29T11:51:47-07:00" />
+<meta itemprop="wordCount" content="623"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
@@ -129,20 +129,19 @@ The relative tolerance for algebra solver for steady state solution, default to 
 The absolute tolerance for algebra solver for steady state solution, default to 1.0E-6.</li>
 <li><code>as_max_step</code>
 The maximum number of interations in algebra solver for steady state solution, default to \(10^2\).</li>
-<li>See Table <a href="#tab:event_args">tab:event_args</a> and Table <a href="#tab:event_params">tab:event_params</a> for the rest of arguments.</li>
+<li>See Tables in Section <a href="/Torsten/function/events/">Events specification</a> for the rest of arguments.</li>
 </ul>
 <h2 id="return-value"><span class="section-num">4</span> Return value</h2>
 <p>An <code>nCmt</code>-by-<code>nt</code> matrix, where <code>nt</code> is the size of <code>time</code>.</p>
 <h2 id="note"><span class="section-num">5</span> Note</h2>
 <ul>
-<li>See section <a href="#sec:ode_func_note">sec:ode_func_note</a> for different types of integrator and general guidance.</li>
-<li>See section <a href="#sec:ode_func_note">sec:ode_func_note</a> for comments on accuracy and tolerance.</li>
+<li>See Section <a href="/Torsten/function/ode-integ/">ODE  integrator function</a> for different types of integrator and general guidance.</li>
+<li>See Section <a href="/Torsten/function/ode-integ/">ODE  integrator function</a> for comments on accuracy and tolerance.</li>
 <li>The default values of <code>atol</code>,
 <code>rtol</code>, and <code>max_step</code> are
 based on a limited amount of PKPD test problems and should not be considered as
 universally applicable. We strongly recommend user to set these values
-according to physical intuition and numerical tests. See also Secion
-<a href="#sec:ode_func_note">sec:ode_func_note</a>.</li>
+according to physical intuition and numerical tests. See also Section <a href="/Torsten/function/ode-integ/">ODE  integrator function</a>.</li>
 <li>With optional arguments indicated by square bracket, the following calls are allowed:</li>
 </ul>
 <!--listend-->
@@ -162,7 +161,7 @@ pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, x_i);
 pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, x_i, rel_tol, abs_tol, max_step);
 pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, x_i, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
 </code></pre><div class="edit-meta">
-Last updated on 28 Jun 2021
+Last updated on 29 Jun 2021
 
 
 <br>
@@ -189,6 +188,7 @@ Published on 25 Jun 2021
 <li class="parent"><a href="https://metrumresearchgroup.github.io/Torsten/function/">Using Torsten</a>
   
 <ul class="sub-menu">
+<li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/events/">Events specification</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/">One Compartment Model</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/">Two Compartment Model</a></li>
 <li class=""><a href="https://metrumresearchgroup.github.io/Torsten/function/linode/">General Linear ODE Model Function</a></li>
