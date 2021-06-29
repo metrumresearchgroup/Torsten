@@ -2,7 +2,7 @@
 title = "Two Compartment Model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-29T11:51:45-07:00
+lastmod = 2021-06-29T14:35:25-07:00
 draft = false
 weight = 2003
 +++
@@ -30,15 +30,17 @@ weight = 2003
 ## <span class="section-num">1</span> Description {#description}
 
 Function `pmx_solve_twocpt` solves a two-compartment PK
-model (Figure [{{< relref "one-cpt" >}}]({{< relref "one-cpt" >}})). The model obtains plasma concentrations of parent drug \\(c=y\_2/V\_2\\)
-by solving for the mass of drug in the central compartment
-\\(y\_2\\) from ordinary differential equations(ODEs)
+model (Figure [{{< relref "one-cpt" >}}]({{< relref "one-cpt" >}})). The model obtains the mass \\((y\_1, y\_2, y\_3)\\) in each compartment
+by solving the ODEs
 
 \begin{align} \label{eq:twocpt}
   y\_1' &= -k\_a y\_1 \\\\\\
   y\_2' &= k\_a y\_1 - \left(\frac{CL}{V\_2} + \frac{Q}{V\_2}\right) y\_2 +  \frac{Q}{V\_3}  y\_3  \\\\\\
   y\_3' &= \frac{Q}{V\_2} y\_2 - \frac{Q}{V\_3} y\_3
 \end{align}
+
+The plasma concentrations of parent drug in the central compartment
+can then be calculated as \\(c=y\_2/V\_2\\).
 
 
 ## <span class="section-num">2</span> Usage {#usage}

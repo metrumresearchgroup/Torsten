@@ -2,7 +2,7 @@
 title = "Effect Compartment Population Model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-29T12:22:10-07:00
+lastmod = 2021-06-29T14:35:35-07:00
 draft = false
 weight = 2009
 +++
@@ -46,9 +46,9 @@ treated as a covariate and denoted \\(bw\\).
 \end{gather\*}
 
 Furthermore we add a fourth compartment in which we measure
-a PD effect(Figure [1](#org98536b8)).
+a PD effect(Figure [1](#org279532f)).
 
-<a id="org98536b8"></a>
+<a id="org279532f"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/effCptModel.png" caption="Figure 1: Effect Compartment Model" width="400" >}}
 
@@ -241,13 +241,13 @@ We use the same diagnosis tools as for the
 previous examples. Table [1](#table--effCptModelParms) summarises the
 statistics and diagnostics of the parameters. In particular, `rhat`
 for all parameters being close to 1.0 indicates convergence of the 4
-chains. Figure [2](#orgdf23b71) shows the posterior density of
+chains. Figure [2](#org3461001) shows the posterior density of
 the parameters.
 
 Posterior prediction check (PPC) in Figure
-[3](#org6e78d15) - [7](#org798e4f7) show that the fits to the plasma concentration
+[3](#orgf7b4fb0) - [7](#org5e84656) show that the fits to the plasma concentration
 are in close agreement with the data, notably for the sparse data case (phase IIa study). The fits
-to the PD data (Figure [8](#org8e0bc3b) - [12](#org9cfa2bb)) look
+to the PD data (Figure [8](#org062351d) - [12](#orga1d14de)) look
 reasonable considering data being more noisy so the model
 produces larger credible intervals. Both the summary table and PPC
 plots show that the estimated values of the
@@ -288,46 +288,46 @@ parameters are consistent with the values used to simulate the data.
 | sigma     | 0.099   | 0.099   | 0.002 | 0.002 | 0.095  | 0.103   | 1.002 | 1726.283  | 2836.027  |
 | sigmaResp | 10.165  | 10.166  | 0.198 | 0.198 | 9.844  | 10.495  | 1.002 | 4788.527  | 2923.203  |
 
-<a id="orgdf23b71"></a>
+<a id="org3461001"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/density.png" caption="Figure 2: Posterior marginal densities of the model parameters of the effect compartment model." width="700" >}}
 
-<a id="org6e78d15"></a>
+<a id="orgf7b4fb0"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_5mg.png" caption="Figure 3: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (5mg dose)." width="700" >}}
 
-<a id="org4b4e346"></a>
+<a id="org6664e89"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_10mg.png" caption="Figure 4: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (10mg dose)." width="700" >}}
 
-<a id="org66337c1"></a>
+<a id="org647cd35"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_20mg.png" caption="Figure 5: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (20mg dose)." width="700" >}}
 
-<a id="orga60d528"></a>
+<a id="orge6e0d8c"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_40mg.png" caption="Figure 6: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (40mg dose)." width="700" >}}
 
-<a id="org798e4f7"></a>
+<a id="org5e84656"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_2_20mg.png" caption="Figure 7: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 2 (first 40 subjects)." width="700" >}}
 
-<a id="org8e0bc3b"></a>
+<a id="org062351d"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_5mg_resp.png" caption="Figure 8: Predicted (90% credible interval and median) and observed individual PD response in study 1 (5mg dose)." width="700" >}}
 
-<a id="org045be2a"></a>
+<a id="orge70cd6c"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_10mg_resp.png" caption="Figure 9: Predicted (90% credible interval and median) and observed individual PD response in study 1 (10mg dose)." width="700" >}}
 
-<a id="org8d3da8e"></a>
+<a id="org511743b"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_20mg_resp.png" caption="Figure 10: Predicted (90% credible interval and median) and observed individual PD response in study 1 (20mg dose)." width="700" >}}
 
-<a id="orgc619de0"></a>
+<a id="org6b240f7"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_40mg_resp.png" caption="Figure 11: Predicted (90% credible interval and median) and observed individual PD response in study 1 (40mg dose)." width="700" >}}
 
-<a id="org9cfa2bb"></a>
+<a id="orga1d14de"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_2_20mg_resp.png" caption="Figure 12: Predicted (90% credible interval and median) and observed individual PD response in study 2 (first 40 subjects)." width="700" >}}

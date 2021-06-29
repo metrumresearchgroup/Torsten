@@ -18,24 +18,24 @@
 :root {--custom-background-color: #005933;}
 </style>
 <meta property="og:title" content="Lotka-Volterra group model" />
-<meta property="og:description" content="\label{sec:lotka_volterra} Using pmx_integrate_ode_group_rk45, the following example fits a Lotka-Volterra group model, based on Stan&rsquo;s case study.
+<meta property="og:description" content="Using pmx_integrate_ode_group_rk45, the following example fits a Lotka-Volterra group model, based on Stan&rsquo;s case study.
 functions { real[] dz_dt(real t, // time real[] z, // system state {prey, predator} real[] theta, // parameters real[] x_r, // unused data int[] x_i) { real u = z[1]; real v = z[2]; real alpha = theta[1]; real beta = theta[2]; real gamma = theta[3]; real delta = theta[4]; real du_dt = (alpha - beta * v) * u; real dv_dt = (-gamma &#43; delta * u) * v; return { du_dt, dv_dt }; } } data { int&lt;lower = 0&gt; N_subj; // number of subjects int&lt;lower = 0&gt; N; // number of measurement times real ts_0[N]; // measurement times &gt; 0 real y0_0[2]; // initial measured populations real&lt;lower = 0&gt; y_0[N, 2]; // measured populations } transformed data { int len[N_subj] = rep_array(N, N_subj); real y0[N_subj, 2] = rep_array(y0_0, N_subj); real y[N_subj, N, 2] = rep_array(y_0, N_subj); real ts[N_subj * N]; for (i in 1:N_subj) { ts[((i-1)*N &#43; 1) : (i*N)] = ts_0; } } parameters { real&lt;lower = 0&gt; theta[N_subj, 4]; // { alpha, beta, gamma, delta } real&lt;lower = 0&gt; z_init[N_subj, 2]; // initial population real&lt;lower = 0&gt; sigma[N_subj, 2]; // measurement errors } transformed parameters { matrix[2, N_subj * N] z; z = pmx_integrate_ode_group_rk45(dz_dt, z_init, 0, len, ts, theta, rep_array(rep_array(0." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/example/ode-group/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="example" />
 <meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-29T11:51:54-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-29T14:35:33-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 
 <meta name="twitter:title" content="Lotka-Volterra group model"/>
-<meta name="twitter:description" content="\label{sec:lotka_volterra} Using pmx_integrate_ode_group_rk45, the following example fits a Lotka-Volterra group model, based on Stan&rsquo;s case study.
+<meta name="twitter:description" content="Using pmx_integrate_ode_group_rk45, the following example fits a Lotka-Volterra group model, based on Stan&rsquo;s case study.
 functions { real[] dz_dt(real t, // time real[] z, // system state {prey, predator} real[] theta, // parameters real[] x_r, // unused data int[] x_i) { real u = z[1]; real v = z[2]; real alpha = theta[1]; real beta = theta[2]; real gamma = theta[3]; real delta = theta[4]; real du_dt = (alpha - beta * v) * u; real dv_dt = (-gamma &#43; delta * u) * v; return { du_dt, dv_dt }; } } data { int&lt;lower = 0&gt; N_subj; // number of subjects int&lt;lower = 0&gt; N; // number of measurement times real ts_0[N]; // measurement times &gt; 0 real y0_0[2]; // initial measured populations real&lt;lower = 0&gt; y_0[N, 2]; // measured populations } transformed data { int len[N_subj] = rep_array(N, N_subj); real y0[N_subj, 2] = rep_array(y0_0, N_subj); real y[N_subj, N, 2] = rep_array(y_0, N_subj); real ts[N_subj * N]; for (i in 1:N_subj) { ts[((i-1)*N &#43; 1) : (i*N)] = ts_0; } } parameters { real&lt;lower = 0&gt; theta[N_subj, 4]; // { alpha, beta, gamma, delta } real&lt;lower = 0&gt; z_init[N_subj, 2]; // initial population real&lt;lower = 0&gt; sigma[N_subj, 2]; // measurement errors } transformed parameters { matrix[2, N_subj * N] z; z = pmx_integrate_ode_group_rk45(dz_dt, z_init, 0, len, ts, theta, rep_array(rep_array(0."/>
 <meta itemprop="name" content="Lotka-Volterra group model">
-<meta itemprop="description" content="\label{sec:lotka_volterra} Using pmx_integrate_ode_group_rk45, the following example fits a Lotka-Volterra group model, based on Stan&rsquo;s case study.
+<meta itemprop="description" content="Using pmx_integrate_ode_group_rk45, the following example fits a Lotka-Volterra group model, based on Stan&rsquo;s case study.
 functions { real[] dz_dt(real t, // time real[] z, // system state {prey, predator} real[] theta, // parameters real[] x_r, // unused data int[] x_i) { real u = z[1]; real v = z[2]; real alpha = theta[1]; real beta = theta[2]; real gamma = theta[3]; real delta = theta[4]; real du_dt = (alpha - beta * v) * u; real dv_dt = (-gamma &#43; delta * u) * v; return { du_dt, dv_dt }; } } data { int&lt;lower = 0&gt; N_subj; // number of subjects int&lt;lower = 0&gt; N; // number of measurement times real ts_0[N]; // measurement times &gt; 0 real y0_0[2]; // initial measured populations real&lt;lower = 0&gt; y_0[N, 2]; // measured populations } transformed data { int len[N_subj] = rep_array(N, N_subj); real y0[N_subj, 2] = rep_array(y0_0, N_subj); real y[N_subj, N, 2] = rep_array(y_0, N_subj); real ts[N_subj * N]; for (i in 1:N_subj) { ts[((i-1)*N &#43; 1) : (i*N)] = ts_0; } } parameters { real&lt;lower = 0&gt; theta[N_subj, 4]; // { alpha, beta, gamma, delta } real&lt;lower = 0&gt; z_init[N_subj, 2]; // initial population real&lt;lower = 0&gt; sigma[N_subj, 2]; // measurement errors } transformed parameters { matrix[2, N_subj * N] z; z = pmx_integrate_ode_group_rk45(dz_dt, z_init, 0, len, ts, theta, rep_array(rep_array(0."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-29T11:51:54-07:00" />
-<meta itemprop="wordCount" content="277"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+<meta itemprop="dateModified" content="2021-06-29T14:35:33-07:00" />
+<meta itemprop="wordCount" content="276"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
@@ -54,8 +54,7 @@ functions { real[] dz_dt(real t, // time real[] z, // system state {prey, predat
 </div>
 <div class="content-container">
 <main><h1>Lotka-Volterra group model</h1>
-<p>\label{sec:lotka_volterra}
-Using <code>pmx_integrate_ode_group_rk45</code>, the following example fits
+<p>Using <code>pmx_integrate_ode_group_rk45</code>, the following example fits
 a Lotka-Volterra group model, based on <a href="https://mc-stan.org/users/documentation/case-studies/lotka-volterra-predator-prey.html">Stan&rsquo;s case study</a>.</p>
 <pre><code class="language-stan" data-lang="stan">functions {
   real[] dz_dt(real t,       // time

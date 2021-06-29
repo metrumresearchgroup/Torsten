@@ -2,7 +2,7 @@
 title = "Coupled ODE Model Function"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-29T11:51:47-07:00
+lastmod = 2021-06-29T14:35:26-07:00
 draft = false
 weight = 2006
 +++
@@ -60,10 +60,10 @@ matrix pmx_solve_twocpt_[ rk45 || bdf ](reduced_ODE_system, int nOde, time, amt,
 
 ## <span class="section-num">3</span> Arguments {#arguments}
 
--   `reduced\_ODE\_rhs`
+-   `reduced_ODE_rhs`
     The system  numerically solve (\\(y\_2\\) in the above discussion, also called the
     _reduced system_ and `nOde` the number of equations in
-    the \underline{reduced} system. The function that defines a reduced
+    the <span class="underline">reduced</span> system. The function that defines a reduced
     system has an almost identical signature to that used for a full
     system, but takes one additional argument: \\(y\_1\\), the PK states,
     i.e. solution to the PK ODEs.

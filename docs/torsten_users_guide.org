@@ -135,19 +135,18 @@ in each compartment. The current version includes [fn:1]:
 - Specific linear compartment models:
   + One compartment model with first order absorption.
   + Two compartment model with elimination from and first order absorption into central compartment
-- General linear compartment model described by a system of first-order \underline{linear} Ordinary Differential Equations (ODEs).
+- General linear compartment model described by a system of first-order _linear_ Ordinary Differential Equations (ODEs).
 - General compartment model described by a system of first order ODEs.
 - Coupled model with PK forcing function described by a linear one or two compartment model and PD components solved by numerical ODE integration.
 
 The models and data format are based on
 NONMEM \textregistered{} [fn::NONMEM\textregistered{} is licensed and distributed by ICON Development Solutions.]/NMTRAN/PREDPP
 conventions including:
-- Recursive calculation of model predictions
-  + This permits piecewise constant covariate values
-- Bolus or constant rate inputs into any compartment
-- Single dose and multiple dose events
-- Handles steady state dosing events
-- Implemented NMTRAN data items include: TIME, EVID, CMT, AMT, RATE, ADDL, II, SS
+- recursive calculation of model predictions, which permits piecewise constant covariate values,
+- bolus or constant rate inputs into any compartment,
+- single dose and multiple dose events,
+- steady state dosing events,
+- NMTRAN-compartible data items such as TIME, EVID, CMT, AMT, RATE, ADDL, II, and SS.
 
 All real variable arguments in Torsten functions can be passed as Stan =parameters=.
 
@@ -164,7 +163,7 @@ All real variable arguments in Torsten functions can be passed as Stan =paramete
 - One and two compartment models are based on analytical solutions of governing ODEs.
 - General linear compartment models are based on semi-analytical solutions using the built-in matrix exponential function
 - General compartment models are solved numerically using built-in ODE integrators in Stan. The tuning parameters of the solver are adjustable. The steady state solution is calculated using a numerical algebraic solver.
-- A mix compartment model's PK forcing function is solved analytically, and its forced ODE system is solved numerically.
+- Coupled model that has PK forcing function solved analytically and PD ODE components solved numerically.
 
 *** Development plans
     :PROPERTIES:
@@ -532,13 +531,15 @@ overloading. In the rest of this document we assume this convention unless indic
 #+INDEX: One Compartment Model
 *** Description
 Function =pmx_solve_onecpt= solves a one-compartment PK
-model (Figure [[one_two_cpt_models]]). The model obtains plasma concentrations of parent drug $c=y_2/V_2$
-by solving for the mass of drug in the central compartment
-$y_2$ from ordinary differential equations(ODEs)
+model (Figure [[one_two_cpt_models]]). The model obtains the mass $(y_1, y_2)$ in each compartment
+by solving the ordinary differential equations(ODEs)
 \begin{align}\label{eq:onecpt}
   y_1' &= -k_a y_1, \\
   y_2' &= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2.
 \end{align}
+The plasma concentrations of parent drug in the central compartment
+can then be calculated as $c=y_2/V_2$.
+
 #+CAPTION: One and two compartment models with first order absorption implemented in Torsten.
 #+NAME: one_two_cpt_models
 #+ATTR_LATEX: :width 1.5in
@@ -572,14 +573,15 @@ $y_2$ from ordinary differential equations(ODEs)
    :END:
 *** Description
 Function =pmx_solve_twocpt= solves a two-compartment PK
-model (Figure [[one_two_cpt_models]]). The model obtains plasma concentrations of parent drug $c=y_2/V_2$
-by solving for the mass of drug in the central compartment
-$y_2$ from ordinary differential equations(ODEs)
+model (Figure [[one_two_cpt_models]]). The model obtains the mass $(y_1, y_2, y_3)$ in each compartment
+by solving the ODEs
 \begin{align} \label{eq:twocpt}
   y_1' &= -k_a y_1 \\
   y_2' &= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2 +  \frac{Q}{V_3}  y_3  \\ 
   y_3' &= \frac{Q}{V_2} y_2 - \frac{Q}{V_3} y_3
 \end{align}
+The plasma concentrations of parent drug in the central compartment
+can then be calculated as $c=y_2/V_2$.
 
 *** Usage
 #+INDEX: Two Compartment Model
@@ -637,7 +639,7 @@ where $k_{10}=CL/V_2$, $k_{12}=Q/V_2$, and $k_{21}=Q/V_3$.
   - an array of matrices src_stan[:exports code ]{matrix K[nt]} so that the \(i\)th entry of the array describes
     the model parameters for time interval $(t_{i-1}, t_i)$,
     and the number of the rows equals to the number of event time =nt=.
-  - See Tables in Section [[*Events specification]] for the rest of arguments.
+- See Tables in Section [[*Events specification]] for the rest of arguments.
 *** Return value
     An =n=-by-=nt= matrix, where =nt= is the number of time steps and =n= is the number of rows(columns) of square matrix =K=.
 
@@ -763,10 +765,10 @@ integrator. In the context, currently the couple solver supports one-
   matrix pmx_solve_twocpt_[ rk45 || bdf ](reduced_ODE_system, int nOde, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag [, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
 #+END_SRC
 *** Arguments
-- =reduced\_ODE\_rhs=
+- =reduced_ODE_rhs=
      The system  numerically solve ($y_2$ in the above discussion, also called the
      /reduced system/ and =nOde= the number of equations in
-     the \underline{reduced} system. The function that defines a reduced
+     the _reduced_ system. The function that defines a reduced
      system has an almost identical signature to that used for a full
      system, but takes one additional argument: $y_1$, the PK states,
      i.e. solution to the PK ODEs.

@@ -22,7 +22,7 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/implementation-summary/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="" />
 <meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-29T11:51:39-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-29T14:35:18-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
@@ -31,8 +31,8 @@
 <meta name="twitter:description" content="Current Torsten v0.89rc is based on Stan v2.27.0. All functions are programmed in C&#43;&#43; and are compatible with the Stan math automatic differentiation library (Carpenter et al. 2015) One and two compartment models are based on analytical solutions of governing ODEs. General linear compartment models are based on semi-analytical solutions using the built-in matrix exponential function General compartment models are solved numerically using built-in ODE integrators in Stan. The tuning parameters of the solver are adjustable."/>
 <meta itemprop="name" content="Implementation summary">
 <meta itemprop="description" content="Current Torsten v0.89rc is based on Stan v2.27.0. All functions are programmed in C&#43;&#43; and are compatible with the Stan math automatic differentiation library (Carpenter et al. 2015) One and two compartment models are based on analytical solutions of governing ODEs. General linear compartment models are based on semi-analytical solutions using the built-in matrix exponential function General compartment models are solved numerically using built-in ODE integrators in Stan. The tuning parameters of the solver are adjustable."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-29T11:51:39-07:00" />
-<meta itemprop="wordCount" content="135"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+<meta itemprop="dateModified" content="2021-06-29T14:35:18-07:00" />
+<meta itemprop="wordCount" content="132"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
@@ -54,14 +54,14 @@
 <ul>
 <li>Current Torsten v0.89rc is based on Stan v2.27.0.</li>
 <li>All functions are programmed in C++ and are compatible
-with the Stan math automatic differentiation library (<a href="#org3a4e325">Carpenter et al. 2015</a>)</li>
+with the Stan math automatic differentiation library (<a href="#orgbb746a1">Carpenter et al. 2015</a>)</li>
 <li>One and two compartment models are based on analytical solutions of governing ODEs.</li>
 <li>General linear compartment models are based on semi-analytical solutions using the built-in matrix exponential function</li>
 <li>General compartment models are solved numerically using built-in ODE integrators in Stan. The tuning parameters of the solver are adjustable. The steady state solution is calculated using a numerical algebraic solver.</li>
-<li>A mix compartment model&rsquo;s PK forcing function is solved analytically, and its forced ODE system is solved numerically.</li>
+<li>Coupled model that has PK forcing function solved analytically and PD ODE components solved numerically.</li>
 </ul>
 <h2 id="bibliography"><span class="section-num">1</span> Bibliography</h2>
-<p><a id="org3a4e325"></a>Carpenter, Bob, Matthew D. Hoffman, Marcus Brubaker, Daniel Lee, Peter Li, and Michael Betancourt. 2015. “The Stan Math Library: Reverse-Mode Automatic Differentiation in C++.” <em>arXiv:1509.07164 [Cs]</em>, September. <a href="http://arxiv.org/abs/1509.07164">http://arxiv.org/abs/1509.07164</a>.</p>
+<p><a id="orgbb746a1"></a>Carpenter, Bob, Matthew D. Hoffman, Marcus Brubaker, Daniel Lee, Peter Li, and Michael Betancourt. 2015. “The Stan Math Library: Reverse-Mode Automatic Differentiation in C++.” <em>arXiv:1509.07164 [Cs]</em>, September. <a href="http://arxiv.org/abs/1509.07164">http://arxiv.org/abs/1509.07164</a>.</p>
 <div class="edit-meta">
 Last updated on 29 Jun 2021
 

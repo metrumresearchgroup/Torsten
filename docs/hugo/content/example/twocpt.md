@@ -2,7 +2,7 @@
 title = "Two-compartment model for single patient"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-29T12:05:44-07:00
+lastmod = 2021-06-29T14:35:31-07:00
 draft = false
 weight = 2001
 +++
@@ -23,7 +23,7 @@ With the plasma concentration \\(\hat{c}\\) using
   \sigma^2 &= 0.01
 \end{align\*}
 
-The data are generated using the R package `mrgsolve` ([Baron and Gastonguay 2015](#org30fa0db)).
+The data are generated using the R package `mrgsolve` ([Baron and Gastonguay 2015](#org3d2af14)).
 
 Code below shows how Torsten function `pmx_solve_twocpt` can be used to fit the above model.
 
@@ -95,13 +95,13 @@ model{
 
 Four MCMC chains of 2000 iterations (1000 warmup iterations and 1000
 sampling iterations) are simulated. 1000 samples per chain were used for the subsequent analyses.
-The MCMC history plots(Figure [1](#orged5f96b))
+The MCMC history plots(Figure [1](#orgd835e1e))
 suggest that the 4 chains have converged to common distributions for
 all of the key model parameters. The fit to the plasma concentration
-data (Figure [3](#org88c41cb)) are in close agreement with the
+data (Figure [3](#org99a0cd0)) are in close agreement with the
 data, which is not surprising since the fitted model is identical to
 the one used to simulate the data. Similarly the parameter posterior
-density can be examined in Figure [2](#org2ccb177) and shows
+density can be examined in Figure [2](#orgcd32ad6) and shows
 consistency with the values used for simulation. Another way to
 summarize the posterior is through `cmdstanr`'s `summary` method.
 
@@ -120,19 +120,19 @@ summarize the posterior is through `cmdstanr`'s `summary` method.
 6 sigma     0.109  0.108 0.0117 0.0111  0.0911  0.130  1.01    1414.     905.
 ```
 
-<a id="orged5f96b"></a>
+<a id="orgd835e1e"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/history.png" caption="Figure 1: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)" width="700" >}}
 
-<a id="org2ccb177"></a>
+<a id="orgcd32ad6"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/density.png" caption="Figure 2: Posterior marginal densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)" >}}
 
-<a id="org88c41cb"></a>
+<a id="org99a0cd0"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/ppc_ribbon.png" caption="Figure 3: Predicted (\\(y\_{\text{rep}}\\)) and observed (\\(y\\)) plasma drug concentrations of a two compartment model with first order absorption. \\(y\_{\text{rep}}\\) is shown with posterior median, 50%, 90% credible intervals." >}}
 
 
 ## Bibliography {#bibliography}
 
-<a id="org30fa0db"></a>Baron, Kyle T., and Marc R. Gastonguay. 2015. “Simulation from ODE-Based Population PK/PD and Systems Pharmacology Models in R with Mrgsolve.” _Journal of Pharmacokinetics and Pharmacodynamics_ 42 (W-23):S84–85.
+<a id="org3d2af14"></a>Baron, Kyle T., and Marc R. Gastonguay. 2015. “Simulation from ODE-Based Population PK/PD and Systems Pharmacology Models in R with Mrgsolve.” _Journal of Pharmacokinetics and Pharmacodynamics_ 42 (W-23):S84–85.

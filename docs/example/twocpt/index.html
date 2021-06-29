@@ -23,7 +23,7 @@
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/example/twocpt/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="example" />
 <meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-29T12:05:44-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-29T14:35:31-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
@@ -34,7 +34,7 @@
 <meta itemprop="name" content="Two-compartment model for single patient">
 <meta itemprop="description" content="We model drug absorption in a single patient and simulate plasma drug concentrations:
  Multiple Doses: 1250 mg, every 12 hours, for a total of 15 doses PK measured at 0.083, 0.167, 0.25, 0.5, 0.75, 1, 1.5, 2, 4, 6, 8, 10 and 12 hours after 1st, 2nd, and 15th dose. In addition, the PK is measured every 12 hours throughout the trial.  With the plasma concentration \(\hat{c}\) using Two Compartment Model, we simulate \(c\) according to:"><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-29T12:05:44-07:00" />
+<meta itemprop="dateModified" content="2021-06-29T14:35:31-07:00" />
 <meta itemprop="wordCount" content="687"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
@@ -68,7 +68,7 @@ PK is measured every 12 hours throughout the trial.</li>
 \left(CL, Q, V_2, V_3, ka\right) &amp;= \left(5\ {\rm L/h}, 8\  {\rm L/h}, 20\  {\rm L},  70\ {\rm L}, 1.2\ {\rm h^{-1}} \right) \\\<br>
 \sigma^2 &amp;= 0.01
 \end{align*}</p>
-<p>The data are generated using the R package <code>mrgsolve</code> (<a href="#org30fa0db">Baron and Gastonguay 2015</a>).</p>
+<p>The data are generated using the R package <code>mrgsolve</code> (<a href="#org3d2af14">Baron and Gastonguay 2015</a>).</p>
 <p>Code below shows how Torsten function <code>pmx_solve_twocpt</code> can be used to fit the above model.</p>
 <pre><code class="language-stan" data-lang="stan">data{
   int&lt;lower = 1&gt; nt;  // number of events
@@ -135,13 +135,13 @@ model{
 }
 </code></pre><p>Four MCMC chains of 2000 iterations (1000 warmup iterations and 1000
 sampling iterations) are simulated. 1000 samples per chain were used for the subsequent analyses.
-The MCMC history plots(Figure <a href="#orged5f96b">1</a>)
+The MCMC history plots(Figure <a href="#orgd835e1e">1</a>)
 suggest that the 4 chains have converged to common distributions for
 all of the key model parameters. The fit to the plasma concentration
-data (Figure <a href="#org88c41cb">3</a>) are in close agreement with the
+data (Figure <a href="#org99a0cd0">3</a>) are in close agreement with the
 data, which is not surprising since the fitted model is identical to
 the one used to simulate the data. Similarly the parameter posterior
-density can be examined in Figure <a href="#org2ccb177">2</a> and shows
+density can be examined in Figure <a href="#orgcd32ad6">2</a> and shows
 consistency with the values used for simulation. Another way to
 summarize the posterior is through <code>cmdstanr</code>&rsquo;s <code>summary</code> method.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-r" data-lang="r"><span style="color:#75715e">## fit is a CmdStanMCMC object returned by sampling. See cmdstanr reference.</span>
@@ -156,21 +156,21 @@ summarize the posterior is through <code>cmdstanr</code>&rsquo;s <code>summary</
 4 V2       <span style="color:#ae81ff">76.1</span>   <span style="color:#ae81ff">76.1</span>   <span style="color:#ae81ff">5.33</span>   <span style="color:#ae81ff">4.93</span>   <span style="color:#ae81ff">67.5</span>    <span style="color:#ae81ff">84.9</span>    <span style="color:#ae81ff">1.01</span>    <span style="color:#ae81ff">1585</span>.    <span style="color:#ae81ff">1372</span>.
 5 ka        <span style="color:#ae81ff">1.23</span>   <span style="color:#ae81ff">1.23</span>  <span style="color:#ae81ff">0.175</span>  <span style="color:#ae81ff">0.174</span>   <span style="color:#ae81ff">0.958</span>   <span style="color:#ae81ff">1.52</span>   <span style="color:#ae81ff">1.00</span>    <span style="color:#ae81ff">1070</span>.    <span style="color:#ae81ff">1122</span>.
 6 sigma     <span style="color:#ae81ff">0.109</span>  <span style="color:#ae81ff">0.108</span> <span style="color:#ae81ff">0.0117</span> <span style="color:#ae81ff">0.0111</span>  <span style="color:#ae81ff">0.0911</span>  <span style="color:#ae81ff">0.130</span>  <span style="color:#ae81ff">1.01</span>    <span style="color:#ae81ff">1414</span>.     <span style="color:#ae81ff">905</span>.
-</code></pre></div><p><a id="orged5f96b"></a></p>
+</code></pre></div><p><a id="orgd835e1e"></a></p>
 <figure><img src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/history.png"
          alt="Figure 1: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)" width="700"/><figcaption>
             <p>Figure 1: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)</p>
         </figcaption>
 </figure>
 
-<p><a id="org2ccb177"></a></p>
+<p><a id="orgcd32ad6"></a></p>
 <figure><img src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/density.png"
          alt="Figure 2: Posterior marginal densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)"/><figcaption>
             <p>Figure 2: Posterior marginal densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)</p>
         </figcaption>
 </figure>
 
-<p><a id="org88c41cb"></a></p>
+<p><a id="org99a0cd0"></a></p>
 <figure><img src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/ppc_ribbon.png"
          alt="Figure 3: Predicted (\(y_{\text{rep}}\)) and observed (\(y\)) plasma drug concentrations of a two compartment model with first order absorption. \(y_{\text{rep}}\) is shown with posterior median, 50%, 90% credible intervals."/><figcaption>
             <p>Figure 3: Predicted (\(y_{\text{rep}}\)) and observed (\(y\)) plasma drug concentrations of a two compartment model with first order absorption. \(y_{\text{rep}}\) is shown with posterior median, 50%, 90% credible intervals.</p>
@@ -178,7 +178,7 @@ summarize the posterior is through <code>cmdstanr</code>&rsquo;s <code>summary</
 </figure>
 
 <h2 id="bibliography">Bibliography</h2>
-<p><a id="org30fa0db"></a>Baron, Kyle T., and Marc R. Gastonguay. 2015. “Simulation from ODE-Based Population PK/PD and Systems Pharmacology Models in R with Mrgsolve.” <em>Journal of Pharmacokinetics and Pharmacodynamics</em> 42 (W-23):S84–85.</p>
+<p><a id="org3d2af14"></a>Baron, Kyle T., and Marc R. Gastonguay. 2015. “Simulation from ODE-Based Population PK/PD and Systems Pharmacology Models in R with Mrgsolve.” <em>Journal of Pharmacokinetics and Pharmacodynamics</em> 42 (W-23):S84–85.</p>
 <div class="edit-meta">
 Last updated on 29 Jun 2021
 

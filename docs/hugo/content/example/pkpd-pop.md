@@ -2,7 +2,7 @@
 title = "Friberg-Karlsson Semi-Mechanistic Population Model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-29T12:25:15-07:00
+lastmod = 2021-06-29T14:35:36-07:00
 draft = false
 weight = 2010
 +++
@@ -232,15 +232,15 @@ and [fkpop_ppc_pd](#fkpop_ppc_pd) indicate the model is a good fit.
 | sigmaNeut | 0.106   | 0.105   | 0.012    | 0.011    | 0.088   | 0.127   | 1.000 | 2809.059  | 3031.605  |
 | alphaHat  | 2.24e-4 | 2.19e-4 | 3.97e-05 | 3.80e-05 | 1.66e-4 | 2.96e-4 | 1.000 | 5138.105  | 2807.328  |
 
-<a id="org36d2051"></a>
+<a id="org9539e5e"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/FribergKarlsson/density.png" caption="Figure 1: Posterior marginal densities of the model parameters of the Friberg-Karlsson population model." width="700" >}}
 
-<a id="orge9b2603"></a>
+<a id="org7986fdb"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/FribergKarlsson/ppc_pk.png" caption="Figure 2: Predicted (50%, 90% credible interval and median) and observed individual drug plasma concentration." width="700" >}}
 
-<a id="orgc6ac92f"></a>
+<a id="org5128b8d"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/FribergKarlsson/ppc_pd.png" caption="Figure 3: Predicted (50%, 90% credible interval and median) and observed individual Neutrophil counts." width="700" >}}
 

@@ -2,7 +2,7 @@
 title = "General ODE-based Population Model Function"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-29T11:51:48-07:00
+lastmod = 2021-06-29T14:35:27-07:00
 draft = false
 weight = 2007
 +++

@@ -2,7 +2,7 @@
 title = "Joint PK-PD model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-29T11:56:10-07:00
+lastmod = 2021-06-29T14:35:32-07:00
 draft = false
 weight = 2004
 +++
@@ -24,7 +24,7 @@ weight = 2004
 
 Neutropenia is observed in patients receiving an ME-2 drug. Our goal
 is to model the relation between neutrophil counts and drug
-exposure. As shown in Figure [1](#org73db64b), the Friberg-Karlsson Semi-Mechanistic model ([Friberg and Karlsson 2003](#org002d72d)) couples
+exposure. As shown in Figure [1](#org525d654), the Friberg-Karlsson Semi-Mechanistic model ([Friberg and Karlsson 2003](#orgda6b01a)) couples
 a PK model with a PD
 effect to describe a delayed feedback mechanism that keeps the
 absolute neutrophil count (ANC) at the
@@ -65,7 +65,7 @@ we can specify solve the system using a coupled solver function. We do not
 expect our system to be stiff and use the Runge-Kutta 4th/5th order
 integrator.
 
-<a id="org73db64b"></a>
+<a id="org525d654"></a>
 
 {{< figure src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/neutrophilModel.jpg" caption="Figure 1: Friberg-Karlsson semi-mechanistic Model." width="700" >}}
 
@@ -228,4 +228,4 @@ model {
 
 ## <span class="section-num">1</span> Bibliography {#bibliography}
 
-<a id="org002d72d"></a>Friberg, Lena E., and Mats O. Karlsson. 2003. “Mechanistic Models for Myelosuppression.” _Investigational New Drugs_ 21 (2):183–94. <https://link.springer.com/article/10.1023/A:1023573429626>.
+<a id="orgda6b01a"></a>Friberg, Lena E., and Mats O. Karlsson. 2003. “Mechanistic Models for Myelosuppression.” _Investigational New Drugs_ 21 (2):183–94. <https://link.springer.com/article/10.1023/A:1023573429626>.

@@ -25,7 +25,7 @@ with \(y_1\), \(y_2\), \(f_1\), and \(f_2\) being vector-valued functions, and \
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/function/coupled/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="function" />
 <meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-29T11:51:47-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-29T14:35:26-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
@@ -40,7 +40,7 @@ with \(y_1\), \(y_2\), \(f_1\), and \(f_2\) being vector-valued functions, and \
 \begin{align*} y_1^\prime &amp;= f_1(t, y_1), \\\
 y_2^\prime &amp;= f_2(t, y_1, y_2), \end{align*}
 with \(y_1\), \(y_2\), \(f_1\), and \(f_2\) being vector-valued functions, and \(y_1^\prime\) independent of \(y_2\), the solution can be accelerated if \(y_1\) admits an analytical solution which can be introduced into the ODE for \(y_2\) for numerical integration."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-29T11:51:47-07:00" />
+<meta itemprop="dateModified" content="2021-06-29T14:35:26-07:00" />
 <meta itemprop="wordCount" content="381"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
@@ -100,10 +100,10 @@ matrix pmx_solve_twocpt_[ rk45 || bdf ](reduced_ODE_system, int nOde, time, amt,
 </code></pre><h2 id="arguments"><span class="section-num">3</span> Arguments</h2>
 <ul>
 <li>
-<p><code>reduced\_ODE\_rhs</code>
+<p><code>reduced_ODE_rhs</code>
 The system  numerically solve (\(y_2\) in the above discussion, also called the
 <em>reduced system</em> and <code>nOde</code> the number of equations in
-the \underline{reduced} system. The function that defines a reduced
+the <span class="underline">reduced</span> system. The function that defines a reduced
 system has an almost identical signature to that used for a full
 system, but takes one additional argument: \(y_1\), the PK states,
 i.e. solution to the PK ODEs.</p>

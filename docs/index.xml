@@ -84,9 +84,9 @@ Table 1: NM-TRAN compatible event specification arguments. All arrays should hav
       <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
       
       <guid>https://metrumresearchgroup.github.io/Torsten/function/one-cpt/</guid>
-      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_onecpt solves a one-compartment PK model (Figure 1). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\) by solving for the mass of drug in the central compartment \(y_2\) from ordinary differential equations(ODEs)
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_onecpt solves a one-compartment PK model (Figure 1). The model obtains the mass \((y_1, y_2)\) in each compartment by solving the ordinary differential equations(ODEs)
 \begin{align}\label{eq:onecpt} y_1&#39; &amp;amp;= -k_a y_1, \\\
-y_2&#39; &amp;amp;= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2.</description>
+y_2&#39; &amp;amp;= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2. \end{align}</description>
     </item>
     
     <item>
@@ -105,8 +105,9 @@ transformed data{ row_vector[nObs] logCObs = log(cObs); int nCmt = 3; real biova
       <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
       
       <guid>https://metrumresearchgroup.github.io/Torsten/function/two-cpt/</guid>
-      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_twocpt solves a two-compartment PK model (Figure /Torsten/function/one-cpt/). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\) by solving for the mass of drug in the central compartment \(y_2\) from ordinary differential equations(ODEs)
-\begin{align} \label{eq:twocpt} y_1&#39; &amp;amp;= -k_a y_1 \\\</description>
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_twocpt solves a two-compartment PK model (Figure /Torsten/function/one-cpt/). The model obtains the mass \((y_1, y_2, y_3)\) in each compartment by solving the ODEs
+\begin{align} \label{eq:twocpt} y_1&#39; &amp;amp;= -k_a y_1 \\\
+y_2&#39; &amp;amp;= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2 + \frac{Q}{V_3} y_3 \\\</description>
     </item>
     
     <item>
@@ -181,7 +182,7 @@ with \(y_1\), \(y_2\), \(f_1\), and \(f_2\) being vector-valued functions, and \
       <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
       
       <guid>https://metrumresearchgroup.github.io/Torsten/example/ode-group/</guid>
-      <description>\label{sec:lotka_volterra} Using pmx_integrate_ode_group_rk45, the following example fits a Lotka-Volterra group model, based on Stan&amp;rsquo;s case study.
+      <description>Using pmx_integrate_ode_group_rk45, the following example fits a Lotka-Volterra group model, based on Stan&amp;rsquo;s case study.
 functions { real[] dz_dt(real t, // time real[] z, // system state {prey, predator} real[] theta, // parameters real[] x_r, // unused data int[] x_i) { real u = z[1]; real v = z[2]; real alpha = theta[1]; real beta = theta[2]; real gamma = theta[3]; real delta = theta[4]; real du_dt = (alpha - beta * v) * u; real dv_dt = (-gamma + delta * u) * v; return { du_dt, dv_dt }; } } data { int&amp;lt;lower = 0&amp;gt; N_subj; // number of subjects int&amp;lt;lower = 0&amp;gt; N; // number of measurement times real ts_0[N]; // measurement times &amp;gt; 0 real y0_0[2]; // initial measured populations real&amp;lt;lower = 0&amp;gt; y_0[N, 2]; // measured populations } transformed data { int len[N_subj] = rep_array(N, N_subj); real y0[N_subj, 2] = rep_array(y0_0, N_subj); real y[N_subj, N, 2] = rep_array(y_0, N_subj); real ts[N_subj * N]; for (i in 1:N_subj) { ts[((i-1)*N + 1) : (i*N)] = ts_0; } } parameters { real&amp;lt;lower = 0&amp;gt; theta[N_subj, 4]; // { alpha, beta, gamma, delta } real&amp;lt;lower = 0&amp;gt; z_init[N_subj, 2]; // initial population real&amp;lt;lower = 0&amp;gt; sigma[N_subj, 2]; // measurement errors } transformed parameters { matrix[2, N_subj * N] z; z = pmx_integrate_ode_group_rk45(dz_dt, z_init, 0, len, ts, theta, rep_array(rep_array(0.</description>
     </item>
     

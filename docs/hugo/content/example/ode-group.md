@@ -2,12 +2,11 @@
 title = "Lotka-Volterra group model"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-29T11:51:54-07:00
+lastmod = 2021-06-29T14:35:33-07:00
 draft = false
 weight = 2006
 +++
 
-\label{sec:lotka\_volterra}
 Using `pmx_integrate_ode_group_rk45`, the following example fits
 a Lotka-Volterra group model, based on [Stan's case study](https://mc-stan.org/users/documentation/case-studies/lotka-volterra-predator-prey.html).
 

@@ -18,24 +18,27 @@
 :root {--custom-background-color: #005933;}
 </style>
 <meta property="og:title" content="Two Compartment Model" />
-<meta property="og:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_twocpt solves a two-compartment PK model (Figure /Torsten/function/one-cpt/). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\) by solving for the mass of drug in the central compartment \(y_2\) from ordinary differential equations(ODEs)
-\begin{align} \label{eq:twocpt} y_1&#39; &amp;= -k_a y_1 \\\" />
+<meta property="og:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_twocpt solves a two-compartment PK model (Figure /Torsten/function/one-cpt/). The model obtains the mass \((y_1, y_2, y_3)\) in each compartment by solving the ODEs
+\begin{align} \label{eq:twocpt} y_1&#39; &amp;= -k_a y_1 \\\
+y_2&#39; &amp;= k_a y_1 - \left(\frac{CL}{V_2} &#43; \frac{Q}{V_2}\right) y_2 &#43; \frac{Q}{V_3} y_3 \\\" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/function/two-cpt/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="function" />
 <meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-29T11:51:45-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-29T14:35:25-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 
 <meta name="twitter:title" content="Two Compartment Model"/>
-<meta name="twitter:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_twocpt solves a two-compartment PK model (Figure /Torsten/function/one-cpt/). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\) by solving for the mass of drug in the central compartment \(y_2\) from ordinary differential equations(ODEs)
-\begin{align} \label{eq:twocpt} y_1&#39; &amp;= -k_a y_1 \\\"/>
+<meta name="twitter:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_twocpt solves a two-compartment PK model (Figure /Torsten/function/one-cpt/). The model obtains the mass \((y_1, y_2, y_3)\) in each compartment by solving the ODEs
+\begin{align} \label{eq:twocpt} y_1&#39; &amp;= -k_a y_1 \\\
+y_2&#39; &amp;= k_a y_1 - \left(\frac{CL}{V_2} &#43; \frac{Q}{V_2}\right) y_2 &#43; \frac{Q}{V_3} y_3 \\\"/>
 <meta itemprop="name" content="Two Compartment Model">
-<meta itemprop="description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_twocpt solves a two-compartment PK model (Figure /Torsten/function/one-cpt/). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\) by solving for the mass of drug in the central compartment \(y_2\) from ordinary differential equations(ODEs)
-\begin{align} \label{eq:twocpt} y_1&#39; &amp;= -k_a y_1 \\\"><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-29T11:51:45-07:00" />
-<meta itemprop="wordCount" content="171"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+<meta itemprop="description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_twocpt solves a two-compartment PK model (Figure /Torsten/function/one-cpt/). The model obtains the mass \((y_1, y_2, y_3)\) in each compartment by solving the ODEs
+\begin{align} \label{eq:twocpt} y_1&#39; &amp;= -k_a y_1 \\\
+y_2&#39; &amp;= k_a y_1 - \left(\frac{CL}{V_2} &#43; \frac{Q}{V_2}\right) y_2 &#43; \frac{Q}{V_3} y_3 \\\"><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
+<meta itemprop="dateModified" content="2021-06-29T14:35:25-07:00" />
+<meta itemprop="wordCount" content="177"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
@@ -73,14 +76,15 @@
 <!--endtoc-->
 <h2 id="description"><span class="section-num">1</span> Description</h2>
 <p>Function <code>pmx_solve_twocpt</code> solves a two-compartment PK
-model (Figure <a href="/Torsten/function/one-cpt/">/Torsten/function/one-cpt/</a>). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\)
-by solving for the mass of drug in the central compartment
-\(y_2\) from ordinary differential equations(ODEs)</p>
+model (Figure <a href="/Torsten/function/one-cpt/">/Torsten/function/one-cpt/</a>). The model obtains the mass \((y_1, y_2, y_3)\) in each compartment
+by solving the ODEs</p>
 <p>\begin{align} \label{eq:twocpt}
 y_1' &amp;= -k_a y_1 \\\<br>
 y_2' &amp;= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2 +  \frac{Q}{V_3}  y_3  \\\<br>
 y_3' &amp;= \frac{Q}{V_2} y_2 - \frac{Q}{V_3} y_3
 \end{align}</p>
+<p>The plasma concentrations of parent drug in the central compartment
+can then be calculated as \(c=y_2/V_2\).</p>
 <h2 id="usage"><span class="section-num">2</span> Usage</h2>
 <pre><code class="language-stan" data-lang="stan">matrix = pmx_solve_twocpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, biovar, tlag ] )
 </code></pre><h2 id="arguments"><span class="section-num">3</span> Arguments</h2>

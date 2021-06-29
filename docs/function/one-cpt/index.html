@@ -18,27 +18,27 @@
 :root {--custom-background-color: #005933;}
 </style>
 <meta property="og:title" content="One Compartment Model" />
-<meta property="og:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_onecpt solves a one-compartment PK model (Figure 1). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\) by solving for the mass of drug in the central compartment \(y_2\) from ordinary differential equations(ODEs)
+<meta property="og:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_onecpt solves a one-compartment PK model (Figure 1). The model obtains the mass \((y_1, y_2)\) in each compartment by solving the ordinary differential equations(ODEs)
 \begin{align}\label{eq:onecpt} y_1&#39; &amp;= -k_a y_1, \\\
-y_2&#39; &amp;= k_a y_1 - \left(\frac{CL}{V_2} &#43; \frac{Q}{V_2}\right) y_2." />
+y_2&#39; &amp;= k_a y_1 - \left(\frac{CL}{V_2} &#43; \frac{Q}{V_2}\right) y_2. \end{align}" />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/function/one-cpt/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="function" />
 <meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-29T11:51:45-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-29T14:35:24-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 
 <meta name="twitter:title" content="One Compartment Model"/>
-<meta name="twitter:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_onecpt solves a one-compartment PK model (Figure 1). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\) by solving for the mass of drug in the central compartment \(y_2\) from ordinary differential equations(ODEs)
+<meta name="twitter:description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_onecpt solves a one-compartment PK model (Figure 1). The model obtains the mass \((y_1, y_2)\) in each compartment by solving the ordinary differential equations(ODEs)
 \begin{align}\label{eq:onecpt} y_1&#39; &amp;= -k_a y_1, \\\
-y_2&#39; &amp;= k_a y_1 - \left(\frac{CL}{V_2} &#43; \frac{Q}{V_2}\right) y_2."/>
+y_2&#39; &amp;= k_a y_1 - \left(\frac{CL}{V_2} &#43; \frac{Q}{V_2}\right) y_2. \end{align}"/>
 <meta itemprop="name" content="One Compartment Model">
-<meta itemprop="description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_onecpt solves a one-compartment PK model (Figure 1). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\) by solving for the mass of drug in the central compartment \(y_2\) from ordinary differential equations(ODEs)
+<meta itemprop="description" content=".ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_onecpt solves a one-compartment PK model (Figure 1). The model obtains the mass \((y_1, y_2)\) in each compartment by solving the ordinary differential equations(ODEs)
 \begin{align}\label{eq:onecpt} y_1&#39; &amp;= -k_a y_1, \\\
-y_2&#39; &amp;= k_a y_1 - \left(\frac{CL}{V_2} &#43; \frac{Q}{V_2}\right) y_2."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-29T11:51:45-07:00" />
-<meta itemprop="wordCount" content="175"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+y_2&#39; &amp;= k_a y_1 - \left(\frac{CL}{V_2} &#43; \frac{Q}{V_2}\right) y_2. \end{align}"><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
+<meta itemprop="dateModified" content="2021-06-29T14:35:24-07:00" />
+<meta itemprop="wordCount" content="182"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
@@ -76,14 +76,15 @@ y_2&#39; &amp;= k_a y_1 - \left(\frac{CL}{V_2} &#43; \frac{Q}{V_2}\right) y_2.">
 <!--endtoc-->
 <h2 id="description"><span class="section-num">1</span> Description</h2>
 <p>Function <code>pmx_solve_onecpt</code> solves a one-compartment PK
-model (Figure <a href="#orgb9536dc">1</a>). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\)
-by solving for the mass of drug in the central compartment
-\(y_2\) from ordinary differential equations(ODEs)</p>
+model (Figure <a href="#org169884b">1</a>). The model obtains the mass \((y_1, y_2)\) in each compartment
+by solving the ordinary differential equations(ODEs)</p>
 <p>\begin{align}\label{eq:onecpt}
 y_1' &amp;= -k_a y_1, \\\<br>
 y_2' &amp;= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2.
 \end{align}</p>
-<p><a id="orgb9536dc"></a></p>
+<p>The plasma concentrations of parent drug in the central compartment
+can then be calculated as \(c=y_2/V_2\).</p>
+<p><a id="org169884b"></a></p>
 <figure><img src="https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/cptModels.png"
          alt="Figure 1: One and two compartment models with first order absorption implemented in Torsten." width="300"/><figcaption>
             <p>Figure 1: One and two compartment models with first order absorption implemented in Torsten.</p>

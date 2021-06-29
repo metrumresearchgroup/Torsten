@@ -24,9 +24,9 @@ Table 1: NM-TRAN compatible event specification arguments. All arrays should hav
       <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
       
       <guid>https://metrumresearchgroup.github.io/Torsten/function/one-cpt/</guid>
-      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_onecpt solves a one-compartment PK model (Figure 1). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\) by solving for the mass of drug in the central compartment \(y_2\) from ordinary differential equations(ODEs)
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_onecpt solves a one-compartment PK model (Figure 1). The model obtains the mass \((y_1, y_2)\) in each compartment by solving the ordinary differential equations(ODEs)
 \begin{align}\label{eq:onecpt} y_1&#39; &amp;amp;= -k_a y_1, \\\
-y_2&#39; &amp;amp;= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2.</description>
+y_2&#39; &amp;amp;= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2. \end{align}</description>
     </item>
     
     <item>
@@ -35,8 +35,9 @@ y_2&#39; &amp;amp;= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2.</
       <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
       
       <guid>https://metrumresearchgroup.github.io/Torsten/function/two-cpt/</guid>
-      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_twocpt solves a two-compartment PK model (Figure /Torsten/function/one-cpt/). The model obtains plasma concentrations of parent drug \(c=y_2/V_2\) by solving for the mass of drug in the central compartment \(y_2\) from ordinary differential equations(ODEs)
-\begin{align} \label{eq:twocpt} y_1&#39; &amp;amp;= -k_a y_1 \\\</description>
+      <description>.ox-hugo-toc ul { list-style: none; }   Table of Contents  1 Description 2 Usage 3 Arguments 4 Return value 5 Note    1 Description Function pmx_solve_twocpt solves a two-compartment PK model (Figure /Torsten/function/one-cpt/). The model obtains the mass \((y_1, y_2, y_3)\) in each compartment by solving the ODEs
+\begin{align} \label{eq:twocpt} y_1&#39; &amp;amp;= -k_a y_1 \\\
+y_2&#39; &amp;amp;= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2 + \frac{Q}{V_3} y_3 \\\</description>
     </item>
     
     <item>
