@@ -1,9 +1,9 @@
 #+TITLE: Torsten changelog
 #+AUTHOR: Metrum Research Group LLC
-#+DATE: <2018-10-20 Sat>
-#+EMAIL: mailto:billg@metrumrg.com
+#+DATE: <2021-06-30 Wed>
+#+EMAIL: mailto:yiz@metrumrg.com
 #+OPTIONS: toc:nil, title:t, num:nil, date:nil
 
-#+include: ./docs/torsten_manual.org::*Changelog :lines "4-"
+#+include: ./docs/torsten_users_guide.org::*Changelog :lines "4-"
 
 

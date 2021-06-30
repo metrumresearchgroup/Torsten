@@ -3,8 +3,6 @@
 #+LATEX_CLASS: amsbook
 #+LATEX_CLASS_OPTIONS: [12pt, reqno, oneside]
 
-# #+HTML_HEAD: <link rel="stylesheet" href="/Users/yiz/Work/tufte-css/tufte.css" type="text/css" />
-
 # title page
 #+LATEX_HEADER: \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
 #+LATEX_HEADER: \newcommand\mrgproject{}
@@ -53,40 +51,48 @@
 #+LATEX_HEADER: \newtheorem{example}{Example}
 #+LATEX_HEADER: \newtheorem{remark}{Remark}
 
-#+MACRO: torsten_src @@latex:{\small \color{MRGGreen} \texttt{\textbf{$1}}}@@
 #+MACRO: torsten_ver v0.89rc
 #+MACRO: stan_ver v2.27.0
 #+MACRO: newline @@latex:\\@@ @@html:<br>@@ @@ascii:|@@
 
-#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://www.pirilampo.org/styles/readtheorg/css/htmlize.css"/>
-#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://www.pirilampo.org/styles/readtheorg/css/readtheorg.css"/>
+# #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://www.pirilampo.org/styles/readtheorg/css/htmlize.css"/>
+# #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://www.pirilampo.org/styles/readtheorg/css/readtheorg.css"/>
+#+HTML_HEAD: <link rel="stylesheet" href="tufte.css"/>
 
-#+HTML_HEAD: <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-#+HTML_HEAD: <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-#+HTML_HEAD: <script type="text/javascript" src="https://www.pirilampo.org/styles/lib/js/jquery.stickytableheaders.min.js"></script>
-#+HTML_HEAD: <script type="text/javascript" src="https://www.pirilampo.org/styles/readtheorg/js/readtheorg.js"></script>
+#+hugo_base_dir: ./hugo
+#+hugo_section: /
 
-#+OPTIONS: title:t, num:3
+#+hugo_weight: auto
+#+hugo_auto_set_lastmod: t
 
-** Development team
-  :PROPERTIES:
-  :UNNUMBERED: t
-  :END:
-*** Bill Gillespie
-    [[mailto:billg@metrumrg.com][~billg@metrumrg.com~]],
-    Metrum Research Group, LLC
-*** Yi Zhang
-    [[mailto:yiz@metrumrg.com][~yiz@metrumrg.com~]], Metrum Research Group, LLC
-*** Charles Margossian
-    [[mailto:charles.margossian@columbia.edu][~charles.margossian@columbia.edu~]], Columbia University, Department of Statistics(formerly Metrum Research Group, LLC)
+#+OPTIONS: title:t, num:3 d:(not "latex")
 
+* Development team
+   :PROPERTIES:
+   :UNNUMBERED: t
+   :EXPORT_FILE_NAME: dev-team
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_HUGO_MENU: :menu "main"
+   :END:
+- [[mailto:billg@metrumrg.com][William R. Gillespie]] , [[https://www.metrumrg.com/][Metrum Research Group]]
+- [[mailto:yiz@metrumrg.com][Yi Zhang]] , [[https://www.metrumrg.com/][Metrum Research Group]]
+- [[mailto:charles.margossian@columbia.edu][Charles Margossian]] , Columbia University, Department of Statistics
 * Acknowledgements
   :PROPERTIES:
   :UNNUMBERED: t
+  :EXPORT_FILE_NAME: Acknowledgements
+  :EXPORT_DATE: <2021-06-25 Fri>
+  :EXPORT_HUGO_MENU: :menu "main"
   :END:
 ** Institutions
+   :PROPERTIES:
+   :UNNUMBERED: t
+   :END:
 We thank Metrum Research Group, Columbia University, and AstraZeneca.
 ** Funding
+   :PROPERTIES:
+   :UNNUMBERED: t
+   :END:
 This work was funded in part by the following organizations:
 *** Office of Naval Research (ONR) contract N00014-16-P-2039
   provided as part of the Small Business Technology Transfer (STTR)
@@ -95,6 +101,9 @@ This work was funded in part by the following organizations:
   Government and no official endorsement should be inferred.
 *** Bill & Melinda Gates Foundation.
 ** Individuals
+   :PROPERTIES:
+   :UNNUMBERED: t
+   :END:
   We thank the Stan Development Team for giving us guidance on how to
   create new Stan functions and adding features to Stan's core language
   that facilitate building ODE-based models.
@@ -102,84 +111,52 @@ This work was funded in part by the following organizations:
   We also thank Kyle Baron and Hunter Ford for helpful advice on coding
   in C++ and using GitHub, Curtis Johnston for reviewing the User
   Manual, and Yaming Su for using Torsten and giving us feedback.
-
 * Introduction
-Stan is an open source probabilistic programing language designed
+  :PROPERTIES:
+  :EXPORT_FILE_NAME: _index
+  :EXPORT_DATE: <2021-06-25 Fri>
+  :EXPORT_OPTIONS: toc:nil num:nil
+  :END:
+[[https://mc-stan.org/][Stan]] is an open source probabilistic programing language designed
 primarily to do Bayesian data analysis
-cite:carpenter17_stan. Several of its
-features make it a powerful tool to specify and fit complex
-models. First, its language is very expressive and
-flexible. Secondly, it implements a variant of No U-Turn
+cite:carpenter17_stan. It provides an expressive syntax for statistic
+modeling and contains an efficient variant of No U-Turn
 Sampler(NUTS), an adaptative Hamiltonian Monte Carlo
 algorithm that was proven more efficient than commonly used Monte Carlo Markov Chains
-(MCMC) samplers for complex high dimensional problems cite:hoffman_no-u-turn_2011,betancourt_hmc_2018. Our
-goal is to harness these innovations and make Stan a better
-software for pharmacometrics modeling. Our efforts are twofold:
-1. We contribute to the development of features, such as functions that support differential equations based models, and implement them directly into Stan's core language.
-2. We develop Torsten, an extension with specialized pharmacometrics functions.
+(MCMC) samplers for complex high dimensional problems cite:hoffman_no-u-turn_2011,betancourt_hmc_2018. 
 
-Throughout the process, we work very closely with the Stan Development
-Team. We have benefited immensely from their mentorship, advice, and
-feedback. Just like Stan, Torsten is an open source project that
-fosters collaborative work. Interested in contributing?
-Comment at Torsten repository
+:hugo:
+#+attr_html: :width 300
+[[file:https://metrumrg.com/wp-content/uploads/2019/07/torsten-white-stan-cropped.png]]
+:END:
 
-[[https://github.com/metrumresearchgroup/Torsten][https://github.com/metrumresearchgroup/Torsten]] 
-
-or email us ([[mailto:billg@metrumrg.com][billg@metrumrg.com]], [[mailto:yz@yizh.org][yiz@metrumrg.com]]) and we will help you help us!
-
-Torsten is licensed under the BSD 3-clause license.
-
-#+begin_mdframed
-*WARNING:* The current version of Torsten is a /prototype/. It
-is being released for review and comment, and to support limited
-research applications. It has not been rigorously tested and should
-not be used for critical applications without further testing or
-cross-checking by comparison with other methods.
-
-We encourage interested users to try Torsten out and are happy to
-assist. Please report issues, bugs, and feature requests on
-[[https://github.com/metrumresearchgroup/stan][our GitHub page]].
-#+end_mdframed
-
-** Overview
-   :PROPERTIES:
-   :CUSTOM_ID: overview
-   :END:
 Torsten is a collection of Stan functions to facilitate analysis of
-pharmacometric data using Stan. The current version
-includes:
+pharmacometric data. Given an event schedule and an ODE system, it calculates amounts
+in each compartment. The current version includes [fn:1]:
 - Specific linear compartment models:
   + One compartment model with first order absorption.
   + Two compartment model with elimination from and first order absorption into central compartment
-- General linear compartment model described by a system of first-order \underline{linear} Ordinary Differential Equations (ODEs).
+- General linear compartment model described by a system of first-order _linear_ Ordinary Differential Equations (ODEs).
 - General compartment model described by a system of first order ODEs.
-- Mix compartment model with PK forcing function described by a linear one or two compartment model.
+- Coupled model with PK forcing function described by a linear one or two compartment model and PD components solved by numerical ODE integration.
 
 The models and data format are based on
-NONMEM\textregistered{}[fn::NONMEM\textregistered{} is licensed and distributed by ICON Development Solutions.]/NMTRAN/PREDPP
+NONMEM \textregistered{} [fn::NONMEM\textregistered{} is licensed and distributed by ICON Development Solutions.]/NMTRAN/PREDPP
 conventions including:
-- Recursive calculation of model predictions
-  + This permits piecewise constant covariate values
-- Bolus or constant rate inputs into any compartment
-- Single dose and multiple dose events
-- Handles steady state dosing events
-- Implemented NMTRAN data items include: TIME, EVID, CMT, AMT, RATE, ADDL, II, SS
+- recursive calculation of model predictions, which permits piecewise constant covariate values,
+- bolus or constant rate inputs into any compartment,
+- single dose and multiple dose events,
+- steady state dosing events,
+- NMTRAN-compartible data items such as TIME, EVID, CMT, AMT, RATE, ADDL, II, and SS.
 
-In general, all real variables may be passed as model parameters. A
-few exceptions apply /to functions which use a numerical
-integrator(i.e. the general and the mix compartment
-models). The below listed cases present technical difficulties, which we expect to
-overcome in Torsten's next release:
-- In the case of a multiple truncated infusion rate dosing regimen:
-  + The bioavailability (F) and the amount (AMT) must be fixed.
+All real variable arguments in Torsten functions can be passed as Stan =parameters=.
 
-This library provides Stan language functions that calculate amounts
-in each compartment, given an event schedule and an ODE system.
+[fn:1]  *WARNING:* The current version of Torsten is a /prototype/. It is being released for review and comment, and to support limited research applications. It has not been rigorously tested and should not be used for critical applications without further testing or cross-checking by comparison with other methods. We encourage interested users to try Torsten out and are happy to assist. Please report issues, bugs, and feature requests on [[https://github.com/metrumresearchgroup/stan][our GitHub page]].
 
 ** Implementation summary
     :PROPERTIES:
-    :CUSTOM_ID: imp_details
+    :EXPORT_FILE_NAME: Implementation-summary
+    :EXPORT_DATE: <2021-06-25 Fri>
     :END:
 - Current Torsten {{{torsten_ver}}} is based on Stan {{{stan_ver}}}.
 - All functions are programmed in C++ and are compatible
@@ -187,13 +164,13 @@ in each compartment, given an event schedule and an ODE system.
 - One and two compartment models are based on analytical solutions of governing ODEs.
 - General linear compartment models are based on semi-analytical solutions using the built-in matrix exponential function
 - General compartment models are solved numerically using built-in ODE integrators in Stan. The tuning parameters of the solver are adjustable. The steady state solution is calculated using a numerical algebraic solver.
-- A mix compartment model's PK forcing function is solved analytically, and its forced ODE system is solved numerically.
+- Coupled model that has PK forcing function solved analytically and PD ODE components solved numerically.
 
 ** Development plans
     :PROPERTIES:
-    :CUSTOM_ID: dev_plans
+    :EXPORT_FILE_NAME: Development-plans
+    :EXPORT_DATE: <2021-06-25 Fri>
     :END:
-
 Our current plans for future development of Torsten include the
 following:
 - Build a system to easily share packages of Stan functions
@@ -211,182 +188,130 @@ following:
   + Comparison with simulations from the R package
     =mrgsolve= and the software NONMEM\textregistered{}
   + Recruit non-developer users to conduct beta testing
-
-** Changelog
-*** Version 0.89 <2021-06-15 Tue>
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-changed
-     :END:
-  - New backend for ODE events solvers.
-  - Use vector instead of array as ODE function state & return type.
-  - Simplified ODE integrator naming,
-    e.g. {{{torsten_src(pmx\_ode\_bdf)}}} and  {{{torsten_src(pmx\_ode\_bdf\_ctrl)}}}.
-  - Update to Stan version 2.27.0.
-*** Version 0.88 <2020-12-18 Fri>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-added
-     :END:
+    
+* Changelog
+    :PROPERTIES:
+    :EXPORT_FILE_NAME: Changelog
+    :EXPORT_HUGO_MENU: :menu "main"
+    :EXPORT_OPTIONS: toc:t num:nil
+    :EXPORT_DATE: <2021-06-25 Fri>
+    :END:
+- Version 0.89 <2021-06-15 Tue>
+  + Changed
+    - New backend for ODE events solvers.
+    - Use vector instead of array as ODE function state & return type.
+    - Simplified ODE integrator naming, e.g. =pmx_ode_bdf[_ctrl]=.
+    - Update to Stan version 2.27.0.
+- Version 0.88 <2020-12-18 Fri>
+  + Added
+    - Bioavailability, lag time, ODE real & integer data are optional in PMX function signatures.
+    - Support all EVID options from NM-TRAN and mrgsolve.
+    - Support steady-state infusion through multiple interdose intervals.
   # - Experimental feature of cross-chain warmup and multilevel MPI paralleism.
-  - Bioavailability, lag time, ODE real & integer data are optional in PMX function signatures.
-  - Support all EVID options from NM-TRAN and mrgsolve.
-  - Support steady-state infusion through multiple interdose intervals.
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-changed
-     :END:
-  - More efficient memory management of COVDES implenmentation.
-  - Update of MPI framework to adapt multilevel paralleism.
-  - Update to Stan version 2.25.0.
-  - Use cmdstanr as R interface.
-  - Stop supporting rstan as R interface.
-*** Version 0.87 <2019-07-26 Fri>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-added
-     :END:
-  - MPI dynamic load balance for Torsten's population ODE integrators
-    + src_stan[:exports code]{pmx_integrate_ode_group_adams}
-    + src_stan[:exports code]{pmx_integrate_ode_group_bdf}
-    + src_stan[:exports code]{pmx_integrate_ode_group_rk45}
-    To invoke dynamic load balance instead of default static
-    balance for MPI, issue =TORSTEN_MPI=2= in =make/local=.
-  - Support =RATE= as parameter in src_stan[:exports code]{pmx_solve_rk45/bdf/adams}
-    functions.
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-changed
-     :END:
-  - Some fixes on steady-state solvers
-  - Update to rstan version 2.19.2.
+  + Changed
+    - More efficient memory management of COVDES implenmentation.
+    - Update of MPI framework to adapt multilevel paralleism.
+    - Update to Stan version 2.25.0.
+    - Use cmdstanr as R interface.
+    - Stop supporting rstan as R interface.
+- Version 0.87 <2019-07-26 Fri>
+  + Added
+    - MPI dynamic load balance for Torsten's population ODE integrators
+      + src_stan[:exports code]{pmx_integrate_ode_group_adams}
+      + src_stan[:exports code]{pmx_integrate_ode_group_bdf}
+      + src_stan[:exports code]{pmx_integrate_ode_group_rk45}
+      To invoke dynamic load balance instead of default static
+      balance for MPI, issue =TORSTEN_MPI=2= in =make/local=.
+    - Support =RATE= as parameter in src_stan[:exports code]{pmx_solve_rk45/bdf/adams}
+      functions.
+  + Changed
+    - Some fixes on steady-state solvers
+    - Update to rstan version 2.19.2.
+- Version 0.86 <2019-05-15 Wed>
+  + Added
+    - Torsten's ODE integrator functions
+      + src_stan[:exports code]{pmx_integrate_ode_adams}
+      + src_stan[:exports code]{pmx_integrate_ode_bdf}
+      + src_stan[:exports code]{pmx_integrate_ode_rk45}
+      and their counterparts to solve a population/group of
+      subjects governed by an ODE
+      + src_stan[:exports code]{pmx_integrate_ode_group_adams}
+      + src_stan[:exports code]{pmx_integrate_ode_group_bdf}
+      + src_stan[:exports code]{pmx_integrate_ode_group_rk45}
+    - Torsten's population PMX solver functions for general
+      ODE models
+      + src_stan[:exports code]{pmx_solve_group_adams}
+      + src_stan[:exports code]{pmx_solve_group_bdf}
+      + src_stan[:exports code]{pmx_solve_group_rk45}
+    - Support time step =ts= as parameter in src_stan[:exports code]{pmx_integrate_ode_xxx}
+      solvers.
+  + Changed
+    - Renaming Torsten functions in previous releases, the
+      old-new name mapping is
+      + src_stan[:exports code]{PKModelOneCpt} \rightarrow src_stan[:exports code]{pmx_solve_onecpt}
+      + src_stan[:exports code]{PKModelTwoCpt} \rightarrow src_stan[:exports code]{pmx_solve_onecpt}
+      + src_stan[:exports code]{linOdeModel} \rightarrow src_stan[:exports code]{pmx_solve_linode}
+      + src_stan[:exports code]{generalOdeModel_adams} \rightarrow src_stan[:exports code]{pmx_solve_adams}
+      + src_stan[:exports code]{generalOdeModel_bdf} \rightarrow src_stan[:exports code]{pmx_solve_bdf}
+      + src_stan[:exports code]{generalOdeModel_rk45} \rightarrow src_stan[:exports code]{pmx_solve_rk45}
+      + src_stan[:exports code]{mixOde1CptModel_bdf} \rightarrow src_stan[:exports code]{pmx_solve_onecpt_bdf}
+      + src_stan[:exports code]{mixOde1CptModel_rk45} \rightarrow src_stan[:exports code]{pmx_solve_onecpt_rk45}
+      + src_stan[:exports code]{mixOde2CptModel_bdf} \rightarrow src_stan[:exports code]{pmx_solve_twocpt_bdf}
+      + src_stan[:exports code]{mixOde2CptModel_rk45} \rightarrow src_stan[:exports code]{pmx_solve_twocpt_rk45}
+      Note that the new version of the above functions return
+      the /transpose/ of the matrix returned by the old
+      versions, in order to improve memory efficiency. The old version are retained but will be
+      deprecated in the future. 
+    - Update to Stan version 2.19.1.
 
-*** Version 0.86 <2019-05-15 Wed>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-added
-     :END:
-  - Torsten's ODE integrator functions
-    + src_stan[:exports code]{pmx_integrate_ode_adams}
-    + src_stan[:exports code]{pmx_integrate_ode_bdf}
-    + src_stan[:exports code]{pmx_integrate_ode_rk45}
-    and their counterparts to solve a population/group of
-    subjects governed by an ODE
-    + src_stan[:exports code]{pmx_integrate_ode_group_adams}
-    + src_stan[:exports code]{pmx_integrate_ode_group_bdf}
-    + src_stan[:exports code]{pmx_integrate_ode_group_rk45}
-  - Torsten's population PMX solver functions for general
-    ODE models
-    + src_stan[:exports code]{pmx_solve_group_adams}
-    + src_stan[:exports code]{pmx_solve_group_bdf}
-    + src_stan[:exports code]{pmx_solve_group_rk45}
-  - Support time step =ts= as parameter in src_stan[:exports code]{pmx_integrate_ode_xxx}
-    solvers.
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-changed
-     :END:
-  - Renaming Torsten functions in previous releases, the
-    old-new name mapping is
-    + src_stan[:exports code]{PKModelOneCpt} \rightarrow src_stan[:exports code]{pmx_solve_onecpt}
-    + src_stan[:exports code]{PKModelTwoCpt} \rightarrow src_stan[:exports code]{pmx_solve_onecpt}
-    + src_stan[:exports code]{linOdeModel} \rightarrow src_stan[:exports code]{pmx_solve_linode}
-    + src_stan[:exports code]{generalOdeModel_adams} \rightarrow src_stan[:exports code]{pmx_solve_adams}
-    + src_stan[:exports code]{generalOdeModel_bdf} \rightarrow src_stan[:exports code]{pmx_solve_bdf}
-    + src_stan[:exports code]{generalOdeModel_rk45} \rightarrow src_stan[:exports code]{pmx_solve_rk45}
-    + src_stan[:exports code]{mixOde1CptModel_bdf} \rightarrow src_stan[:exports code]{pmx_solve_onecpt_bdf}
-    + src_stan[:exports code]{mixOde1CptModel_rk45} \rightarrow src_stan[:exports code]{pmx_solve_onecpt_rk45}
-    + src_stan[:exports code]{mixOde2CptModel_bdf} \rightarrow src_stan[:exports code]{pmx_solve_twocpt_bdf}
-    + src_stan[:exports code]{mixOde2CptModel_rk45} \rightarrow src_stan[:exports code]{pmx_solve_twocpt_rk45}
-    Note that the new version of the above functions return
-    the /transpose/ of the matrix returned by the old
-    versions, in order to improve memory efficiency. The old version are retained but will be
-    deprecated in the future. 
-  - Update to Stan version 2.19.1.
-      
-*** Version 0.85 <2018-12-04 Tue>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-added
-     :END:
-  - Dosing rate as parameter
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-changed
-     :END:
+- Version 0.85 <2018-12-04 Tue>
+  + Added
+    - Dosing rate as parameter
+  + Changed
   - Update to Stan version 2.18.0.
 
-*** Version 0.84 <2018-02-24>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-84-added
-     :END:
-  - Piecewise linear interpolation function.
-  - Univariate integral functions.
-
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-84-changed
-     :END:
-  - Update to Stan version 2.17.1.
-  - Minor revisions to User Manual.
-  - Bugfixes.
-
-*** Version 0.83 <2017-08-02>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-83-added
-     :END:
-  - Work with TorstenHeaders
-  - Each chain has a different initial estimate
-
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-83-changed
-     :END:
-  - User manual
-  - Fix misspecification in ODE system for TwoCpt example.
-  - Other bugfixes
-
-
-*** Version 0.82 <2017-01-29>
-    :PROPERTIES:
-    :CUSTOM_ID: 0-82-added
-    :END:
-**** Added
-  - Allow parameter arguments to be passed as 1D or 2D arrays
-  - More unit tests
-  - Unit tests check automatic differentiation against finite differentiation.
-
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-82-changed
-     :END:
-  - Split the parameter argument into three arguments: pMatrix
-    (parameters for the ODEs -- note: for =linOdeModel=, pMatrix
-    is replaced by the constant rate matrix K), biovar
-    (parameters for the biovariability), and tlag (parameters
-    for the lag time).
-  - bugfixes
-
-*** Version 0.81 <2016-09-27>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-81-added
-     :END:
-  linCptModel (linear compartmental model) function
-
-*** Version 0.80a <2016-09-21 Wed>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-80a-added
-     :END:
-  check\under{}finite statements in pred\under{}1 and pred\under{}2 to reject metropolis proposal if initial conditions are not finite
+- Version 0.84 <2018-02-24>
+  + Added
+    - Piecewise linear interpolation function.
+    - Univariate integral functions.
+  + Changed
+    - Update to Stan version 2.17.1.
+    - Minor revisions to User Manual.
+    - Bugfixes.
+- Version 0.83 <2017-08-02>
+  + Added
+    - Work with TorstenHeaders
+    - Each chain has a different initial estimate
+  + Changed
+    - User manual
+    - Fix misspecification in ODE system for TwoCpt example.
+    - Other bugfixes
+- Version 0.82 <2017-01-29>
+  + Added
+    - Allow parameter arguments to be passed as 1D or 2D arrays
+    - More unit tests
+    - Unit tests check automatic differentiation against finite differentiation.
+  + Changed
+    - Split the parameter argument into three arguments: pMatrix
+      (parameters for the ODEs -- note: for =linOdeModel=, pMatrix
+      is replaced by the constant rate matrix K), biovar
+      (parameters for the biovariability), and tlag (parameters
+      for the lag time).
+    - bugfixes
+- Version 0.81 <2016-09-27>
+  + Added
+    - linCptModel (linear compartmental model) function
+- Version 0.80a <2016-09-21 Wed>
+  + Added
+    - check\under{}finite statements in pred\under{}1 and pred\under{}2 to reject metropolis proposal if initial conditions are not finite
 
 * Installation
-   :PROPERTIES:
-   :CUSTOM_ID: installation
-   :END:
+  :PROPERTIES:
+  :EXPORT_FILE_NAME: Installation
+  :EXPORT_DATE: <2021-06-25 Fri>
+  :EXPORT_HUGO_MENU: :menu "main"
+  :EXPORT_OPTIONS: toc:nil num:nil
+  :END:
 Currently Torsten is based on a forked version of Stan and hosted on GitHub
 - https://github.com/metrumresearchgroup/Torsten
 The latest {{{torsten_ver}}} is
@@ -423,7 +348,9 @@ After installation, one can use the following command to build a Torsten model ~
  and run Torsten models.
 
 ** MPI support
-\label{sec:mpi_support}
+   :PROPERTIES:
+   :CUSTOM_ID: mpi-support
+   :END:
 Torsten's MPI support is of a different flavour than
 =reduce_sum= found in Stan. To be able to utilize MPI
 parallelisation, one first needs to ensure an MPI library
@@ -485,30 +412,39 @@ using =cmdstanr=, and use =bayesplot= to examine posterior density of =CL=.
 # #+END_SRC
 
 * Using Torsten
-#+label: sec:using_torsten
-The reader should have a basic understanding of how Stan works before
-reading this chapter. There are excellent resources online to get
-started with Stan ([[http://mc-stan.org/documentation][http://mc-stan.org/documentation]]).
+   :PROPERTIES:
+   :EXPORT_HUGO_SECTION: function
+   :EXPORT_FILE_NAME: _index
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :CUSTOM_ID: using-torsten
+   :END:
+The reader should have a basic understanding of [[https://mc-stan.org/users/documentation/][how Stan works]].
 In this section we go through the different functions Torsten adds to
-Stan. The code for the examples can be found at the =example-models= folder. 
+Stan. The code for the examples can be found at Torsten's [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models][example models]].
 
-Torsten's functions are prefixed with {{{torsten_src(pmx\_)}}}. 
+** Events specification
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: events
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :END:
+
+Torsten's functions are prefixed with =pmx_=. 
 For some of their arguments we adopt NM-TRAN format for events
-specification(Table [[ref:tab:event_args]]).
+specification(Table [[tab:event_args]]).
+
 #+CAPTION: NM-TRAN compatible event specification arguments. All arrays should have the same length corresponding to the number of events.
-#+label: tab:event_args
 #+NAME: tab:event_args
-| Argument Name           | Definition                  | Stan data type            |
-|-------------------------+-----------------------------+---------------------------|
-| {{{torsten_src(time)}}} | time                        | {{{torsten_src(real[])}}} |
-| {{{torsten_src(amt)}}}  | amount                      | {{{torsten_src(real[])}}} |
-| {{{torsten_src(rate)}}} | infusion rate               | {{{torsten_src(real[])}}} |
-| {{{torsten_src(ii)}}}   | interdose interval          | {{{torsten_src(real[])}}} |
-| {{{torsten_src(evid)}}} | event ID                    | {{{torsten_src(int[])}}}  |
-| {{{torsten_src(cmt)}}}  | event compartment           | {{{torsten_src(int[])}}}  |
-| {{{torsten_src(addl)}}} | additionial identical doses | {{{torsten_src(int[])}}}  |
-| {{{torsten_src(ss)}}}   | steady-state dosing flag    | {{{torsten_src(int[])}}}  |
-|-------------------------+-----------------------------+---------------------------|
+| Argument Name | Definition                  | Stan data type |
+|---------------+-----------------------------+----------------|
+| =time=         | event time                  | =real[]=       |
+| =amt=          | dosing amount               | =real[]=       |
+| =rate=         | infusion rate               | =real[]=       |
+| =ii=           | interdose interval          | =real[]=       |
+| =evid=         | event ID                    | =int[]=        |
+| =cmt=          | event compartment           | =int[]=        |
+| =addl=         | additionial identical doses | =int[]=        |
+| =ss=           | steady-state dosing flag    | =int[]=        |
+|---------------+-----------------------------+----------------|
 All the src_stan[:exports code]{real[]} arguments above are allowed to
 be src_stan[:exports code]{parameters} in a Stan model.
 In addtion, Torsten functions
@@ -516,35 +452,46 @@ support optional arguments and overloaded signatures.
 Optional arguments are indicated by surrounding square bracket =[]=.
 Table below shows three commonly used PMX model arguments that support
 overloading. In the rest of this document we assume this convention unless indicated otherwise.
-#+CAPTION: PMX model parameter overloadings. One can use 1d array src_stan[:exports code ]{real[]} to indicate constants of all events, or 2d array src_stan[:exports code ]{real[ , ]} so that the \(i\)th row of the array describes the model arguments for time interval $(t_{i-1}, t_i)$, and the number of the rows equals to the size of {{{torsten_src(time)}}}.
+
+#+CAPTION: PMX model parameter overloadings. One can use 1d array src_stan[:exports code ]{real[]} to indicate constants of all events, or 2d array src_stan[:exports code ]{real[ , ]} so that the \(i\)th row of the array describes the model arguments for time interval $(t_{i-1}, t_i)$, and the number of the rows equals to the size of =time=.
 #+NAME: tab:event_params
-| Argument Name             | Definition               | Stan data type                                             | Optional           |
-|---------------------------+--------------------------+------------------------------------------------------------+--------------------|
-| {{{torsten_src(theta)}}}  | model parameters         | {{{torsten_src(real[])}}} or {{{torsten_src(real[ \, ])}}} | N                  |
-| {{{torsten_src(biovar)}}} | bioavailability fraction | {{{torsten_src(real[])}}} or {{{torsten_src(real[ \, ])}}} | Y (default to 1.0) |
-| {{{torsten_src(tlag)}}}   | lag time                 | {{{torsten_src(real[])}}} or {{{torsten_src(real[ \, ])}}} | Y (default to 0.0) |
-|---------------------------+--------------------------+------------------------------------------------------------+--------------------|
+| Argument Name | Definition               | Stan data type          | Optional           |
+|---------------+--------------------------+-------------------------+--------------------|
+| =theta=       | model parameters         | =real[]= or =real[ , ]= | N                  |
+| =biovar=      | bioavailability fraction | =real[]= or =real[ , ]= | Y (default to 1.0) |
+| =tlag=        | lag time                 | =real[]= or =real[ , ]= | Y (default to 0.0) |
+|---------------+--------------------------+-------------------------+--------------------|
 
 ** One Compartment Model
-#+LABEL: sec:onecpt
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: one-cpt
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
 #+INDEX: One Compartment Model
-\label{sec:onecpt}
 *** Description
-Function {{{torsten_src(pmx\_solve\_onecpt)}}} solves a one-compartment PK
-model (Figure [[one_two_cpt_models]]). The model obtains plasma concentrations of parent drug $c=y_2/V_2$
-by solving for the mass of drug in the central compartment
-$y_2$ from ordinary differential equations(ODEs)
-\begin{subequations}
-\begin{align}
+Function =pmx_solve_onecpt= solves a one-compartment PK
+model (Figure [[one_two_cpt_models]]). The model obtains the mass $(y_1, y_2)$ in each compartment
+by solving the ordinary differential equations(ODEs)
+\begin{align}\label{eq:onecpt}
   y_1' &= -k_a y_1, \\
   y_2' &= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2.
 \end{align}
-\label{eq:onecpt}
-\end{subequations}
+The plasma concentrations of parent drug in the central compartment
+can then be calculated as $c=y_2/V_2$.
+
+:hugo:
+#+CAPTION: One and two compartment models with first order absorption implemented in Torsten.
+#+NAME: one_two_cpt_models
+#+attr_html: :width 300
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/cptModels.png]]
+:END:
+:latex:
 #+CAPTION: One and two compartment models with first order absorption implemented in Torsten.
 #+NAME: one_two_cpt_models
 #+ATTR_LATEX: :width 1.5in
 [[file:./graphics/cptModels.png]]
+:END:
 
 *** Usage
 #+BEGIN_SRC stan
@@ -552,12 +499,12 @@ $y_2$ from ordinary differential equations(ODEs)
 #+END_SRC
 
 *** Arguments
-    See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]].
+    See Tables in Section [[*Events specification]].
 *** Return value
     An =ncmt=-by-=nt= matrix, where =nt= is the number of time steps and =ncmt=2= is the number of compartments.    
 *** Note
-- ODE Parameters {{{torsten_src(theta)}}} should consist of $CL$, $V_2$, $k_a$, in that order.
-- {{{torsten_src(biovar)}}} and {{{torsten_src(tlag)}}} are optional, so that the following are allowed:
+- ODE Parameters =theta= should consist of $CL$, $V_2$, $k_a$, in that order.
+- =biovar= and =tlag= are optional, so that the following are allowed:
 #+BEGIN_SRC stan
   pmx_solve_onecpt(..., theta);
   pmx_solve_onecpt(..., theta, biovar);
@@ -566,36 +513,37 @@ $y_2$ from ordinary differential equations(ODEs)
 - Setting $k_a = 0$ eliminates the first-order absorption.
 
 ** Two Compartment Model
-<<sec:twocpt>>
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: two-cpt
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
 *** Description
-Function {{{torsten_src(pmx\_solve\_twocpt)}}} solves a two-compartment PK
-model (Figure [[one_two_cpt_models]]). The model obtains plasma concentrations of parent drug $c=y_2/V_2$
-by solving for the mass of drug in the central compartment
-$y_2$ from ordinary differential equations(ODEs)
-\begin{subequations}
-  \begin{align} \label{eq:twocpt}
-    y_1' &= -k_a y_1 \\
-    y_2' &= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2 +  \frac{Q}{V_3}  y_3  \\ 
-    y_3' &= \frac{Q}{V_2} y_2 - \frac{Q}{V_3} y_3
-  \end{align}
-\end{subequations}
+Function =pmx_solve_twocpt= solves a two-compartment PK
+model (Figure [[one_two_cpt_models]]). The model obtains the mass $(y_1, y_2, y_3)$ in each compartment
+by solving the ODEs
+\begin{align} \label{eq:twocpt}
+  y_1' &= -k_a y_1 \\
+  y_2' &= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2 +  \frac{Q}{V_3}  y_3  \\ 
+  y_3' &= \frac{Q}{V_2} y_2 - \frac{Q}{V_3} y_3
+\end{align}
+The plasma concentrations of parent drug in the central compartment
+can then be calculated as $c=y_2/V_2$.
 
 *** Usage
-#+LABEL: sec:TwoCpt
 #+INDEX: Two Compartment Model
 #+BEGIN_SRC stan
   matrix = pmx_solve_twocpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, biovar, tlag ] )
 #+END_SRC
 
 *** Arguments
-    See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]].
-
+    See Tables in Section [[*Events specification]].
 *** Return value
     An =ncmt=-by-=nt= matrix, where =nt= is the number of time steps and =ncmt=3= is the number of compartments.
 
 *** Note
-- ODE Parameters {{{torsten_src(theta)}}} consists of $CL$, $Q$, $V_2$, $V_3$, $k_a$.
-- {{{torsten_src(biovar)}}} and {{{torsten_src(tlag)}}} are optional, so that the following are allowed:
+- ODE Parameters =theta= consists of $CL$, $Q$, $V_2$, $V_3$, $k_a$.
+- =biovar= and =tlag= are optional, so that the following are allowed:
 #+BEGIN_SRC stan
   pmx_solve_twocpt(..., theta);
   pmx_solve_twocpt(..., theta, biovar);
@@ -604,8 +552,13 @@ $y_2$ from ordinary differential equations(ODEs)
 - Setting $k_a = 0$ eliminates the first-order absorption.
 
 ** General Linear ODE Model Function
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: linode
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
 *** Description
-Function {{{torsten_src(pmx\_solve\_linode)}}} solves a (piecewise) linear ODEs model with coefficients
+Function =pmx_solve_linode= solves a (piecewise) linear ODEs model with coefficients
 in form of matrix $K$
 \begin{equation}
 y^\prime\left(t\right) = Ky\left(t\right)
@@ -627,26 +580,29 @@ where $k_{10}=CL/V_2$, $k_{12}=Q/V_2$, and $k_{21}=Q/V_3$.
 #+END_SRC
 
 *** Arguments
-**** {{{torsten_src(K)}}} 
-      System parameters. {{{torsten_src(K)}}} can be either
-      - a src_stan[:exports code ]{matrix} for constant parameters in all events, or
-      - an array of matrices src_stan[:exports code ]{matrix K[nt]} so that the \(i\)th entry of the array describes
-        the model parameters for time interval $(t_{i-1}, t_i)$,
-        and the number of the rows equals to the number of event time {{{torsten_src(nt)}}}.
-**** See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]] for the rest of arguments.
-
+- =K=
+      System parameters. =K= can be either
+  - a src_stan[:exports code ]{matrix} for constant parameters in all events, or
+  - an array of matrices src_stan[:exports code ]{matrix K[nt]} so that the \(i\)th entry of the array describes
+    the model parameters for time interval $(t_{i-1}, t_i)$,
+    and the number of the rows equals to the number of event time =nt=.
+- See Tables in Section [[*Events specification]] for the rest of arguments.
 *** Return value
-    An =n=-by-=nt= matrix, where =nt= is the number of time steps and =n= is the number of rows(columns) of square matrix {{{torsten_src(K)}}}.
+    An =n=-by-=nt= matrix, where =nt= is the number of time steps and =n= is the number of rows(columns) of square matrix =K=.
 
 ** General ODE Model Function
-\label{sec:general_ode}
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: genode
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
 *** Description
-    Function {{{torsten_src(pmx\_solve\_adams)}}}, {{{torsten_src(pmx\_solve\_bdf)}}}, and {{{torsten_src(pmx\_solve\_rk45)}}} solve a first-order ODE system
-    specified by user-specified right-hand-side function {{{torsten_src(ODE\_rhs)}}} $f$
+    Function =pmx_solve_adams=, =pmx_solve_bdf=, and =pmx_solve_rk45= solve a first-order ODE system
+    specified by user-specified right-hand-side function =ODE_rhs= $f$
     \begin{equation*}
     y'(t) = f(t, y(t))
     \end{equation*}
-    In the case where the {{{torsten_src(rate)}}} vector $r$ is non-zero, this equation becomes:
+    In the case where the =rate= vector $r$ is non-zero, this equation becomes:
     \begin{equation*}
     y'(t) = f(t, y(t)) + r
     \end{equation*}
@@ -659,54 +615,53 @@ Here src_stan[:exports code]{[adams || rk45 || bdf]} indicates the
 function name can use any of the three suffixes. See below.
 
 *** Arguments
-**** {{{torsten_src(ODE\_rhs)}}}
+- =ODE_rhs=
      ODE right-hand-side $f$. It should be defined in
      src_stan[:exports code]{functions} block and has the following format
 #+BEGIN_SRC stan
   vector = f(real t, vector y, real[] param, real[] dat_r, int[] dat_i) {...}
 #+END_SRC
-     Here {{{torsten_src(t)}}} is time, {{{torsten_src(y)}}} the unknowns of ODE, {{{torsten_src(param)}}} the parameters, {{{torsten_src(dat\_r)}}} the real data, {{{torsten_src(dat\_i)}}}
-     the integer data. {{{torsten_src(param)}}},
-     {{{torsten_src(dat\_r)}}}, and {{{torsten_src(dat\_i)}}} are from
-     the entry of {{{torsten_src(theta)}}}, {{{torsten_src(x\_r)}}},
-     and {{{torsten_src(x\_i)}}} corresponding to
-     {{{torsten_src(t)}}}, respectively.
+     Here =t= is time, =y= the unknowns of ODE, =param= the parameters, =dat\_r= the real data, =dat\_i=
+     the integer data. =param=,
+     =dat\_r=, and =dat\_i= are from
+     the entry of =theta=, =x_r=,
+     and =x_i= corresponding to
+     =t=, respectively.
      $f$ should not include dosing rates in its
      definition, as Torsten automatically update $f$
      when the corresponding event indicates infusion dosage.
-**** {{{torsten_src(nCmt)}}} 
+- =nCmt= 
      The number of compartments, equivalently, the dimension of the ODE system.
-**** {{{torsten_src(x\_r)}}}
+- =x_r=
      2d arary real data to be passed to ODE RHS. If specified, its 1st
-     dimension should have the same size as {{{torsten_src(time)}}}.
-**** {{{torsten_src(x\_i)}}}
+     dimension should have the same size as =time=.
+- =x_i=
      2d arary integer data to be passed to ODE RHS. If specified, its 1st
-     dimension should have the same size as {{{torsten_src(time)}}}.
-**** {{{torsten_src(rel\_tol)}}} 
+     dimension should have the same size as =time=.
+- =rel_tol= 
      The relative tolerance for numerical integration, default to 1.0E-6.
-**** {{{torsten_src(abs\_tol)}}}
+- =abs_tol=
      The absolute tolerance for numerical integration, default to 1.0E-6.
-**** {{{torsten_src(max\_step)}}}
+- =max_step=
      The maximum number of steps in numerical integration, default to $10^6$.
-**** {{{torsten_src(as\_rel\_tol)}}}
+- =as_rel_tol=
      The relative tolerance for algebra solver for steady state solution, default to 1.0E-6.     
-**** {{{torsten_src(as\_abs\_tol)}}}
+- =as_abs_tol=
      The absolute tolerance for algebra solver for steady state solution, default to 1.0E-6.
-**** {{{torsten_src(as\_max\_step)}}}
+- =as_max_step=
      The maximum number of interations in algebra solver for steady state solution, default to $10^2$.
-****   See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]] for the rest of arguments.
+- See Tables in Section [[*Events specification]] for the rest of arguments.
 
 *** Return value
-    An =nCmt=-by-=nt= matrix, where =nt= is the size of {{{torsten_src(time)}}}.
+    An =nCmt=-by-=nt= matrix, where =nt= is the size of =time=.
 *** Note
-    - See section [[ref:sec:ode_func_note]] for different types of integrator and general guidance.
-    - See section [[ref:sec:ode_func_note]] for comments on accuracy and tolerance.
-    - The default values of {{{torsten_src(atol)}}},
-      {{{torsten_src(rtol)}}}, and {{{torsten_src(max\_step)}}} are
+    - See Section [[*ODE integrator function]] for different types of integrator and general guidance.
+    - See Section [[*ODE integrator function]] for comments on accuracy and tolerance.
+    - The default values of =atol=,
+      =rtol=, and =max_step= are
       based on a limited amount of PKPD test problems and should not be considered as
       universally applicable. We strongly recommend user to set these values
-      according to physical intuition and numerical tests. See also Secion
-      [[ref:sec:ode_func_note]].
+      according to physical intuition and numerical tests. See also Section [[*ODE integrator function]].
     - With optional arguments indicated by square bracket, the following calls are allowed:
 #+BEGIN_SRC stan
   pmx_solve_[adams || rk45 || bdf](..., theta);
@@ -727,6 +682,11 @@ function name can use any of the three suffixes. See below.
 #+END_SRC
 
 ** Coupled ODE Model Function
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: coupled
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
 #+INDEX: coupled ODE Model
 *** Description
 When the ODE system consists of two subsystems in form of
@@ -744,49 +704,54 @@ effects. In the example of a Friberg-Karlsson
 semi-mechanistic model(see below), we observe an average speedup of
 $\sim 47 \pm 18 \%$ when using the mix solver in lieu of the numerical
 integrator. In the context, currently the couple solver supports one-
-& two-compartment for PK model, and {{{torsten_src(rk45)}}} &
-{{{torsten_src(bdf)}}} integrator for nonlinear PD model.
+& two-compartment for PK model, and =rk45= &
+=bdf= integrator for nonlinear PD model.
 *** Usage
 #+BEGIN_SRC stan
   matrix pmx_solve_onecpt_[ rk45 || bdf ](reduced_ODE_system, int nOde, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag [, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
   matrix pmx_solve_twocpt_[ rk45 || bdf ](reduced_ODE_system, int nOde, time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag [, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
 #+END_SRC
 *** Arguments
-**** {{{torsten_src(reduced\_ODE\_rhs)}}}
+- =reduced_ODE_rhs=
      The system  numerically solve ($y_2$ in the above discussion, also called the
-     /reduced system/ and {{{torsten_src(nOde)}}} the number of equations in
-     the \underline{reduced} system. The function that defines a reduced
+     /reduced system/ and =nOde= the number of equations in
+     the _reduced_ system. The function that defines a reduced
      system has an almost identical signature to that used for a full
      system, but takes one additional argument: $y_1$, the PK states,
      i.e. solution to the PK ODEs.
      #+BEGIN_SRC stan
        vector reduced_ODE_rhs(real t, vector y2, vector y1, real[] theta, real[] x_r, int[] x_i) 
      #+END_SRC
-**** {{{torsten_src(nCmt)}}} 
+- =nCmt= 
      The number of compartments. Equivalently, the dimension of the ODE system.
-**** {{{torsten_src(rel\_tol)}}} 
+- =rel_tol= 
      The relative tolerance for numerical integration, default to 1.0E-6.
-**** {{{torsten_src(abs\_tol)}}}
+- =abs_tol=
      The absolute tolerance for numerical integration, default to 1.0E-6.
-**** {{{torsten_src(max\_step)}}}
+- =max_step=
      The maximum number of steps in numerical integration, default to $10^6$.
-****   See Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]] for the rest of arguments.
+- See Tables in Section [[*Events specification]] for the rest of arguments.
 *** Return value
-    An =nPk + nOde=-by-=nt= matrix, where =nt= is the size of
-    {{{torsten_src(time)}}}, and =nPk= equals to 2 in
-    {{{torsten_src(pmx\_solve\_onecpt\_)}}} functions
-    and 3 in {{{torsten_src(pmx\_solve\_twocpt\_)}}} functions.
+    An =(nPk + nOde)= \times =nt= matrix, where =nt= is the size of
+    =time=, and =nPk= equals to 2 in
+    =pmx_solve_onecpt_= functions
+    and 3 in =pmx_solve_twocpt_= functions.
 
 ** General ODE-based Population Model Function
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: ode-pop
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
 *** Description
 All the preivous functions solves for a single sunject. Torsten also
 provides population modeling counterparts for ODE solutions. The
 functions solve for a population that share an ODE model but with
 subject-level parameters and event specifications and have similar
 signatures to single-subject functions, except that now events
-arguments {{{torsten_src(time)}}}, {{{torsten_src(amt)}}}, {{{torsten_src(rate)}}}, {{{torsten_src(ii)}}},
-{{{torsten_src(evid)}}}, {{{torsten_src(cmt)}}},
-{{{torsten_src(addl)}}}, {{{torsten_src(ss)}}} specifies the entire
+arguments =time=, =amt=, =rate=, =ii=,
+=evid=, =cmt=,
+=addl=, =ss= specifies the entire
 population, one subject after another.
 *** Usage
 #+INDEX: General ODE Model
@@ -794,53 +759,55 @@ population, one subject after another.
   matrix pmx_solve_group_[adams || rk45 || bdf](ODE_rhs, int nCmt, int[] len, time, amt, rate, ii, evid, cmt, addl, ss, theta, [ biovar, tlag, real[,] x_r, int [,] x_i, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
 #+END_SRC
 Here src_stan[:exports code]{[adams || rk45 || bdf]} indicates the
-function name can be of any of the three suffixes. See section [[ref:sec:ode_func_note]].
+function name can be of any of the three suffixes. See Section [[*ODE integrator function]].
 *** Arguments
-**** {{{torsten_src(ODE\_rhs)}}}
-     Same as in Section [[ref:sec:general_ode]].
-**** {{{torsten_src(time)}}}, {{{torsten_src(amt)}}}, {{{torsten_src(rate)}}}, {{{torsten_src(ii)}}}, {{{torsten_src(evid)}}}, {{{torsten_src(cmt)}}}, {{{torsten_src(addl)}}}, {{{torsten_src(ss)}}}
+- =ODE_rhs=
+     Same as in Section [[*ODE integrator function]].
+- =time=, =amt=, =rate=, =ii=, =evid=, =cmt=, =addl=, =ss=
      2d-array arguments that describe data record for the
-     entire population (see also Table [[ref:tab:event_args]] and Table [[ref:tab:event_params]]). They must have same size in the first
-     dimension. Take {{{torsten_src(evid)}}} for example. Let $N$ be the
-     population size, then {{{torsten_src(evid[1,])}}} to
-     {{{torsten_src(evid[n1,])}}} specifies events ID for subject 1,
-     {{{torsten_src(evid[n1 + 1,])}}} to
-     {{{torsten_src(evid[n1 + n2,])}}} for subject 2, etc. With $n_i$
+     entire population (see also Tables in Section [[*Events specification]]). They must have same size in the first
+     dimension. Take =evid= for example. Let $N$ be the
+     population size, then =evid[1,]= to
+     =evid[n1,]= specifies events ID for subject 1,
+     =evid[n1 + 1,]= to
+     =evid[n1 + n2,]= for subject 2, etc. With $n_i$
      being the number of events for subject $i$, $i=1, 2, \dots, N$, the
-     size of {{{torsten_src(evid)}}}'s first dimension is $\sum_{i}n_i$.
-**** {{{torsten_src(len)}}} 
+     size of =evid='s first dimension is $\sum_{i}n_i$.
+- =len= 
      The length of data for each subject within
-     the above events arrays. The size of {{{torsten_src(len)}}} equals
+     the above events arrays. The size of =len= equals
      to population size $N$.
-**** {{{torsten_src(nCmt)}}} 
+- =nCmt= 
      The number of compartments. Equivalently, the dimension of the ODE system.
-**** {{{torsten_src(x\_r)}}}
+- =x_r=
      2d arary real data to be passed to ODE RHS. If specified, its 1st
-     dimension should have the same size as {{{torsten_src(time)}}}.
-**** {{{torsten_src(x\_i)}}}
+     dimension should have the same size as =time=.
+- =x_i=
      2d arary integer data to be passed to ODE RHS. If specified, its 1st
-     dimension should have the same size as {{{torsten_src(time)}}}.
-**** {{{torsten_src(rel\_tol)}}} 
+     dimension should have the same size as =time=.
+- =rel_tol= 
      The relative tolerance for numerical integration, default to 1.0E-6.
-**** {{{torsten_src(abs\_tol)}}}
+- =abs_tol=
      The absolute tolerance for numerical integration, default to 1.0E-6.
-**** {{{torsten_src(max\_step)}}}
+- =max_step=
      The maximum number of steps in numerical integration, default to $10^6$.
-**** {{{torsten_src(as\_rel\_tol)}}}
+- =as_rel_tol=
      The relative tolerance for algebra solver for steady state solution, default to 1.0E-6.
-**** {{{torsten_src(as\_abs\_tol)}}}
+- =as_abs_tol=
      The absolute tolerance for algebra solver for steady state solution, default to 1.0E-6.
-**** {{{torsten_src(as\_max\_step)}}}
+- =as_max_step=
      The maximum number of interations in algebra solver for steady state solution, default to $10^2$.
 *** Return value
     An =nCmt=-by-=nt= matrix, where =nt= is the total size of
     events $\sum_{i}n_i$.
 *** Note
-\label{sec:ode_group_note}
+   :PROPERTIES:
+   :CUSTOM_ID: sec:ode_pop_note
+   :END:
     - Similar to single-subject solvers, three numerical integrator are provided:
-      + {{{torsten_src(pmx\_solve\_group\_adams)}}}: Adams-Moulton method,
-      + {{{torsten_src(pmx\_solve\_group\_bdf)}}}: Backward-differentiation formular,
-      + {{{torsten_src(pmx\_solve\_group\_rk45)}}}: Runge-Kutta 4/5 method.
+      + =pmx_solve_group_adams=: Adams-Moulton method,
+      + =pmx_solve_group_bdf=: Backward-differentiation formular,
+      + =pmx_solve_group_rk45=: Runge-Kutta 4/5 method.
     - With optional arguments indicated by square bracket, the following calls are allowed:
 #+BEGIN_SRC stan
   pmx_solve_group_[adams || rk45 || bdf](..., theta);
@@ -884,7 +851,13 @@ function name can be of any of the three suffixes. See section [[ref:sec:ode_fun
   processes evenly. Note that to access this feature user must have
   MPI installed, and some MPI installation may require set additional
   compiler arguments, such as =CXXLFAGS= and =LDFLAGS=.
-** ODE  integrator Function
+
+** ODE  integrator function
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: ode-integ
+   :EXPORT_DATE: <2021-06-28 Mon>
+   :EXPORT_OPTIONS: toc:nil num:nil
+   :END:
 *** Description
 Torsten provides its own implementation of ODE solvers that solves
 \begin{equation*}
@@ -900,49 +873,47 @@ by these functions.
   real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]);
 #+END_SRC
 *** Arguments
-\label{sec:ode_func_args}
-**** {{{torsten_src(ODE\_rhs)}}}
+- =ODE_rhs=
      Function that specifies the right-hand-side $f$.
      It should be defined in
      src_stan[:exports code]{functions} block and has the following format
 #+BEGIN_SRC stan
   vector = f(real t, vector y, real[] param, real[] dat_r, int[] dat_i) {...}
 #+END_SRC
-     Here {{{torsten_src(t)}}} is time, {{{torsten_src(y)}}} the unknowns of ODE, {{{torsten_src(param)}}} the parameters, {{{torsten_src(dat\_r)}}} the real data, {{{torsten_src(dat\_i)}}}
+     Here =t= is time, =y= the unknowns of ODE, =param= the parameters, =dat\_r= the real data, =dat\_i=
      the integer data.
-**** {{{torsten_src(y0)}}}
+- =y0=
      Initial condition $y_0$.
-**** {{{torsten_src(t0)}}}
+- =t0=
      Initial time $t_0$.
-**** {{{torsten_src(ts)}}}
+- =ts=
      Output time when solution is seeked.
-**** {{{torsten_src(theta)}}}
-     Parameters to be passed to {{{torsten_src(ODE\_rhs)}}} function.
-**** {{{torsten_src(x\_r)}}}
-     Real data to be passed to {{{torsten_src(ODE\_rhs)}}} function.
-**** {{{torsten_src(x\_i)}}}
-     Integer data to be passed to {{{torsten_src(ODE\_rhs)}}} function.
-**** {{{torsten_src(rtol)}}}
-     Relative tolerance, default to 1.e-6({{{torsten_src(rk45)}}}) and 1.e-8({{{torsten_src(adams)}}} and {{{torsten_src(bdf)}}}).
-**** {{{torsten_src(atol)}}}
-     Absolute tolerance, default to 1.e-6({{{torsten_src(rk45)}}}) and 1.e-8({{{torsten_src(adams)}}} and {{{torsten_src(bdf)}}}).
-**** {{{torsten_src(max\_step)}}}
-     Maximum number of steps allowed between neighboring time in {{{torsten_src(ts)}}},
+- =theta=
+     Parameters to be passed to =ODE_rhs= function.
+- =x_r=
+     Real data to be passed to =ODE_rhs= function.
+- =x_i=
+     Integer data to be passed to =ODE_rhs= function.
+- =rtol=
+     Relative tolerance, default to 1.e-6(=rk45=) and 1.e-8(=adams= and =bdf=).
+- =atol=
+     Absolute tolerance, default to 1.e-6(=rk45=) and 1.e-8(=adams= and =bdf=).
+- =max_step=
+     Maximum number of steps allowed between neighboring time in =ts=,
      default to 100000.
 *** Return value
-    An =n=-by-=nd= 2d-array, where =n= is the size of {{{torsten_src(ts)}}}
+    An =n=-by-=nd= 2d-array, where =n= is the size of =ts=
     and =nd= the dimension of the system.
 *** Note
-\label{sec:ode_func_note}
     - Three numerical integrator are provided:
-      + {{{torsten_src(pmx\_integrate\_ode\_adams)}}}: Adams-Moulton method,
-      + {{{torsten_src(pmx\_integrate\_ode\_bdf)}}}: Backward-differentiation formular,
-      + {{{torsten_src(pmx\_integrate\_ode\_rk45)}}}: Runge-Kutta 4/5 method.
+      + =pmx_integrate_ode_adams=: Adams-Moulton method,
+      + =pmx_integrate_ode_bdf=: Backward-differentiation formular,
+      + =pmx_integrate_ode_rk45=: Runge-Kutta 4/5 method.
       When not equipped with further understanding of the ODE system, as a
       rule of thumb we suggest user try
-      {{{torsten_src(rk45)}}} integrator first, {{{torsten_src(bdf)}}}
+      =rk45= integrator first, =bdf=
       integrator when the system is suspected to be stiff, and
-      {{{torsten_src(adams)}}} when a non-stiff system needs to be solved
+      =adams= when a non-stiff system needs to be solved
       with higher accuracy/smaller tolerance.
 
     - All three integrators support adaptive stepping. To achieve
@@ -953,17 +924,17 @@ by these functions.
       \end{equation}
       Here $\tilde{y}$ is the numerical solution of $y$ at current
       step and $\Vert \cdot \Vert$ indicates certain norm. When the above check fails, the solver attempts
-      to reduce step size and retry. The default values of {{{torsten_src(atol)}}},
-      {{{torsten_src(rtol)}}}, and {{{torsten_src(max\_step)}}} are
+      to reduce step size and retry. The default values of =atol=,
+      =rtol=, and =max_step= are
       based on Stan's ODE functions and should not be considered as
       optimal. User should make problem-dependent
-      decision on {{{torsten_src(rtol)}}} and {{{torsten_src(atol)}}},
+      decision on =rtol= and =atol=,
       according to estimated scale of the unknowns, so that the error
       would not affect inference on statistical variance of quantities
       that enter the Stan model. In particular, when an unknown can be neglected
       below certain threshold without affecting the rest of
       the dynamic system, setting
-      {{{torsten_src(atol)}}} greater than that threshold will avoid
+      =atol= greater than that threshold will avoid
       spurious and error-prone computation. See
       cite:hindmarsh_cvodes_2020 and
       1.4 of cite:shampine_solving_2003 for details.
@@ -975,6 +946,11 @@ by these functions.
 #+END_SRC
      
 ** ODE group  integrator Function
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: ode-group-integ
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
 #+INDEX: PMX ODE group integrators
 *** Description
 All the preivous functions solves for a single ODE system. Torsten also
@@ -987,42 +963,40 @@ signatures to single-ODE integration functions.
   matrix pmx_integrate_ode_group_[adams || rk45 || bdf](ODE_system, real[ , ] y0, real t0, int[] len, real[] ts, real[ , ] theta, real[ , ] x_r, int[ , ] x_i, [ real rtol, real atol, int max_step ] );
 #+END_SRC
 Here src_stan[:exports code]{[adams || rk45 || bdf]} indicates the
-function name can be of any of the three suffixes. See section [[ref:sec:ode_func_note]].
-
-**** {{{torsten_src(ODE\_rhs)}}}
-     Function that specifies the right-hand-side $f$. See Section [[ref:sec:ode_func_args]].
-**** {{{torsten_src(y0)}}}
+function name can be of any of the three suffixes. See Section [[*ODE integrator function]].
+- =ODE_rhs=
+     Function that specifies the right-hand-side $f$. See Section [[*ODE integrator function]].
+- =y0=
      Initial condition $y_0$ for each subsystem in the group. The
      first dimension equals to the size of the group.
-**** {{{torsten_src(t0)}}}
+- =t0=
      Initial time $t_0$.
-**** {{{torsten_src(len)}}}
+- =len=
      A vector that contains the number of output time points for each
      subsystem. The lenght of the vector equals to the size of the group.
-**** {{{torsten_src(ts)}}}
+- =ts=
      Output time when solution is seeked, consisting of
-     {{{torsten_src(ts)}}} of each subsystem concatenated.
-**** {{{torsten_src(theta)}}}
-     2d-array parameters to be passed to {{{torsten_src(ODE\_rhs)}}}
+     =ts= of each subsystem concatenated.
+- =theta=
+     2d-array parameters to be passed to =ODE_rhs=
      function. Each row corresponds to one subsystem.
-**** {{{torsten_src(x\_r)}}}
-     2d-array real data to be passed to {{{torsten_src(ODE\_rhs)}}} function.
+- =x_r=
+     2d-array real data to be passed to =ODE_rhs= function.
      Each row corresponds to one subsystem.
-**** {{{torsten_src(x\_i)}}}
-     2d-array integer data to be passed to {{{torsten_src(ODE\_rhs)}}} function.
+- =x_i=
+     2d-array integer data to be passed to =ODE_rhs= function.
      Each row corresponds to one subsystem.
-**** {{{torsten_src(rtol)}}}
+- =rtol=
      Relative tolerance.
-**** {{{torsten_src(atol)}}}
+- =atol=
      Absolute tolerance.
-**** {{{torsten_src(max\_step)}}}
-     Maximum number of steps allowed between neighboring time in {{{torsten_src(ts)}}}.
+- =max_step=
+     Maximum number of steps allowed between neighboring time in =ts=.
 
 *** Return value
-    An =n=-by-=nd= matrix, where =n= is the size of {{{torsten_src(ts)}}}
+    An =n=-by-=nd= matrix, where =n= is the size of =ts=
     and =nd= the dimension of the system.
 *** Note
-\label{sec:ode_integ_group_note}
     - With optional arguments indicated by square bracket, the following calls are allowed:
 #+BEGIN_SRC stan
   pmx_integrate_group_[adams || rk45 || bdf](..., x_i);
@@ -1054,6 +1028,12 @@ function name can be of any of the three suffixes. See section [[ref:sec:ode_fun
   compiler arguments, such as =CXXLFAGS= and =LDFLAGS=.
 
 ** Univariate integral
+   :PROPERTIES:
+   :EXPORT_HUGO_SECTION*: 1d_integ
+   :EXPORT_FILE_NAME: 1d_integ
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
 #+INDEX: univariate integral
 #+BEGIN_SRC stan
   real univariate_integral_rk45(f, t0, t1, theta, x_r, x_i)
@@ -1070,6 +1050,12 @@ calculating the integral of a univariate function. The integrand function $f$ mu
 #+END_SRC
 
 ** Piecewise linear interpolation
+   :PROPERTIES:
+   :EXPORT_HUGO_SECTION*: pc_lin_interp
+   :EXPORT_FILE_NAME: pc_lin_interp
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
 #+INDEX: linear interpolation
 #+BEGIN_SRC stan
 real linear_interpolation(real xout, real[] x, real[] y)
@@ -1094,19 +1080,28 @@ pairs. Specifically, =linear_interpolation= implements the following function
 - All three arguments may be data or parameters.
 
 * Examples
+   :PROPERTIES:
+   :EXPORT_HUGO_SECTION: example
+   :EXPORT_FILE_NAME: _index
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :END:
 All the PMX models in this chapter can be found in
 =Torsten/example-models= directory:
-- =Torsten/example-models/pk2cpt= (Section [[ref:sec:pk2cpt]]).
-- =Torsten/example-models/pk2cpt_linode= (Section [[ref:sec:pk2cpt_linode]]).
-- =Torsten/example-models/pk2cpt_ode= (Section [[ref:sec:pk2cpt_ode]]).
-- =Torsten/example-models/FK_coupled= (Section [[ref:sec:fk_model]]).
-- =Torsten/example-models/twocpt_population= (Section [[ref:sec:twocpt_population]]).
-- =Torsten/example-models/lotka_volterra_ode_group_model= (Section [[ref:sec:lotka_volterra]]).
-- =Torsten/example-models/effCpt= (Section [[ref:sec:effcpt_model]]).
-- =Torsten/example-models/FribergKarlsson= (Section [[ref:sec:fkpop_model]]).
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/pk2cpt][Two-compartment model]]
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/pk2cpt_linode][Two-compartment model by linear ODEs]]
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/pk2cpt_ode][two-compartment model by numerical ODEs]]
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/FK_coupled][Joint PK/PD model]]
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/twocpt_population][Two-compartment popPK model]]
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/lotka_volterra_ode_group_model][Group of ODEs]]
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/effCpt][Effective compartment model]]
+- [[https://github.com/metrumresearchgroup/Torsten/tree/master/example-models/FribergKarlsson][PopPKPD model]]
 
 ** Two-compartment model for single patient
-\label{sec:pk2cpt}
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: twocpt
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:nil num:nil
+   :END:
   We model drug absorption in a single patient and simulate plasma drug concentrations:
 
   - Multiple Doses: 1250 mg, every 12 hours, for a total of 15 doses
@@ -1114,8 +1109,8 @@ All the PMX models in this chapter can be found in
     8, 10 and 12 hours after 1st, 2nd, and 15th dose. In addition, the
     PK is measured every 12 hours throughout the trial.
 
-  With the plasma concentration $\hat{c}$ solved from
-  two-compartment ODEs in [[sec:twocpt]], we simulate $c$ according to:
+  With the plasma concentration $\hat{c}$ using
+  [[*Two Compartment Model]], we simulate $c$ according to:
   \begin{align*}
     \log\left(c\right) &\sim N\left(\log\left(\widehat{c}\right),\sigma^2\right) \\
     \left(CL, Q, V_2, V_3, ka\right) &= \left(5\ {\rm L/h}, 8\  {\rm L/h}, 20\  {\rm L},  70\ {\rm L}, 1.2\ {\rm h^{-1}} \right) \\
@@ -1123,7 +1118,7 @@ All the PMX models in this chapter can be found in
   \end{align*}
   The data are generated using the R package =mrgsolve= cite:Baron000.
 
-Code below shows how Torsten function {{{torsten_src(pmx\_solve\_twocpt)}}} can be used to fit the above model.
+Code below shows how Torsten function =pmx_solve_twocpt= can be used to fit the above model.
 
 #+include: "../example-models/pk2cpt/pk2cpt.stan" :lines "5-68" src stan
 
@@ -1159,47 +1154,85 @@ summarize the posterior is through =cmdstanr='s =summary= method.
 6 sigma     0.109  0.108 0.0117 0.0111  0.0911  0.130  1.01    1414.     905.
 #+END_SRC
 
+:hugo:
+#+CAPTION: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
+#+NAME: twocpt_mcmc_history
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/history.png]]
+:END:
+:latex:
 #+CAPTION: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
 #+NAME: twocpt_mcmc_history
 #+ATTR_LATEX: :width \linewidth
 [[../example-models/pk2cpt/deliv/figure/history.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Posterior marginal densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
+#+NAME: twocpt_mcmc_posterior
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/density.png]]
+:END:
+:latex:
 #+CAPTION: Posterior marginal densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
 #+NAME: twocpt_mcmc_posterior
 #+ATTR_LATEX: :width \linewidth
 [[../example-models/pk2cpt/deliv/figure/density.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted ($y_{\text{rep}}$) and observed ($y$) plasma drug concentrations of a two compartment model with first order absorption. $y_{\text{rep}}$ is shown with posterior median, 50%, 90% credible intervals.
+#+NAME: twocpt_mcmc_predict
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/ppc_ribbon.png]]
+:END:
+:latex:
 #+CAPTION: Predicted ($y_{\text{rep}}$) and observed ($y$) plasma drug concentrations of a two compartment model with first order absorption. $y_{\text{rep}}$ is shown with posterior median, 50%, 90% credible intervals.
 #+NAME: twocpt_mcmc_predict
 #+ATTR_LATEX: :width 0.5\linewidth
 [[../example-models/pk2cpt/deliv/figure/ppc_ribbon.pdf]]
+:END:
 
 ** Two-compartment model as a linear ODE model for single patient 
-\label{sec:pk2cpt_linode}
-Using {{{torsten_src(pmx\_solve\_linode)}}}, the following example fits a two-compartment model
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: twocpt-lin
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
+Using =pmx_solve_linode=, the following example fits a two-compartment model
 with first order absorption. We omit src_stan[:exports code]{data} and
-src_stan[:exports code]{model} block as they are identical to Sectiontion [[ref:sec:pk2cpt]].
+src_stan[:exports code]{model} block as they are identical to [[*Two-compartment model for single patient]] Example.
 
 #+include: "../example-models/pk2cpt_linode/pk2cpt_linode.stan" :lines "23-70" src stan
 
 ** Two-compartment model solved by numerical integrator for single patient 
-\label{sec:pk2cpt_ode}
-Using {{{torsten_src(pmx\_solve\_rk45)}}}, the following example fits a two-compartment model
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: twocpt-ode
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
+Using =pmx_solve_rk45=, the following example fits a two-compartment model
 with first order absorption. User-defined function
 =ode_rhs= describes the RHS of the ODEs. 
 #+include: "../example-models/pk2cpt_ode/pk2cpt_ode.stan" :lines "1-22" src stan
 
 We omit src_stan[:exports code]{data} and
-src_stan[:exports code]{model} block as they are identical to Section [[ref:sec:pk2cpt]].
+src_stan[:exports code]{model} block as they are identical to [[*Two-compartment model for single patient]] Example.
 
 #+include: "../example-models/pk2cpt_ode/pk2cpt_ode.stan" :lines "41-78" src stan
 
 ** Joint PK-PD model
-\label{sec:fk_model}
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: pkpd
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :CUSTOM_ID: sec:fk_model
+   :EXPORT_OPTIONS: toc:nil num:nil
+   :END:
 #+INDEX: Friberg-Karlsson Model
    Neutropenia is observed in patients receiving an ME-2 drug. Our goal
    is to model the relation between neutrophil counts and drug
-   exposure. As shown in Figure [[ref:fig:FK_model]], the Friberg-Karlsson Semi-Mechanistic model cite:friberg_mechanistic_2003 couples
+   exposure. As shown in Figure [[fig:FK_model]], the Friberg-Karlsson Semi-Mechanistic model cite:friberg_mechanistic_2003 couples
    a PK model with a PD
    effect to describe a delayed feedback mechanism that keeps the
    absolute neutrophil count (ANC) at the
@@ -1208,7 +1241,8 @@ src_stan[:exports code]{model} block as they are identical to Section [[ref:sec:
    reducing the proliferation rate (prol).
    The delay between prol and Circ is modeled using $n$ transit
    comparments with mean transit time MTT = $(n + 1)/k_{\text{tr}}$,
-   with $k_{\text{tr}}$ the transit rate constant. In the current example, we use the two compartment model in section [[sec:twocpt]] for
+   with $k_{\text{tr}}$ the transit rate constant. In the current
+   example, we use the [[*Two Compartment Model]] for
    PK model, and set $n = 3$.
 
 \begin{align}
@@ -1217,16 +1251,13 @@ src_stan[:exports code]{model} block as they are identical to Section [[ref:sec:
 \end{align}
   where $c$ is the drug concentration calculated from the PK model, and function $f_{\text{FK}}$ represents solving the following
 nonlinear ODE for $y_{\text{circ}}$ 
-\begin{subequations}
-  \begin{align}
-  \frac{dy_\mathrm{prol}}{dt} &= k_\mathrm{prol} y_\mathrm{prol} (1 - E_\mathrm{drug})\left(\frac{\text{Circ}_0}{y_\mathrm{circ}}\right)^\gamma - k_\mathrm{tr}y_\mathrm{prol}, \\
-  \frac{dy_\mathrm{trans1}}{dt} &= k_\mathrm{tr} y_\mathrm{prol} - k_\mathrm{tr} y_\mathrm{trans1}, \\
-  \frac{dy_\mathrm{trans2}}{dt} &= k_\mathrm{tr} y_\mathrm{trans1} - k_\mathrm{tr} y_\mathrm{trans2},  \\
-  \frac{dy_\mathrm{trans3}}{dt} &= k_\mathrm{tr} y_\mathrm{trans2} - k_\mathrm{tr} y_\mathrm{trans3},  \\
-  \frac{dy_\mathrm{circ}}{dt} &= k_\mathrm{tr} y_\mathrm{trans3} - k_\mathrm{tr} y_\mathrm{circ},
-   \label{eq:FK}
+  \begin{align}\label{eq:FK}
+    \frac{dy_\mathrm{prol}}{dt} &= k_\mathrm{prol} y_\mathrm{prol} (1 - E_\mathrm{drug})\left(\frac{\text{Circ}_0}{y_\mathrm{circ}}\right)^\gamma - k_\mathrm{tr}y_\mathrm{prol}, \\
+    \frac{dy_\mathrm{trans1}}{dt} &= k_\mathrm{tr} y_\mathrm{prol} - k_\mathrm{tr} y_\mathrm{trans1}, \\
+    \frac{dy_\mathrm{trans2}}{dt} &= k_\mathrm{tr} y_\mathrm{trans1} - k_\mathrm{tr} y_\mathrm{trans2},  \\
+    \frac{dy_\mathrm{trans3}}{dt} &= k_\mathrm{tr} y_\mathrm{trans2} - k_\mathrm{tr} y_\mathrm{trans3},  \\
+    \frac{dy_\mathrm{circ}}{dt} &= k_\mathrm{tr} y_\mathrm{trans3} - k_\mathrm{tr} y_\mathrm{circ},
   \end{align}
-\end{subequations}
 We use $E_{\text{drug}} = \alpha c$ to model the linear effect of drug
 concentration in central compartment, with
 $c=y_{\text{cent}}/V_{\text{cent}}$ based on PK solutions.
@@ -1239,11 +1270,19 @@ we can specify solve the system using a coupled solver function. We do not
 expect our system to be stiff and use the Runge-Kutta 4th/5th order
 integrator.
 
+:hugo:
 #+CAPTION: Friberg-Karlsson semi-mechanistic Model.
-#+NAME: FK_model
-#+LABEL: fig:FK_model
+#+NAME: fig:FK_model
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/neutrophilModel.jpg]]
+:END:
+:latex:
+#+CAPTION: Friberg-Karlsson semi-mechanistic Model.
+#+NAME: fig:FK_model
 #+ATTR_LATEX: :width 0.8\textwidth
 [[file:./graphics/neutrophilModel.jpg]]
+:END:
+
 
 The model fitting is based on simulated data
 \begin{align*}
@@ -1254,15 +1293,18 @@ The model fitting is based on simulated data
 #+include: "../example-models/FK_coupled/FribergKarlsson.stan" src stan
 
 ** Two-compartment population model
-\label{sec:twocpt_population}
-Using {{{torsten_src(pmx\_solve\_group\_bdf)}}}, the following example fits a
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: twocp-pop
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
+Using =pmx_solve_group_bdf=, the following example fits a
 two-compartment population model.
 
 #+include: "../example-models/twocpt_population/twocpt_population.stan" :lines "1-145" src stan
 
 When the above model is compiled with MPI support(see Section
-[[ref:sec:mpi_support]]), one can run it with within-chain
-parallelization:
+[[#mpi-support][MPI support]]), one can run it using within-chain parallelization:
 #+BEGIN_SRC bash
 mpiexec -n nproc ./twocpt_population sample data file=twocpt_population.data.R init=twocpt_population.init.R
 #+END_SRC
@@ -1273,13 +1315,22 @@ src_sh[:exports code]{nproc=4} indicates solving 8 subjects' ODEs in
 parallel, with each process solving 2 subjects.
 
 ** Lotka-Volterra group model
-\label{sec:lotka_volterra}
-Using {{{torsten_src(pmx\_integrate\_ode\_group\_rk45)}}}, the following example fits
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: ode-group
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
+Using =pmx_integrate_ode_group_rk45=, the following example fits
 a Lotka-Volterra group model, based on [[https://mc-stan.org/users/documentation/case-studies/lotka-volterra-predator-prey.html][Stan's case study]].
 
 #+include: "../example-models/lotka_volterra_ode_group_model/lv_group.stan" :lines "1-57" src stan
 
 ** Univariate integral of a quadratic function
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: 1d-intg
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
 integral of a quadratic function.
 This example shows how to use =univariate_integral_rk45= to calculate the
 integral of a quadratic function.
@@ -1310,6 +1361,11 @@ integral of a quadratic function.
 #+END_SRC
 
 ** Linear intepolation
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: lin-interp
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
 This example illustrates how to use =linear_intepolationi=
 to fit a piecewise linear function to a data set consisting
 of $(x, y)$ pairs.
@@ -1363,8 +1419,12 @@ generated quantities{
 #+END_SRC
 
 ** Effect Compartment Population Model
-\label{sec:effcpt_model}
-Here we expand the example in [[sec:twocpt]] to a population model fitted to the
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: effcpt
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
+Here we expand the [[*Two-compartment model for single patient]] to a population model fitted to the
 combined data from phase I and phase IIa studies. The
 parameters exhibit inter-individual variations (IIV), due to
 both random effects and to the patients' body weight,
@@ -1385,10 +1445,19 @@ treated as a covariate and denoted $bw$.
 Furthermore we add a fourth compartment in which we measure
 a PD effect(Figure [[eff_model]]).
 
+:hugo:
+#+CAPTION: Effect Compartment Model
+#+NAME: eff_model
+#+attr_html: :width 400
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/effCptModel.png]]
+:END:
+:latex:
 #+CAPTION: Effect Compartment Model
 #+NAME: eff_model
 #+ATTR_LATEX: :width 0.5\textwidth
 [[file:./graphics/effCptModel.png]]
+:END:
+
 
 *** Effect Compartment Model for PD response $R$.
 \begin{gather*}
@@ -1417,10 +1486,10 @@ treatment.
 
 The model is simultaneously fitted to the PK and the PD
 data. For this effect compartment model, we construct a
-constant rate matrix and use {{{torsten_src(pmx\_solve\_linode)}}}. Correct use of
+constant rate matrix and use =pmx_solve_linode=. Correct use of
 Torsten requires the user pass the entire event history
 (observation and dosing events) for an individual to the
-function. Thus the Stan model shows the call to {{{torsten_src(pmx\_solve\_linode)}}}
+function. Thus the Stan model shows the call to =pmx_solve_linode=
 within a loop over the individual subjects rather than over
 the individual observations. Note that the correlation matrix $\rho$ does not explicitly appear
 in the model, but it is used to construct $\Omega$, which parametrizes
@@ -1430,17 +1499,16 @@ the PK IIV.
 
 *** Results
 We use the same diagnosis tools as for the
-previous examples. Table [[ref:effCptModelParms]] summarises the
+previous examples. Table [[effCptModelParms]] summarises the
 statistics and diagnostics of the parameters. In particular, =rhat=
 for all parameters being close to 1.0 indicates convergence of the 4
-chains. Figure [[ref:effcpt_mcmc_density]] shows the posterior density of
+chains. Figure [[effcpt_mcmc_density]] shows the posterior density of
 the parameters.
 
 Posterior prediction check (PPC) in Figure
-[[ref:effcpt_ppc_5mg]]-[[ref:effcpt_ppc_study_2_20mg]] show that the fits to the plasma concentration
+[[effcpt_ppc_5mg]] - [[effcpt_ppc_study_2_20mg]] show that the fits to the plasma concentration
 are in close agreement with the data, notably for the sparse data case (phase IIa study). The fits
-to the PD data (Figure
-[[ref:effcpt_ppc_resp_5mg]]-[[ref:effcpt_ppc_resp_study_2_20mg]]) look
+to the PD data (Figure [[effcpt_ppc_resp_5mg]] - [[effcpt_ppc_resp_study_2_20mg]]) look
 reasonable considering data being more noisy so the model
 produces larger credible intervals. Both the summary table and PPC
 plots show that the estimated values of the
@@ -1449,7 +1517,6 @@ parameters are consistent with the values used to simulate the data.
 # import from "summary_pars.csv"
 #+CAPTION: Summary of the MCMC simulations of the marginal posterior distributions of the model parameters for the effect compartment model example.
 #+ATTR_LATEX: :font \footnotesize :align  r r r r r r r r r r r
-#+LABEL: effCptModelParms
 #+NAME: effCptModelParms
 | variable  |    mean |  median |    sd |   mad |     q5 |     q95 |  rhat | ess_bulk | ess_tail |
 |-----------+---------+---------+-------+-------+--------+---------+-------+----------+----------|
@@ -1481,67 +1548,158 @@ parameters are consistent with the values used to simulate the data.
 | sigmaResp |  10.165 |  10.166 | 0.198 | 0.198 |  9.844 |  10.495 | 1.002 | 4788.527 | 2923.203 |
 #+TBLFM: $2=$0;%0.3f::$3=$0;%0.3f::$4=$0;%0.3f::$5=$0;%0.3f::$6=$0;%0.3f::$7=$0;%0.3f::$8=$0;%0.3f::$9=$0;%0.3f::$10=$0;%0.3f
 
+:hugo:
+#+CAPTION: Posterior marginal densities of the model parameters of the effect compartment model.
+#+NAME: effcpt_mcmc_density
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/density.png]]
+:END:
+:latex:
 #+CAPTION: Posterior marginal densities of the model parameters of the effect compartment model.
 #+NAME: effcpt_mcmc_density
 #+ATTR_LATEX: :width 0.8\linewidth
 [[../example-models/effCpt/density.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (5mg dose).
+#+NAME: effcpt_ppc_5mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_5mg.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (5mg dose).
 #+NAME: effcpt_ppc_5mg
 #+ATTR_LATEX: :width \linewidth
 [[../example-models/effCpt/ppc_study_1_5mg.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (10mg dose).
+#+NAME: effcpt_ppc_10mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_10mg.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (10mg dose).
 #+NAME: effcpt_ppc_10mg
 #+ATTR_LATEX: :width \linewidth
 [[../example-models/effCpt/ppc_study_1_10mg.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (20mg dose).
+#+NAME: effcpt_ppc_20mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_20mg.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (20mg dose).
 #+NAME: effcpt_ppc_20mg
 #+ATTR_LATEX: :width \linewidth
 [[../example-models/effCpt/ppc_study_1_20mg.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (40mg dose).
+#+NAME: effcpt_ppc_40mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_40mg.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (40mg dose).
 #+NAME: effcpt_ppc_40mg
 #+ATTR_LATEX: :width \linewidth
 [[../example-models/effCpt/ppc_study_1_40mg.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 2 (first 40 subjects).
+#+NAME: effcpt_ppc_study_2_20mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_2_20mg.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 2 (first 40 subjects).
 #+NAME: effcpt_ppc_study_2_20mg
 #+ATTR_LATEX: :width \linewidth
 [[../example-models/effCpt/ppc_study_2_20mg.pdf]]
+:END:
 
 # PD
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (5mg dose).
+#+NAME: effcpt_ppc_resp_5mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_5mg_resp.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (5mg dose).
 #+NAME: effcpt_ppc_resp_5mg
 #+ATTR_LATEX: :width \linewidth
 [[../example-models/effCpt/ppc_study_1_5mg_resp.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (10mg dose).
+#+NAME: effcpt_ppc_resp_10mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_10mg_resp.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (10mg dose).
 #+NAME: effcpt_ppc_resp_10mg
 #+ATTR_LATEX: :width \linewidth
 [[../example-models/effCpt/ppc_study_1_10mg_resp.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (20mg dose).
+#+NAME: effcpt_ppc_resp_20mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_20mg_resp.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (20mg dose).
 #+NAME: effcpt_ppc_resp_20mg
 #+ATTR_LATEX: :width \linewidth
 [[../example-models/effCpt/ppc_study_1_20mg_resp.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (40mg dose).
+#+NAME: effcpt_ppc_resp_40mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_40mg_resp.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (40mg dose).
 #+NAME: effcpt_ppc_resp_40mg
 #+ATTR_LATEX: :width \linewidth
 [[../example-models/effCpt/ppc_study_1_40mg_resp.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 2 (first 40 subjects).
+#+NAME: effcpt_ppc_resp_study_2_20mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_2_20mg_resp.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 2 (first 40 subjects).
 #+NAME: effcpt_ppc_resp_study_2_20mg
 #+ATTR_LATEX: :width \linewidth
 [[../example-models/effCpt/ppc_study_2_20mg_resp.pdf]]
-
+:END:
 
 ** Friberg-Karlsson Semi-Mechanistic Population Model
-\label{sec:fkpop_model}
-We now return to the example in Section [[ref:sec:fk_model]] and extend
+   :PROPERTIES:
+   :EXPORT_FILE_NAME: pkpd-pop
+   :EXPORT_DATE: <2021-06-25 Fri>
+   :EXPORT_OPTIONS: toc:t
+   :END:
+We now return to the example of [[*Joint PK-PD model]] and extend
 it to a population model. While we recommend using the coupled
 solver, and this time we solve it using group solver. We leave it
 as an exercise to the reader to rewrite the model with
@@ -1578,7 +1736,7 @@ parameters.
 The ODE is defined as 
 #+include: "../example-models/FribergKarlsson/FribergKarlsson.stan" :lines "1-62" src stan
 
-We use the {{{torsten_src(pmx\_solve\_group\_rk45)}}} function to
+We use the =pmx_solve_group_rk45= function to
 solve the entire population's events. 
 #+include: "../example-models/FribergKarlsson/FribergKarlsson.stan" :lines "140-189" src stan
 
@@ -1629,20 +1787,44 @@ and [[ref:fkpop_ppc_pd]] indicate the model is a good fit.
 | alphaHat  | 2.24e-4 | 2.19e-4 | 3.97e-05 | 3.80e-05 | 1.66e-4 | 2.96e-4 | 1.000 | 5138.105 | 2807.328 |
 #+TBLFM: $2=$0;%0.3f::$3=$0;%0.3f::$4=$0;%0.3f::$5=$0;%0.3f::$6=$0;%0.3f::$7=$0;%0.3f::$8=$0;%0.3f::$9=$0;%0.3f::$10=$0;%0.3f
 
+:hugo:
+#+CAPTION: Posterior marginal densities of the model parameters of the Friberg-Karlsson population model.
+#+NAME: fkpop_mcmc_density
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/FribergKarlsson/density.png]]
+:END:
+:latex:
 #+CAPTION: Posterior marginal densities of the model parameters of the Friberg-Karlsson population model.
 #+NAME: fkpop_mcmc_density
 #+ATTR_LATEX: :width 0.8\linewidth
 [[../example-models/FribergKarlsson/density.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (50%, 90% credible interval and median) and observed individual drug plasma concentration.
+#+NAME: fkpop_ppc_pk
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/FribergKarlsson/ppc_pk.png]]
+:END:
+:latex:
 #+CAPTION: Predicted (50%, 90% credible interval and median) and observed individual drug plasma concentration.
 #+NAME: fkpop_ppc_pk
 #+ATTR_LATEX: :width 0.8\linewidth
 [[../example-models/FribergKarlsson/ppc_pk.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (50%, 90% credible interval and median) and observed individual Neutrophil counts.
+#+NAME: fkpop_ppc_pd
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/FribergKarlsson/ppc_pd.png]]
+:END:
+:latex:
 #+CAPTION: Predicted (50%, 90% credible interval and median) and observed individual Neutrophil counts.
 #+NAME: fkpop_ppc_pd
 #+ATTR_LATEX: :width 0.8\linewidth
 [[../example-models/FribergKarlsson/ppc_pd.pdf]]
+:END:
 
 \appendix
 * Compiling constants
@@ -1652,10 +1834,10 @@ and [[ref:fkpop_ppc_pd]] indicate the model is a good fit.
 Several constants are used in Torsten's makefile. These constants can
 be used in =cmdstan/make/local= file, or use =set_make_local= command
 in =cmdstanr=.
-- {{{torsten_src(TORSTEN\_MPI=1)}}} turns on within-chain parallelsation of MPI-enable
+- =TORSTEN_MPI=1= turns on within-chain parallelsation of MPI-enable
   functions. To use this option one must also point
-  {{{torsten_src(TBB\_CXX\_TYPE)}}} to proper C compiler. See also section [[ref:sec:ode_group_note]] and [[ref:sec:ode_integ_group_note]].
-- {{{torsten_src(TORSTEN\_CVS\_JAC\_AD=1)}}} makes BDF and Adams
+  =TBB_CXX_TYPE= to proper C compiler. See also Section [[*General ODE-based Population Model Function]] and [[*ODE group integrator Function]].
+- =TORSTEN_CVS_JAC_AD=1= makes BDF and Adams
   integrator use Stan's automatic differentiation to calculate
   Jacobian matrix in nonlinear solver cite:hindmarsh_cvodes_2020.
 
@@ -1663,5 +1845,8 @@ in =cmdstanr=.
 
 \backmatter
 
-\bibliography{torsten}
-bibliographystyle:plain
+<<bibliographystyle link>>
+bibliographystyle:unsrt
+
+<<bibliography link>>
+bibliography:torsten.bib
