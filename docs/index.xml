@@ -34,7 +34,9 @@ Bill &amp;amp; Melinda Gates Foundation.</description>
       <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
       
       <guid>https://metrumresearchgroup.github.io/Torsten/changelog/</guid>
-      <description>Table of Contents  Version 0.89 &amp;lt;2021-06-15 Tue&amp;gt;  Changed   Version 0.88 &amp;lt;2020-12-18 Fri&amp;gt;  Added Changed   Version 0.87 &amp;lt;2019-07-26 Fri&amp;gt;  Added Changed   Version 0.86 &amp;lt;2019-05-15 Wed&amp;gt;  Added Changed   Version 0.85 &amp;lt;2018-12-04 Tue&amp;gt;  Added Changed   Version 0.84 &amp;lt;2018-02-24 Sat&amp;gt;  Added Changed   Version 0.83 &amp;lt;2017-08-02 Wed&amp;gt;  Added Changed   Version 0.82 &amp;lt;2017-01-29 Sun&amp;gt;  Added Changed   Version 0.</description>
+      <description>Version 0.89 &amp;lt;2021-06-15 Tue&amp;gt;
+ Changed  New backend for ODE events solvers. Use vector instead of array as ODE function state &amp;amp; return type. Simplified ODE integrator naming, e.g. pmx_ode_bdf[_ctrl]. Update to Stan version 2.27.0.      Version 0.88 &amp;lt;2020-12-18 Fri&amp;gt;
+ Added  Bioavailability, lag time, ODE real &amp;amp; integer data are optional in PMX function signatures. Support all EVID options from NM-TRAN and mrgsolve.</description>
     </item>
     
     <item>
@@ -59,6 +61,15 @@ Table 1: NM-TRAN compatible event specification arguments. All arrays should hav
     </item>
     
     <item>
+      <title>Implementation summary</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/implementation-summary/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/implementation-summary/</guid>
+      <description>Current Torsten v0.89rc is based on Stan v2.27.0. All functions are programmed in C++ and are compatible with the Stan math automatic differentiation library (Carpenter et al. 2015) One and two compartment models are based on analytical solutions of governing ODEs. General linear compartment models are based on semi-analytical solutions using the built-in matrix exponential function General compartment models are solved numerically using built-in ODE integrators in Stan. The tuning parameters of the solver are adjustable.</description>
+    </item>
+    
+    <item>
       <title>Overview</title>
       <link>https://metrumresearchgroup.github.io/Torsten/overview/</link>
       <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
@@ -76,6 +87,16 @@ Table 1: NM-TRAN compatible event specification arguments. All arrays should hav
       <guid>https://metrumresearchgroup.github.io/Torsten/example/twocpt/</guid>
       <description>We model drug absorption in a single patient and simulate plasma drug concentrations:
  Multiple Doses: 1250 mg, every 12 hours, for a total of 15 doses PK measured at 0.083, 0.167, 0.25, 0.5, 0.75, 1, 1.5, 2, 4, 6, 8, 10 and 12 hours after 1st, 2nd, and 15th dose. In addition, the PK is measured every 12 hours throughout the trial.  With the plasma concentration \(\hat{c}\) using Two Compartment Model, we simulate \(c\) according to:</description>
+    </item>
+    
+    <item>
+      <title>Development plans</title>
+      <link>https://metrumresearchgroup.github.io/Torsten/development-plans/</link>
+      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
+      
+      <guid>https://metrumresearchgroup.github.io/Torsten/development-plans/</guid>
+      <description>Our current plans for future development of Torsten include the following:
+ Build a system to easily share packages of Stan functions (written in C++ or in the Stan language) Optimize Matrix exponential functions  Function for the action of Matrix Exponential on a vector Hand-coded gradients Special algorithm for matrices with special properties   Develop new method for large-scale hierarchical models with costly ODE solving. Fix issue that arises when computing the adjoint of the lag time parameter (in a dosing compartment) evaluated at \(t_{\text{lag}} = 0\).</description>
     </item>
     
     <item>
@@ -272,25 +293,6 @@ real f(real t, real[] theta, real[] x_r, int[] x_i) { /* ... */ } </description>
       <guid>https://metrumresearchgroup.github.io/Torsten/function/pc_lin_interp/pc_lin_interp/</guid>
       <description>real linear_interpolation(real xout, real[] x, real[] y) real[] linear_interpolation(real[] xout, real[] x, real[] y) Torsten also provides function linear_interpolation for piecewise linear interpolation over a set of x, y pairs. It returns the values of a piecewise linear function at specified values xout of the first function argument. The function is specified in terms of a set of x, y pairs. Specifically, linear_interpolation implements the following function
 \begin{align*} y_{\text{out}} = \left\{\begin{array}{ll} y_1, &amp;amp; x_{\text{out}} &amp;lt; x_1 \\\</description>
-    </item>
-    
-    <item>
-      <title>Implementation summary</title>
-      <link>https://metrumresearchgroup.github.io/Torsten/implementation-summary/</link>
-      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
-      
-      <guid>https://metrumresearchgroup.github.io/Torsten/implementation-summary/</guid>
-      <description>Current Torsten v0.89rc is based on Stan v2.27.0. All functions are programmed in C++ and are compatible with the Stan math automatic differentiation library (Carpenter et al. 2015) One and two compartment models are based on analytical solutions of governing ODEs. General linear compartment models are based on semi-analytical solutions using the built-in matrix exponential function General compartment models are solved numerically using built-in ODE integrators in Stan. The tuning parameters of the solver are adjustable.</description>
-    </item>
-    
-    <item>
-      <title>Development plans</title>
-      <link>https://metrumresearchgroup.github.io/Torsten/development-plans/</link>
-      <pubDate>Fri, 25 Jun 2021 00:00:00 -0700</pubDate>
-      
-      <guid>https://metrumresearchgroup.github.io/Torsten/development-plans/</guid>
-      <description>Our current plans for future development of Torsten include the following:
- Build a system to easily share packages of Stan functions (written in C++ or in the Stan language) Optimize Matrix exponential functions  Function for the action of Matrix Exponential on a vector Hand-coded gradients Special algorithm for matrices with special properties   Develop new method for large-scale hierarchical models with costly ODE solving. Fix issue that arises when computing the adjoint of the lag time parameter (in a dosing compartment) evaluated at \(t_{\text{lag}} = 0\).</description>
     </item>
     
   </channel>

@@ -23,7 +23,7 @@ functions{ vector ode_rhs(real t, vector x, real[] parms, real[] x_r, int[] x_i)
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/example/twocpt-ode/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="example" />
 <meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-29T14:35:32-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-30T11:38:31-07:00" /><meta property="og:site_name" content="Torsten" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
@@ -34,7 +34,7 @@ functions{ vector ode_rhs(real t, vector x, real[] parms, real[] x_r, int[] x_i)
 <meta itemprop="name" content="Two-compartment model solved by numerical integrator for single patient">
 <meta itemprop="description" content="Using pmx_solve_rk45, the following example fits a two-compartment model with first order absorption. User-defined function ode_rhs describes the RHS of the ODEs.
 functions{ vector ode_rhs(real t, vector x, real[] parms, real[] x_r, int[] x_i){ real CL = parms[1]; real Q = parms[2]; real V1 = parms[3]; real V2 = parms[4]; real ka = parms[5]; real k10 = CL / V1; real k12 = Q / V1; real k21 = Q / V2; vector[3] y; y[1] = -ka*x[1]; y[2] = ka*x[1] - (k10 &#43; k12)*x[2] &#43; k21*x[3]; y[3] = k12*x[2] - k21*x[3]; return y; } } We omit data and model block as they are identical to Two-compartment model for single patient Example."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-29T14:35:32-07:00" />
+<meta itemprop="dateModified" content="2021-06-30T11:38:31-07:00" />
 <meta itemprop="wordCount" content="233"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
@@ -118,7 +118,7 @@ transformed parameters {
 
 model{
 </code></pre><div class="edit-meta">
-Last updated on 29 Jun 2021
+Last updated on 30 Jun 2021
 
 
 <br>

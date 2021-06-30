@@ -18,21 +18,27 @@
 :root {--custom-background-color: #005933;}
 </style>
 <meta property="og:title" content="Changelog" />
-<meta property="og:description" content="Table of Contents  Version 0.89 &lt;2021-06-15 Tue&gt;  Changed   Version 0.88 &lt;2020-12-18 Fri&gt;  Added Changed   Version 0.87 &lt;2019-07-26 Fri&gt;  Added Changed   Version 0.86 &lt;2019-05-15 Wed&gt;  Added Changed   Version 0.85 &lt;2018-12-04 Tue&gt;  Added Changed   Version 0.84 &lt;2018-02-24 Sat&gt;  Added Changed   Version 0.83 &lt;2017-08-02 Wed&gt;  Added Changed   Version 0.82 &lt;2017-01-29 Sun&gt;  Added Changed   Version 0." />
+<meta property="og:description" content="Version 0.89 &lt;2021-06-15 Tue&gt;
+ Changed  New backend for ODE events solvers. Use vector instead of array as ODE function state &amp; return type. Simplified ODE integrator naming, e.g. pmx_ode_bdf[_ctrl]. Update to Stan version 2.27.0.      Version 0.88 &lt;2020-12-18 Fri&gt;
+ Added  Bioavailability, lag time, ODE real &amp; integer data are optional in PMX function signatures. Support all EVID options from NM-TRAN and mrgsolve." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/changelog/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="" />
 <meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-29T14:35:19-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-30T11:38:19-07:00" /><meta property="og:site_name" content="Torsten" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 
 <meta name="twitter:title" content="Changelog"/>
-<meta name="twitter:description" content="Table of Contents  Version 0.89 &lt;2021-06-15 Tue&gt;  Changed   Version 0.88 &lt;2020-12-18 Fri&gt;  Added Changed   Version 0.87 &lt;2019-07-26 Fri&gt;  Added Changed   Version 0.86 &lt;2019-05-15 Wed&gt;  Added Changed   Version 0.85 &lt;2018-12-04 Tue&gt;  Added Changed   Version 0.84 &lt;2018-02-24 Sat&gt;  Added Changed   Version 0.83 &lt;2017-08-02 Wed&gt;  Added Changed   Version 0.82 &lt;2017-01-29 Sun&gt;  Added Changed   Version 0."/>
+<meta name="twitter:description" content="Version 0.89 &lt;2021-06-15 Tue&gt;
+ Changed  New backend for ODE events solvers. Use vector instead of array as ODE function state &amp; return type. Simplified ODE integrator naming, e.g. pmx_ode_bdf[_ctrl]. Update to Stan version 2.27.0.      Version 0.88 &lt;2020-12-18 Fri&gt;
+ Added  Bioavailability, lag time, ODE real &amp; integer data are optional in PMX function signatures. Support all EVID options from NM-TRAN and mrgsolve."/>
 <meta itemprop="name" content="Changelog">
-<meta itemprop="description" content="Table of Contents  Version 0.89 &lt;2021-06-15 Tue&gt;  Changed   Version 0.88 &lt;2020-12-18 Fri&gt;  Added Changed   Version 0.87 &lt;2019-07-26 Fri&gt;  Added Changed   Version 0.86 &lt;2019-05-15 Wed&gt;  Added Changed   Version 0.85 &lt;2018-12-04 Tue&gt;  Added Changed   Version 0.84 &lt;2018-02-24 Sat&gt;  Added Changed   Version 0.83 &lt;2017-08-02 Wed&gt;  Added Changed   Version 0.82 &lt;2017-01-29 Sun&gt;  Added Changed   Version 0."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-29T14:35:19-07:00" />
-<meta itemprop="wordCount" content="511"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
+<meta itemprop="description" content="Version 0.89 &lt;2021-06-15 Tue&gt;
+ Changed  New backend for ODE events solvers. Use vector instead of array as ODE function state &amp; return type. Simplified ODE integrator naming, e.g. pmx_ode_bdf[_ctrl]. Update to Stan version 2.27.0.      Version 0.88 &lt;2020-12-18 Fri&gt;
+ Added  Bioavailability, lag time, ODE real &amp; integer data are optional in PMX function signatures. Support all EVID options from NM-TRAN and mrgsolve."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
+<meta itemprop="dateModified" content="2021-06-30T11:38:19-07:00" />
+<meta itemprop="wordCount" content="449"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
 <h1>Torsten</h1><span class="version">Version 0.89.0</span><a href="https://github.com/metrumresearchgroup/Torsten" class="github"><i class="fab fa-github"></i></a>
@@ -51,87 +57,34 @@
 </div>
 <div class="content-container">
 <main><h1>Changelog</h1>
-<div class="ox-hugo-toc toc">
-<div></div>
-<div class="heading">Table of Contents</div>
 <ul>
-<li><a href="#version-0-dot-89">Version 0.89 <span class="timestamp-wrapper"><span class="timestamp">&lt;2021-06-15 Tue&gt;</span></span></a>
+<li>
+<p>Version 0.89 <span class="timestamp-wrapper"><span class="timestamp">&lt;2021-06-15 Tue&gt;</span></span></p>
 <ul>
-<li><a href="#0-85-changed">Changed</a></li>
-</ul>
-</li>
-<li><a href="#version-0-dot-88">Version 0.88 <span class="timestamp-wrapper"><span class="timestamp">&lt;2020-12-18 Fri&gt;</span></span></a>
-<ul>
-<li><a href="#0-85-added">Added</a></li>
-<li><a href="#0-85-changed">Changed</a></li>
-</ul>
-</li>
-<li><a href="#version-0-dot-87">Version 0.87 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-07-26 Fri&gt;</span></span></a>
-<ul>
-<li><a href="#0-85-added">Added</a></li>
-<li><a href="#0-85-changed">Changed</a></li>
-</ul>
-</li>
-<li><a href="#version-0-dot-86">Version 0.86 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-05-15 Wed&gt;</span></span></a>
-<ul>
-<li><a href="#0-85-added">Added</a></li>
-<li><a href="#0-85-changed">Changed</a></li>
-</ul>
-</li>
-<li><a href="#version-0-dot-85">Version 0.85 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-12-04 Tue&gt;</span></span></a>
-<ul>
-<li><a href="#0-85-added">Added</a></li>
-<li><a href="#0-85-changed">Changed</a></li>
-</ul>
-</li>
-<li><a href="#version-0-dot-84">Version 0.84 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-02-24 Sat&gt;</span></span></a>
-<ul>
-<li><a href="#0-84-added">Added</a></li>
-<li><a href="#0-84-changed">Changed</a></li>
-</ul>
-</li>
-<li><a href="#version-0-dot-83">Version 0.83 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-08-02 Wed&gt;</span></span></a>
-<ul>
-<li><a href="#0-83-added">Added</a></li>
-<li><a href="#0-83-changed">Changed</a></li>
-</ul>
-</li>
-<li><a href="#0-82-added">Version 0.82 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-29 Sun&gt;</span></span></a>
-<ul>
-<li><a href="#added">Added</a></li>
-<li><a href="#0-82-changed">Changed</a></li>
-</ul>
-</li>
-<li><a href="#version-0-dot-81">Version 0.81 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-27 Tue&gt;</span></span></a>
-<ul>
-<li><a href="#0-81-added">Added</a></li>
-</ul>
-</li>
-<li><a href="#version-0-dot-80a">Version 0.80a <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-21 Wed&gt;</span></span></a>
-<ul>
-<li><a href="#0-80a-added">Added</a></li>
-</ul>
-</li>
-</ul>
-</div>
-<!--endtoc-->
-<h2 id="version-0-dot-89">Version 0.89 <span class="timestamp-wrapper"><span class="timestamp">&lt;2021-06-15 Tue&gt;</span></span></h2>
-<h3 id="0-85-changed">Changed</h3>
+<li>Changed
 <ul>
 <li>New backend for ODE events solvers.</li>
 <li>Use vector instead of array as ODE function state &amp; return type.</li>
-<li>Simplified ODE integrator naming,
-e.g. <code>pmx_ode_bdf</code> and  <code>pmx_ode_bdf_ctrl</code>.</li>
+<li>Simplified ODE integrator naming, e.g. <code>pmx_ode_bdf[_ctrl]</code>.</li>
 <li>Update to Stan version 2.27.0.</li>
 </ul>
-<h2 id="version-0-dot-88">Version 0.88 <span class="timestamp-wrapper"><span class="timestamp">&lt;2020-12-18 Fri&gt;</span></span></h2>
-<h3 id="0-85-added">Added</h3>
+</li>
+</ul>
+</li>
+<li>
+<p>Version 0.88 <span class="timestamp-wrapper"><span class="timestamp">&lt;2020-12-18 Fri&gt;</span></span></p>
+<ul>
+<li>Added
 <ul>
 <li>Bioavailability, lag time, ODE real &amp; integer data are optional in PMX function signatures.</li>
 <li>Support all EVID options from NM-TRAN and mrgsolve.</li>
 <li>Support steady-state infusion through multiple interdose intervals.</li>
 </ul>
-<h3 id="0-85-changed">Changed</h3>
+</li>
+</ul>
+<!--listend-->
+<ul>
+<li>Changed
 <ul>
 <li>More efficient memory management of COVDES implenmentation.</li>
 <li>Update of MPI framework to adapt multilevel paralleism.</li>
@@ -139,8 +92,13 @@ e.g. <code>pmx_ode_bdf</code> and  <code>pmx_ode_bdf_ctrl</code>.</li>
 <li>Use cmdstanr as R interface.</li>
 <li>Stop supporting rstan as R interface.</li>
 </ul>
-<h2 id="version-0-dot-87">Version 0.87 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-07-26 Fri&gt;</span></span></h2>
-<h3 id="0-85-added">Added</h3>
+</li>
+</ul>
+</li>
+<li>
+<p>Version 0.87 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-07-26 Fri&gt;</span></span></p>
+<ul>
+<li>Added
 <ul>
 <li>
 <p>MPI dynamic load balance for Torsten&rsquo;s population ODE integrators</p>
@@ -157,13 +115,19 @@ balance for MPI, issue <code>TORSTEN_MPI=2</code> in <code>make/local</code>.</p
 functions.</p>
 </li>
 </ul>
-<h3 id="0-85-changed">Changed</h3>
+</li>
+<li>Changed
 <ul>
 <li>Some fixes on steady-state solvers</li>
 <li>Update to rstan version 2.19.2.</li>
 </ul>
-<h2 id="version-0-dot-86">Version 0.86 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-05-15 Wed&gt;</span></span></h2>
-<h3 id="0-85-added">Added</h3>
+</li>
+</ul>
+</li>
+<li>
+<p>Version 0.86 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-05-15 Wed&gt;</span></span></p>
+<ul>
+<li>Added
 <ul>
 <li>
 <p>Torsten&rsquo;s ODE integrator functions</p>
@@ -194,7 +158,8 @@ ODE models</p>
 solvers.</p>
 </li>
 </ul>
-<h3 id="0-85-changed">Changed</h3>
+</li>
+<li>Changed
 <ul>
 <li>
 <p>Renaming Torsten functions in previous releases, the
@@ -220,47 +185,68 @@ deprecated in the future.</p>
 <p>Update to Stan version 2.19.1.</p>
 </li>
 </ul>
-<h2 id="version-0-dot-85">Version 0.85 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-12-04 Tue&gt;</span></span></h2>
-<h3 id="0-85-added">Added</h3>
+</li>
+</ul>
+</li>
+<li>
+<p>Version 0.85 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-12-04 Tue&gt;</span></span></p>
+<ul>
+<li>Added
 <ul>
 <li>Dosing rate as parameter</li>
 </ul>
-<h3 id="0-85-changed">Changed</h3>
-<ul>
+</li>
+<li>Changed</li>
 <li>Update to Stan version 2.18.0.</li>
 </ul>
-<h2 id="version-0-dot-84">Version 0.84 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-02-24 Sat&gt;</span></span></h2>
-<h3 id="0-84-added">Added</h3>
+</li>
+<li>
+<p>Version 0.84 <span class="timestamp-wrapper"><span class="timestamp">&lt;2018-02-24 Sat&gt;</span></span></p>
+<ul>
+<li>Added
 <ul>
 <li>Piecewise linear interpolation function.</li>
 <li>Univariate integral functions.</li>
 </ul>
-<h3 id="0-84-changed">Changed</h3>
+</li>
+<li>Changed
 <ul>
 <li>Update to Stan version 2.17.1.</li>
 <li>Minor revisions to User Manual.</li>
 <li>Bugfixes.</li>
 </ul>
-<h2 id="version-0-dot-83">Version 0.83 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-08-02 Wed&gt;</span></span></h2>
-<h3 id="0-83-added">Added</h3>
+</li>
+</ul>
+</li>
+<li>
+<p>Version 0.83 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-08-02 Wed&gt;</span></span></p>
+<ul>
+<li>Added
 <ul>
 <li>Work with TorstenHeaders</li>
 <li>Each chain has a different initial estimate</li>
 </ul>
-<h3 id="0-83-changed">Changed</h3>
+</li>
+<li>Changed
 <ul>
 <li>User manual</li>
 <li>Fix misspecification in ODE system for TwoCpt example.</li>
 <li>Other bugfixes</li>
 </ul>
-<h2 id="0-82-added">Version 0.82 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-29 Sun&gt;</span></span></h2>
-<h3 id="added">Added</h3>
+</li>
+</ul>
+</li>
+<li>
+<p>Version 0.82 <span class="timestamp-wrapper"><span class="timestamp">&lt;2017-01-29 Sun&gt;</span></span></p>
+<ul>
+<li>Added
 <ul>
 <li>Allow parameter arguments to be passed as 1D or 2D arrays</li>
 <li>More unit tests</li>
 <li>Unit tests check automatic differentiation against finite differentiation.</li>
 </ul>
-<h3 id="0-82-changed">Changed</h3>
+</li>
+<li>Changed
 <ul>
 <li>Split the parameter argument into three arguments: pMatrix
 (parameters for the ODEs &ndash; note: for <code>linOdeModel</code>, pMatrix
@@ -269,14 +255,32 @@ is replaced by the constant rate matrix K), biovar
 for the lag time).</li>
 <li>bugfixes</li>
 </ul>
-<h2 id="version-0-dot-81">Version 0.81 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-27 Tue&gt;</span></span></h2>
-<h3 id="0-81-added">Added</h3>
-<p>linCptModel (linear compartmental model) function</p>
-<h2 id="version-0-dot-80a">Version 0.80a <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-21 Wed&gt;</span></span></h2>
-<h3 id="0-80a-added">Added</h3>
-<p>check_finite statements in pred_1 and pred_2 to reject metropolis proposal if initial conditions are not finite</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Version 0.81 <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-27 Tue&gt;</span></span></p>
+<ul>
+<li>Added
+<ul>
+<li>linCptModel (linear compartmental model) function</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Version 0.80a <span class="timestamp-wrapper"><span class="timestamp">&lt;2016-09-21 Wed&gt;</span></span></p>
+<ul>
+<li>Added
+<ul>
+<li>check_finite statements in pred_1 and pred_2 to reject metropolis proposal if initial conditions are not finite</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 <div class="edit-meta">
-Last updated on 29 Jun 2021
+Last updated on 30 Jun 2021
 
 
 <br>

@@ -20,7 +20,7 @@
 <meta property="og:title" content="Using Torsten" />
 <meta property="og:description" content="A pharmacokinetics/pharmacodynamics library for Stan" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/function/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/function/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="og:site_name" content="Torsten" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
@@ -48,8 +48,110 @@
 <main><h1>Using Torsten</h1><p>The reader should have a basic understanding of <a href="https://mc-stan.org/users/documentation/">how Stan works</a>.
 In this section we go through the different functions Torsten adds to
 Stan. The code for the examples can be found at Torsten&rsquo;s <a href="https://github.com/metrumresearchgroup/Torsten/tree/master/example-models">example models</a>.</p>
+<h3 id="events-specification"><span class="section-num">0.1</span> Events specification</h3>
+<p>Torsten&rsquo;s functions are prefixed with <code>pmx_</code>.
+For some of their arguments we adopt NM-TRAN format for events
+specification(Table <a href="#table--tab:event-args">1</a>).</p>
+<p><a id="table--tab:event-args"></a></p>
+<div class="table-caption">
+  <span class="table-number"><a href="#table--tab:event-args">Table 1</a></span>:
+  NM-TRAN compatible event specification arguments. All arrays should have the same length corresponding to the number of events.
+</div>
+<table>
+<thead>
+<tr>
+<th>Argument Name</th>
+<th>Definition</th>
+<th>Stan data type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>time</code></td>
+<td>event time</td>
+<td><code>real[]</code></td>
+</tr>
+<tr>
+<td><code>amt</code></td>
+<td>dosing amount</td>
+<td><code>real[]</code></td>
+</tr>
+<tr>
+<td><code>rate</code></td>
+<td>infusion rate</td>
+<td><code>real[]</code></td>
+</tr>
+<tr>
+<td><code>ii</code></td>
+<td>interdose interval</td>
+<td><code>real[]</code></td>
+</tr>
+<tr>
+<td><code>evid</code></td>
+<td>event ID</td>
+<td><code>int[]</code></td>
+</tr>
+<tr>
+<td><code>cmt</code></td>
+<td>event compartment</td>
+<td><code>int[]</code></td>
+</tr>
+<tr>
+<td><code>addl</code></td>
+<td>additionial identical doses</td>
+<td><code>int[]</code></td>
+</tr>
+<tr>
+<td><code>ss</code></td>
+<td>steady-state dosing flag</td>
+<td><code>int[]</code></td>
+</tr>
+</tbody>
+</table>
+<p>All the <code>real[]</code> arguments above are allowed to
+be <code>parameters</code> in a Stan model.
+In addtion, Torsten functions
+support optional arguments and overloaded signatures.
+Optional arguments are indicated by surrounding square bracket <code>[]</code>.
+Table below shows three commonly used PMX model arguments that support
+overloading. In the rest of this document we assume this convention unless indicated otherwise.</p>
+<p><a id="table--tab:event-params"></a></p>
+<div class="table-caption">
+  <span class="table-number"><a href="#table--tab:event-params">Table 2</a></span>:
+  PMX model parameter overloadings. One can use 1d array <code class="src src-stan"><span style="color: #b58900;">real</span>[]</code> to indicate constants of all events, or 2d array <code class="src src-stan"><span style="color: #b58900;">real</span>[ , ]</code> so that the \(i\)th row of the array describes the model arguments for time interval \((t_{i-1}, t_i)\), and the number of the rows equals to the size of <code>time</code>.
+</div>
+<table>
+<thead>
+<tr>
+<th>Argument Name</th>
+<th>Definition</th>
+<th>Stan data type</th>
+<th>Optional</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>theta</code></td>
+<td>model parameters</td>
+<td><code>real[]</code> or <code>real[ , ]</code></td>
+<td>N</td>
+</tr>
+<tr>
+<td><code>biovar</code></td>
+<td>bioavailability fraction</td>
+<td><code>real[]</code> or <code>real[ , ]</code></td>
+<td>Y (default to 1.0)</td>
+</tr>
+<tr>
+<td><code>tlag</code></td>
+<td>lag time</td>
+<td><code>real[]</code> or <code>real[ , ]</code></td>
+<td>Y (default to 0.0)</td>
+</tr>
+</tbody>
+</table>
 <div class="edit-meta">
-Last updated on 29 Jun 2021
+Last updated on 30 Jun 2021
 
 
 <br>

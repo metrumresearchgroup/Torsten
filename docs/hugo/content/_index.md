@@ -2,18 +2,18 @@
 title = "Introduction"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-29T14:35:18-07:00
+lastmod = 2021-06-30T11:38:17-07:00
 draft = false
 weight = 1003
 +++
 
 [Stan](https://mc-stan.org/) is an open source probabilistic programing language designed
 primarily to do Bayesian data analysis
-([Carpenter et al. 2017](#org4e1e0b2)). It provides an expressive syntax for statistic
+([Carpenter et al. 2017](#org6a2c80d)). It provides an expressive syntax for statistic
 modeling and contains an efficient variant of No U-Turn
 Sampler(NUTS), an adaptative Hamiltonian Monte Carlo
 algorithm that was proven more efficient than commonly used Monte Carlo Markov Chains
-(MCMC) samplers for complex high dimensional problems ([Hoffman and Gelman 2011](#orgdb7f16c); [Betancourt 2018](#orgaa94fbb)).
+(MCMC) samplers for complex high dimensional problems ([Hoffman and Gelman 2011](#org554748e); [Betancourt 2018](#org8783428)).
 
 {{< figure src="https://metrumrg.com/wp-content/uploads/2019/07/torsten-white-stan-cropped.png" width="300" >}}
 
@@ -41,18 +41,18 @@ conventions including:
 All real variable arguments in Torsten functions can be passed as Stan `parameters`.
 
 
-#### Implementation summary {#implementation-summary}
+### Implementation summary {#implementation-summary}
 
 -   Current Torsten v0.89rc is based on Stan v2.27.0.
 -   All functions are programmed in C++ and are compatible
-    with the Stan math automatic differentiation library ([Carpenter et al. 2015](#orgcf8b534))
+    with the Stan math automatic differentiation library ([Carpenter et al. 2015](#org35e7498))
 -   One and two compartment models are based on analytical solutions of governing ODEs.
 -   General linear compartment models are based on semi-analytical solutions using the built-in matrix exponential function
 -   General compartment models are solved numerically using built-in ODE integrators in Stan. The tuning parameters of the solver are adjustable. The steady state solution is calculated using a numerical algebraic solver.
 -   Coupled model that has PK forcing function solved analytically and PD ODE components solved numerically.
 
 
-#### Development plans {#development-plans}
+### Development plans {#development-plans}
 
 Our current plans for future development of Torsten include the
 following:
@@ -76,13 +76,13 @@ following:
 
 ## Bibliography {#bibliography}
 
-<a id="orgaa94fbb"></a>Betancourt, Michael. 2018. “A Conceptual Introduction to Hamiltonian Monte Carlo.” <https://arxiv.org/abs/1701.02434>.
+<a id="org8783428"></a>Betancourt, Michael. 2018. “A Conceptual Introduction to Hamiltonian Monte Carlo.” <https://arxiv.org/abs/1701.02434>.
 
-<a id="org4e1e0b2"></a>Carpenter, Bob, Andrew Gelman, Matthew D. Hoffman, Daniel Lee, Ben Goodrich, Michael Betancourt, Marcus Brubaker, Jiqiang Guo, Peter Li, and Allen Riddell. 2017. “Stan: A Probabilistic Programming Language.” _Journal of Statistical Software_ 76.
+<a id="org6a2c80d"></a>Carpenter, Bob, Andrew Gelman, Matthew D. Hoffman, Daniel Lee, Ben Goodrich, Michael Betancourt, Marcus Brubaker, Jiqiang Guo, Peter Li, and Allen Riddell. 2017. “Stan: A Probabilistic Programming Language.” _Journal of Statistical Software_ 76.
 
-<a id="orgcf8b534"></a>Carpenter, Bob, Matthew D. Hoffman, Marcus Brubaker, Daniel Lee, Peter Li, and Michael Betancourt. 2015. “The Stan Math Library: Reverse-Mode Automatic Differentiation in C++.” _arXiv:1509.07164 [Cs]_, September. <http://arxiv.org/abs/1509.07164>.
+<a id="org35e7498"></a>Carpenter, Bob, Matthew D. Hoffman, Marcus Brubaker, Daniel Lee, Peter Li, and Michael Betancourt. 2015. “The Stan Math Library: Reverse-Mode Automatic Differentiation in C++.” _arXiv:1509.07164 [Cs]_, September. <http://arxiv.org/abs/1509.07164>.
 
-<a id="orgdb7f16c"></a>Hoffman, Matthew D., and Andrew Gelman. 2011. “The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo.” _arXiv:1111.4246 [Cs, Stat]_, November. <http://arxiv.org/abs/1111.4246>.
+<a id="org554748e"></a>Hoffman, Matthew D., and Andrew Gelman. 2011. “The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo.” _arXiv:1111.4246 [Cs, Stat]_, November. <http://arxiv.org/abs/1111.4246>.
 
 [^fn:1]: **WARNING:** The current version of Torsten is a _prototype_. It is being released for review and comment, and to support limited research applications. It has not been rigorously tested and should not be used for critical applications without further testing or cross-checking by comparison with other methods. We encourage interested users to try Torsten out and are happy to assist. Please report issues, bugs, and feature requests on [our GitHub page](https://github.com/metrumresearchgroup/stan).
 [^fn:2]: NONMEM\textregistered{} is licensed and distributed by ICON Development Solutions.

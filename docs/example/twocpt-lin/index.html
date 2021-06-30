@@ -23,7 +23,7 @@ transformed data{ row_vector[nObs] logCObs = log(cObs); int nCmt = 3; real biova
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/example/twocpt-lin/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="example" />
 <meta property="article:published_time" content="2021-06-25T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-29T14:35:31-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-30T11:38:31-07:00" /><meta property="og:site_name" content="Torsten" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
@@ -34,7 +34,7 @@ transformed data{ row_vector[nObs] logCObs = log(cObs); int nCmt = 3; real biova
 <meta itemprop="name" content="Two-compartment model as a linear ODE model for single patient">
 <meta itemprop="description" content="Using pmx_solve_linode, the following example fits a two-compartment model with first order absorption. We omit data and model block as they are identical to Two-compartment model for single patient Example.
 transformed data{ row_vector[nObs] logCObs = log(cObs); int nCmt = 3; real biovar[nCmt]; real tlag[nCmt]; for (i in 1:nCmt) { biovar[i] = 1; tlag[i] = 0; } } parameters{ real&lt;lower = 0&gt; CL; real&lt;lower = 0&gt; Q; real&lt;lower = 0&gt; V1; real&lt;lower = 0&gt; V2; real&lt;lower = 0&gt; ka; real&lt;lower = 0&gt; sigma; } transformed parameters{ matrix[3, 3] K; real k10 = CL / V1; real k12 = Q / V1; real k21 = Q / V2; row_vector&lt;lower = 0&gt;[nt] cHat; row_vector&lt;lower = 0&gt;[nObs] cHatObs; matrix&lt;lower = 0&gt;[3, nt] x; K = rep_matrix(0, 3, 3); K[1, 1] = -ka; K[2, 1] = ka; K[2, 2] = -(k10 &#43; k12); K[2, 3] = k21; K[3, 2] = k12; K[3, 3] = -k21; x = pmx_solve_linode(time, amt, rate, ii, evid, cmt, addl, ss, K, biovar, tlag); cHat = row(x, 2) ."><meta itemprop="datePublished" content="2021-06-25T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-29T14:35:31-07:00" />
+<meta itemprop="dateModified" content="2021-06-30T11:38:31-07:00" />
 <meta itemprop="wordCount" content="183"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
@@ -105,7 +105,7 @@ transformed parameters{
   }
 }
 </code></pre><div class="edit-meta">
-Last updated on 29 Jun 2021
+Last updated on 30 Jun 2021
 
 
 <br>

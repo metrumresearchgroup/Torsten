@@ -20,7 +20,7 @@
 <meta property="og:title" content="Introduction" />
 <meta property="og:description" content="A pharmacokinetics/pharmacodynamics library for Stan" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="og:site_name" content="Torsten" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
@@ -47,11 +47,11 @@
 <div class="content-container">
 <main><p><a href="https://mc-stan.org/">Stan</a> is an open source probabilistic programing language designed
 primarily to do Bayesian data analysis
-(<a href="#org4e1e0b2">Carpenter et al. 2017</a>). It provides an expressive syntax for statistic
+(<a href="#org6a2c80d">Carpenter et al. 2017</a>). It provides an expressive syntax for statistic
 modeling and contains an efficient variant of No U-Turn
 Sampler(NUTS), an adaptative Hamiltonian Monte Carlo
 algorithm that was proven more efficient than commonly used Monte Carlo Markov Chains
-(MCMC) samplers for complex high dimensional problems (<a href="#orgdb7f16c">Hoffman and Gelman 2011</a>; <a href="#orgaa94fbb">Betancourt 2018</a>).</p>
+(MCMC) samplers for complex high dimensional problems (<a href="#org554748e">Hoffman and Gelman 2011</a>; <a href="#org8783428">Betancourt 2018</a>).</p>
 <figure><img src="https://metrumrg.com/wp-content/uploads/2019/07/torsten-white-stan-cropped.png" width="300"/>
 </figure>
 
@@ -80,17 +80,17 @@ conventions including:</p>
 <li>NMTRAN-compartible data items such as TIME, EVID, CMT, AMT, RATE, ADDL, II, and SS.</li>
 </ul>
 <p>All real variable arguments in Torsten functions can be passed as Stan <code>parameters</code>.</p>
-<h4 id="implementation-summary">Implementation summary</h4>
+<h3 id="implementation-summary">Implementation summary</h3>
 <ul>
 <li>Current Torsten v0.89rc is based on Stan v2.27.0.</li>
 <li>All functions are programmed in C++ and are compatible
-with the Stan math automatic differentiation library (<a href="#orgcf8b534">Carpenter et al. 2015</a>)</li>
+with the Stan math automatic differentiation library (<a href="#org35e7498">Carpenter et al. 2015</a>)</li>
 <li>One and two compartment models are based on analytical solutions of governing ODEs.</li>
 <li>General linear compartment models are based on semi-analytical solutions using the built-in matrix exponential function</li>
 <li>General compartment models are solved numerically using built-in ODE integrators in Stan. The tuning parameters of the solver are adjustable. The steady state solution is calculated using a numerical algebraic solver.</li>
 <li>Coupled model that has PK forcing function solved analytically and PD ODE components solved numerically.</li>
 </ul>
-<h4 id="development-plans">Development plans</h4>
+<h3 id="development-plans">Development plans</h3>
 <p>Our current plans for future development of Torsten include the
 following:</p>
 <ul>
@@ -117,10 +117,10 @@ parameter (in a dosing compartment) evaluated at \(t_{\text{lag}} = 0\).</li>
 </li>
 </ul>
 <h2 id="bibliography">Bibliography</h2>
-<p><a id="orgaa94fbb"></a>Betancourt, Michael. 2018. “A Conceptual Introduction to Hamiltonian Monte Carlo.” <a href="https://arxiv.org/abs/1701.02434">https://arxiv.org/abs/1701.02434</a>.</p>
-<p><a id="org4e1e0b2"></a>Carpenter, Bob, Andrew Gelman, Matthew D. Hoffman, Daniel Lee, Ben Goodrich, Michael Betancourt, Marcus Brubaker, Jiqiang Guo, Peter Li, and Allen Riddell. 2017. “Stan: A Probabilistic Programming Language.” <em>Journal of Statistical Software</em> 76.</p>
-<p><a id="orgcf8b534"></a>Carpenter, Bob, Matthew D. Hoffman, Marcus Brubaker, Daniel Lee, Peter Li, and Michael Betancourt. 2015. “The Stan Math Library: Reverse-Mode Automatic Differentiation in C++.” <em>arXiv:1509.07164 [Cs]</em>, September. <a href="http://arxiv.org/abs/1509.07164">http://arxiv.org/abs/1509.07164</a>.</p>
-<p><a id="orgdb7f16c"></a>Hoffman, Matthew D., and Andrew Gelman. 2011. “The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo.” <em>arXiv:1111.4246 [Cs, Stat]</em>, November. <a href="http://arxiv.org/abs/1111.4246">http://arxiv.org/abs/1111.4246</a>.</p>
+<p><a id="org8783428"></a>Betancourt, Michael. 2018. “A Conceptual Introduction to Hamiltonian Monte Carlo.” <a href="https://arxiv.org/abs/1701.02434">https://arxiv.org/abs/1701.02434</a>.</p>
+<p><a id="org6a2c80d"></a>Carpenter, Bob, Andrew Gelman, Matthew D. Hoffman, Daniel Lee, Ben Goodrich, Michael Betancourt, Marcus Brubaker, Jiqiang Guo, Peter Li, and Allen Riddell. 2017. “Stan: A Probabilistic Programming Language.” <em>Journal of Statistical Software</em> 76.</p>
+<p><a id="org35e7498"></a>Carpenter, Bob, Matthew D. Hoffman, Marcus Brubaker, Daniel Lee, Peter Li, and Michael Betancourt. 2015. “The Stan Math Library: Reverse-Mode Automatic Differentiation in C++.” <em>arXiv:1509.07164 [Cs]</em>, September. <a href="http://arxiv.org/abs/1509.07164">http://arxiv.org/abs/1509.07164</a>.</p>
+<p><a id="org554748e"></a>Hoffman, Matthew D., and Andrew Gelman. 2011. “The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo.” <em>arXiv:1111.4246 [Cs, Stat]</em>, November. <a href="http://arxiv.org/abs/1111.4246">http://arxiv.org/abs/1111.4246</a>.</p>
 <section class="footnotes" role="doc-endnotes">
 <hr>
 <ol>
@@ -134,7 +134,7 @@ parameter (in a dosing compartment) evaluated at \(t_{\text{lag}} = 0\).</li>
 </section>
 <nav class="pagination"><a class="nav nav-next" href="https://metrumresearchgroup.github.io/Torsten/function/" title="Using Torsten">Next - Using Torsten <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
 </nav><div class="edit-meta">
-Last updated on 29 Jun 2021
+Last updated on 30 Jun 2021
 
 
 <br>

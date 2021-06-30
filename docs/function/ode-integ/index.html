@@ -25,7 +25,7 @@ Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, r
 <meta property="og:type" content="article" />
 <meta property="og:url" content="https://metrumresearchgroup.github.io/Torsten/function/ode-integ/" /><meta property="og:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/><meta property="article:section" content="function" />
 <meta property="article:published_time" content="2021-06-28T00:00:00-07:00" />
-<meta property="article:modified_time" content="2021-06-29T14:35:27-07:00" /><meta property="og:site_name" content="Hugo Techdoc Theme" />
+<meta property="article:modified_time" content="2021-06-30T11:38:27-07:00" /><meta property="og:site_name" content="Torsten" />
 
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
@@ -40,7 +40,7 @@ Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, r
 \begin{equation*} y&#39;(t) = f(t, y(t)), \quad y(t_0) = y_0 \end{equation*}
 for \(y\). These solvers are customized for Torsten applications and different from those found in Stan. The general ODE PMX solvers in previous sections are internally powered by these functions.
 Usage real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]); Arguments  ODE_rhs Function that specifies the right-hand-side \(f\)."><meta itemprop="datePublished" content="2021-06-28T00:00:00-07:00" />
-<meta itemprop="dateModified" content="2021-06-29T14:35:27-07:00" />
+<meta itemprop="dateModified" content="2021-06-30T11:38:27-07:00" />
 <meta itemprop="wordCount" content="527"><meta itemprop="image" content="https://metrumresearchgroup.github.io/Torsten/images/logo.png"/>
 <meta itemprop="keywords" content="" /></head>
 <body><div class="container"><header>
@@ -143,8 +143,8 @@ below certain threshold without affecting the rest of
 the dynamic system, setting
 <code>atol</code> greater than that threshold will avoid
 spurious and error-prone computation. See
-(<a href="#orga5af84e">Hindmarsh et al. 2020</a>) and
-1.4 of (<a href="#orgb80b28d">Shampine et al. 2003</a>) for details.</p>
+(<a href="#org58183e8">Hindmarsh et al. 2020</a>) and
+1.4 of (<a href="#orga2c7957">Shampine et al. 2003</a>) for details.</p>
 </li>
 <li>
 <p>With optional arguments indicated by square bracket, the following calls are allowed:</p>
@@ -154,10 +154,10 @@ spurious and error-prone computation. See
 <pre><code class="language-stan" data-lang="stan">pmx_integrate_ode_[adams || rk45 || bdf](..., x_i);
 pmx_integrate_ode_[adams || rk45 || bdf](..., x_i, rel_tol, abs_tol, max_step);
 </code></pre><h2 id="bibliography">Bibliography</h2>
-<p><a id="orga5af84e"></a>Hindmarsh, Alan C., Radu Serban, Cody J. Balos, David J. Gardner, Carol S. Woodward, and Daniel R. Reynolds. 2020. <em>User Documentation for Cvodes V5.4.0</em>.</p>
-<p><a id="orgb80b28d"></a>Shampine, L. F., I. Gladwell, Larry Shampine, and S. Thompson. 2003. <em>Solving ODEs with MATLAB</em>. Cambridge University Press.</p>
+<p><a id="org58183e8"></a>Hindmarsh, Alan C., Radu Serban, Cody J. Balos, David J. Gardner, Carol S. Woodward, and Daniel R. Reynolds. 2020. <em>User Documentation for Cvodes V5.4.0</em>.</p>
+<p><a id="orga2c7957"></a>Shampine, L. F., I. Gladwell, Larry Shampine, and S. Thompson. 2003. <em>Solving ODEs with MATLAB</em>. Cambridge University Press.</p>
 <div class="edit-meta">
-Last updated on 29 Jun 2021
+Last updated on 30 Jun 2021
 
 
 <br>

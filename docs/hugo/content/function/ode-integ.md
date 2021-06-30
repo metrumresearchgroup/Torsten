@@ -2,7 +2,7 @@
 title = "ODE  integrator function"
 author = ["Yi Zhang"]
 date = 2021-06-28T00:00:00-07:00
-lastmod = 2021-06-29T14:35:27-07:00
+lastmod = 2021-06-30T11:38:27-07:00
 draft = false
 weight = 2008
 +++
@@ -108,8 +108,8 @@ and `nd` the dimension of the system.
     the dynamic system, setting
     `atol` greater than that threshold will avoid
     spurious and error-prone computation. See
-    ([Hindmarsh et al. 2020](#orga5af84e)) and
-    1.4 of ([Shampine et al. 2003](#orgb80b28d)) for details.
+    ([Hindmarsh et al. 2020](#org58183e8)) and
+    1.4 of ([Shampine et al. 2003](#orga2c7957)) for details.
 
 -   With optional arguments indicated by square bracket, the following calls are allowed:
 
@@ -123,6 +123,6 @@ pmx_integrate_ode_[adams || rk45 || bdf](..., x_i, rel_tol, abs_tol, max_step);
 
 ## Bibliography {#bibliography}
 
-<a id="orga5af84e"></a>Hindmarsh, Alan C., Radu Serban, Cody J. Balos, David J. Gardner, Carol S. Woodward, and Daniel R. Reynolds. 2020. _User Documentation for Cvodes V5.4.0_.
+<a id="org58183e8"></a>Hindmarsh, Alan C., Radu Serban, Cody J. Balos, David J. Gardner, Carol S. Woodward, and Daniel R. Reynolds. 2020. _User Documentation for Cvodes V5.4.0_.
 
-<a id="orgb80b28d"></a>Shampine, L. F., I. Gladwell, Larry Shampine, and S. Thompson. 2003. _Solving ODEs with MATLAB_. Cambridge University Press.
+<a id="orga2c7957"></a>Shampine, L. F., I. Gladwell, Larry Shampine, and S. Thompson. 2003. _Solving ODEs with MATLAB_. Cambridge University Press.

@@ -2,9 +2,9 @@
 title = "Development plans"
 author = ["Yi Zhang"]
 date = 2021-06-25T00:00:00-07:00
-lastmod = 2021-06-29T14:35:19-07:00
+lastmod = 2021-06-30T11:38:18-07:00
 draft = false
-weight = 3002
+weight = 2002
 +++
 
 Our current plans for future development of Torsten include the

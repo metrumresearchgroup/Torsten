@@ -65,7 +65,7 @@
 #+hugo_weight: auto
 #+hugo_auto_set_lastmod: t
 
-#+OPTIONS: title:t, num:3
+#+OPTIONS: title:t, num:3 d:(not "latex")
 
 * Development team
    :PROPERTIES:
@@ -125,9 +125,10 @@ Sampler(NUTS), an adaptative Hamiltonian Monte Carlo
 algorithm that was proven more efficient than commonly used Monte Carlo Markov Chains
 (MCMC) samplers for complex high dimensional problems cite:hoffman_no-u-turn_2011,betancourt_hmc_2018. 
 
-#+ATTR_LATEX: :width 1.5in
+:hugo:
 #+attr_html: :width 300
 [[file:https://metrumrg.com/wp-content/uploads/2019/07/torsten-white-stan-cropped.png]]
+:END:
 
 Torsten is a collection of Stan functions to facilitate analysis of
 pharmacometric data. Given an event schedule and an ODE system, it calculates amounts
@@ -152,7 +153,7 @@ All real variable arguments in Torsten functions can be passed as Stan =paramete
 
 [fn:1]  *WARNING:* The current version of Torsten is a /prototype/. It is being released for review and comment, and to support limited research applications. It has not been rigorously tested and should not be used for critical applications without further testing or cross-checking by comparison with other methods. We encourage interested users to try Torsten out and are happy to assist. Please report issues, bugs, and feature requests on [[https://github.com/metrumresearchgroup/stan][our GitHub page]].
 
-*** Implementation summary
+** Implementation summary
     :PROPERTIES:
     :EXPORT_FILE_NAME: Implementation-summary
     :EXPORT_DATE: <2021-06-25 Fri>
@@ -165,7 +166,7 @@ All real variable arguments in Torsten functions can be passed as Stan =paramete
 - General compartment models are solved numerically using built-in ODE integrators in Stan. The tuning parameters of the solver are adjustable. The steady state solution is calculated using a numerical algebraic solver.
 - Coupled model that has PK forcing function solved analytically and PD ODE components solved numerically.
 
-*** Development plans
+** Development plans
     :PROPERTIES:
     :EXPORT_FILE_NAME: Development-plans
     :EXPORT_DATE: <2021-06-25 Fri>
@@ -187,7 +188,7 @@ following:
   + Comparison with simulations from the R package
     =mrgsolve= and the software NONMEM\textregistered{}
   + Recruit non-developer users to conduct beta testing
-
+    
 * Changelog
     :PROPERTIES:
     :EXPORT_FILE_NAME: Changelog
@@ -195,175 +196,114 @@ following:
     :EXPORT_OPTIONS: toc:t num:nil
     :EXPORT_DATE: <2021-06-25 Fri>
     :END:
-*** Version 0.89 <2021-06-15 Tue>
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-changed
-     :END:
-  - New backend for ODE events solvers.
-  - Use vector instead of array as ODE function state & return type.
-  - Simplified ODE integrator naming,
-    e.g. =pmx_ode_bdf= and  =pmx_ode_bdf_ctrl=.
-  - Update to Stan version 2.27.0.
-*** Version 0.88 <2020-12-18 Fri>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-added
-     :END:
+- Version 0.89 <2021-06-15 Tue>
+  + Changed
+    - New backend for ODE events solvers.
+    - Use vector instead of array as ODE function state & return type.
+    - Simplified ODE integrator naming, e.g. =pmx_ode_bdf[_ctrl]=.
+    - Update to Stan version 2.27.0.
+- Version 0.88 <2020-12-18 Fri>
+  + Added
+    - Bioavailability, lag time, ODE real & integer data are optional in PMX function signatures.
+    - Support all EVID options from NM-TRAN and mrgsolve.
+    - Support steady-state infusion through multiple interdose intervals.
   # - Experimental feature of cross-chain warmup and multilevel MPI paralleism.
-  - Bioavailability, lag time, ODE real & integer data are optional in PMX function signatures.
-  - Support all EVID options from NM-TRAN and mrgsolve.
-  - Support steady-state infusion through multiple interdose intervals.
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-changed
-     :END:
-  - More efficient memory management of COVDES implenmentation.
-  - Update of MPI framework to adapt multilevel paralleism.
-  - Update to Stan version 2.25.0.
-  - Use cmdstanr as R interface.
-  - Stop supporting rstan as R interface.
-*** Version 0.87 <2019-07-26 Fri>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-added
-     :END:
-  - MPI dynamic load balance for Torsten's population ODE integrators
-    + src_stan[:exports code]{pmx_integrate_ode_group_adams}
-    + src_stan[:exports code]{pmx_integrate_ode_group_bdf}
-    + src_stan[:exports code]{pmx_integrate_ode_group_rk45}
-    To invoke dynamic load balance instead of default static
-    balance for MPI, issue =TORSTEN_MPI=2= in =make/local=.
-  - Support =RATE= as parameter in src_stan[:exports code]{pmx_solve_rk45/bdf/adams}
-    functions.
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-changed
-     :END:
-  - Some fixes on steady-state solvers
-  - Update to rstan version 2.19.2.
+  + Changed
+    - More efficient memory management of COVDES implenmentation.
+    - Update of MPI framework to adapt multilevel paralleism.
+    - Update to Stan version 2.25.0.
+    - Use cmdstanr as R interface.
+    - Stop supporting rstan as R interface.
+- Version 0.87 <2019-07-26 Fri>
+  + Added
+    - MPI dynamic load balance for Torsten's population ODE integrators
+      + src_stan[:exports code]{pmx_integrate_ode_group_adams}
+      + src_stan[:exports code]{pmx_integrate_ode_group_bdf}
+      + src_stan[:exports code]{pmx_integrate_ode_group_rk45}
+      To invoke dynamic load balance instead of default static
+      balance for MPI, issue =TORSTEN_MPI=2= in =make/local=.
+    - Support =RATE= as parameter in src_stan[:exports code]{pmx_solve_rk45/bdf/adams}
+      functions.
+  + Changed
+    - Some fixes on steady-state solvers
+    - Update to rstan version 2.19.2.
+- Version 0.86 <2019-05-15 Wed>
+  + Added
+    - Torsten's ODE integrator functions
+      + src_stan[:exports code]{pmx_integrate_ode_adams}
+      + src_stan[:exports code]{pmx_integrate_ode_bdf}
+      + src_stan[:exports code]{pmx_integrate_ode_rk45}
+      and their counterparts to solve a population/group of
+      subjects governed by an ODE
+      + src_stan[:exports code]{pmx_integrate_ode_group_adams}
+      + src_stan[:exports code]{pmx_integrate_ode_group_bdf}
+      + src_stan[:exports code]{pmx_integrate_ode_group_rk45}
+    - Torsten's population PMX solver functions for general
+      ODE models
+      + src_stan[:exports code]{pmx_solve_group_adams}
+      + src_stan[:exports code]{pmx_solve_group_bdf}
+      + src_stan[:exports code]{pmx_solve_group_rk45}
+    - Support time step =ts= as parameter in src_stan[:exports code]{pmx_integrate_ode_xxx}
+      solvers.
+  + Changed
+    - Renaming Torsten functions in previous releases, the
+      old-new name mapping is
+      + src_stan[:exports code]{PKModelOneCpt} \rightarrow src_stan[:exports code]{pmx_solve_onecpt}
+      + src_stan[:exports code]{PKModelTwoCpt} \rightarrow src_stan[:exports code]{pmx_solve_onecpt}
+      + src_stan[:exports code]{linOdeModel} \rightarrow src_stan[:exports code]{pmx_solve_linode}
+      + src_stan[:exports code]{generalOdeModel_adams} \rightarrow src_stan[:exports code]{pmx_solve_adams}
+      + src_stan[:exports code]{generalOdeModel_bdf} \rightarrow src_stan[:exports code]{pmx_solve_bdf}
+      + src_stan[:exports code]{generalOdeModel_rk45} \rightarrow src_stan[:exports code]{pmx_solve_rk45}
+      + src_stan[:exports code]{mixOde1CptModel_bdf} \rightarrow src_stan[:exports code]{pmx_solve_onecpt_bdf}
+      + src_stan[:exports code]{mixOde1CptModel_rk45} \rightarrow src_stan[:exports code]{pmx_solve_onecpt_rk45}
+      + src_stan[:exports code]{mixOde2CptModel_bdf} \rightarrow src_stan[:exports code]{pmx_solve_twocpt_bdf}
+      + src_stan[:exports code]{mixOde2CptModel_rk45} \rightarrow src_stan[:exports code]{pmx_solve_twocpt_rk45}
+      Note that the new version of the above functions return
+      the /transpose/ of the matrix returned by the old
+      versions, in order to improve memory efficiency. The old version are retained but will be
+      deprecated in the future. 
+    - Update to Stan version 2.19.1.
 
-*** Version 0.86 <2019-05-15 Wed>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-added
-     :END:
-  - Torsten's ODE integrator functions
-    + src_stan[:exports code]{pmx_integrate_ode_adams}
-    + src_stan[:exports code]{pmx_integrate_ode_bdf}
-    + src_stan[:exports code]{pmx_integrate_ode_rk45}
-    and their counterparts to solve a population/group of
-    subjects governed by an ODE
-    + src_stan[:exports code]{pmx_integrate_ode_group_adams}
-    + src_stan[:exports code]{pmx_integrate_ode_group_bdf}
-    + src_stan[:exports code]{pmx_integrate_ode_group_rk45}
-  - Torsten's population PMX solver functions for general
-    ODE models
-    + src_stan[:exports code]{pmx_solve_group_adams}
-    + src_stan[:exports code]{pmx_solve_group_bdf}
-    + src_stan[:exports code]{pmx_solve_group_rk45}
-  - Support time step =ts= as parameter in src_stan[:exports code]{pmx_integrate_ode_xxx}
-    solvers.
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-changed
-     :END:
-  - Renaming Torsten functions in previous releases, the
-    old-new name mapping is
-    + src_stan[:exports code]{PKModelOneCpt} \rightarrow src_stan[:exports code]{pmx_solve_onecpt}
-    + src_stan[:exports code]{PKModelTwoCpt} \rightarrow src_stan[:exports code]{pmx_solve_onecpt}
-    + src_stan[:exports code]{linOdeModel} \rightarrow src_stan[:exports code]{pmx_solve_linode}
-    + src_stan[:exports code]{generalOdeModel_adams} \rightarrow src_stan[:exports code]{pmx_solve_adams}
-    + src_stan[:exports code]{generalOdeModel_bdf} \rightarrow src_stan[:exports code]{pmx_solve_bdf}
-    + src_stan[:exports code]{generalOdeModel_rk45} \rightarrow src_stan[:exports code]{pmx_solve_rk45}
-    + src_stan[:exports code]{mixOde1CptModel_bdf} \rightarrow src_stan[:exports code]{pmx_solve_onecpt_bdf}
-    + src_stan[:exports code]{mixOde1CptModel_rk45} \rightarrow src_stan[:exports code]{pmx_solve_onecpt_rk45}
-    + src_stan[:exports code]{mixOde2CptModel_bdf} \rightarrow src_stan[:exports code]{pmx_solve_twocpt_bdf}
-    + src_stan[:exports code]{mixOde2CptModel_rk45} \rightarrow src_stan[:exports code]{pmx_solve_twocpt_rk45}
-    Note that the new version of the above functions return
-    the /transpose/ of the matrix returned by the old
-    versions, in order to improve memory efficiency. The old version are retained but will be
-    deprecated in the future. 
-  - Update to Stan version 2.19.1.
-      
-*** Version 0.85 <2018-12-04 Tue>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-added
-     :END:
-  - Dosing rate as parameter
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-85-changed
-     :END:
+- Version 0.85 <2018-12-04 Tue>
+  + Added
+    - Dosing rate as parameter
+  + Changed
   - Update to Stan version 2.18.0.
 
-*** Version 0.84 <2018-02-24>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-84-added
-     :END:
-  - Piecewise linear interpolation function.
-  - Univariate integral functions.
-
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-84-changed
-     :END:
-  - Update to Stan version 2.17.1.
-  - Minor revisions to User Manual.
-  - Bugfixes.
-
-*** Version 0.83 <2017-08-02>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-83-added
-     :END:
-  - Work with TorstenHeaders
-  - Each chain has a different initial estimate
-
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-83-changed
-     :END:
-  - User manual
-  - Fix misspecification in ODE system for TwoCpt example.
-  - Other bugfixes
-
-
-*** Version 0.82 <2017-01-29>
-    :PROPERTIES:
-    :CUSTOM_ID: 0-82-added
-    :END:
-**** Added
-  - Allow parameter arguments to be passed as 1D or 2D arrays
-  - More unit tests
-  - Unit tests check automatic differentiation against finite differentiation.
-
-**** Changed
-     :PROPERTIES:
-     :CUSTOM_ID: 0-82-changed
-     :END:
-  - Split the parameter argument into three arguments: pMatrix
-    (parameters for the ODEs -- note: for =linOdeModel=, pMatrix
-    is replaced by the constant rate matrix K), biovar
-    (parameters for the biovariability), and tlag (parameters
-    for the lag time).
-  - bugfixes
-
-*** Version 0.81 <2016-09-27>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-81-added
-     :END:
-  linCptModel (linear compartmental model) function
-
-*** Version 0.80a <2016-09-21 Wed>
-**** Added
-     :PROPERTIES:
-     :CUSTOM_ID: 0-80a-added
-     :END:
-  check\under{}finite statements in pred\under{}1 and pred\under{}2 to reject metropolis proposal if initial conditions are not finite
+- Version 0.84 <2018-02-24>
+  + Added
+    - Piecewise linear interpolation function.
+    - Univariate integral functions.
+  + Changed
+    - Update to Stan version 2.17.1.
+    - Minor revisions to User Manual.
+    - Bugfixes.
+- Version 0.83 <2017-08-02>
+  + Added
+    - Work with TorstenHeaders
+    - Each chain has a different initial estimate
+  + Changed
+    - User manual
+    - Fix misspecification in ODE system for TwoCpt example.
+    - Other bugfixes
+- Version 0.82 <2017-01-29>
+  + Added
+    - Allow parameter arguments to be passed as 1D or 2D arrays
+    - More unit tests
+    - Unit tests check automatic differentiation against finite differentiation.
+  + Changed
+    - Split the parameter argument into three arguments: pMatrix
+      (parameters for the ODEs -- note: for =linOdeModel=, pMatrix
+      is replaced by the constant rate matrix K), biovar
+      (parameters for the biovariability), and tlag (parameters
+      for the lag time).
+    - bugfixes
+- Version 0.81 <2016-09-27>
+  + Added
+    - linCptModel (linear compartmental model) function
+- Version 0.80a <2016-09-21 Wed>
+  + Added
+    - check\under{}finite statements in pred\under{}1 and pred\under{}2 to reject metropolis proposal if initial conditions are not finite
 
 * Installation
   :PROPERTIES:
@@ -540,11 +480,18 @@ by solving the ordinary differential equations(ODEs)
 The plasma concentrations of parent drug in the central compartment
 can then be calculated as $c=y_2/V_2$.
 
+:hugo:
+#+CAPTION: One and two compartment models with first order absorption implemented in Torsten.
+#+NAME: one_two_cpt_models
+#+attr_html: :width 300
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/cptModels.png]]
+:END:
+:latex:
 #+CAPTION: One and two compartment models with first order absorption implemented in Torsten.
 #+NAME: one_two_cpt_models
 #+ATTR_LATEX: :width 1.5in
-#+attr_html: :width 300
-[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/cptModels.png]]
+[[file:./graphics/cptModels.png]]
+:END:
 
 *** Usage
 #+BEGIN_SRC stan
@@ -1207,21 +1154,44 @@ summarize the posterior is through =cmdstanr='s =summary= method.
 6 sigma     0.109  0.108 0.0117 0.0111  0.0911  0.130  1.01    1414.     905.
 #+END_SRC
 
+:hugo:
+#+CAPTION: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
+#+NAME: twocpt_mcmc_history
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/history.png]]
+:END:
+:latex:
 #+CAPTION: MCMC history plots for the parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
 #+NAME: twocpt_mcmc_history
 #+ATTR_LATEX: :width \linewidth
-#+attr_html: :width 700
-[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/history.png]]
+[[../example-models/pk2cpt/deliv/figure/history.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Posterior marginal densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
+#+NAME: twocpt_mcmc_posterior
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/density.png]]
+:END:
+:latex:
 #+CAPTION: Posterior marginal densities of the Model Parameters of a two compartment model with first order absorption (each color corresponds to a different chain)
 #+NAME: twocpt_mcmc_posterior
 #+ATTR_LATEX: :width \linewidth
-[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/density.png]]
+[[../example-models/pk2cpt/deliv/figure/density.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted ($y_{\text{rep}}$) and observed ($y$) plasma drug concentrations of a two compartment model with first order absorption. $y_{\text{rep}}$ is shown with posterior median, 50%, 90% credible intervals.
+#+NAME: twocpt_mcmc_predict
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/ppc_ribbon.png]]
+:END:
+:latex:
 #+CAPTION: Predicted ($y_{\text{rep}}$) and observed ($y$) plasma drug concentrations of a two compartment model with first order absorption. $y_{\text{rep}}$ is shown with posterior median, 50%, 90% credible intervals.
 #+NAME: twocpt_mcmc_predict
 #+ATTR_LATEX: :width 0.5\linewidth
-[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/3c631dfd81f008a275a7b5b74c8c7bb80f6deacb/example-models/pk2cpt/deliv/figure/ppc_ribbon.png]]
+[[../example-models/pk2cpt/deliv/figure/ppc_ribbon.pdf]]
+:END:
 
 ** Two-compartment model as a linear ODE model for single patient 
    :PROPERTIES:
@@ -1300,11 +1270,19 @@ we can specify solve the system using a coupled solver function. We do not
 expect our system to be stiff and use the Runge-Kutta 4th/5th order
 integrator.
 
+:hugo:
+#+CAPTION: Friberg-Karlsson semi-mechanistic Model.
+#+NAME: fig:FK_model
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/neutrophilModel.jpg]]
+:END:
+:latex:
 #+CAPTION: Friberg-Karlsson semi-mechanistic Model.
 #+NAME: fig:FK_model
 #+ATTR_LATEX: :width 0.8\textwidth
-#+attr_html: :width 700
-[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/neutrophilModel.jpg]]
+[[file:./graphics/neutrophilModel.jpg]]
+:END:
+
 
 The model fitting is based on simulated data
 \begin{align*}
@@ -1467,11 +1445,19 @@ treated as a covariate and denoted $bw$.
 Furthermore we add a fourth compartment in which we measure
 a PD effect(Figure [[eff_model]]).
 
+:hugo:
+#+CAPTION: Effect Compartment Model
+#+NAME: eff_model
+#+attr_html: :width 400
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/effCptModel.png]]
+:END:
+:latex:
 #+CAPTION: Effect Compartment Model
 #+NAME: eff_model
 #+ATTR_LATEX: :width 0.5\textwidth
-#+attr_html: :width 400
-[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/master/docs/graphics/effCptModel.png]]
+[[file:./graphics/effCptModel.png]]
+:END:
+
 
 *** Effect Compartment Model for PD response $R$.
 \begin{gather*}
@@ -1562,74 +1548,150 @@ parameters are consistent with the values used to simulate the data.
 | sigmaResp |  10.165 |  10.166 | 0.198 | 0.198 |  9.844 |  10.495 | 1.002 | 4788.527 | 2923.203 |
 #+TBLFM: $2=$0;%0.3f::$3=$0;%0.3f::$4=$0;%0.3f::$5=$0;%0.3f::$6=$0;%0.3f::$7=$0;%0.3f::$8=$0;%0.3f::$9=$0;%0.3f::$10=$0;%0.3f
 
+:hugo:
+#+CAPTION: Posterior marginal densities of the model parameters of the effect compartment model.
+#+NAME: effcpt_mcmc_density
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/density.png]]
+:END:
+:latex:
 #+CAPTION: Posterior marginal densities of the model parameters of the effect compartment model.
 #+NAME: effcpt_mcmc_density
 #+ATTR_LATEX: :width 0.8\linewidth
-#+attr_html: :width 700
-[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/density.png]]
+[[../example-models/effCpt/density.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (5mg dose).
+#+NAME: effcpt_ppc_5mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_5mg.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (5mg dose).
 #+NAME: effcpt_ppc_5mg
 #+ATTR_LATEX: :width \linewidth
-#+attr_html: :width 700
-file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_5mg.png
+[[../example-models/effCpt/ppc_study_1_5mg.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (10mg dose).
+#+NAME: effcpt_ppc_10mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_10mg.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (10mg dose).
 #+NAME: effcpt_ppc_10mg
 #+ATTR_LATEX: :width \linewidth
-#+attr_html: :width 700
-file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_10mg.png
+[[../example-models/effCpt/ppc_study_1_10mg.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (20mg dose).
+#+NAME: effcpt_ppc_20mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_20mg.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (20mg dose).
 #+NAME: effcpt_ppc_20mg
 #+ATTR_LATEX: :width \linewidth
-#+attr_html: :width 700
-file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_20mg.png
+[[../example-models/effCpt/ppc_study_1_20mg.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (40mg dose).
+#+NAME: effcpt_ppc_40mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_40mg.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 1 (40mg dose).
 #+NAME: effcpt_ppc_40mg
 #+ATTR_LATEX: :width \linewidth
-#+attr_html: :width 700
-file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_40mg.png
+[[../example-models/effCpt/ppc_study_1_40mg.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 2 (first 40 subjects).
+#+NAME: effcpt_ppc_study_2_20mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_2_20mg.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual plasma drug concentrations in study 2 (first 40 subjects).
 #+NAME: effcpt_ppc_study_2_20mg
 #+ATTR_LATEX: :width \linewidth
-#+attr_html: :width 700
-file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_2_20mg.png
+[[../example-models/effCpt/ppc_study_2_20mg.pdf]]
+:END:
 
 # PD
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (5mg dose).
+#+NAME: effcpt_ppc_resp_5mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_5mg_resp.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (5mg dose).
 #+NAME: effcpt_ppc_resp_5mg
 #+ATTR_LATEX: :width \linewidth
-#+attr_html: :width 700
-file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_5mg_resp.png
+[[../example-models/effCpt/ppc_study_1_5mg_resp.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (10mg dose).
+#+NAME: effcpt_ppc_resp_10mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_10mg_resp.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (10mg dose).
 #+NAME: effcpt_ppc_resp_10mg
 #+ATTR_LATEX: :width \linewidth
-#+attr_html: :width 700
-file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_10mg_resp.png
+[[../example-models/effCpt/ppc_study_1_10mg_resp.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (20mg dose).
+#+NAME: effcpt_ppc_resp_20mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_20mg_resp.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (20mg dose).
 #+NAME: effcpt_ppc_resp_20mg
 #+ATTR_LATEX: :width \linewidth
-#+attr_html: :width 700
-file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_20mg_resp.png
+[[../example-models/effCpt/ppc_study_1_20mg_resp.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (40mg dose).
+#+NAME: effcpt_ppc_resp_40mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_40mg_resp.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 1 (40mg dose).
 #+NAME: effcpt_ppc_resp_40mg
 #+ATTR_LATEX: :width \linewidth
-#+attr_html: :width 700
-file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_1_40mg_resp.png
+[[../example-models/effCpt/ppc_study_1_40mg_resp.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 2 (first 40 subjects).
+#+NAME: effcpt_ppc_resp_study_2_20mg
+#+attr_html: :width 700
+file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_2_20mg_resp.png
+:END:
+:latex:
 #+CAPTION: Predicted (90% credible interval and median) and observed individual PD response in study 2 (first 40 subjects).
 #+NAME: effcpt_ppc_resp_study_2_20mg
 #+ATTR_LATEX: :width \linewidth
-#+attr_html: :width 700
-file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/effCpt/ppc_study_2_20mg_resp.png
-
+[[../example-models/effCpt/ppc_study_2_20mg_resp.pdf]]
+:END:
 
 ** Friberg-Karlsson Semi-Mechanistic Population Model
    :PROPERTIES:
@@ -1725,23 +1787,44 @@ and [[ref:fkpop_ppc_pd]] indicate the model is a good fit.
 | alphaHat  | 2.24e-4 | 2.19e-4 | 3.97e-05 | 3.80e-05 | 1.66e-4 | 2.96e-4 | 1.000 | 5138.105 | 2807.328 |
 #+TBLFM: $2=$0;%0.3f::$3=$0;%0.3f::$4=$0;%0.3f::$5=$0;%0.3f::$6=$0;%0.3f::$7=$0;%0.3f::$8=$0;%0.3f::$9=$0;%0.3f::$10=$0;%0.3f
 
+:hugo:
+#+CAPTION: Posterior marginal densities of the model parameters of the Friberg-Karlsson population model.
+#+NAME: fkpop_mcmc_density
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/FribergKarlsson/density.png]]
+:END:
+:latex:
 #+CAPTION: Posterior marginal densities of the model parameters of the Friberg-Karlsson population model.
 #+NAME: fkpop_mcmc_density
 #+ATTR_LATEX: :width 0.8\linewidth
-#+attr_html: :width 700
-[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/FribergKarlsson/density.png]]
+[[../example-models/FribergKarlsson/density.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (50%, 90% credible interval and median) and observed individual drug plasma concentration.
+#+NAME: fkpop_ppc_pk
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/FribergKarlsson/ppc_pk.png]]
+:END:
+:latex:
 #+CAPTION: Predicted (50%, 90% credible interval and median) and observed individual drug plasma concentration.
 #+NAME: fkpop_ppc_pk
 #+ATTR_LATEX: :width 0.8\linewidth
-#+attr_html: :width 700
-[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/FribergKarlsson/ppc_pk.png]]
+[[../example-models/FribergKarlsson/ppc_pk.pdf]]
+:END:
 
+:hugo:
+#+CAPTION: Predicted (50%, 90% credible interval and median) and observed individual Neutrophil counts.
+#+NAME: fkpop_ppc_pd
+#+attr_html: :width 700
+[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/FribergKarlsson/ppc_pd.png]]
+:END:
+:latex:
 #+CAPTION: Predicted (50%, 90% credible interval and median) and observed individual Neutrophil counts.
 #+NAME: fkpop_ppc_pd
 #+ATTR_LATEX: :width 0.8\linewidth
-#+attr_html: :width 700
-[[file:https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/example-models/FribergKarlsson/ppc_pd.png]]
+[[../example-models/FribergKarlsson/ppc_pd.pdf]]
+:END:
 
 \appendix
 * Compiling constants
@@ -1762,7 +1845,6 @@ in =cmdstanr=.
 
 \backmatter
 
-*** References
 <<bibliographystyle link>>
 bibliographystyle:unsrt
 
