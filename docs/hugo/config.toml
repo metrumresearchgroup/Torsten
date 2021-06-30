@@ -1,3 +1,12 @@
+# see https://github.com/gohugoio/hugo/issues/7714
+# for the baseURL & github page issue
+# currently the Torsten site uses an ugly hack by linking directly the
+# figures in github repo.
+# This however causes failure when exporting org to latex, see
+# https://emacs.stackexchange.com/questions/33875/selective-export-from-org-mode
+# for a solution
+
+# baseURL = "https://example.com"
 baseURL = "https://metrumresearchgroup.github.io/Torsten/"
 
 languageCode = "en-us"
@@ -34,7 +43,7 @@ publishDir = "../"
     # Open Graph settings for each page are set on the front matter.
     # See https://gohugo.io/templates/internal/#open-graph
     # See https://gohugo.io/templates/internal/#twitter-cards
-    title = "Hugo Techdoc Theme"
+    title = "Torsten"
     images = ["images/logo.png"] # Open graph images are placed in `static/images`
 
     # Theme settings section
