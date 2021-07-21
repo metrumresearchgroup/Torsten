@@ -1,0 +1,7 @@
+data {
+  int N;
+}
+model {
+
+}
+
