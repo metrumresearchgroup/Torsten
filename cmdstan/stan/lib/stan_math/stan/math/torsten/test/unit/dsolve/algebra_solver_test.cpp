@@ -197,7 +197,7 @@ TEST(newton_solver, no_solution) {
   std::vector<int> x_i;
 
   EXPECT_THROW_MSG(pmx_algebra_solver_newton(f_nl, x_var, scaling, scaling, nullptr, y, x_r, x_i),
-                   std::runtime_error, "KIN_LSETUP_FAIL");
+                   std::domain_error, "KIN_LSETUP_FAIL");
 }
 
 TEST(newton_solver, error) {
@@ -241,5 +241,5 @@ TEST(newton_solver, error) {
   EXPECT_THROW_MSG(
     pmx_algebra_solver_newton_tol(f_nl, x_var, scaling, scaling,
                                   1.e-4, 1.e-7, 5, nullptr, y0, y1, y2),
-    std::runtime_error, "KIN_MAXITER_REACHED");
+    std::domain_error, "KIN_MAXITER_REACHED");
 }

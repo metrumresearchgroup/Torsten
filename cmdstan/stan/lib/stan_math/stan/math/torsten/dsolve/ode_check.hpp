@@ -12,7 +12,6 @@
 
 namespace torsten {
   namespace dsolve {
-
     template <typename Tt, typename T_initial, typename T_param>
     void ode_check(const std::vector<T_initial>& y0,
                    double t0,
@@ -30,6 +29,31 @@ namespace torsten {
       stan::math::check_finite(caller, "parameters", theta);
       stan::math::check_finite(caller, "continuous data", x_r);
       stan::math::check_nonzero_size(caller, "initial state", y0);
+    }
+
+    template <typename Tt, typename T_initial, typename T_tuple>
+    void ode_check(const Eigen::Matrix<T_initial, -1, 1>& y0,
+                   double t0,
+                   const std::vector<Tt>& ts,
+                   const char* caller,
+                   T_tuple const& theta_ref_tuple) {
+      stan::math::check_finite(caller, "initial time", t0);
+      stan::math::check_finite(caller, "times", ts);
+      stan::math::check_ordered(caller, "times", ts);
+      stan::math::check_nonzero_size(caller, "times", ts);
+      stan::math::check_less(caller, "initial time", t0, ts.front());
+      stan::math::check_nonzero_size(caller, "initial state", y0);
+      stan::math::check_finite(caller, "initial state", y0);
+
+      stan::math::apply(
+            [&](const auto&... args_ref) {
+              // Code from https://stackoverflow.com/a/17340003
+              std::vector<int> unused_temp{
+                0,
+                (stan::math::check_finite(caller, "ode parameters and data", args_ref),
+                 0)...};
+            },
+            theta_ref_tuple);
     }
 
     template <typename Tt, typename T_initial, typename T_param>

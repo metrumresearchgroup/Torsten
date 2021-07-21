@@ -28,6 +28,9 @@ endif
 TORSTEN_TESTS := $(subst .cpp,$(EXE),$(shell find stan/math/torsten/test/unit -name *_test.cpp))
 $(TORSTEN_TESTS) : $(LIBSUNDIALS)
 
+TORSTEN_FULL_TESTS := $(subst .cpp,$(EXE),$(shell find stan/math/torsten/test/full_unit -name *_test.cpp))
+$(TORSTEN_FULL_TESTS) : $(LIBSUNDIALS)
+
 TORSTEN_PERF_TESTS := $(subst .cpp,$(EXE),$(shell find stan/math/torsten/test/performance -name *_test.cpp))
 $(TORSTEN_PERF_TESTS) : $(LIBSUNDIALS)
 

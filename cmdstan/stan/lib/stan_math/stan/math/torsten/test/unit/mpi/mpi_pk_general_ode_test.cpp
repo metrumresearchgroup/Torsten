@@ -618,7 +618,7 @@ TEST_F(TorstenPopulationNeutropeniaTest, exception_max_num_steps_fails) {
                                             len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
                                             theta_m, biovar_m, tlag_m,
                                             rtol, atol, max_num_steps, nullptr),
-               std::runtime_error);
+               std::domain_error);
 }
 
 TEST_F(TorstenPopulationNeutropeniaTest, exception_var_max_num_steps_fails) {
@@ -635,7 +635,7 @@ TEST_F(TorstenPopulationNeutropeniaTest, exception_var_max_num_steps_fails) {
                                             len, time_m, amt_m, rate_m, ii_m, evid_m, cmt_m, addl_m, ss_m, // NOLINT
                                             theta_m_v, biovar_m, tlag_m,
                                             rtol, atol, max_num_steps, nullptr),
-               std::runtime_error);
+               std::domain_error);
 }
 
 TEST_F(TorstenPopulationNeutropeniaTest, domain_error) {

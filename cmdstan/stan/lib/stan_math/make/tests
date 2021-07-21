@@ -79,6 +79,15 @@ $(IDAS_TESTS) : $(LIBSUNDIALS)
 
 ############################################################
 #
+# ARKODE tests
+##
+
+ARKODE_TESTS := $(subst .cpp,$(EXE),$(call findfiles,test,*ark*_test.cpp) $(call findfiles,test,*_erk*_test.cpp))
+$(ARKODE_TESTS) : $(LIBSUNDIALS)
+
+
+############################################################
+#
 # KINSOL tests
 ##
 

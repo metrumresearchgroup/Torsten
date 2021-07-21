@@ -73,9 +73,9 @@ inline auto value_of(const std::vector<T>& x) {
     return res;
   }
 
-  template <typename T>
-  inline Eigen::MatrixXd value_of(const Eigen::Matrix<T, -1, -1>& M) {
-    Eigen::VectorXd res(M.rows(), M.cols());
+  template <typename T, int R, int C>
+  inline Eigen::Matrix<double, R, C> value_of(const Eigen::Matrix<T, R, C>& M) {
+    Eigen::Matrix<double, R, C> res(R, C);
     for (auto i = 0; i < M.size(); ++i) {
       res(i) = stan::math::value_of(M(i));
     }

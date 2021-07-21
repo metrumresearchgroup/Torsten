@@ -18,7 +18,7 @@ inline void sundials_check(int flag, const char* func) {
   if (flag < 0) {
     std::ostringstream ss;
     ss << func << " failed with error flag " << flag;
-    throw std::runtime_error(ss.str());
+    throw std::domain_error(ss.str());
   }
 }
 
@@ -33,7 +33,7 @@ inline void kinsol_check(int flag, const char* func) {
     std::ostringstream ss;
     // std::string flag_name = KINGetLinReturnFlagName(-11);
     ss << func << " failed with error flag " << flag << ": " << KINGetReturnFlagName(flag);
-    throw std::runtime_error(ss.str());
+    throw std::domain_error(ss.str());
   }
 }
 

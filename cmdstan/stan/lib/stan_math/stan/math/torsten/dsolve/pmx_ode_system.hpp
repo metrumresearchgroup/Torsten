@@ -359,11 +359,14 @@ namespace dsolve {
     const Eigen::Matrix<T_init, -1, 1>& y0_;
     std::tuple<const T_par&...> theta_ref_tuple_;
     std::tuple<const Eigen::Matrix<T_init, -1, 1>&, const T_par&..., const std::vector<Tt>&> ode_arg_tuple_;
+    std::tuple<decltype(stan::math::deep_copy_vars(std::declval<const T_par&>()))...> theta_local_tuple_;
     const size_t N;
     const size_t M;
     const size_t ns;
     const size_t system_size;
-    Eigen::VectorXd y0_fwd_system;
+    std::vector<double> y0_fwd_system; // internally we use std::vector
+    Eigen::VectorXd y_work, dydt_work, g_work;
+    stan::math::vector_v yv_work, fyv_work;
 
     PMXVariadicOdeSystem(const F& f,
                          double t0,
@@ -380,22 +383,28 @@ namespace dsolve {
         y0_(y0),
         theta_ref_tuple_(std::forward_as_tuple(args...)),
         ode_arg_tuple_(std::forward_as_tuple(y0_, args..., ts_)),
+        theta_local_tuple_(stan::math::deep_copy_vars(args)...),
         N(y0.size()),
         M(stan::math::count_vars(args...)),
         ns((is_var_y0 ? N : 0) + M),
         system_size(N + N * ns),
-        y0_fwd_system(Eigen::VectorXd::Zero(system_size))
+        y0_fwd_system(system_size, 0.0),
+        y_work(system_size),
+        dydt_work(system_size),
+        g_work(is_var_par? M : 0),
+        yv_work((is_var_y0 || is_var_par)? N : 0),
+        fyv_work((is_var_y0 || is_var_par)? N : 0)
     {
       const char* caller = "PMX Variadic ODE System";
-      // torsten::dsolve::ode_check(y0_, t0_, ts_, theta_, x_r_, x_i_, caller);
+      torsten::dsolve::ode_check(y0_, t0_, ts_, caller, theta_ref_tuple_);
 
       // initial state
       for (size_t i = 0; i < N; ++i) {
-        y0_fwd_system.coeffRef(i) = stan::math::value_of(y0.coeffRef(i));
+        y0_fwd_system[i] = stan::math::value_of(y0.coeffRef(i));
       }
       if (is_var_y0)  {
         for (size_t i = 0; i < N; ++i) {
-          y0_fwd_system.coeffRef(N + i * N + i) = 1.0;        
+          y0_fwd_system[N + i * N + i] = 1.0;
         }
       }
     }
@@ -415,27 +424,36 @@ namespace dsolve {
       return ode_arg_tuple_;
     }
 
-    /*
+    /**
      * Evaluate RHS of the ODE(the combined system)
      * @param y current dependent value, arranged as {y, dy_dp1, dy_dp2...}
      * @param dy_dt ODE RHS to be filled.
      * @param t current indepedent value
      */
-    inline void operator()(const Eigen::VectorXd& y, Eigen::VectorXd& dy_dt,
+    inline void operator()(const std::vector<double> & y, std::vector<double> & dydt,
                            double t) {
-      dy_dt.resize(system_size); // boost::odeint vector_space_algebra doesn't do resize
-      stan::math::check_size_match("PMXVariadicOdeSystem", "y", y.size(), "dy_dt", dy_dt.size());
-      rhs_impl(y, dy_dt, t);
+      // dydt.resize(system_size);
+      stan::math::check_size_match("PMXVariadicOdeSystem", "y", y.size(), "dy_dt", dydt.size());
+
+      for (auto i = 0; i < system_size; ++i) {
+        y_work.coeffRef(i) = y[i];
+      }
+
+      rhs_impl(y_work, dydt_work, t);
+
+      Eigen::Map<Eigen::VectorXd>(dydt.data(), system_size) = dydt_work;
     }
 
     /*
      * evaluate RHS with data only inputs.
      */
     inline Eigen::VectorXd dbl_rhs_impl(double t, const Eigen::VectorXd& y) const {
-      return f_tuple_(t, y, msgs_, theta_dbl_tuple_);
+      Eigen::VectorXd res = f_tuple_(t, y, msgs_, theta_dbl_tuple_);
+      stan::math::check_size_match("PMXVariadicOdeSystem", "y", y.size(), "dy_dt", res.size());
+      return res;
     }
 
-    /*
+    /**
      * evaluate RHS with data only inputs.
      */
     inline Eigen::VectorXd dbl_rhs_impl(double t, const N_Vector& nv_y) const {
@@ -455,59 +473,63 @@ namespace dsolve {
       return 0;
     }
 
+    static int arkode_combined_rhs(double t, N_Vector y, N_Vector ydot, void* user_data) {
+      Ode* ode = static_cast<Ode*>(user_data);
+      Eigen::VectorXd y_vec = Eigen::Map<Eigen::VectorXd>(NV_DATA_S(y), ode -> system_size);
+      Eigen::VectorXd ydot_vec = Eigen::Map<Eigen::VectorXd>(NV_DATA_S(ydot), ode -> system_size);
+      ode -> rhs_impl(y_vec, ydot_vec, t);
+      for (size_t i = 0; i < ode -> system_size; ++i) {
+        NV_Ith_S(ydot, i) = ydot_vec[i];
+      }
+      return 0;
+    }
+
     /**
      * evalute RHS of the entire system, possibly including
      * the forward sensitivity equation components in @c y and @c dy_dt.
      */
     void rhs_impl(const Eigen::VectorXd & y, Eigen::VectorXd & dydt, double t) {
-      using stan::math::var;
-      using stan::math::vector_v;
-      using stan::math::vector_d;
-      using stan::math::zero_adjoints;
-      using stan::math::accumulate_adjoints;
-
       if (!(is_var_y0 || is_var_par)) {
         dydt = f_tuple_(t, y, msgs_, theta_dbl_tuple_);
+        stan::math::check_size_match("PMXVariadicOdeSystem", "y", y.size(), "dy_dt", dydt.size());
         return;
       }
 
       dydt.fill(0.0);
       stan::math::nested_rev_autodiff nested;
 
-      auto local_theta_tuple_ = deep_copy_tuple()(theta_ref_tuple_);
+      stan::math::vector_v& yv = yv_work;
+      stan::math::vector_v& fyv = fyv_work;
+      for (size_t i = 0; i < N; ++i) { yv.coeffRef(i) = y.coeffRef(i); }
+      fyv = f_tuple_(t, yv, msgs_, theta_local_tuple_);
+      stan::math::check_size_match("PMXVariadicOdeSystem", "y", yv.size(), "dy_dt", fyv.size());
 
-      vector_v yv(N);
-      for (size_t i = 0; i < N; ++i) { yv[i] = y[i]; }
-      vector_v fyv(f_tuple_(t, yv, msgs_, local_theta_tuple_));
-
-      stan::math::check_size_match("PMXOdeSystem", "dydt", fyv.size(), "states", N);
-
-      Eigen::VectorXd g(M);
+      Eigen::VectorXd& g = g_work;
       for (size_t i = 0; i < N; ++i) {
         if (i > 0) {
           nested.set_zero_all_adjoints();            
         }
-        dydt[i] = fyv[i].val();
-        fyv[i].grad();
+        dydt.coeffRef(i) = (fyv.coeffRef(i)).val();
+        (fyv.coeffRef(i)).grad();
 
         // df/dy*s_i term, for i = 1...ns
         for (size_t j = 0; j < ns; ++j) {
           for (size_t k = 0; k < N; ++k) {
-            dydt[N + N * j + i] += y[N + N * j + k] * yv[k].adj();
+            dydt.coeffRef(N + N * j + i) += y.coeffRef(N + N * j + k) * (yv.coeffRef(k)).adj();
           }
         }
 
         // df/dp_i term, for i = n...n+m-1
         if (is_var_par) {
-          g.fill(0);
-          stan::math::apply([&](auto&&... args) {accumulate_adjoints(g.data(), args...);},
-                local_theta_tuple_);
+          memset(g.data(), 0, sizeof(double) * g.size());
+          stan::math::apply([&](auto&&... args) {stan::math::accumulate_adjoints(g.data(), args...);},
+                theta_local_tuple_);
           for (size_t j = 0; j < M; ++j) {
-            dydt(N + N * (ns - M + j) + i) += g[j];
+            dydt.coeffRef(N + N * (ns - M + j) + i) += g.coeffRef(j);
           }
         }
 
-        stan::math::for_each([](auto&& arg) { stan::math::zero_adjoints(arg); }, local_theta_tuple_);
+        stan::math::for_each([](auto&& arg) { stan::math::zero_adjoints(arg); }, theta_local_tuple_);
       }
     }
 
@@ -532,9 +554,6 @@ namespace dsolve {
       vector_v yv(N);
       for (size_t i = 0; i < N; ++i) { yv[i] = NV_Ith_S(nv_y, i); }
       vector_v dydt(f_tuple_(t, yv, msgs_, local_theta_tuple_));
-      // vector_v dydt(is_var_par ?
-      //               f_tuple_(t, yv, msgs_, local_theta_tuple_) :
-                    // f_tuple_(t, yv, msgs_, theta_dbl_tuple_));
 
       stan::math::check_size_match("PMXOdeSystem", "dydt", dydt.size(), "states", N);
 
@@ -623,7 +642,6 @@ namespace dsolve {
       }
     }
   };
-
 }  // namespace dsolve
 }  // namespace torsten
 #endif

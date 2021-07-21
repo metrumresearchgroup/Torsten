@@ -18,6 +18,7 @@ PMX_ADD_FUNCTOR(pmx_solve_adams, torsten::pmx_solve_adams);
 PMX_ADD_FUNCTOR(pmx_solve_bdf, torsten::pmx_solve_bdf);
 PMX_ADD_FUNCTOR(pmx_solve_rk45, torsten::pmx_solve_rk45);
 PMX_ADD_FUNCTOR(pmx_solve_onecpt_effcpt, torsten::pmx_solve_onecpt_effcpt);
+PMX_ADD_FUNCTOR(pmx_solve_twocpt_effcpt, torsten::pmx_solve_twocpt_effcpt);
 PMX_ADD_FUNCTOR(pmx_solve_onecpt_rk45, torsten::pmx_solve_onecpt_rk45);
 PMX_ADD_FUNCTOR(pmx_solve_onecpt_bdf, torsten::pmx_solve_onecpt_bdf);
 PMX_ADD_FUNCTOR(pmx_solve_twocpt_rk45, torsten::pmx_solve_twocpt_rk45);

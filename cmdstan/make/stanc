@@ -67,7 +67,7 @@ else ifeq ($(OS_TAG),windows)
 # get latest stanc3 - Windows
     bin/stanc$(EXE) :
 	@mkdir -p $(dir $@)
-	$(shell echo "https://github.com/metrumresearchgroup/stanc3/releases/download/$(TORSTEN_STANC3_VERSION)/$(OS_TAG)-stanc -o bin/stanc$(EXE) --retry $(STANC_DL_RETRY) --retry-delay $(STANC_DL_DELAY)")
+	$(shell echo "curl -L https://github.com/metrumresearchgroup/stanc3/releases/download/$(TORSTEN_STANC3_VERSION)/$(OS_TAG)-stanc -o bin/stanc$(EXE) --retry $(STANC_DL_RETRY) --retry-delay $(STANC_DL_DELAY)")
 else
 # get latest stanc3 - Linux & MacOS
     bin/stanc$(EXE) :

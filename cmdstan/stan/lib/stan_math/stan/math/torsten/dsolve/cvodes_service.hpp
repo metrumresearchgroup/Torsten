@@ -3,13 +3,17 @@
 
 #include <stan/math/rev/core/recover_memory.hpp>
 #include <stan/math/rev/meta/is_var.hpp>
+#include <stan/math/prim/meta/require_helpers.hpp>
 #include <stan/math/torsten/dsolve/sundials_check.hpp>
 #include <stan/math/torsten/dsolve/ode_func_type.hpp>
 #include <stan/math/torsten/dsolve/pmx_ode_system.hpp>
 #include <cvodes/cvodes.h>
+#include <arkode/arkode.h>
+#include <arkode/arkode_erkstep.h>
 #include <nvector/nvector_serial.h>
 #include <sunmatrix/sunmatrix_dense.h>
 #include <sunlinsol/sunlinsol_dense.h>
+#include <type_traits>
 #include <ostream>
 #include <vector>
 #include <algorithm>
@@ -17,13 +21,16 @@
 namespace torsten {
   namespace dsolve {
 
-    /* For each type of Ode(with different rhs functor F and
+    /** For each type of Ode(with different rhs functor F and
      * senstivity parameters), we allocate mem and workspace for
      * cvodes. This service manages the
      * allocation/deallocation, so ODE systems only request
      * service by injection.
+     * @tparam ode ode type
+     * @tparam lmm_type CVODES solver type (BDF & ADAMS)
+     * @tparam butcher_tab AKRODE Butcher table
      */
-    template <typename Ode, int lmm_type>
+    template <typename Ode, int lmm_type, int butcher_tab = 0, typename = void>
     struct PMXOdeService {
       int ns;
       N_Vector nv_y;
@@ -89,6 +96,44 @@ namespace torsten {
           N_VDestroyVectorArray(nv_ys, ns);
         }
         N_VDestroy(nv_y);
+      }
+    };
+
+    /** 
+     * ARKODE's Butcher table: 0-99 are for ERK.
+     * 
+     */
+    template<int butcher_tab>
+    struct is_erk_tab {
+      static constexpr bool value = butcher_tab >= 0 && butcher_tab < 100;
+    };
+
+    template <typename Ode, int butcher_tab>
+    struct PMXOdeService<Ode, 0, butcher_tab,
+                         stan::require_t<is_erk_tab<butcher_tab> > > {
+      int ns;
+      N_Vector nv_y;
+      void* mem;
+
+      /**
+       * Construct CVODES ODE mem & workspace
+       *
+       * @param[in] n ODE system size
+       * @param[in] m length of parameter theta
+       * @param[in] f ODE RHS function
+       */
+      PMXOdeService(int n, int m, int ns0, Ode& ode) :
+        ns(ns0),
+        nv_y(N_VNew_Serial(ode.system_size)),
+        mem(ERKStepCreate(Ode::cvodes_rhs, 0.0, nv_y))
+      {
+        N_VConst(RCONST(0.0), nv_y);
+        CHECK_SUNDIALS_CALL(ERKStepSetUserData(mem, static_cast<void*>(&ode)));
+      }
+
+      ~PMXOdeService() {
+        ERKStepFree(&mem);    // Free integrator memory
+        N_VDestroy(nv_y);        // Free y vector
       }
     };
   }

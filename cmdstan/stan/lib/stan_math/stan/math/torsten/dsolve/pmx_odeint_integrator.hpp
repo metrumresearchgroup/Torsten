@@ -11,8 +11,13 @@
 namespace torsten {
 namespace dsolve {
 
-  using odeint_scheme_rk45 = boost::numeric::odeint::runge_kutta_dopri5<Eigen::VectorXd, double, Eigen::VectorXd, double, boost::numeric::odeint::vector_space_algebra>;
-  using odeint_scheme_ckrk = boost::numeric::odeint::runge_kutta_cash_karp54<Eigen::VectorXd, double, Eigen::VectorXd, double, boost::numeric::odeint::vector_space_algebra>;
+  using odeint_scheme_rk45 = boost::numeric::odeint::runge_kutta_dopri5<std::vector<double>, double, std::vector<double>, double>;
+  using odeint_scheme_ckrk = boost::numeric::odeint::runge_kutta_cash_karp54<std::vector<double>, double, std::vector<double>, double>;
+
+  // FIXME: vector_space_algebra for Eigen::VectorXd is not efficient
+  // compared to std::vector
+  // using odeint_scheme_rk45 = boost::numeric::odeint::runge_kutta_dopri5<Eigen::VectorXd, double, Eigen::VectorXd, double, boost::numeric::odeint::vector_space_algebra>;
+  // using odeint_scheme_ckrk = boost::numeric::odeint::runge_kutta_cash_karp54<Eigen::VectorXd, double, Eigen::VectorXd, double, boost::numeric::odeint::vector_space_algebra>;
 
 /**
  * @c boost::odeint ODE integrator.

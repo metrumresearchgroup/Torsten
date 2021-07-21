@@ -185,7 +185,8 @@ struct TorstenPMXTest<child_type<T> > : public testing::Test {
   template<typename solver_func_t, typename child_test_t,
            stan::require_any_t<std::is_same<solver_func_t, pmx_solve_onecpt_functor>,
                                std::is_same<solver_func_t, pmx_solve_twocpt_functor>,
-                               std::is_same<solver_func_t, pmx_solve_onecpt_effcpt_functor>>* = nullptr>
+                               std::is_same<solver_func_t, pmx_solve_onecpt_effcpt_functor>,
+                               std::is_same<solver_func_t, pmx_solve_twocpt_effcpt_functor>>* = nullptr>
   auto apply_solver(solver_func_t const& sol, child_test_t* test_ptr) {
     return sol(time, amt, rate, ii, evid, cmt, addl, ss, theta, biovar, tlag);
   }

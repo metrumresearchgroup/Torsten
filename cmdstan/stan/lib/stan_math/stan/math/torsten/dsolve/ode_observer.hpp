@@ -26,9 +26,36 @@ namespace dsolve {
   template<template<typename...> class ode_t, typename F, typename Tt, typename T_init, typename... Ts>
   struct has_var_par<ode_t<F, Tt, T_init, Ts...>> : stan::is_var<stan::return_type_t<Ts...>> {};
 
+  struct OdeObserverBase {
+    double curr_t_;
+
+    OdeObserverBase() : curr_t_(-99999) {}
+
+    /** 
+     * convert std::vector state input to eigen vector before applying
+     * it to ODE functor and return RHS of ODE.
+     * 
+     */
+    template<typename... Ts>
+    Eigen::VectorXd ode_rhs(std::vector<double> const& y, PMXVariadicOdeSystem<Ts...> const& system) const {
+      // FIXME: static
+      Eigen::VectorXd y_work(system.N);
+      std::copy(y.begin(), y.begin() + system.N, y_work.data());
+      return system.dbl_rhs_impl(curr_t_, y_work);
+    }
+
+    /** 
+     * no need to convert if ODE functor takes std::vector arg.
+     * 
+     */
+    template<typename... Ts>
+    std::vector<double> ode_rhs(std::vector<double> const& y, PMXOdeSystem<Ts...> const& system) const {
+      return system.dbl_rhs_impl(curr_t_, y);
+    }    
+  };
+
   template<typename Ode>
-  struct OdeObserver {
-    using dbl_state_t = decltype(std::declval<Ode>().y0_fwd_system);
+  struct OdeObserver : public OdeObserverBase {
     using state_t = typename Ode::state_t;
 
     const Ode& ode;
@@ -37,7 +64,6 @@ namespace dsolve {
     const size_t ns;
     std::vector<state_t> y;
     int step_counter_;
-    double curr_t_;
 
     OdeObserver(const Ode& ode0) :
       ode(ode0), n(ode.N), m(ode.M), ns(ode.ns),
@@ -54,9 +80,10 @@ namespace dsolve {
 
     /**
      * use observer to convert y value and gradient to var
-     * results, if necessary.
+     * results, if necessary. Note that internally we use std::vector for odeint
+     * solver state, so need convert it to eigen vec when output.
      */
-    inline void operator()(const dbl_state_t& curr_result, double t) {
+    inline void operator()(const std::vector<double>& curr_result, double t) {
       curr_t_ = t;
       if(curr_t_ > ode.t0_) {
         observer_impl(y[step_counter_], curr_result);
@@ -79,16 +106,16 @@ namespace dsolve {
   private:
 
     /**
-     * All data, return data
+     * All data (no var), return data
      */
     template<typename ode_type = Ode>
     inline stan::require_all_not_t<has_var_ts<ode_type>, has_var_y0<ode_type>, has_var_par<ode_type>>
-    observer_impl(state_t& y_res, const dbl_state_t & y) const {
+    observer_impl(state_t& y_res, const std::vector<double>& y) const {
       std::copy(y.data(), y.data() + n, y_res.data());
     }
 
     /**
-     * All data, return data
+     * All data (no var), return data
      */
     template<typename ode_type = Ode>
     inline stan::require_all_not_t<has_var_ts<ode_type>, has_var_y0<ode_type>, has_var_par<ode_type>>
@@ -102,10 +129,10 @@ namespace dsolve {
      */
     template<typename ode_type = Ode>
     inline std::enable_if_t<has_var_ts<ode_type>::value && (!has_var_y0<ode_type>::value) && (!has_var_par<ode_type>::value)>
-    observer_impl(state_t& y_res, const dbl_state_t & y) const {
+    observer_impl(state_t& y_res, const std::vector<double>& y) const {
       std::vector<double> g(n * (1 + ode.ts_.size()), 0.0);
       std::copy(y.data(), y.data() + n, g.data());
-      dbl_state_t dydt = ode.dbl_rhs_impl(curr_t_, y);
+      auto dydt = ode_rhs(y, ode);
       std::copy(dydt.data(), dydt.data() + n, g.data() + n + step_counter_ * n);
       y_res = torsten::precomputed_gradients(g, ode.vars());
     }
@@ -118,7 +145,7 @@ namespace dsolve {
     inline std::enable_if_t<has_var_ts<ode_type>::value && (!has_var_y0<ode_type>::value) && (!has_var_par<ode_type>::value)>
     observer_impl(state_t& y_res, const N_Vector & y, const N_Vector* ys) const {
       std::vector<double> g(ode.ts_.size(), 0.0);
-      dbl_state_t dydt = ode.dbl_rhs_impl(curr_t_, y);
+      auto dydt = ode.dbl_rhs_impl(curr_t_, y);
       for (size_t j = 0; j < n; ++j) {
         g[step_counter_] = dydt[j];
         // FIXME: use ts[i] instead of ts
@@ -132,7 +159,7 @@ namespace dsolve {
      */
     template<typename ode_type = Ode>
     inline std::enable_if_t<(!has_var_ts<ode_type>::value) && (has_var_y0<ode_type>::value || has_var_par<ode_type>::value)>
-    observer_impl(state_t& y_res, const dbl_state_t& y) const {
+    observer_impl(state_t& y_res, const std::vector<double> & y) const {
       y_res = torsten::precomputed_gradients(y, ode.vars());
     }
 
@@ -150,12 +177,10 @@ namespace dsolve {
      */
     template<typename ode_type = Ode>
     inline std::enable_if_t<has_var_ts<ode_type>::value && (has_var_y0<ode_type>::value || has_var_par<ode_type>::value)>
-    observer_impl(state_t& y_res, const dbl_state_t& y) const {
+    observer_impl(state_t& y_res, const std::vector<double> & y) const {
       auto g(ode_type::null_dbl_state(n * (1 + ns + ode.ts_.size())));
       std::copy(y.data(), y.data() + y.size(), g.data());        
-      dbl_state_t dydt(n), y_dbl(n);
-      std::copy(y.data(), y.data() + n, y_dbl.data());
-      dydt = ode.dbl_rhs_impl(curr_t_, y_dbl);
+      auto dydt = ode_rhs(y, ode);
       std::copy(dydt.data(), dydt.data() + n, g.data() + n + ns * n + step_counter_ * n);
       y_res = torsten::precomputed_gradients(g, ode.vars());
     }
@@ -169,7 +194,7 @@ namespace dsolve {
       using stan::math::ChainableStack;
 
       // auto g(ode_type::null_dbl_state(ns + ode.ts_.size()));
-      dbl_state_t dydt = ode.dbl_rhs_impl(curr_t_, y);
+      auto dydt = ode.dbl_rhs_impl(curr_t_, y);
 
       const size_t n_tot = ns + ode.ts_.size();
 
@@ -207,7 +232,9 @@ namespace dsolve {
   };
 
   template<typename Ode>
-  struct OdeDataObserver {
+  struct OdeDataObserver : OdeObserverBase {
+    using state_t = typename Ode::state_t;
+
     const Ode& ode;
     const size_t n;
     const size_t m;
@@ -236,14 +263,6 @@ namespace dsolve {
       }
     }
 
-    inline void operator()(const Eigen::VectorXd& curr_result, double t) {
-      curr_t_ = t;
-      if(curr_t_ > ode.t0_) {
-        observer_impl(y, curr_result, ode);
-        step_counter_++;
-      }
-    }
-
     inline void operator()(const N_Vector& curr_y, const N_Vector* curr_ys, double t) {
       curr_t_ = t;
       if(curr_t_ > ode.t0_) {
@@ -258,7 +277,7 @@ namespace dsolve {
      */
     template<typename F, typename T_init, typename... T_par>
     inline void observer_impl(Eigen::MatrixXd& y_res,
-                              const Eigen::VectorXd& y,
+                              const std::vector<double>& y,
                               const PMXVariadicOdeSystem<F, double, T_init, T_par...>& system) const {
       y_res.col(step_counter_) = Eigen::VectorXd::Map(y.data(), system.system_size);
     }
@@ -268,11 +287,10 @@ namespace dsolve {
      */
     template<typename F, typename T_init, typename... T_par>
     inline void observer_impl(Eigen::MatrixXd& y_res,
-                              const Eigen::VectorXd& y,
+                              const std::vector<double>& y,
                               const PMXVariadicOdeSystem<F, stan::math::var, T_init, T_par...>& system) const {
       for (size_t j = 0; j < system.system_size; ++j) y_res(j, step_counter_) = y[j];
-      // std::vector<double> y_tmp(y.begin(), y.begin() + n);
-      Eigen::VectorXd dydt = system.dbl_rhs_impl(curr_t_, y);
+      auto dydt = ode_rhs(y, system);
       for (size_t j = 0; j < n; ++j) {
         y_res(system.system_size + step_counter_ * n + j, step_counter_) = dydt[j];        
       }
@@ -321,8 +339,7 @@ namespace dsolve {
                               const std::vector<double>& y,
                               const PMXOdeSystem<F, stan::math::var, T_init, T_par>& system) const {
       for (size_t j = 0; j < system.system_size; ++j) y_res(j, step_counter_) = y[j];
-      std::vector<double> y_tmp(y.begin(), y.begin() + n);
-      std::vector<double> dydt(system.dbl_rhs_impl(curr_t_, y_tmp));
+      auto dydt = ode_rhs(y, system);
       for (size_t j = 0; j < n; ++j) {
         y_res(system.system_size + step_counter_ * n + j, step_counter_) = dydt[j];        
       }

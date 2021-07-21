@@ -36,14 +36,13 @@ TEST_F(TorstenOdeTest_sho, variadic_ode_system_odeint) {
 
   torsten::dsolve::PMXOdeSystem<harm_osc_ode_fun, double, stan::math::var, stan::math::var>
     ode0(f, 0.0, ts, to_var(y0), theta_var, x_r, x_i, nullptr);
-  std::vector<double> dydt_vec(ode.system_size);
+  std::vector<double> dydt_vec(ode.system_size), dydt_vec2(ode.system_size);
   ode0(ode0.y0_fwd_system, dydt_vec, ts[0]);
 
-  dydt.resize(ode.system_size);
-  ode(ode.y0_fwd_system, dydt, ts[0]);
+  ode(ode.y0_fwd_system, dydt_vec2, ts[0]);
   EXPECT_EQ(ode.system_size, ode0.system_size);
   for (size_t i = 0; i < ode0.system_size; ++i) {
-    EXPECT_FLOAT_EQ(dydt(i), dydt_vec[i]);
+    EXPECT_FLOAT_EQ(dydt_vec2[i], dydt_vec[i]);
   }
 }
 

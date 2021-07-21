@@ -2,8 +2,6 @@
 #define STAN_MATH_TORSTEN_ONECPT_EFFCPT_MODEL_HPP
 
 #include <stan/math/torsten/pmx_linode_model.hpp>
-#include <stan/math/rev/fun/sqrt.hpp>
-#include <stan/math/prim/fun/sqrt.hpp>
 #include <stan/math/rev/fun/exp.hpp>
 #include <stan/math/prim/fun/exp.hpp>
 #include <stan/math/torsten/PKModel/functors/check_mti.hpp>
