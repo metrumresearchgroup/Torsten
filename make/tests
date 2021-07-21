@@ -1,0 +1,80 @@
+##
+# Build test executables
+##
+
+test/%$(EXE) : CXXFLAGS += $(CXXFLAGS_GTEST)
+test/%$(EXE) : CPPFLAGS += $(CPPFLAGS_GTEST)
+test/%$(EXE) : INC += $(INC_GTEST) -I $(RAPIDJSON)
+test/%$(EXE) : test/%.o $(GTEST)/src/gtest_main.cc $(GTEST)/src/gtest-all.o $(LIBSUNDIALS) $(MPI_TARGETS) $(TBB_TARGETS)
+	$(LINK.cpp) $(filter-out src/test/test-models/% src/%.csv bin/% test/%.hpp %.hpp-test,$^) $(LDLIBS) $(OUTPUT_OPTION)
+
+test/%.o : src/test/%.cpp
+	@mkdir -p $(dir $@)
+	$(COMPILE.cpp) $< $(OUTPUT_OPTION)
+
+##
+# Customization for generating dependencies
+##
+src/test/%.d : src/test/%.hpp
+src/test/%.d : CXXFLAGS += $(CXXFLAGS_GTEST)
+src/test/%.d : CPPFLAGS += $(CPPFLAGS_GTEST)
+src/test/%.d : INC += $(INC_GTEST)
+src/test/%.d : test/%.o
+
+ifneq ($(filter test/%,$(MAKECMDGOALS)),)
+-include $(patsubst test/%$(EXE),src/test/%.d,$(filter test/%,$(MAKECMDGOALS)))
+-include $(patsubst %.cpp,%.d,$(STANC_TEMPLATE_INSTANTIATION_CPP))
+endif
+
+############################################################
+#
+# Target to verify header files within CmdStan has
+# enough include calls
+##
+HEADER_TESTS := $(addsuffix -test,$(call findfiles,src/cmdstan,*.hpp))
+
+ifeq ($(OS),Windows_NT)
+  DEV_NULL = nul
+else
+  DEV_NULL = /dev/null
+endif
+
+%.hpp-test : %.hpp test/dummy.cpp
+	$(COMPILE.cpp) -O0 -include $^ -o $(DEV_NULL)
+
+test/dummy.cpp:
+	@mkdir -p test
+	@touch $@
+	@echo "int main() {return 0;}" >> $@
+
+.PHONY: test-headers
+test-headers: $(HEADER_TESTS)
+
+############################################################
+#
+# Target to generate C++ code for all test-models
+##
+TEST_MODELS := $(wildcard src/test/test-models/*.stan)
+
+.PHONY: test-models-hpp
+test-models-hpp: 
+	$(MAKE) $(patsubst %.stan,%$(EXE),$(TEST_MODELS)) 
+
+##
+# Tests that depend on compiled models
+##
+test/interface/generated_quantities_test$(EXE): $(addsuffix $(EXE),$(addprefix src/test/test-models/, bern_gq_model  bern_extra_model test_model))
+test/interface/command_test$(EXE): $(addsuffix $(EXE),$(addprefix src/test/test-models/, printer domain_fail proper value_fail transformed_data_rng_test ndim_array))
+test/interface/metric_test$(EXE): $(addsuffix $(EXE),$(addprefix src/test/test-models/, test_model proper))
+test/interface/csv_header_consistency_test$(EXE): src/test/test-models/csv_header_consistency$(EXE)
+test/interface/diagnose_test$(EXE): bin/diagnose$(EXE)
+test/interface/elapsed_time_test$(EXE): src/test/test-models/test_model$(EXE)
+test/interface/fixed_param_sampler_test$(EXE): $(addsuffix $(EXE),$(addprefix src/test/test-models/, empty proper))
+test/interface/mpi_test$(EXE): $(addsuffix $(EXE),$(addprefix src/test/test-models/, proper))
+test/interface/model_output_test$(EXE): src/test/test-models/printer$(EXE)
+test/interface/optimization_output_test$(EXE): src/test/test-models/optimization_output$(EXE)
+test/interface/print_test$(EXE): bin/print$(EXE)
+test/interface/print_uninitialized_test$(EXE): src/test/test-models/print_uninitialized$(EXE)
+test/interface/arguments/argument_configuration_test$(EXE): src/test/test-models/test_model$(EXE)
+test/interface/stansummary_test$(EXE): bin/stansummary$(EXE)
+test/interface/variational_output_test$(EXE): src/test/test-models/variational_output$(EXE)
