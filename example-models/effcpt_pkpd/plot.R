@@ -3,6 +3,7 @@
 ## chain), it can be also read in from "summary.csv"
 
 library("tidyverse")
+library("latex2exp")
 
 ## effect of # of parallel chains on ESS
 ggplot(lp.summary %>% filter(method=="cross-chain"),
@@ -12,7 +13,7 @@ ggplot(lp.summary %>% filter(method=="cross-chain"),
     geom_hline(yintercept=lp.summary[["ess_tail_per_sec_per_chain"]][1],linetype = "dashed") +
     scale_x_continuous(trans='log2') +
     labs(x = TeX("n_{chain}"), y = TeX("ESS_{tail}/(Time_{sampling} x n_{chain})"),  color="Target ESS", shape="Target ESS",linetype="Target ESS")
-ggsave(filename="ess_tail_per_time_chain.pdf",width=6, height=4)
+ggsave(filename="ess_tail_per_time_chain.pdf",width=4, height=3.2)
 
 ggplot(lp.summary %>% filter(method=="cross-chain"),
         aes(group=as.factor(target_ESS), color=as.factor(target_ESS), x=parallel_chains, y=ess_bulk_per_sec_per_chain)) +
@@ -21,7 +22,7 @@ ggplot(lp.summary %>% filter(method=="cross-chain"),
     geom_hline(yintercept=lp.summary[["ess_bulk_per_sec_per_chain"]][1],linetype = "dashed") +
     scale_x_continuous(trans='log2') +
     labs(x = TeX("n_{chain}"), y = TeX("ESS_{bulk}/(Time_{sampling} x n_{chain})"),  color="Target ESS", shape="Target ESS",linetype="Target ESS")
-ggsave(filename="ess_bulk_per_time_chain.pdf",width=6, height=4)
+ggsave(filename="ess_bulk_per_time_chain.pdf",width=4, height=3.2)
 
 ggplot(lp.summary %>% filter(method=="cross-chain"),
         aes(group=as.factor(target_ESS), color=as.factor(target_ESS), x=parallel_chains, y=ess_tail_per_sec)) +
@@ -30,7 +31,7 @@ ggplot(lp.summary %>% filter(method=="cross-chain"),
     geom_hline(yintercept=lp.summary[["ess_tail_per_sec"]][1],linetype = "dashed") +
     scale_x_continuous(trans='log2') + scale_y_continuous(trans='log2') +
     labs(x = TeX("n_{chain}"), y = TeX("ESS_{tail}/Time_{sampling}"),  color="Target ESS", shape="Target ESS",linetype="Target ESS")
-ggsave(filename="ess_tail_per_time.pdf",width=6, height=4)
+ggsave(filename="ess_tail_per_time.pdf",width=4, height=3.2)
 
 ggplot(lp.summary %>% filter(method=="cross-chain"),
         aes(group=as.factor(target_ESS), color=as.factor(target_ESS), x=parallel_chains, y=ess_bulk_per_sec)) +
@@ -39,7 +40,7 @@ ggplot(lp.summary %>% filter(method=="cross-chain"),
     geom_hline(yintercept=lp.summary[["ess_bulk_per_sec"]][1],linetype = "dashed") +
     scale_x_continuous(trans='log2') + scale_y_continuous(trans='log2') +
     labs(x = TeX("n_{chain}"), y = TeX("ESS_{bulk}/Time_{sampling}"),  color="Target ESS", shape="Target ESS",linetype="Target ESS")
-ggsave(filename="ess_bulk_per_time.pdf",width=6, height=4)
+ggsave(filename="ess_bulk_per_time.pdf",width=4, height=3.2)
 
 ## ESS/total time
 ggplot(lp.summary %>% filter(method=="cross-chain"),
@@ -49,7 +50,7 @@ ggplot(lp.summary %>% filter(method=="cross-chain"),
     geom_hline(yintercept=lp.summary[["ess_bulk_per_total_time_per_chain"]][1],linetype = "dashed") +
     scale_x_continuous(trans='log2') +
     labs(x = TeX("n_{chain}"), y = TeX("ESS_{bulk}/(Time_{total} x n_{chain})"),  color="Target ESS", shape="Target ESS",linetype="Target ESS")
-ggsave(filename="ess_bulk_per_total_time_chain.pdf",width=6, height=4)
+ggsave(filename="ess_bulk_per_total_time_chain.pdf",width=4, height=3.2)
 
 ggplot(lp.summary %>% filter(method=="cross-chain"),
         aes(group=as.factor(target_ESS), color=as.factor(target_ESS), x=parallel_chains, y=ess_tail_per_total_time_per_chain)) +
@@ -58,7 +59,7 @@ ggplot(lp.summary %>% filter(method=="cross-chain"),
     geom_hline(yintercept=lp.summary[["ess_tail_per_total_time_per_chain"]][1],linetype = "dashed") +
     scale_x_continuous(trans='log2') +
     labs(x = TeX("n_{chain}"), y = TeX("ESS_{tail}/(Time_{total} x n_{chain})"),  color="Target ESS", shape="Target ESS",linetype="Target ESS")
-ggsave(filename="ess_tail_per_total_time_chain.pdf",width=6, height=4)
+ggsave(filename="ess_tail_per_total_time_chain.pdf",width=4, height=3.2)
 
 ## parallel efficiency
 ## speedup is based on ess/total_time, cross-chain parallel runs / sequential run
@@ -81,7 +82,7 @@ ggplot(lp.speedup, aes(group=as.factor(target_ESS),
     geom_point(aes(shape=as.factor(target_ESS))) +
     scale_x_continuous(trans='log2') + scale_y_continuous(trans='log2') +
     labs(x = TeX("n_{chain}(=n_{proc})"), y = TeX("Speedup of ESS_{bulk}/(Time_{total})"),  color="Target ESS", shape="Target ESS",linetype="Target ESS")
-ggsave(filename="ess_bulk_per_total_time_speedup.pdf",width=6, height=4)
+ggsave(filename="ess_bulk_per_total_time_speedup.pdf",width=4, height=3.2)
 
 ggplot(lp.speedup, aes(group=as.factor(target_ESS),
                                    color=as.factor(target_ESS), x=parallel_chains,
@@ -90,4 +91,4 @@ ggplot(lp.speedup, aes(group=as.factor(target_ESS),
     geom_point(aes(shape=as.factor(target_ESS))) +
     scale_x_continuous(trans='log2') + scale_y_continuous(trans='log2') +
     labs(x = TeX("n_{chain}(=n_{proc})"), y = TeX("Speedup of ESS_{tail}/(Time_{total})"),  color="Target ESS", shape="Target ESS",linetype="Target ESS")
-ggsave(filename="ess_tail_per_total_time_speedup.pdf",width=6, height=4)
+ggsave(filename="ess_tail_per_total_time_speedup.pdf",width=4, height=3.2)
