@@ -212,6 +212,7 @@ int command(int argc, const char *argv[]) {
       // torsten
       torsten::mpi::Session::num_chains = num_cross_chains;
     }
+  }
 #endif
 
 #ifdef STAN_OPENCL
@@ -267,14 +268,15 @@ int command(int argc, const char *argv[]) {
           ->value()
           .c_str(),
       std::fstream::out);
-#ifdef MPI_ADAPTED_WARMUP
-  stan::callbacks::mpi_stream_writer sample_writer(num_cross_chains, output_stream, "# ");
-#else
   int_argument *sig_figs_arg
-      = dynamic_cast<int_argument *>(parser.arg("output")->arg("sig_figs"));
+    = dynamic_cast<int_argument *>(parser.arg("output")->arg("sig_figs"));
   if (!sig_figs_arg->is_default()) {
     output_stream << std::setprecision(sig_figs_arg->value());
   }
+
+#ifdef MPI_ADAPTED_WARMUP
+  stan::callbacks::mpi_stream_writer sample_writer(num_cross_chains, output_stream, "# ");
+#else
   stan::callbacks::stream_writer sample_writer(output_stream, "# ");
 #endif
 
