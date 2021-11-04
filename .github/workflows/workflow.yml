@@ -1,8 +1,9 @@
-# see details at https://github.com/sangonzal/repository-traffic-action
 on:
   schedule: 
     # runs once a week on sunday
     - cron: "55 23 * * 0"
+    # manually
+  workflow_dispatch:
     
 jobs:
   # This workflow contains a single job called "traffic"
