@@ -1,0 +1,79 @@
+(library
+ (name frontend)
+ (public_name stanc.frontend)
+ (libraries core_kernel re menhirLib fmt middle common yojson)
+ (inline_tests)
+ (preprocess
+  (pps ppx_jane ppx_deriving.fold ppx_deriving.map)))
+
+(ocamllex lexer)
+
+(rule
+ (targets parsing_errors.ml)
+ (deps parser.mly parser.messages)
+ (action
+  (with-stdout-to
+   %{targets}
+   (run
+    menhir
+    --explain
+    --strict
+    --unused-tokens
+    parser.mly
+    --compile-errors
+    parser.messages))))
+
+(menhir
+ (modules parser)
+ (flags
+  :standard
+  --table
+  --strict
+  --unused-tokens
+  --fixed-exception
+  --require-aliases))
+
+(rule
+ (targets parser_updated.messages)
+ (action
+  (with-stdout-to
+   %{targets}
+   (run menhir %{dep:parser.mly} --update-errors %{dep:parser.messages}))))
+
+(rule
+ (targets parser_new.messages)
+ (action
+  (with-stdout-to
+   %{targets}
+   (run menhir --list-errors %{dep:parser.mly}))))
+
+(rule
+ (targets parser_updated_trimmed.messages)
+ (action
+  (progn
+   (with-stdout-to
+    %{targets}
+    (run
+     %{dep:strip_redundant_parser_state.py}
+     %{dep:parser_updated.messages}))
+   (run
+    %{dep:add_missing_messages.py}
+    %{dep:parser.mly}
+    %{dep:parser_new.messages}
+    parser_updated_trimmed.messages))))
+
+(rule
+ (alias update_messages)
+ (action
+  (diff parser.messages parser_updated_trimmed.messages)))
+
+(rule
+ (alias runtest)
+ (action
+  (run
+   menhir
+   parser.mly
+   --compare-errors
+   %{dep:parser_new.messages}
+   --compare-errors
+   %{dep:parser.messages})))
