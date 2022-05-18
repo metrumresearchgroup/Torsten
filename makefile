@@ -98,18 +98,37 @@ endif
 
 ifdef STAN_THREADS
 STAN_FLAG_THREADS=_threads
+else
+STAN_FLAG_THREADS=
 endif
 ifdef STAN_MPI
 STAN_FLAG_MPI=_mpi
+else
+STAN_FLAG_MPI=
 endif
 ifdef STAN_OPENCL
 STAN_FLAG_OPENCL=_opencl
+else
+STAN_FLAG_OPENCL=
+endif
+ifdef STAN_NO_RANGE_CHECKS
+STAN_FLAG_NO_RANGE_CHECKS=_nochecks
+else
+STAN_FLAG_NO_RANGE_CHECKS=
 endif
 
-STAN_FLAGS=$(STAN_FLAG_THREADS)$(STAN_FLAG_MPI)$(STAN_FLAG_OPENCL)
+STAN_FLAGS=$(STAN_FLAG_THREADS)$(STAN_FLAG_MPI)$(STAN_FLAG_OPENCL)$(STAN_FLAG_NO_RANGE_CHECKS)
 
 ifeq ($(OS),Windows_NT)
+ifeq (clang,$(CXX_TYPE))
 PRECOMPILED_HEADERS ?= false
+else
+ifeq ($(shell expr $(CXX_MAJOR) \>= 8), 1)
+PRECOMPILED_HEADERS ?= true
+else
+PRECOMPILED_HEADERS ?= false
+endif
+endif
 else
 PRECOMPILED_HEADERS ?= true
 endif
@@ -132,8 +151,8 @@ include make/program
 include make/tests
 include make/command
 
-CMDSTAN_VERSION := 2.27.0
-TORSTEN_VERSION := 0.89.0rc
+CMDSTAN_VERSION := 2.29.0
+TORSTEN_VERSION := 0.90.0
 
 ifeq ($(OS),Windows_NT)
 HELP_MAKE=mingw32-make
@@ -247,7 +266,7 @@ build-mpi: $(MPI_TARGETS)
 
 ifeq ($(CMDSTAN_SUBMODULES),1)
 .PHONY: build
-build: bin/stanc$(EXE) bin/stansummary$(EXE) bin/print$(EXE) bin/diagnose$(EXE) $(LIBSUNDIALS) $(MPI_TARGETS) $(TBB_TARGETS) $(CMDSTAN_MAIN_O) $(PRECOMPILED_MODEL_HEADER) $(CROSS_CHAIN_BOOST_TARGETS)
+build: bin/stanc$(EXE) $(LIBSUNDIALS) $(MPI_TARGETS) $(TBB_TARGETS) $(CMDSTAN_MAIN_O) $(PRECOMPILED_MODEL_HEADER) bin/stansummary$(EXE) bin/print$(EXE) bin/diagnose$(EXE) $(CROSS_CHAIN_BOOST_TARGETS)
 	@echo ''
 ifeq ($(OS),Windows_NT)
 		@echo 'NOTE: Please add $(TBB_BIN_ABSOLUTE_PATH) to your PATH variable.'
@@ -342,3 +361,6 @@ compile_info:
 ##
 .PHONY: print-%
 print-%  : ; @echo $* = $($*)
+
+.PHONY: clean-build
+clean-build: clean-all build
