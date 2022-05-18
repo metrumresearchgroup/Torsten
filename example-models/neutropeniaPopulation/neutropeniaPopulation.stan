@@ -1,10 +1,9 @@
 functions{
-
-    real[] twoCptNeutModelODE(real t,
-			real[] x,
-			real[] parms,
-			real[] rdummy,
-			int[] idummy){
+  vector twoCptNeutModelODE(real t,
+                            vector x,
+                            array[] real parms,
+                            array[] real rdummy,
+                            array[] int idummy){
 		real CL = parms[1];
 		real Q = parms[2];
 		real V1 = parms[3];
@@ -20,7 +19,7 @@ functions{
     real k21 = Q / V2;
     real ktr = 4 / mtt;
     
-    real dxdt[8];
+    vector[8] dxdt;
     real conc;
     real EDrug;
     real transit1;
@@ -56,24 +55,24 @@ data{
   int<lower = 1> nt;
   int<lower = 1> nObsPK;
   int<lower = 1> nObsPD;
-  int<lower = 1> iObsPK[nObsPK];
-  int<lower = 1> iObsPD[nObsPD];
-  real<lower = 0> amt[nt];
-  int cmt[nt];
-  int<lower = 0> evid[nt];
-  real<lower = 0> time[nt];
-  real<lower = 0> ii[nt];
-  int<lower = 0> addl[nt];
-  int<lower = 0> ss[nt];
-  real rate[nt];
+  array[nObsPK] int<lower = 1> iObsPK;
+  array[nObsPD] int<lower = 1> iObsPD;
+  array[nt] real<lower = 0> amt;
+  array[nt] int cmt;
+  array[nt] int<lower = 0> evid;
+  array[nt] real<lower = 0> time;
+  array[nt] real<lower = 0> ii;
+  array[nt] int<lower = 0> addl;
+  array[nt] int<lower = 0> ss;
+  array[nt] real rate;
   vector<lower = 0>[nObsPK] cObs;
   vector<lower = 0>[nObsPD] neutObs;
   
   // data for population model
   int<lower = 1> nSubjects;
-  int<lower = 1> start[nSubjects];
-  int<lower = 1> end[nSubjects];
-  real<lower = 0> weight[nSubjects];
+  array[nSubjects] int<lower = 1> start;
+  array[nSubjects] int<lower = 1> end;
+  array[nSubjects] real<lower = 0> weight;
   
   // data for priors
   real<lower = 0> CLHatPrior;
@@ -102,8 +101,8 @@ transformed data{
   int nTheta = 9;  // number of ODE parameters
   int nIIV = 7;  // parameters with IIV
   int nCmt = 8;  // number of compartments
-  real biovar[nCmt];
-  real tlag[nCmt];
+  array[nCmt] real biovar;
+  array[nCmt] real tlag;
   
   for (i in 1:nCmt) {
     biovar[i] = 1;
@@ -137,7 +136,7 @@ transformed parameters{
   row_vector[nt] neutHat;
   row_vector[nObsPD] neutHatObs;
   matrix[nCmt, nt] x;
-  real<lower = 0> parms[nTheta]; // The [1] indicates the parameters are constant
+  array[nTheta] real<lower = 0> parms; // The [1] indicates the parameters are constant
   
   // variables for Matt's trick
   vector<lower = 0>[nIIV] thetaHat;
@@ -214,7 +213,7 @@ model{
 
 generated quantities{
   matrix[nCmt, nt] xPred;
-  real<lower = 0> parmsPred[nTheta];
+  array[nTheta] real<lower = 0> parmsPred;
   row_vector[nt] cHatPred;
   row_vector[nt] neutHatPred;
   vector<lower = 0>[nObsPK] cHatObsCond;

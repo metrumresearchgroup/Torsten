@@ -2,28 +2,28 @@ data{
   int<lower = 1> nSubjects;
   int<lower = 1> nt;
   int<lower = 1> nObs;
-  int<lower = 1> iObs[nObs];
-  real<lower = 0> amt[nt];
-  int<lower = 1> cmt[nt];
-  int<lower = 0> evid[nt];
-  int<lower = 1> start[nSubjects];
-  int<lower = 1> end[nSubjects];
-  real<lower = 0> time[nt];
+  array[nObs] int<lower = 1> iObs;
+  array[nt] real<lower = 0> amt;
+  array[nt] int<lower = 1> cmt;
+  array[nt] int<lower = 0> evid;
+  array[nSubjects] int<lower = 1> start;
+  array[nSubjects] int<lower = 1> end;
+  array[nt] real<lower = 0> time;
   vector<lower = 0>[nObs] cObs;
   vector[nObs] respObs;
-  real<lower = 0> weight[nSubjects];
-  real<lower = 0> rate[nt];
-  real<lower = 0> ii[nt];
-  int<lower = 0> addl[nt];
-  int<lower = 0> ss[nt];
+  array[nSubjects] real<lower = 0> weight;
+  array[nt] real<lower = 0> rate;
+  array[nt] real<lower = 0> ii;
+  array[nt] int<lower = 0> addl;
+  array[nt] int<lower = 0> ss;
 }
 
 transformed data{
   vector[nObs] logCObs = log(cObs);
   int<lower = 1> nRandom = 5;
   int nCmt = 4;
-  real biovar[nCmt] = rep_array(1.0, nCmt);
-  real tlag[nCmt] = rep_array(0.0, nCmt);
+  array[nCmt] real biovar = rep_array(1.0, nCmt);
+  array[nCmt] real tlag = rep_array(0.0, nCmt);
 }
 
 parameters{
@@ -45,21 +45,21 @@ parameters{
   real<lower = 0> sigmaResp;
 
   // reparameterization
-  vector[nRandom] logtheta_raw[nSubjects];
-  real logKe0_raw[nSubjects];
-  real logEC50_raw[nSubjects];
+  array[nSubjects] vector[nRandom] logtheta_raw;
+  array[nSubjects] real logKe0_raw;
+  array[nSubjects] real logEC50_raw;
 }
 
 transformed parameters{
   vector<lower = 0>[nRandom] thetaHat;
   cov_matrix[nRandom] Omega;
-  real<lower = 0> CL[nSubjects];
-  real<lower = 0> Q[nSubjects];
-  real<lower = 0> V1[nSubjects];
-  real<lower = 0> V2[nSubjects];
-  real<lower = 0> ka[nSubjects];
-  real<lower = 0> ke0[nSubjects];
-  real<lower = 0> EC50[nSubjects];
+  array[nSubjects] real<lower = 0> CL;
+  array[nSubjects] real<lower = 0> Q;
+  array[nSubjects] real<lower = 0> V1;
+  array[nSubjects] real<lower = 0> V2;
+  array[nSubjects] real<lower = 0> ka;
+  array[nSubjects] real<lower = 0> ke0;
+  array[nSubjects] real<lower = 0> EC50;
   matrix[nCmt, nCmt] K;
   real k10;
   real k12;
@@ -72,9 +72,9 @@ transformed parameters{
   matrix[nCmt, nt] x;
   
   matrix[nRandom, nRandom] L;
-  vector[nRandom] logtheta[nSubjects];
-  real logKe0[nSubjects];
-  real logEC50[nSubjects];
+  array[nSubjects] vector[nRandom] logtheta;
+  array[nSubjects] real logKe0;
+  array[nSubjects] real logEC50;
 
   thetaHat[1] = CLHat;
   thetaHat[2] = QHat;
@@ -157,9 +157,9 @@ model{
 }
 
 generated quantities{
-  vector[nRandom] logthetaPred[nSubjects];
-  real logKe0Pred[nSubjects];
-  real logEC50Pred[nSubjects];
+  array[nSubjects] vector[nRandom] logthetaPred;
+  array[nSubjects] real logKe0Pred;
+  array[nSubjects] real logEC50Pred;
   row_vector<lower = 0>[nt] cHatPred;
   vector<lower = 0>[nt] cObsCond;
   vector<lower = 0>[nt] cObsPred;
@@ -167,13 +167,13 @@ generated quantities{
   row_vector<lower = 0>[nt] ceHatPred;
   vector[nt] respObsCond;
   vector[nt] respObsPred;
-  real<lower = 0> CLPred[nSubjects];
-  real<lower = 0> QPred[nSubjects];
-  real<lower = 0> V1Pred[nSubjects];
-  real<lower = 0> V2Pred[nSubjects];
-  real<lower = 0> kaPred[nSubjects];
-  real<lower = 0> ke0Pred[nSubjects];
-  real<lower = 0> EC50Pred[nSubjects];
+  array[nSubjects] real<lower = 0> CLPred;
+  array[nSubjects] real<lower = 0> QPred;
+  array[nSubjects] real<lower = 0> V1Pred;
+  array[nSubjects] real<lower = 0> V2Pred;
+  array[nSubjects] real<lower = 0> kaPred;
+  array[nSubjects] real<lower = 0> ke0Pred;
+  array[nSubjects] real<lower = 0> EC50Pred;
   matrix[nCmt, nt] xPred;
   matrix[nCmt, nCmt] KPred;
   real k10Pred;

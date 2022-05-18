@@ -5,17 +5,17 @@
 data{
   int<lower = 1> nt;  // number of events
   int<lower = 1> nObs;  // number of observations
-  int<lower = 1> iObs[nObs];  // index of observation
+  array[nObs] int<lower = 1> iObs;  // index of observation
   
   // NONMEM data
-  int<lower = 1> cmt[nt];
-  int evid[nt];
-  int addl[nt];
-  int ss[nt];
-  real amt[nt];
-  real time[nt];
-  real rate[nt];
-  real ii[nt];
+  array[nt] int<lower = 1> cmt;
+  array[nt] int evid;
+  array[nt] int addl;
+  array[nt] int ss;
+  array[nt] real amt;
+  array[nt] real time;
+  array[nt] real rate;
+  array[nt] real ii;
   
   row_vector<lower = 0>[nObs] cObs;  // observed concentration (dependent variable)
 }
@@ -23,8 +23,8 @@ data{
 transformed data{
   row_vector[nObs] logCObs = log(cObs);
   int nCmt = 3;
-  real biovar[nCmt];
-  real tlag[nCmt];
+  array[nCmt] real biovar;
+  array[nCmt] real tlag;
 
   for (i in 1:nCmt) {
     biovar[i] = 1;
@@ -81,7 +81,7 @@ model{
 }
 
 generated quantities{
-  real cObsPred[nObs];
+  array[nObs] real cObsPred;
 
   for(i in 1:nObs){
     cObsPred[i] = exp(normal_rng(log(cHatObs[i]), sigma));

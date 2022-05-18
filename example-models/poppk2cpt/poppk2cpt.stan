@@ -3,17 +3,17 @@ data{
   int<lower = 1> nObs;
   int<lower = 1> nSubjects;
   int nIIV;
-  int<lower = 1> iObs[nObs];
-  int<lower = 1> start[nSubjects];
-  int<lower = 1> end[nSubjects];
-  int<lower = 1> cmt[nt];
-  int evid[nt];
-  int addl[nt];
-  int ss[nt];
-  real amt[nt];
-  real time[nt];
-  real rate[nt];
-  real ii[nt];
+  array[nObs] int<lower = 1> iObs;
+  array[nSubjects] int<lower = 1> start;
+  array[nSubjects] int<lower = 1> end;
+  array[nt] int<lower = 1> cmt;
+  array[nt] int evid;
+  array[nt] int addl;
+  array[nt] int ss;
+  array[nt] real amt;
+  array[nt] real time;
+  array[nt] real rate;
+  array[nt] real ii;
   vector<lower = 0>[nObs] cObs;
 }
 
@@ -21,9 +21,9 @@ transformed data{
   vector[nObs] logCObs = log(cObs);
   int nTheta = 5;
   int nCmt = 3;
-  int nti[nSubjects];
-  real biovar[nCmt];
-  real tlag[nCmt];
+  array[nSubjects] int nti;
+  array[nCmt] real biovar;
+  array[nCmt] real tlag;
 
   for(i in 1:nSubjects) nti[i] = end[i] - start[i] + 1;
 
@@ -50,7 +50,7 @@ parameters{
 transformed parameters{
   vector<lower = 0>[nIIV] thetaHat;
   matrix<lower = 0>[nSubjects, nIIV] thetaM; // variable required for Matt's trick
-  real<lower = 0> theta[nTheta];
+  array[nTheta] real<lower = 0> theta;
   matrix<lower = 0>[nCmt, nt] x;
   row_vector<lower = 0>[nt] cHat;
   row_vector<lower = 0>[nObs] cHatObs;
@@ -107,48 +107,48 @@ model{
 }
 
 generated quantities{
-    real cObsCond[nObs];
-    row_vector[nt] cHatPred;
-    real cObsPred[nObs];
-    matrix[3, nt] xPred;
-    matrix[nIIV, nSubjects] etaStdPred;
-    matrix<lower=0>[nSubjects, nIIV] thetaPredM;
-    corr_matrix[nIIV] rho;
-    real<lower = 0> thetaPred[nTheta];
+  array[nObs] real cObsCond;
+  row_vector[nt] cHatPred;
+  array[nObs] real cObsPred;
+  matrix[3, nt] xPred;
+  matrix[nIIV, nSubjects] etaStdPred;
+  matrix<lower=0>[nSubjects, nIIV] thetaPredM;
+  corr_matrix[nIIV] rho;
+  array[nTheta] real<lower = 0> thetaPred;
 
-    rho = L * L';
+  rho = L * L';
 
-    for(i in 1:nSubjects){
-      for(j in 1:nIIV){ 
-        etaStdPred[j, i] = normal_rng(0, 1);
-      }
+  for(i in 1:nSubjects){
+    for(j in 1:nIIV){ 
+      etaStdPred[j, i] = normal_rng(0, 1);
     }
+  }
 
-    thetaPredM = (rep_matrix(thetaHat, nSubjects) .* exp(diag_pre_multiply(omega, L * etaStdPred)))';
+  thetaPredM = (rep_matrix(thetaHat, nSubjects) .* exp(diag_pre_multiply(omega, L * etaStdPred)))';
 
-    for(j in 1:nSubjects){
+  for(j in 1:nSubjects){
       
-      thetaPred[1] = thetaPredM[j,1]; // CL
-      thetaPred[2] = thetaPredM[j,2]; // Q 
-      thetaPred[3] = thetaPredM[j,3]; // V1
-      thetaPred[4] = thetaPredM[j,4]; // V2
-      thetaPred[5] = thetaPredM[j,5]; // ka 
+    thetaPred[1] = thetaPredM[j,1]; // CL
+    thetaPred[2] = thetaPredM[j,2]; // Q 
+    thetaPred[3] = thetaPredM[j,3]; // V1
+    thetaPred[4] = thetaPredM[j,4]; // V2
+    thetaPred[5] = thetaPredM[j,5]; // ka 
     
-      xPred[, start[j]:end[j]] = pmx_solve_twocpt(time[start[j]:end[j]],
-                                                   amt[start[j]:end[j]],
-                                                   rate[start[j]:end[j]],
-                                                   ii[start[j]:end[j]],
-                                                   evid[start[j]:end[j]],
-                                                   cmt[start[j]:end[j]],
-                                                   addl[start[j]:end[j]],
-                                                   ss[start[j]:end[j]],
-                                                   theta, biovar, tlag);
+    xPred[, start[j]:end[j]] = pmx_solve_twocpt(time[start[j]:end[j]],
+                                                amt[start[j]:end[j]],
+                                                rate[start[j]:end[j]],
+                                                ii[start[j]:end[j]],
+                                                evid[start[j]:end[j]],
+                                                cmt[start[j]:end[j]],
+                                                addl[start[j]:end[j]],
+                                                ss[start[j]:end[j]],
+                                                theta, biovar, tlag);
 
-      cHatPred = xPred[2, ] / thetaPred[3];
+    cHatPred = xPred[2, ] / thetaPred[3];
   }
   
   for(i in 1:nObs){
-      cObsCond[i] = exp(normal_rng(log(cHatObs[i]), sigma)); // individual predictions
-      cObsPred[i] = exp(normal_rng(log(cHatPred[iObs[i]]), sigma)); // population predictions
-    }
+    cObsCond[i] = exp(normal_rng(log(cHatObs[i]), sigma)); // individual predictions
+    cObsPred[i] = exp(normal_rng(log(cHatPred[iObs[i]]), sigma)); // population predictions
+  }
 }

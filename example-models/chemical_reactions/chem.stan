@@ -1,6 +1,7 @@
 functions{
-  real[] reaction(real t, real[] x, real[] p, real[] r, int[] i){
-    real dxdt[3];
+  vector reaction(real t, vector x, array[] real p, array[] real r,
+                  array[] int i){
+    vector[3] dxdt;
     real p1 = p[1];
     real p2 = p[2];
     real p3 = p[3];
@@ -13,19 +14,19 @@ functions{
 
 data {
   int<lower=1> nsub;
-  int<lower=1> len[nsub];  
+  array[nsub] int<lower=1> len;  
   int<lower=1> ntot;  
-  real ts[ntot];
-  real obs[ntot];
+  array[ntot] real ts;
+  array[ntot] real obs;
 }
 
 transformed data {
-  int i1[nsub];
-  int i2[nsub];
+  array[nsub] int i1;
+  array[nsub] int i2;
   real t0 = 0.0;
-  real xr[0];
-  int xi[0];
-  real theta[3] = {0.04, 1.0e4, 3.0e7};
+  array[0] real xr;
+  array[0] int xi;
+  array[3] real theta = {0.04, 1.0e4, 3.0e7};
   i1[1] = 1;
   i2[1] = len[1];
   for (i in 2:nsub) {
@@ -37,19 +38,19 @@ transformed data {
 parameters {
   /*  p1=0.04, p2=1e4, and p3=3e7 */
   real<lower = 0> y0_mu;
-  real<lower = 0> y0_1[nsub];
+  array[nsub] real<lower = 0> y0_1;
   real<lower = 0> sigma;
 }
 
 transformed parameters {
-  real y0[3];
-  real x[ntot, 3];
-  real x3[ntot];
+  vector[3] y0;
+  array[ntot] vector[3] x;
+  array[ntot] real x3;
   for (i in 1:nsub) {
     y0[1] = y0_1[i];
     y0[2] = 0.0;
     y0[3] = 0.0;
-    x[i1[i]:i2[i], ] = pmx_integrate_ode_bdf(reaction, y0, t0, ts[i1[i]:i2[i]], theta, xr, xi, 1.e-4, 1.e-8, 10000);
+    x[i1[i]:i2[i], ] = pmx_ode_bdf_ctrl(reaction, y0, t0, ts[i1[i]:i2[i]], 1.e-4, 1.e-8, 10000, theta, xr, xi);
   }
   x3 = x[ , 3];
 }

@@ -1,5 +1,6 @@
 functions{
-  real[] twoCptNeutModelODE(real t, real[] x, real[] parms, real[] rdummy, int[] idummy){
+  vector twoCptNeutModelODE(real t, vector x, array[] real parms,
+                            array[] real rdummy, array[] int idummy){
     real CL = parms[1];
     real Q = parms[2];
     real V1 = parms[3];
@@ -13,7 +14,7 @@ functions{
     real k12 = Q / V1;
     real k21 = Q / V2;
     real ktr = 4 / mtt;
-    real dxdt[8];
+    vector[8] dxdt;
     real conc = x[2]/V1;
     real EDrug = fmin(1.0, alpha * conc);
     real prol = x[4] + circ0;
@@ -44,15 +45,15 @@ data{
   int<lower = 1> nt;
   int<lower = 1> nObsPK;
   int<lower = 1> nObsPD;
-  int<lower = 1> iObsPK[nObsPK];
-  int<lower = 1> iObsPD[nObsPD];
-  real<lower = 0> amt[nt];
-  int<lower = 1> cmt[nt];
-  int<lower = 0> evid[nt];
-  int<lower = 1> start[nId];
-  int<lower = 1> end[nId];
-  real<lower = 0> weight[nId];
-  real<lower = 0> time[nt];
+  array[nObsPK] int<lower = 1> iObsPK;
+  array[nObsPD] int<lower = 1> iObsPD;
+  array[nt] real<lower = 0> amt;
+  array[nt] int<lower = 1> cmt;
+  array[nt] int<lower = 0> evid;
+  array[nId] int<lower = 1> start;
+  array[nId] int<lower = 1> end;
+  array[nId] real<lower = 0> weight;
+  array[nt] real<lower = 0> time;
   vector<lower = 0>[nObsPK] cObs;
   vector<lower = 0>[nObsPD] neutObs;
   real<lower = 0> CLPrior;
@@ -76,15 +77,15 @@ data{
 }
 
 transformed data{
-  real<lower = 0> rate[nt] = rep_array(0.0, nt);
-  real<lower = 0> ii[nt] = rep_array(0.0, nt);
-  int<lower = 0> addl[nt] = rep_array(0, nt);
-  int<lower = 0> ss[nt] = rep_array(0, nt);
+  array[nt] real<lower = 0> rate=rep_array(0.0, nt);
+  array[nt] real<lower = 0> ii=rep_array(0.0, nt);
+  array[nt] int<lower = 0> addl=rep_array(0, nt);
+  array[nt] int<lower = 0> ss=rep_array(0, nt);
   vector[nObsPK] logCObs = log(cObs);
   vector[nObsPD] logNeutObs = log(neutObs);
   int<lower = 1> nRandom = 8;
   int<lower = 1> nCmt = 8;
-  int len[nId];
+  array[nId] int len;
 
   for (j in 1:nId) {
     len[j] = end[j] - start[j] + 1;
@@ -111,14 +112,14 @@ parameters{
 transformed parameters{
   vector<lower = 0>[nRandom] thetaHat =
     to_vector({CLHat, QHat, V1Hat, V2Hat, kaHat, mttHat, circ0Hat, alphaHat});
-  real<lower = 0> CL[nId];
-  real<lower = 0> Q[nId];
-  real<lower = 0> V1[nId];
-  real<lower = 0> V2[nId];
-  real<lower = 0> ka[nId];
-  real<lower = 0> mtt[nId];
-  real<lower = 0> circ0[nId];
-  real<lower = 0> alpha[nId];
+  array[nId] real<lower = 0> CL;
+  array[nId] real<lower = 0> Q;
+  array[nId] real<lower = 0> V1;
+  array[nId] real<lower = 0> V2;
+  array[nId] real<lower = 0> ka;
+  array[nId] real<lower = 0> mtt;
+  array[nId] real<lower = 0> circ0;
+  array[nId] real<lower = 0> alpha;
   matrix<lower = 0>[nId, nRandom] theta;
 
   vector[nt] cHat;
@@ -126,7 +127,7 @@ transformed parameters{
   vector[nt] neutHat;
   vector[nObsPD] neutHatObs;
   matrix[8, nt] x;
-  real<lower = 0> parms[nId, 9];
+  array[nId, 9] real<lower = 0> parms;
 
   theta = (rep_matrix(thetaHat, nId) .* 
 	   exp(diag_pre_multiply(omega, L * etaStd)))';
@@ -180,23 +181,23 @@ model{
 }
 
 generated quantities {
-  real<lower = 0> CLPred[nId];
-  real<lower = 0> QPred[nId];
-  real<lower = 0> V1Pred[nId];
-  real<lower = 0> V2Pred[nId];
-  real<lower = 0> kaPred[nId];
-  real<lower = 0> mttPred[nId];
-  real<lower = 0> circ0Pred[nId];
-  real<lower = 0> alphaPred[nId];
+  array[nId] real<lower = 0> CLPred;
+  array[nId] real<lower = 0> QPred;
+  array[nId] real<lower = 0> V1Pred;
+  array[nId] real<lower = 0> V2Pred;
+  array[nId] real<lower = 0> kaPred;
+  array[nId] real<lower = 0> mttPred;
+  array[nId] real<lower = 0> circ0Pred;
+  array[nId] real<lower = 0> alphaPred;
   vector[nt] cHatPred;
   vector[nt] neutHatPred;
-  real cObsCond[nt];
-  real neutObsCond[nt];
-  real cObsPred[nt];
-  real neutObsPred[nt];
+  array[nt] real cObsCond;
+  array[nt] real neutObsCond;
+  array[nt] real cObsPred;
+  array[nt] real neutObsPred;
   matrix<lower = 0>[nId, nRandom] thetaPred;
   matrix[nCmt, nt] xPred;
-  real<lower = 0> parmsPred[nId, 9];
+  array[nId, 9] real<lower = 0> parmsPred;
   corr_matrix[nRandom] rho;
   matrix[nRandom, nId] etaStdPred;
 

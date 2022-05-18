@@ -1,5 +1,5 @@
 functions{
-  vector FK_ODE(real t, vector y, vector y_pk, real[] theta, real[] rdummy, int[] idummy){
+  vector FK_ODE(real t, vector y, vector y_pk, array[] real theta, array[] real rdummy, array[] int idummy){
     /* PK variables */
     real VC = theta[3];
 
@@ -33,16 +33,16 @@ data{
   int<lower = 1> nt;
   int<lower = 1> nObsPK;
   int<lower = 1> nObsPD;
-  int<lower = 1> iObsPK[nObsPK];
-  int<lower = 1> iObsPD[nObsPD];
-  real<lower = 0> amt[nt];
-  int<lower = 1> cmt[nt];
-  int<lower = 0> evid[nt];
-  real<lower = 0> time[nt];
-  real<lower = 0> ii[nt];
-  int<lower = 0> addl[nt];
-  int<lower = 0> ss[nt];
-  real rate[nt];
+  array[nObsPK] int<lower = 1> iObsPK;
+  array[nObsPD] int<lower = 1> iObsPD;
+  array[nt] real<lower = 0> amt;
+  array[nt] int<lower = 1> cmt;
+  array[nt] int<lower = 0> evid;
+  array[nt] real<lower = 0> time;
+  array[nt] real<lower = 0> ii;
+  array[nt] int<lower = 0> addl;
+  array[nt] int<lower = 0> ss;
+  array[nt] real rate;
   vector<lower = 0>[nObsPK] cObs;
   vector<lower = 0>[nObsPD] neutObs;
   
@@ -97,10 +97,10 @@ transformed parameters{
   vector<lower = 0>[nObsPK] cHatObs;
   row_vector[nt] neutHat;
   vector<lower = 0>[nObsPD] neutHatObs;
-  real<lower = 0> theta[nTheta];
+  array[nTheta] real<lower = 0> theta;
   matrix[nOde + 3, nt] x;
-  real biovar[nTheta] = rep_array(1.0, nTheta);
-  real tlag[nTheta] = rep_array(0.0, nTheta);
+  array[nTheta] real biovar = rep_array(1.0, nTheta);
+  array[nTheta] real tlag = rep_array(0.0, nTheta);
 
   theta[1] = CL;
   theta[2] = Q;

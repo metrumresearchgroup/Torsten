@@ -1,6 +1,7 @@
 functions{
-  real[] reaction(real t, real[] x, real[] p, real[] r, int[] i){
-    real dxdt[3];
+  array[] real reaction(real t, array[] real x, array[] real p, array[] real r,
+                  array[] int i){
+    array[3] real dxdt;
     real p1 = p[1];
     real p2 = p[2];
     real p3 = p[3];
@@ -13,19 +14,19 @@ functions{
 
 data {
   int<lower=1> nsub;
-  int<lower=1> len[nsub];  
+  array[nsub] int<lower=1> len;  
   int<lower=1> ntot;  
-  real ts[ntot];
-  real obs[ntot];
+  array[ntot] real ts;
+  array[ntot] real obs;
 }
 
 transformed data {
-  int i1[nsub];
-  int i2[nsub];
+  array[nsub] int i1;
+  array[nsub] int i2;
   real t0 = 0.0;
-  real xr[0];
-  int xi[0];
-  real theta[3] = {0.04, 1.0e4, 3.0e7};
+  array[0] real xr;
+  array[0] int xi;
+  array[3] real theta = {0.04, 1.0e4, 3.0e7};
   i1[1] = 1;
   i2[1] = len[1];
   for (i in 2:nsub) {
@@ -37,12 +38,12 @@ transformed data {
 parameters {
   /*  p1=0.04, p2=1e4, and p3=3e7 */
   real<lower = 0> y0_mu;
-  real<lower = 0> y0_1[nsub];
+  array[nsub] real<lower = 0> y0_1;
   real<lower = 0> sigma;
 }
 
 transformed parameters {
-  real y0_pop[nsub, 3];
+  array[nsub, 3] real y0_pop;
   matrix[3, ntot] x;
   row_vector[ntot] x3;
   for (i in 1:nsub) {

@@ -5,17 +5,17 @@
 data{
   int<lower = 1> nt;  // number of events
   int<lower = 1> nObs;  // number of observation
-  int<lower = 1> iObs[nObs];  // index of observation
+  array[nObs] int<lower = 1> iObs;  // index of observation
   
   // NONMEM data
-  int<lower = 1> cmt[nt];
-  int evid[nt];
-  int addl[nt];
-  int ss[nt];
-  real amt[nt];
-  real time[nt];
-  real rate[nt];
-  real ii[nt];
+  array[nt] int<lower = 1> cmt;
+  array[nt] int evid;
+  array[nt] int addl;
+  array[nt] int ss;
+  array[nt] real amt;
+  array[nt] real time;
+  array[nt] real rate;
+  array[nt] real ii;
   
   vector<lower = 0>[nObs] cObs;  // observed concentration (Dependent Variable)
 }
@@ -36,7 +36,7 @@ parameters{
 }
 
 transformed parameters{
-  real theta[nTheta];  // ODE parameters
+  array[nTheta] real theta;  // ODE parameters
   row_vector<lower = 0>[nt] cHat;
   vector<lower = 0>[nObs] cHatObs;
   matrix<lower = 0>[nCmt, nt] x;
@@ -67,7 +67,7 @@ model{
 }
 
 generated quantities{
-  real cObsPred[nObs];
+  array[nObs] real cObsPred;
 
   for(i in 1:nObs){
       cObsPred[i] = exp(normal_rng(log(cHatObs[i]), sigma));
