@@ -1,5 +1,5 @@
 #+TITLE: Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan
-#+SUBTITLE: Developers guide @@latex:\\@@ @@html:<br>@@ (Torsten Version 0.89rc, Stan version 2.27.0)
+#+SUBTITLE: Developers guide @@latex:\\@@ @@html:<br>@@ (Torsten Version 0.90.0, Stan version 2.29.2)
 #+LATEX_CLASS: amsbook
 #+LATEX_CLASS_OPTIONS: [12pt, reqno, oneside]
 
@@ -7,7 +7,7 @@
 #+LATEX_HEADER: \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
 #+LATEX_HEADER: \newcommand\mrgproject{}
 #+LATEX_HEADER: \newcommand\mrgtitle{Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan}
-#+LATEX_HEADER: \newcommand\mrgsubtitle{\large{Developers Guide} \linebreak (Torsten Version 0.89rc, Stan version 2.27.0)}
+#+LATEX_HEADER: \newcommand\mrgsubtitle{\large{Developers Guide} \linebreak (Torsten Version 0.90.0, Stan version 2.29.2)}
 #+LATEX_HEADER: \include{mrgtitlepage}
 
 # make index
@@ -51,8 +51,8 @@
 #+LATEX_HEADER: \newtheorem{example}{Example}
 #+LATEX_HEADER: \newtheorem{remark}{Remark}
 
-#+MACRO: torsten_ver v0.89rc
-#+MACRO: stan_ver v2.27.0
+#+MACRO: torsten_ver v0.90.0
+#+MACRO: stan_ver v2.29.2
 #+MACRO: newline @@latex:\\@@ @@html:<br>@@ @@ascii:|@@
 
 # #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://www.pirilampo.org/styles/readtheorg/css/htmlize.css"/>
@@ -75,7 +75,7 @@
    :EXPORT_HUGO_MENU: :menu "main"
    :END:
 - [[mailto:billg@metrumrg.com][William R. Gillespie]] , [[https://www.metrumrg.com/][Metrum Research Group]]
-- [[mailto:yiz@metrumrg.com][Yi Zhang]] , [[https://www.metrumrg.com/][Metrum Research Group]]
+- [[mailto:yz@yizh.org][Yi Zhang]] , [[https://www.sagerx.com/][Sage Therapeutics]]
 - [[mailto:charles.margossian@columbia.edu][Charles Margossian]] , Columbia University, Department of Statistics
 * Acknowledgements
   :PROPERTIES:
@@ -672,20 +672,37 @@ section. In the above link =OS_TAG= equals to =mac=, =windows=, or
 
 ** =Torsten=
 The container repo is updated after all the above modules are in
-place. We need first create a =remote= for each of the above modules.
+place. We need first create a =remote= for each of the above modules
 #+begin_src bash
 bash-3.2$ git remote -vv
-origin	git@github.com:metrumresearchgroup/Torsten.git (fetch)
-origin	git@github.com:metrumresearchgroup/Torsten.git (push)
-cmdstan	git@github.com:metrumresearchgroup/cmdstan.git (fetch)
-cmdstan	git@github.com:metrumresearchgroup/cmdstan.git (push)
-math	git@github.com:metrumresearchgroup/math.git (fetch)
-math	git@github.com:metrumresearchgroup/math.git (push)
-stan	git@github.com:metrumresearchgroup/stan.git (fetch)
-stan	git@github.com:metrumresearchgroup/stan.git (push)
-stanc3	git@github.com:metrumresearchgroup/stanc3.git (fetch)
-stanc3	git@github.com:metrumresearchgroup/stanc3.git (push)
-torsten_math	git@github.com:metrumresearchgroup/torsten_math.git (fetch)
-torsten_math	git@github.com:metrumresearchgroup/torsten_math.git (push)
+origin  git@github.com:metrumresearchgroup/Torsten.git (fetch)
+origin  git@github.com:metrumresearchgroup/Torsten.git (push)
+cmdstan git@github.com:metrumresearchgroup/cmdstan.git (fetch)
+cmdstan git@github.com:metrumresearchgroup/cmdstan.git (push)
+math    git@github.com:metrumresearchgroup/math.git (fetch)
+math    git@github.com:metrumresearchgroup/math.git (push)
+stan    git@github.com:metrumresearchgroup/stan.git (fetch)
+stan    git@github.com:metrumresearchgroup/stan.git (push)
+stanc3  git@github.com:metrumresearchgroup/stanc3.git (fetch)
+stanc3  git@github.com:metrumresearchgroup/stanc3.git (push)
+torsten_math    git@github.com:metrumresearchgroup/torsten_math.git (fetch)
+torsten_math    git@github.com:metrumresearchgroup/torsten_math.git (push)
+#+end_src
+so that next we can call 
+#+begin_src bash
+  ./substree_update.sh cmdstan_branch stan_branch math_branch torsten_math_branch
+#+end_src
+to create the container repo based on the branch name given for each
+module. By default the script uses =torsten-develop= branch for
+=cmdstan=, =stan=, =math=, and =develop= branch for
+=torsten_math=. That is,
+#+begin_src bash
+  ./substree_update.sh
+#+end_src
+is equivalent to
+#+begin_src bash
+  ./substree_update.sh torsten-develop torsten-develop torsten-develop develop
 #+end_src
 
+After updating the container we can revise the documentation and
+example models in the repo accordingly.

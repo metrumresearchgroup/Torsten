@@ -1,10 +1,10 @@
-% Created 2022-05-17 Tue 15:32
+% Created 2022-05-18 Wed 13:44
 % Intended LaTeX compiler: pdflatex
 \documentclass[12pt, reqno, oneside]{amsbook}
               \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
 \newcommand\mrgproject{}
 \newcommand\mrgtitle{Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan}
-\newcommand\mrgsubtitle{\large{Developers Guide} \linebreak (Torsten Version 0.89rc, Stan version 2.27.0)}
+\newcommand\mrgsubtitle{\large{Developers Guide} \linebreak (Torsten Version 0.90.0, Stan version 2.29.2)}
 \include{mrgtitlepage}
 \usepackage{imakeidx}
 \makeindex
@@ -55,7 +55,7 @@
 \author{Yi Zhang}
 \date{\today}
 \title{Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan\\\medskip
-\large Developers guide \\  (Torsten Version 0.89rc, Stan version 2.27.0)}
+\large Developers guide \\  (Torsten Version 0.90.0, Stan version 2.29.2)}
 \hypersetup{
  pdfauthor={Yi Zhang},
  pdftitle={Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan},
@@ -70,35 +70,35 @@
 
 
 \chapter*{Development team}
-\label{sec:orge12504c}
+\label{sec:org9bb72d8}
 \begin{itemize}
 \item \href{mailto:billg@metrumrg.com}{William R. Gillespie} , \href{https://www.metrumrg.com/}{Metrum Research Group}
-\item \href{mailto:yiz@metrumrg.com}{Yi Zhang} , \href{https://www.metrumrg.com/}{Metrum Research Group}
+\item \href{mailto:yz@yizh.org}{Yi Zhang} , \href{https://www.sagerx.com/}{Sage Therapeutics}
 \item \href{mailto:charles.margossian@columbia.edu}{Charles Margossian} , Columbia University, Department of Statistics
 \end{itemize}
 \chapter*{Acknowledgements}
-\label{sec:orgbe77a2c}
+\label{sec:org4fd8ba7}
 \section*{Institutions}
-\label{sec:org91ecd8e}
+\label{sec:orgc7e58d4}
 We thank Metrum Research Group, Columbia University, and AstraZeneca.
 \section*{Funding}
-\label{sec:org341191d}
+\label{sec:org209e741}
 This work was funded in part by the following organizations:
 \subsection*{Office of Naval Research (ONR) contract N00014-16-P-2039}
-\label{sec:org4e6ff4c}
+\label{sec:orgee502e1}
 provided as part of the Small Business Technology Transfer (STTR)
 program. The content of the information presented in this document
 does not necessarily reflect the position or policy of the
 Government and no official endorsement should be inferred.
 \subsection*{Bill \& Melinda Gates Foundation.}
-\label{sec:org76e5e40}
+\label{sec:orgb66b095}
 \section*{Individuals}
-\label{sec:orgb90998b}
+\label{sec:org431c2f6}
 We thank the Stan Development Team for giving us guidance on how to
 create new Stan functions and adding features to Stan's core language
 that facilitate building ODE-based models.
 \chapter{Introduction}
-\label{sec:org8835ee7}
+\label{sec:orgca864c7}
 Following Stan's code structure, Torsten forks four Stan repositories:
 \begin{itemize}
 \item The automatic differentiation and mathematical infrastructure \href{https://github.com/metrumresearchgroup/math}{\texttt{Stan/Math}}.
@@ -128,7 +128,7 @@ The rest of this document describes the basic layout of the components
 in Torsten implementation. The details can be found in code comments.
 
 \chapter{\texttt{torsten\_math}}
-\label{sec:org1ba20dc}
+\label{sec:org70ecd1c}
 Most Torsten development occurs in the \texttt{torsten\_math} repo. So far
 most functions there are for solving PKPD ODE systems. To
 understand the design, let us take a look at the user-facing \texttt{pmx\_solve\_rk45} function as an example.
@@ -169,7 +169,7 @@ The \texttt{PMXOdeintIntegrator} parameter is used to set apartment from
 based on.
 
 \section{PMX solver}
-\label{sec:orgc55946b}
+\label{sec:org9dfe6ab}
 The \texttt{PMXSolveODE} class uses the type of ODE integrator and ODE
 system as arguments. It is the basis of all user-facing numerical
 ODE functions. It provides a \texttt{static} function \texttt{solve} that uses
@@ -185,7 +185,7 @@ A similar class \texttt{PMXSolveCPT} does the same but for compartment
 models that employ close-form solutions.
 
 \section{PMX ODE integrators}
-\label{sec:org46eea58}
+\label{sec:org70bc868}
 The purpose of \texttt{PMXOdeIntegrator} class is to separate the ODE solver,
 the control parameters of numerical solutions, the ODE system, and the
 user-facing functions. A \texttt{PMXOdeIntegrator} object is constructed
@@ -197,7 +197,7 @@ An \texttt{PMXOdeIntegrator} object is constructed inside
 \texttt{PMXSolveODE::solve} for numerically solving ODEs.
 
 \section{ODE integrators}
-\label{sec:org87c18cb}
+\label{sec:orga6a7e17}
 \texttt{PMXOdeIntegrator} class delegates to specific types of ODE
 integrators from \texttt{Boost::odeint} and \texttt{CVODES} libraries for actual numerical
 solution. Thus it has a type argument that specifies the integrator
@@ -207,7 +207,7 @@ library APIs instead of directly build upon Stan's ODE integration
 functions.
 
 \section{PMX models}
-\label{sec:orgb5df8da}
+\label{sec:orgea0adf9}
 In \texttt{PMXSolveCPT} and \texttt{PMXSolveODE} class, PMX models are constructed
 using NMTRAN inputs. For example, the one-compartment model class has
 the following construct.
@@ -260,7 +260,7 @@ event. The overloading is for different signatures in transient and
 steady-state solutions.
 
 \section{Event management}
-\label{sec:orge7ae485}
+\label{sec:org45a94d9}
 The \texttt{PMXSolveODE::solve} (\texttt{PMXSolveCPT::solve} is similar) function
 looks like this.
 
@@ -296,7 +296,7 @@ events chronologically, based on NMTRAN input. The purpose of
 \texttt{EventSolver} is to solve the events using specified ODE solver.
 
 \chapter{\texttt{stan/math}}
-\label{sec:org66c7da1}
+\label{sec:org7dc0359}
 The \texttt{stan/math} repo serves as a pass-through fork for
 \texttt{torsten\_math}. It is almost identical to Stan's upstream repo, with the
 only noticeable difference in the \texttt{math/stan/math.hpp}, in which the
@@ -340,13 +340,13 @@ To access the generated Torsten documentation, point the browser to
 and find \texttt{torsten} namespace.
 
 \chapter{\texttt{Stan}}
-\label{sec:org95d0f4b}
+\label{sec:orgf458996}
 The forked \texttt{stan} serves passing \texttt{stan/math} through as well as
 testing ground for experimental inference algorithms such as
 cross-chain warmup (see Section 6.2).
 
 \chapter{\texttt{CmdStan}}
-\label{sec:org9637fb7}
+\label{sec:org2a9133b}
 Similar to \texttt{Stan}, the forked command line interface has boilerplate
 code for the cross-chain warmup algorithm. It also contains
 Torsten-specific \texttt{makefile} flags. Similar to its upstream repo,
@@ -356,13 +356,13 @@ repo to download Torsten-compatible \texttt{stanc3} binary so that the
 transpiler recoganizes Torsten function signatures.
 
 \chapter{MPI parallelization}
-\label{sec:org4385095}
+\label{sec:orgdcb8853}
 As an alternative to Stan's \texttt{reduce\_sum} function designed for
 multicore infrastrue, Torsten provides MPI parallelization for
 population models as well as experimental cross-chain warmup model.
 
 \section{Population solver}
-\label{sec:org62c0ed7}
+\label{sec:org2f84dde}
 The population solver functions \texttt{pmx\_solve\_group\_rk45|bdf|adams} have similar
 construct to their single-subject counterparts. For example
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{cpp}
@@ -383,7 +383,7 @@ processes. This mechanism is implemented in the \texttt{EventSolver} class,
 along with its sequential version.
 
 \section{Cross-chain warmup}
-\label{sec:org4b4cb1d}
+\label{sec:orga18906d}
 The experimental algorithm sits on top of Stan's sampler engine.
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
 Torsten/cmdstan/src/stan/mcmc/cross_chain
@@ -426,7 +426,7 @@ The \texttt{this -> use\_cross\_chain\_adapt} condition controls if cross-chain
 warmup is used and choose the adaptation accordingly. 
 
 \chapter{\texttt{stanc3}}
-\label{sec:org6470e49}
+\label{sec:org4ca4b46}
 The forked \texttt{stanc3} contains a 
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
 stanc3/src/middle/torsten.ml
@@ -448,7 +448,7 @@ workflow of adding a Torsten function usually is to first implement
 the function in \texttt{torsten\_stan} followed by adding its signature in \texttt{torsten.ml}.
 
 \section{Adding a new function}
-\label{sec:org9187a9c}
+\label{sec:orge713257}
 Now let us walkthrough how a new function is added in Torsten using
 \texttt{pmx\_solve\_linode} function as example. The function solves
 dosing events using a linear ODE model, specified as a coefficient
@@ -518,7 +518,7 @@ function. Note that we need to make the Stan language aware of whether
 an argument could be parameter (\texttt{AutoDiffable}) or not (\texttt{DataOnly}). 
 
 \section{Adding a new high-order function}
-\label{sec:org53f2c3e}
+\label{sec:org532ee4b}
 Torsten's numerical ODE solvers are high-order functions, i.e. functions with function arguments.
 Adding a new high-order function is slightly more complicated. 
 Let us use \texttt{pmx\_solve\_rk45} as an example. As shown in
@@ -584,7 +584,7 @@ add_func
 \end{minted}
 
 \chapter{\texttt{Torsten} container}
-\label{sec:org3d37718}
+\label{sec:orgd59585c}
 All the above repos are collected in the container repo
 \texttt{Torsten} using \texttt{git subtree} command, so that user only needs to
 clone this repo in order to use Torsten. Documentation and example
@@ -595,7 +595,7 @@ In the rest of the section we describe the process to upate \texttt{Torsten}
 to certain Stan release, using Stan's \texttt{master} branch as example.
 
 \section{\texttt{Math}}
-\label{sec:org6ba7316}
+\label{sec:org8bcb265}
 Assume at Torsten's \texttt{Math} repo there are remote
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
 bash-3.2$ git remote -vv
@@ -634,11 +634,11 @@ on Windows, Ubuntu, and MacOS platforms. The action is performed
 automatically when one push to Torsten's \texttt{math} repo fork.
 
 \section{\texttt{Stan}}
-\label{sec:orgdc30a5a}
+\label{sec:orgaac0db9}
 The treatment for \texttt{Stan} repo follows a same procedure. 
 
 \section{\texttt{stanc3}}
-\label{sec:orgbe3602a}
+\label{sec:orgb6072a8}
 Any added/update Torsten function should have its signature registered
 in \texttt{stanc3} repo. Similar to the previous two repos, we need to first
 merge from upstream.
@@ -654,9 +654,64 @@ for integration tests (TODO: need to add these models to \texttt{dune} tests).
 
 Before updating \texttt{cmdstan}, we need to create a \texttt{stanc3} binary for
 \texttt{make} script to download. This is done using \href{https://github.com/metrumresearchgroup/stanc3/actions}{the \texttt{Build binaries}
-action}.
+action}. After finish one can collect the binaries as artifacts and
+uploaded them to a new release. (TODO: this process can be automated).
 
 
 \section{\texttt{cmdstan}}
-\label{sec:org6b03559}
+\label{sec:orgb3dd27a}
+Updating \texttt{cmdstan} repo requires the same procedure as \texttt{math} and
+\texttt{stan}. In addition, one must update the \texttt{TORSTEN\_STANC3\_VERSION}
+variable in \texttt{make/torsten\_stanc.mk} to reflect the \texttt{stanc3}
+release. For example, if the latest \texttt{stanc3} release for Torsten is
+\texttt{torsten\_v0.90.0rc2}, then one must set
+\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
+TORSTEN_STANC3_VERSION=torsten_v0.90.0rc2
+\end{minted}
+so that correct \texttt{stanc3} binaries will be downloaded. This is done by
+the \texttt{make/stanc} script, and one can check if the link there
+\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
+https://github.com/metrumresearchgroup/stanc3/releases/download/$(TORSTEN_STANC3_VERSION)/$(OS_TAG)-stanc
+\end{minted}
+correctly points to binary artifacts geneated in the previous
+section. In the above link \texttt{OS\_TAG} equals to \texttt{mac}, \texttt{windows}, or
+\texttt{ubuntu}.
+
+\section{\texttt{Torsten}}
+\label{sec:org63cb8c1}
+The container repo is updated after all the above modules are in
+place. We need first create a \texttt{remote} for each of the above modules
+\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
+bash-3.2$ git remote -vv
+origin  git@github.com:metrumresearchgroup/Torsten.git (fetch)
+origin  git@github.com:metrumresearchgroup/Torsten.git (push)
+cmdstan git@github.com:metrumresearchgroup/cmdstan.git (fetch)
+cmdstan git@github.com:metrumresearchgroup/cmdstan.git (push)
+math    git@github.com:metrumresearchgroup/math.git (fetch)
+math    git@github.com:metrumresearchgroup/math.git (push)
+stan    git@github.com:metrumresearchgroup/stan.git (fetch)
+stan    git@github.com:metrumresearchgroup/stan.git (push)
+stanc3  git@github.com:metrumresearchgroup/stanc3.git (fetch)
+stanc3  git@github.com:metrumresearchgroup/stanc3.git (push)
+torsten_math    git@github.com:metrumresearchgroup/torsten_math.git (fetch)
+torsten_math    git@github.com:metrumresearchgroup/torsten_math.git (push)
+\end{minted}
+so that next we can call 
+\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
+./substree_update.sh cmdstan_branch stan_branch math_branch torsten_math_branch
+\end{minted}
+to create the container repo based on the branch name given for each
+module. By default the script uses \texttt{torsten-develop} branch for
+\texttt{cmdstan}, \texttt{stan}, \texttt{math}, and \texttt{develop} branch for
+\texttt{torsten\_math}. That is,
+\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
+./substree_update.sh
+\end{minted}
+is equivalent to
+\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
+./substree_update.sh torsten-develop torsten-develop torsten-develop develop
+\end{minted}
+
+After updating the container we can revise the documentation and
+example models in the repo accordingly.
 \end{document}
