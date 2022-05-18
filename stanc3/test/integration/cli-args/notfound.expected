@@ -1,2 +1,0 @@
-  $ ../../../../install/default/bin/stanc notfound.stan
-Cannot not open file notfound.stan
