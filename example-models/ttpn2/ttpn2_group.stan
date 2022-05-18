@@ -1,11 +1,10 @@
 functions{
-
-    real[] oneCptPNODE(real t,
-			real[] x,
-			real[] parms,
-			real[] rdummy,
-			int[] idummy){
-    real dxdt[3];
+  vector oneCptPNODE(real t,
+                     vector x,
+                     real[] parms,
+                     real[] rdummy,
+                     int[] idummy){
+    vector[3] dxdt;
     real CL = parms[1];
     real V = parms[2];
     real ke0 = parms[3];

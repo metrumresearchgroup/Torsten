@@ -583,5 +583,109 @@ accomondate many variants of the above signature.
 All the above repos are collected in the container repo
 =Torsten= using =git subtree= command, so that user only needs to
 clone this repo in order to use Torsten. Documentation and example
-models can also be found in this repo.
+models can also be found in this repo. Note that the development of
+Torsten functionalilties still happens in each submodule.
+
+In the rest of the section we describe the process to upate =Torsten=
+to certain Stan release, using Stan's =master= branch as example.
+
+** =Math=
+Assume at Torsten's =Math= repo there are remote
+#+begin_src bash
+bash-3.2$ git remote -vv
+origin    git@github.com:metrumresearchgroup/math.git (fetch)
+origin    git@github.com:metrumresearchgroup/math.git (push)
+stan-dev  https://github.com/stan-dev/math.git (fetch)
+stan-dev  https://github.com/stan-dev/math.git (push)
+#+end_src
+and local branches
+#+begin_src bash
+bash-3.2$ git branch
+  develop                       # upstream stan/math develop
+  master                        # upstream stan/math master
+  torsten-develop               # torsten develop
+  torsten-master                # torsten master
+#+end_src
+so that we can update =torsten-develop=
+#+begin_src bash
+bash-3.2$ git branch
+  git merge -Xtheirs master     # may need to manually resolve conflicts
+#+end_src
+Before pushing, make sure the Torsten unit tests are passed. If not,
+one may need to iterate between =tortsen_math= and =math= repo to
+ensure the implementations are consistent.
+#+begin_src bash
+bash-3.2$ make clean-all; ./runTests.py -j4 stan/math/torsten/test/unit/
+#+end_src
+One should run unit tests twice, with and without =TORSTEN_MPI= in
+=make/local=, for sequential and parallel tests, respectively [fn:2].
+Currently there is a GitHub Actions workflow for sequential unit tests
+on Windows, Ubuntu, and MacOS platforms. The action is performed
+automatically when one push to Torsten's =math= repo fork.
+
+[fn:2] To run parallel jobs one needs a properly installed MPI
+library. Setting =TORSTEN_MPI=1= in the =make/local= prompts
+comopiling the tests using =mpicxx=, the MPI-enabled C++ compiler. One
+can also specify the MPI comopiler path in =make/local= by setting
+=CXX= and =CC= variables.
+
+** =Stan=
+The treatment for =Stan= repo follows a same procedure. 
+
+** =stanc3=
+Any added/update Torsten function should have its signature registered
+in =stanc3= repo. Similar to the previous two repos, we need to first
+merge from upstream.
+#+begin_src bash
+bash-3.2$ git branch
+  master                        # stanc3 upstream 
+  torsten-develop               # torsten branch
+bash-3.2$ git checkout master && git pull
+bash-3.2$ git checkout torsten-develop && git merge master
+#+end_src
+Before merge one should use models in =test/integration/good/torsten=
+for integration tests (TODO: need to add these models to =dune= tests).
+
+Before updating =cmdstan=, we need to create a =stanc3= binary for
+=make= script to download. This is done using [[https://github.com/metrumresearchgroup/stanc3/actions][the =Build binaries=
+action]]. After finish one can collect the binaries as artifacts and
+uploaded them to a new release. (TODO: this process can be automated).
+
+
+** =cmdstan=
+Updating =cmdstan= repo requires the same procedure as =math= and
+=stan=. In addition, one must update the =TORSTEN_STANC3_VERSION=
+variable in =make/torsten_stanc.mk= to reflect the =stanc3=
+release. For example, if the latest =stanc3= release for Torsten is
+=torsten_v0.90.0rc2=, then one must set
+#+begin_src bash
+  TORSTEN_STANC3_VERSION=torsten_v0.90.0rc2
+#+end_src
+so that correct =stanc3= binaries will be downloaded. This is done by
+the =make/stanc= script, and one can check if the link there
+#+begin_src bash
+https://github.com/metrumresearchgroup/stanc3/releases/download/$(TORSTEN_STANC3_VERSION)/$(OS_TAG)-stanc
+#+end_src
+correctly points to binary artifacts geneated in the previous
+section. In the above link =OS_TAG= equals to =mac=, =windows=, or
+=ubuntu=.
+
+** =Torsten=
+The container repo is updated after all the above modules are in
+place. We need first create a =remote= for each of the above modules.
+#+begin_src bash
+bash-3.2$ git remote -vv
+origin	git@github.com:metrumresearchgroup/Torsten.git (fetch)
+origin	git@github.com:metrumresearchgroup/Torsten.git (push)
+cmdstan	git@github.com:metrumresearchgroup/cmdstan.git (fetch)
+cmdstan	git@github.com:metrumresearchgroup/cmdstan.git (push)
+math	git@github.com:metrumresearchgroup/math.git (fetch)
+math	git@github.com:metrumresearchgroup/math.git (push)
+stan	git@github.com:metrumresearchgroup/stan.git (fetch)
+stan	git@github.com:metrumresearchgroup/stan.git (push)
+stanc3	git@github.com:metrumresearchgroup/stanc3.git (fetch)
+stanc3	git@github.com:metrumresearchgroup/stanc3.git (push)
+torsten_math	git@github.com:metrumresearchgroup/torsten_math.git (fetch)
+torsten_math	git@github.com:metrumresearchgroup/torsten_math.git (push)
+#+end_src
 
