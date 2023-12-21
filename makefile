@@ -22,7 +22,7 @@ help:
 
 STAN ?= stan/
 MATH ?= $(STAN)lib/stan_math/
-RAPIDJSON ?= lib/rapidjson_1.1.0/
+RAPIDJSON ?= $(STAN)lib/rapidjson_1.1.0/
 CLI11 ?= lib/CLI11-1.9.1/
 INC_FIRST ?= -I src -I $(STAN)src -I $(RAPIDJSON) -I $(CLI11)
 USER_HEADER ?= $(dir $<)user_header.hpp
@@ -134,7 +134,7 @@ PRECOMPILED_HEADERS ?= true
 endif
 
 ifeq ($(PRECOMPILED_HEADERS),true)
-PRECOMPILED_MODEL_HEADER=$(STAN)src/stan/model/model_header$(STAN_FLAGS).hpp.gch
+PRECOMPILED_MODEL_HEADER=$(STAN)src/stan/model/model_header$(STAN_FLAGS)_$(CXX_MAJOR)_$(CXX_MINOR).hpp.gch
 ifeq ($(CXX_TYPE),gcc)
 CXXFLAGS_PROGRAM+= -Wno-ignored-attributes $(CXXFLAGS_OPTIM) $(CXXFLAGS_FLTO)
 endif
@@ -151,8 +151,7 @@ include make/program
 include make/tests
 include make/command
 
-CMDSTAN_VERSION := 2.29.0
-TORSTEN_VERSION := 0.90.0
+CMDSTAN_VERSION := 2.33.1
 
 ifeq ($(OS),Windows_NT)
 HELP_MAKE=mingw32-make
@@ -266,7 +265,7 @@ build-mpi: $(MPI_TARGETS)
 
 ifeq ($(CMDSTAN_SUBMODULES),1)
 .PHONY: build
-build: bin/stanc$(EXE) $(LIBSUNDIALS) $(MPI_TARGETS) $(TBB_TARGETS) $(CMDSTAN_MAIN_O) $(PRECOMPILED_MODEL_HEADER) bin/stansummary$(EXE) bin/print$(EXE) bin/diagnose$(EXE) $(CROSS_CHAIN_BOOST_TARGETS)
+build: bin/stanc$(EXE) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS) $(CMDSTAN_MAIN_O) $(PRECOMPILED_MODEL_HEADER) bin/stansummary$(EXE) bin/print$(EXE) bin/diagnose$(EXE)
 	@echo ''
 ifeq ($(OS),Windows_NT)
 		@echo 'NOTE: Please add $(TBB_BIN_ABSOLUTE_PATH) to your PATH variable.'
@@ -354,7 +353,7 @@ stan-revert:
 
 .PHONY: compile_info
 compile_info:
-	@echo '$(LINK.cpp) $(CXXFLAGS_PROGRAM) $(CMDSTAN_MAIN_O) $(LDLIBS) $(LIBSUNDIALS) $(MPI_TARGETS) $(TBB_TARGETS) $(CROSS_CHAIN_BOOST_TARGETS)'
+	@echo '$(LINK.cpp) $(CXXFLAGS_PROGRAM) $(CMDSTAN_MAIN_O) $(LDLIBS) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS)'
 
 ##
 # Debug target that allows you to print a variable

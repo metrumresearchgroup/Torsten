@@ -6,6 +6,7 @@
 #include <fstream>
 #include <iomanip>
 #include <ios>
+#include <cmath>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -28,17 +29,21 @@ void compute_width_and_precision(double value, int sig_figs, int &width,
   if (value == 0) {
     width = sig_figs;
     precision = sig_figs;
+  } else if (std::isnan(value)) {
+    width = 3;
+    precision = sig_figs;
   } else if (abs_value >= 1) {
-    int int_part = std::ceil(log10(abs_value) + 1e-6);
+    int int_part = static_cast<int>(std::ceil(log10(abs_value) + 1e-6));
     width = int_part >= sig_figs ? int_part : sig_figs + 1;
     precision = int_part >= sig_figs ? 0 : sig_figs - int_part;
   } else {
-    int frac_part = std::fabs(std::floor(log10(abs_value)));
+    int frac_part = static_cast<int>(std::fabs(std::floor(log10(abs_value))));
     width = 1 + frac_part + sig_figs;
     precision = frac_part + sig_figs - 1;
   }
 
-  if (value < 0)
+  // account for negative numbers
+  if (std::signbit(value))
     ++width;
 }
 
@@ -313,7 +318,7 @@ Eigen::VectorXd percentiles_to_probs(
  * Assemble set of Stan csv files into a stan::mcmc::chains object
  *
  * @param in vector of filenames of stan csv files
- * @param in out  metatdata
+ * @param in out  metadata
  * @param in out  warmup times for each chain
  * @param in out  sampling times for each chain
  * @param in out  thinning for each chain
@@ -487,10 +492,10 @@ void write_params(const stan::mcmc::chains<> &chains,
              << chains.param_name(i_chains);
         *out << std::right;
         for (int j = 0; j < params.cols(); j++) {
-          std::cout.setf(col_formats(j), std::ios::floatfield);
-          *out << std::setprecision(compute_precision(
-                      params(i, j), sig_figs,
-                      col_formats(j) == std::ios_base::scientific))
+          out->setf(col_formats(j), std::ios::floatfield);
+          *out << std::setprecision(
+              compute_precision(params(i, j), sig_figs,
+                                col_formats(j) == std::ios_base::scientific))
                << std::setw(col_widths(j)) << params(i, j);
         }
       }
@@ -519,10 +524,10 @@ void write_params(const stan::mcmc::chains<> &chains,
                << chains.param_name(row_maj_index_chains);
           *out << std::right;
           for (int j = 0; j < params.cols(); j++) {
-            std::cout.setf(col_formats(j), std::ios::floatfield);
-            *out << std::setprecision(compute_precision(
-                        params(row_maj_index, j), sig_figs,
-                        col_formats(j) == std::ios_base::scientific))
+            out->setf(col_formats(j), std::ios::floatfield);
+            *out << std::setprecision(
+                compute_precision(params(row_maj_index, j), sig_figs,
+                                  col_formats(j) == std::ios_base::scientific))
                  << std::setw(col_widths(j)) << params(row_maj_index, j);
           }
         }
@@ -540,7 +545,7 @@ void write_params(const stan::mcmc::chains<> &chains,
  * Output timing statistics for all chains
  *
  * @param in set of samples from one or more chains
- * @param in metatdata
+ * @param in metadata
  * @param in warmup times for each chain
  * @param in sampling times for each chain
  * @param in thinning for each chain
@@ -639,7 +644,7 @@ void write_timing(const stan::mcmc::chains<> &chains,
 /**
  * Output sampler information
  *
- * @param in metatdata
+ * @param in metadata
  * @param in prefix string - used to output as comments in csv file
  * @param out output stream
  */
@@ -667,7 +672,7 @@ void write_sampler_info(const stan::io::stan_csv_metadata &metadata,
  * size < 100, lag 1, size < 1000, lag 2, size < 10000 lag 3, etc.
 
  * @param in set of samples from one or more chains
- * @param in metatdata
+ * @param in metadata
  * @param in 1-based index of stan csv input file
  * @param in size of longest sampler param name
  */
