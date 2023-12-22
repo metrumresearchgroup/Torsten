@@ -1,1 +1,0 @@
-functions { void while();}

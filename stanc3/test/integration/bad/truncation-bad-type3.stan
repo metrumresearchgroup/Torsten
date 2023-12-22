@@ -1,1 +1,0 @@
-model { 1 ~ bernoulli(0.2) T[, 1.0]; }

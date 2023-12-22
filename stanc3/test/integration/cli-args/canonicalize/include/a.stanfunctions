@@ -1,5 +1,0 @@
-// line comment a
-   void /*weird block a*/foo(real x){
-     return;
-   }
-// another line comment a
