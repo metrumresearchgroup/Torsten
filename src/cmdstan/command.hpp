@@ -75,10 +75,8 @@
 #include <stan/math/prim/functor/mpi_distributed_apply.hpp>
 #endif
 
-// Torsten cross-chain
-#if defined (MPI_ADAPTED_WARMUP) || defined (TORSTEN_MPI)
+#if defined (TORSTEN_MPI)
 #include <stan/math/torsten/mpi.hpp>
-#include <stan/callbacks/mpi_stream_writer.hpp>
 TORSTEN_MPI_SESSION_INIT;
 #endif
 
@@ -97,17 +95,10 @@ stan::math::mpi_cluster &get_mpi_cluster() {
 #endif
 
 int command(int argc, const char *argv[]) {
-#ifdef MPI_ADAPTED_WARMUP
-  stan::callbacks::mpi_stream_writer info(1, std::cout);
-  stan::callbacks::mpi_stream_writer err(1, std::cout);
-  stan::callbacks::stream_logger logger(std::cout, std::cout, std::cout,
-                                        std::cerr, std::cerr);
-#else
   stan::callbacks::stream_writer info(std::cout);
   stan::callbacks::stream_writer err(std::cerr);
   stan::callbacks::stream_logger logger(std::cout, std::cout, std::cout,
                                         std::cerr, std::cerr);
-#endif
 
 #ifdef STAN_MPI
   stan::math::mpi_cluster &cluster = get_mpi_cluster();
@@ -191,30 +182,6 @@ int command(int argc, const char *argv[]) {
   unsigned int id = get_arg_val<int_argument>(parser, "id");
   int sig_figs = get_arg_val<int_argument>(parser, "output", "sig_figs");
   int refresh = get_arg_val<int_argument>(parser, "output", "refresh");
-
-  std::fstream output_stream(
-      dynamic_cast<string_argument *>(parser.arg("output")->arg("file"))
-          ->value()
-          .c_str(),
-      std::fstream::out);
-
-#ifdef MPI_ADAPTED_WARMUP
-  stan::callbacks::mpi_stream_writer sample_writer(num_cross_chains, output_stream, "# ");
-#else
-  stan::callbacks::stream_writer sample_writer(output_stream, "# ");
-#endif
-
-  std::fstream diagnostic_stream(
-      dynamic_cast<string_argument *>(
-          parser.arg("output")->arg("diagnostic_file"))
-          ->value()
-          .c_str(),
-      std::fstream::out);
-#ifdef MPI_ADAPTED_WARMUP
-  stan::callbacks::mpi_stream_writer diagnostic_writer(num_cross_chains, diagnostic_stream, "# ");
-#else
-  stan::callbacks::stream_writer diagnostic_writer(diagnostic_stream, "# ");
-#endif
 
   //////////////////////////////////////////////////
   //                Initialize Model              //
@@ -520,9 +487,6 @@ int command(int argc, const char *argv[]) {
   } else if (user_method->arg("sample")) {
     // ---- sample start ---- //
     auto sample_arg = parser.arg("method")->arg("sample");
-#ifdef MPI_ADAPTED_WARMUP
-    int num_warmup = dynamic_cast<int_argument*>(sample_arg->arg("max_num_warmup"))->value();
-#else
     int num_warmup
         = get_arg_val<int_argument>(parser, "method", "sample", "num_warmup");
     int num_samples
@@ -623,9 +587,7 @@ int command(int argc, const char *argv[]) {
             = dynamic_cast<u_int_argument *>(adapt->arg("window"))->value();
         return_code = stan::services::sample::hmc_nuts_dense_e_adapt(
             model, num_chains, init_contexts, random_seed, id, init_radius,
-            num_cross_chains, cross_chain_window, cross_chain_rhat, cross_chain_ess,
-            num_warmup,
-            num_samples, num_thin, save_warmup, refresh, stepsize,
+            num_warmup, num_samples, num_thin, save_warmup, refresh, stepsize,
             stepsize_jitter, max_depth, delta, gamma, kappa, t0, init_buffer,
             term_buffer, window, interrupt, logger, init_writers,
             sample_writers, diagnostic_csv_writers);
@@ -653,9 +615,7 @@ int command(int argc, const char *argv[]) {
             = dynamic_cast<u_int_argument *>(adapt->arg("window"))->value();
         return_code = stan::services::sample::hmc_nuts_dense_e_adapt(
             model, num_chains, init_contexts, metric_contexts, random_seed, id,
-            init_radius, 
-            num_cross_chains, cross_chain_window, cross_chain_rhat, cross_chain_ess,
-            num_warmup, num_samples, num_thin, save_warmup,
+            init_radius, num_warmup, num_samples, num_thin, save_warmup,
             refresh, stepsize, stepsize_jitter, max_depth, delta, gamma, kappa,
             t0, init_buffer, term_buffer, window, interrupt, logger,
             init_writers, sample_writers, diagnostic_csv_writers);
@@ -704,7 +664,6 @@ int command(int argc, const char *argv[]) {
             = dynamic_cast<u_int_argument *>(adapt->arg("window"))->value();
         return_code = stan::services::sample::hmc_nuts_diag_e_adapt(
             model, num_chains, init_contexts, random_seed, id, init_radius,
-            num_cross_chains, cross_chain_window, cross_chain_rhat, cross_chain_ess,
             num_warmup, num_samples, num_thin, save_warmup, refresh, stepsize,
             stepsize_jitter, max_depth, delta, gamma, kappa, t0, init_buffer,
             term_buffer, window, interrupt, logger, init_writers,
@@ -732,9 +691,7 @@ int command(int argc, const char *argv[]) {
             = dynamic_cast<u_int_argument *>(adapt->arg("window"))->value();
         return_code = stan::services::sample::hmc_nuts_diag_e_adapt(
             model, num_chains, init_contexts, metric_contexts, random_seed, id,
-            init_radius, 
-            num_cross_chains, cross_chain_window, cross_chain_rhat, cross_chain_ess,
-            num_warmup, num_samples, num_thin, save_warmup,
+            init_radius, num_warmup, num_samples, num_thin, save_warmup,
             refresh, stepsize, stepsize_jitter, max_depth, delta, gamma, kappa,
             t0, init_buffer, term_buffer, window, interrupt, logger,
             init_writers, sample_writers, diagnostic_csv_writers);

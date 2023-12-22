@@ -18,7 +18,7 @@ help:
 
 -include $(HOME)/.config/stan/make.local  # user-defined variables
 -include make/local                       # user-defined variables
--include make/torsten_stanc.mk
+include make/torsten_stanc.mk
 
 STAN ?= stan/
 MATH ?= $(STAN)lib/stan_math/
@@ -152,6 +152,7 @@ include make/tests
 include make/command
 
 CMDSTAN_VERSION := 2.33.1
+TORSTEN_VERSION := 0.91.0
 
 ifeq ($(OS),Windows_NT)
 HELP_MAKE=mingw32-make
@@ -265,7 +266,7 @@ build-mpi: $(MPI_TARGETS)
 
 ifeq ($(CMDSTAN_SUBMODULES),1)
 .PHONY: build
-build: bin/stanc$(EXE) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS) $(CMDSTAN_MAIN_O) $(PRECOMPILED_MODEL_HEADER) bin/stansummary$(EXE) bin/print$(EXE) bin/diagnose$(EXE)
+build: bin/stanc$(EXE) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS) $(CMDSTAN_MAIN_O) $(PRECOMPILED_MODEL_HEADER) bin/stansummary$(EXE) bin/print$(EXE) bin/diagnose$(EXE) $(CROSS_CHAIN_BOOST_TARGETS)
 	@echo ''
 ifeq ($(OS),Windows_NT)
 		@echo 'NOTE: Please add $(TBB_BIN_ABSOLUTE_PATH) to your PATH variable.'
@@ -353,7 +354,7 @@ stan-revert:
 
 .PHONY: compile_info
 compile_info:
-	@echo '$(LINK.cpp) $(CXXFLAGS_PROGRAM) $(CMDSTAN_MAIN_O) $(LDLIBS) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS)'
+	@echo '$(LINK.cpp) $(CXXFLAGS_PROGRAM) $(CMDSTAN_MAIN_O) $(LDLIBS) $(SUNDIALS_TARGETS) $(MPI_TARGETS) $(TBB_TARGETS) $(CROSS_CHAIN_BOOST_TARGETS)'
 
 ##
 # Debug target that allows you to print a variable
