@@ -1,1 +1,0 @@
-transformed data{tuple(array[0]tuple(int,array[0]real),int)x;x.10000000000000000000
