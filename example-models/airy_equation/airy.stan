@@ -6,7 +6,7 @@ functions {
 
 data {
  int n;
- real ts[n];
+ array[n] real ts;
  vector[n] yobs;
  real rtol;
  real atol;
@@ -19,7 +19,7 @@ parameters {
 
 transformed parameters {
  vector[2] yinit = [y0, 0.0]';
- vector[2] y[n] = pmx_ode_adams_ctrl(airy, yinit, 0.0, ts, rtol, atol, 1000000);
+ array[n] vector[2] y = pmx_ode_adams_ctrl(airy, yinit, 0.0, ts, rtol, atol, 1000000);
 }
 
 model {
