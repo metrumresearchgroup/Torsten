@@ -1,7 +1,3 @@
-:EXPORT<sub>HUGO</sub><sub>MENU</sub>: :menu "main" :EXPORT<sub>OPTIONS</sub>: toc:t num:nil :EXPORT<sub>DATE</sub>: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-05-18 Wed&gt;</span></span>
-
-:END:
-
 -   Version 0.91.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2023-12-31 Sun&gt;</span></span>
     -   Changed
         -   Update model examples according to new array syntax.

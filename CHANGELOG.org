@@ -4,6 +4,4 @@
 #+EMAIL: mailto:yiz@metrumrg.com
 #+OPTIONS: toc:nil, title:t, num:nil, date:nil
 
-#+include: ./docs/torsten_users_guide.org::*Changelog :lines "4-"
-
-
+#+include: ./docs/torsten_users_guide.org::*Changelog :lines "8-"

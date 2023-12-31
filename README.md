@@ -3,11 +3,7 @@
 Torsten is a collection of Stan functions to facilitate analysis of pharmacometric data. See [the user guide](https://github.com/metrumresearchgroup/Torsten/blob/master/docs/torsten_users_guide.pdf) for more details. A slightly outdated web version can be found at <https://metrumresearchgroup.github.io/Torsten/>.
 
 
-# Changelog
-
-:EXPORT<sub>HUGO</sub><sub>MENU</sub>: :menu "main" :EXPORT<sub>OPTIONS</sub>: toc:t num:nil :EXPORT<sub>DATE</sub>: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-05-18 Wed&gt;</span></span>
-
-:END:
+## Changelog
 
 -   Version 0.91.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2023-12-31 Sun&gt;</span></span>
     -   Changed

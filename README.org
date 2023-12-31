@@ -11,5 +11,5 @@ pharmacometric data. See [[https://github.com/metrumresearchgroup/Torsten/blob/m
 outdated web version can be found at
 https://metrumresearchgroup.github.io/Torsten/.
 
-** Changelog
-#+include: ./docs/torsten_users_guide.org::*Changelog :lines "4-"
+*** Changelog
+#+include: ./docs/torsten_users_guide.org::*Changelog :lines "8-"
