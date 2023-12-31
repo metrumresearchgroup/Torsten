@@ -1,5 +1,17 @@
-:EXPORT<sub>HUGO</sub><sub>MENU</sub>: :menu "main" :EXPORT<sub>OPTIONS</sub>: toc:t num:nil :EXPORT<sub>DATE</sub>: <span class="timestamp-wrapper"><span class="timestamp">&lt;2021-06-25 Fri&gt;</span></span>
+:EXPORT<sub>HUGO</sub><sub>MENU</sub>: :menu "main" :EXPORT<sub>OPTIONS</sub>: toc:t num:nil :EXPORT<sub>DATE</sub>: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-05-18 Wed&gt;</span></span>
 
+:END:
+
+-   Version 0.91.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2023-12-31 Sun&gt;</span></span>
+    -   Changed
+        -   Update model examples according to new array syntax.
+        -   Update to Stan version 2.33.1.
+        -   Removed experimental cross-chain feature.
+        -   Deprecation of old Torsten functions not using 'pmx\\\_' prefix.
+-   Version 0.90.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-05-18 Wed&gt;</span></span>
+    -   Changed
+        -   Update model examples according to new array syntax.
+        -   Update to Stan version 2.29.2.
 -   Version 0.89 <span class="timestamp-wrapper"><span class="timestamp">&lt;2021-06-15 Tue&gt;</span></span>
     -   Changed
         -   New backend for ODE events solvers.
@@ -7,12 +19,12 @@
         -   Simplified ODE integrator naming, e.g. `pmx_ode_bdf[_ctrl]`.
         -   Update to Stan version 2.27.0.
 -   Version 0.88 <span class="timestamp-wrapper"><span class="timestamp">&lt;2020-12-18 Fri&gt;</span></span>
-    
+
     -   Added
         -   Bioavailability, lag time, ODE real & integer data are optional in PMX function signatures.
         -   Support all EVID options from NM-TRAN and mrgsolve.
         -   Support steady-state infusion through multiple interdose intervals.
-    
+
     -   Changed
         -   More efficient memory management of COVDES implenmentation.
         -   Update of MPI framework to adapt multilevel paralleism.
@@ -22,11 +34,11 @@
 -   Version 0.87 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-07-26 Fri&gt;</span></span>
     -   Added
         -   MPI dynamic load balance for Torsten's population ODE integrators
-            
+
             -   `pmx_integrate_ode_group_adams`
             -   `pmx_integrate_ode_group_bdf`
             -   `pmx_integrate_ode_group_rk45`
-            
+
             To invoke dynamic load balance instead of default static balance for MPI, issue `TORSTEN_MPI=2` in `make/local`.
         -   Support `RATE` as parameter in `pmx_solve_rk45/bdf/adams` functions.
     -   Changed
@@ -35,13 +47,13 @@
 -   Version 0.86 <span class="timestamp-wrapper"><span class="timestamp">&lt;2019-05-15 Wed&gt;</span></span>
     -   Added
         -   Torsten's ODE integrator functions
-            
+
             -   `pmx_integrate_ode_adams`
             -   `pmx_integrate_ode_bdf`
             -   `pmx_integrate_ode_rk45`
-            
+
             and their counterparts to solve a population/group of subjects governed by an ODE
-            
+
             -   `pmx_integrate_ode_group_adams`
             -   `pmx_integrate_ode_group_bdf`
             -   `pmx_integrate_ode_group_rk45`
@@ -52,7 +64,7 @@
         -   Support time step `ts` as parameter in `pmx_integrate_ode_xxx` solvers.
     -   Changed
         -   Renaming Torsten functions in previous releases, the old-new name mapping is
-            
+
             -   `PKModelOneCpt` &rarr; `pmx_solve_onecpt`
             -   `PKModelTwoCpt` &rarr; `pmx_solve_onecpt`
             -   `linOdeModel` &rarr; `pmx_solve_linode`
@@ -63,7 +75,7 @@
             -   `mixOde1CptModel_rk45` &rarr; `pmx_solve_onecpt_rk45`
             -   `mixOde2CptModel_bdf` &rarr; `pmx_solve_twocpt_bdf`
             -   `mixOde2CptModel_rk45` &rarr; `pmx_solve_twocpt_rk45`
-            
+
             Note that the new version of the above functions return the *transpose* of the matrix returned by the old versions, in order to improve memory efficiency. The old version are retained but will be deprecated in the future.
         -   Update to Stan version 2.19.1.
 

@@ -4,7 +4,7 @@
               \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
 \newcommand\mrgproject{}
 \newcommand\mrgtitle{Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan}
-\newcommand\mrgsubtitle{\large{User's Guide} \linebreak (Torsten Version 0.90.0, Stan version 2.29.2)}
+\newcommand\mrgsubtitle{\large{User's Guide} \linebreak (Torsten Version 0.91.0, Stan version 2.33.1)}
 \include{mrgtitlepage}
 \usepackage{imakeidx}
 \makeindex
@@ -48,20 +48,19 @@
 \usepackage{textcomp}
 \usepackage{amssymb}
 \usepackage{capt-of}
-\usepackage{hyperref}
 \usepackage[newfloat]{minted}
 \usepackage{caption}
 \setcounter{secnumdepth}{3}
 \author{Yi Zhang}
 \date{\today}
 \title{Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan\\\medskip
-\large User's Guide \\  (Torsten Version 0.90.0, Stan version 2.29.2)}
+\large User's Guide \\  (Torsten Version 0.91.0, Stan version 2.33.1)}
 \hypersetup{
  pdfauthor={Yi Zhang},
  pdftitle={Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan},
  pdfkeywords={},
  pdfsubject={},
- pdfcreator={Emacs 27.2 (Org mode 9.4.4)}, 
+ pdfcreator={Emacs 28.1 (Org mode 9.4.4)},
  pdflang={English}}
 \begin{document}
 
@@ -73,8 +72,8 @@
 \label{sec:org5ae31e5}
 \begin{itemize}
 \item \href{mailto:billg@metrumrg.com}{William R. Gillespie} , \href{https://www.metrumrg.com/}{Metrum Research Group}
-\item \href{mailto:yz@yizh.org}{Yi Zhang} , \href{https://www.sagerx.com/}{Sage Therapeutics}
-\item \href{mailto:charles.margossian@columbia.edu}{Charles Margossian} , Columbia University, Department of Statistics
+\item \href{mailto:yz@yizh.org}{Yi Zhang} , \href{https://www.c-path.org/}{Critical Path Institute}
+\item \href{mailto:cmargossian@flatironinstitute.org}{Charles Margossian} , Flatiron Institute
 \end{itemize}
 \chapter*{Acknowledgements}
 \label{sec:orgab46cef}
@@ -109,7 +108,7 @@ primarily to do Bayesian data analysis
 modeling and contains an efficient variant of No U-Turn
 Sampler(NUTS), an adaptative Hamiltonian Monte Carlo
 algorithm that was proven more efficient than commonly used Monte Carlo Markov Chains
-(MCMC) samplers for complex high dimensional problems \cite{hoffman_no-u-turn_2011,betancourt_hmc_2018}. 
+(MCMC) samplers for complex high dimensional problems \cite{hoffman_no-u-turn_2011,betancourt_hmc_2018}.
 
 Torsten is a collection of Stan functions to facilitate analysis of
 pharmacometric data. Given an event schedule and an ODE system, it calculates amounts
@@ -141,7 +140,7 @@ All real variable arguments in Torsten functions can be passed as Stan \texttt{p
 \section{Implementation summary}
 \label{sec:orgabe7e42}
 \begin{itemize}
-\item Current Torsten v0.90.0 is based on Stan v2.29.2.
+\item Current Torsten v0.91.0 is based on Stan v2.33.1.
 \item All functions are programmed in C++ and are compatible
 with the Stan math automatic differentiation library \cite{carpenter15_stan_math_librar}
 \item One and two compartment models are based on analytical solutions of governing ODEs.
@@ -179,6 +178,16 @@ parameter (in a dosing compartment) evaluated at \(t_{\text{lag}} = 0\).
 \chapter{Changelog}
 \label{sec:org6ee814c}
 \begin{itemize}
+\item Version 0.91.0 \textit{<2023-12-31 Sun>}
+\begin{itemize}
+\item Changed
+\begin{itemize}
+\item Update model examples according to new array syntax.
+\item Update to Stan version 2.33.1.
+\item Removed experimental cross-chain feature.
+\item Deprecation of old Torsten functions not using 'pmx\_' prefix.
+\end{itemize}
+\end{itemize}
 \item Version 0.90.0 \textit{<2022-05-18 Wed>}
 \begin{itemize}
 \item Changed
@@ -367,8 +376,8 @@ Currently Torsten is based on a forked version of Stan and hosted on GitHub
 \begin{itemize}
 \item \url{https://github.com/metrumresearchgroup/Torsten}
 \end{itemize}
-The latest v0.90.0 is
-compatible with Stan v2.29.2. Torsten can be accessed from
+The latest v0.91.0 is
+compatible with Stan v2.33.1. Torsten can be accessed from
 command line for cmdstan interface and \texttt{cmdstanr}
 (\url{https://mc-stan.org/cmdstanr/}) for R interface. It requires
 a modern C++11 compiler as well as a Make utility. See \cite{cmdstan_team_2020} for details of installation and
@@ -386,7 +395,7 @@ of RTools.
 \section{Command line interface}
 \label{sec:org703adfa}
 The command line interface \texttt{cmdstan} is available along with Torsten
-and can be found at \texttt{Torsten/cmdstan}. 
+and can be found at \texttt{Torsten/cmdstan}.
 
 After installation, one can use the following command to build a Torsten model \texttt{model\_name} in \texttt{model\_path}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{sh}
@@ -397,7 +406,7 @@ make model_path/model_name # replace "make" with "mingw32-make" on Windows platf
 \section{R interface}
 \label{sec:org5de6f78}
 After installing cmdstanr from \url{https://mc-stan.org/cmdstanr/}, use the
-following command to set path 
+following command to set path
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{r}
 cmdstanr::set_cmdstan_path("Torsten/cmdstan")
 \end{minted}
@@ -409,7 +418,7 @@ and run Torsten models.
 Torsten's MPI support is of a different flavour than
 \texttt{reduce\_sum} found in Stan. To be able to utilize MPI
 parallelisation, one first needs to ensure an MPI library
-such as 
+such as
 \begin{itemize}
 \item \url{https://www.mpich.org/downloads/}
 \item \url{https://www.open-mpi.org/software/ompi/}
@@ -461,7 +470,7 @@ Stan. The code for the examples can be found at Torsten's \href{https://github.c
 
 \section{Events specification}
 \label{sec:org02ca7f5}
-Torsten's functions are prefixed with \texttt{pmx\_}. 
+Torsten's functions are prefixed with \texttt{pmx\_}.
 For some of their arguments we adopt NM-TRAN format for events
 specification(Table \ref{tab:event_args}).
 
@@ -535,7 +544,7 @@ matrix = pmx_solve_onecpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, bio
 See Tables in Section \ref{sec:org02ca7f5}.
 \subsection{Return value}
 \label{sec:org649e9bd}
-An \texttt{ncmt}-by-\texttt{nt} matrix, where \texttt{nt} is the number of time steps and \texttt{ncmt=2} is the number of compartments.    
+An \texttt{ncmt}-by-\texttt{nt} matrix, where \texttt{nt} is the number of time steps and \texttt{ncmt=2} is the number of compartments.
 \subsection{Note}
 \label{sec:org83e8503}
 \begin{itemize}
@@ -560,7 +569,7 @@ model (Figure \ref{one_two_cpt_models}). The model obtains the mass \((y_1, y_2,
 by solving the ODEs
 \begin{align} \label{eq:twocpt}
   y_1' &= -k_a y_1 \\
-  y_2' &= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2 +  \frac{Q}{V_3}  y_3  \\ 
+  y_2' &= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2 +  \frac{Q}{V_3}  y_3  \\
   y_3' &= \frac{Q}{V_2} y_2 - \frac{Q}{V_3} y_3
 \end{align}
 The plasma concentrations of parent drug in the central compartment
@@ -680,7 +689,7 @@ and \texttt{x\_i} corresponding to
 definition, as Torsten automatically update \(f\)
 when the corresponding event indicates infusion dosage.
 \begin{itemize}
-\item \texttt{nCmt} 
+\item \texttt{nCmt}
 The number of compartments, equivalently, the dimension of the ODE system.
 \item \texttt{x\_r}
 2d arary real data to be passed to ODE RHS. If specified, its 1st
@@ -688,7 +697,7 @@ dimension should have the same size as \texttt{time}.
 \item \texttt{x\_i}
 2d arary integer data to be passed to ODE RHS. If specified, its 1st
 dimension should have the same size as \texttt{time}.
-\item \texttt{rel\_tol} 
+\item \texttt{rel\_tol}
 The relative tolerance for numerical integration, default to 1.0E-6.
 \item \texttt{abs\_tol}
 The absolute tolerance for numerical integration, default to 1.0E-6.
@@ -775,11 +784,11 @@ system has an almost identical signature to that used for a full
 system, but takes one additional argument: \(y_1\), the PK states,
 i.e. solution to the PK ODEs.
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-vector reduced_ODE_rhs(real t, vector y2, vector y1, real[] theta, real[] x_r, int[] x_i) 
+vector reduced_ODE_rhs(real t, vector y2, vector y1, real[] theta, real[] x_r, int[] x_i)
 \end{minted}
-\item \texttt{nCmt} 
+\item \texttt{nCmt}
 The number of compartments. Equivalently, the dimension of the ODE system.
-\item \texttt{rel\_tol} 
+\item \texttt{rel\_tol}
 The relative tolerance for numerical integration, default to 1.0E-6.
 \item \texttt{abs\_tol}
 The absolute tolerance for numerical integration, default to 1.0E-6.
@@ -830,11 +839,11 @@ population size, then \texttt{evid[1,]} to
 \texttt{evid[n1 + n2,]} for subject 2, etc. With \(n_i\)
 being the number of events for subject \(i\), \(i=1, 2, \dots, N\), the
 size of \texttt{evid}'s first dimension is \(\sum_{i}n_i\).
-\item \texttt{len} 
+\item \texttt{len}
 The length of data for each subject within
 the above events arrays. The size of \texttt{len} equals
 to population size \(N\).
-\item \texttt{nCmt} 
+\item \texttt{nCmt}
 The number of compartments. Equivalently, the dimension of the ODE system.
 \item \texttt{x\_r}
 2d arary real data to be passed to ODE RHS. If specified, its 1st
@@ -842,7 +851,7 @@ dimension should have the same size as \texttt{time}.
 \item \texttt{x\_i}
 2d arary integer data to be passed to ODE RHS. If specified, its 1st
 dimension should have the same size as \texttt{time}.
-\item \texttt{rel\_tol} 
+\item \texttt{rel\_tol}
 The relative tolerance for numerical integration, default to 1.0E-6.
 \item \texttt{abs\_tol}
 The absolute tolerance for numerical integration, default to 1.0E-6.
@@ -1141,7 +1150,7 @@ pairs. Specifically, \texttt{linear\_interpolation} implements the following fun
                  y_1, & x_{\text{out}} < x_1 \\
                  y_i + \frac{y_{i+1} - y_i}{x_{i+1} - x_i}
                  \left(x_{\text{out}} - x_i\right), & x_{\text{out}} \in [x_i, x_{i+1}) \\
-                 y_n, & x_{\text{out}} \ge x_n 
+                 y_n, & x_{\text{out}} \ge x_n
                           \end{array}\right.
 \end{align*}
 \begin{itemize}
@@ -1357,7 +1366,7 @@ transformed parameters{
 \label{sec:org1ae9370}
 Using \texttt{pmx\_solve\_rk45}, the following example fits a two-compartment model
 with first order absorption. User-defined function
-\texttt{ode\_rhs} describes the RHS of the ODEs. 
+\texttt{ode\_rhs} describes the RHS of the ODEs.
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 functions{
   vector ode_rhs(real t, vector x, real[] parms, real[] x_r, int[] x_i){
@@ -1405,7 +1414,7 @@ transformed parameters {
   real theta[nTheta];
   row_vector<lower = 0>[nt] cHat;
   row_vector<lower = 0>[nObs] cHatObs;
-  matrix<lower = 0>[3, nt] x; 
+  matrix<lower = 0>[3, nt] x;
 
   theta[1] = CL;
   theta[2] = Q;
@@ -1448,7 +1457,7 @@ PK model, and set \(n = 3\).
   y_{\text{circ}}& = f_{\text{FK}}(\text{MTT}, \text{Circ}_{0}, \alpha, \gamma, c),
 \end{align}
   where \(c\) is the drug concentration calculated from the PK model, and function \(f_{\text{FK}}\) represents solving the following
-nonlinear ODE for \(y_{\text{circ}}\) 
+nonlinear ODE for \(y_{\text{circ}}\)
 \begin{align}\label{eq:FK}
   \frac{dy_\mathrm{prol}}{dt} &= k_\mathrm{prol} y_\mathrm{prol} (1 - E_\mathrm{drug})\left(\frac{\text{Circ}_0}{y_\mathrm{circ}}\right)^\gamma - k_\mathrm{tr}y_\mathrm{prol}, \\
   \frac{dy_\mathrm{trans1}}{dt} &= k_\mathrm{tr} y_\mathrm{prol} - k_\mathrm{tr} y_\mathrm{trans1}, \\
@@ -1729,7 +1738,7 @@ transformed parameters{
   real theta[np * nt, nTheta];
   vector<lower = 0>[nt] cHat[np];
   real<lower = 0> cHatObs[np*nObs];
-  matrix[3, nt * np] x; 
+  matrix[3, nt * np] x;
 
   for (id in 1:np) {
     for (it in 1:nt) {
@@ -1875,7 +1884,7 @@ data {
 }
 transformed data {
   real univar_integral;
-  univar_integral = univariate_integral_rk45(func, t0, t1, dtheta, 
+  univar_integral = univariate_integral_rk45(func, t0, t1, dtheta,
                           x_r, x_i);
 }
 /* ... */
@@ -2007,7 +2016,7 @@ function. Thus the Stan model shows the call to \texttt{pmx\_solve\_linode}
 within a loop over the individual subjects rather than over
 the individual observations. Note that the correlation matrix \(\rho\) does not explicitly appear
 in the model, but it is used to construct \(\Omega\), which parametrizes
-the PK IIV. 
+the PK IIV.
 
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 data{
@@ -2132,7 +2141,7 @@ transformed parameters{
 
     cHat[start[j]:end[j]] = 1000 * x[2, start[j]:end[j]] ./ V1[j];
     ceHat[start[j]:end[j]] = 1000 * x[4, start[j]:end[j]] ./ V1[j];
-    respHat[start[j]:end[j]] = 100 * ceHat[start[j]:end[j]] ./ 
+    respHat[start[j]:end[j]] = 100 * ceHat[start[j]:end[j]] ./
        (EC50[j] + ceHat[start[j]:end[j]]);
   }
 
@@ -2313,7 +2322,7 @@ so we can use information from the neutropenia literature. In this
 example, we choose to use strongly informative priors on both PK and PD
 parameters.
 
-The ODE is defined as 
+The ODE is defined as
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 functions{
     vector twoCptNeutModelODE(real t, vector x, real[] parms, real[] rdummy, int[] idummy){
@@ -2344,7 +2353,7 @@ functions{
     V1 = parms[3];
     V2 = parms[4];
     ka = parms[5];
-    mtt = parms[6];	
+    mtt = parms[6];
     circ0 = parms[7];
     gamma = parms[8];
     alpha = parms[9];
@@ -2365,7 +2374,7 @@ functions{
     transit1 = x[5] + circ0;
     transit2 = x[6] + circ0;
     transit3 = x[7] + circ0;
-    circ = fmax(machine_precision(), x[8] + circ0); // Device for implementing a modeled 
+    circ = fmax(machine_precision(), x[8] + circ0); // Device for implementing a modeled
                                                     // initial condition
     dxdt[4] = ktr * prol * ((1 - EDrug) * ((circ0 / circ)^gamma) - 1);
     dxdt[5] = ktr * (prol - transit1);
@@ -2379,7 +2388,7 @@ functions{
 \end{minted}
 
 We use the \texttt{pmx\_solve\_group\_rk45} function to
-solve the entire population's events. 
+solve the entire population's events.
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 transformed parameters{
   row_vector[nt] cHat;
@@ -2391,17 +2400,17 @@ transformed parameters{
 
   // variables for Matt's trick
   vector<lower = 0>[nIIV] thetaHat;
-  matrix<lower = 0>[nSubjects, nIIV] thetaM; 
+  matrix<lower = 0>[nSubjects, nIIV] thetaM;
 
   // Matt's trick to use unit scale
-  thetaHat[1] = CLHat; 
+  thetaHat[1] = CLHat;
   thetaHat[2] = QHat;
   thetaHat[3] = V1Hat;
   thetaHat[4] = V2Hat;
   thetaHat[5] = mttHat;
   thetaHat[6] = circ0Hat;
   thetaHat[7] = alphaHat;
-  thetaM = (rep_matrix(thetaHat, nSubjects) .* 
+  thetaM = (rep_matrix(thetaHat, nSubjects) .*
              exp(diag_pre_multiply(omega, L * etaStd)))';
 
   for(i in 1:nSubjects) {
@@ -2419,7 +2428,7 @@ transformed parameters{
   /* group solver */
   x = pmx_solve_group_rk45(twoCptNeutModelODE, 8, len,
                            time, amt, rate, ii, evid, cmt, addl, ss,
-                           parms, 
+                           parms,
                            1e-6, 1e-6, 500);
 
   for(i in 1:nSubjects) {

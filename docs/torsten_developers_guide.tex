@@ -4,7 +4,7 @@
               \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
 \newcommand\mrgproject{}
 \newcommand\mrgtitle{Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan}
-\newcommand\mrgsubtitle{\large{Developers Guide} \linebreak (Torsten Version 0.90.0, Stan version 2.29.2)}
+\newcommand\mrgsubtitle{\large{Developers Guide} \linebreak (Torsten Version 0.91.0, Stan version 2.33.1)}
 \include{mrgtitlepage}
 \usepackage{imakeidx}
 \makeindex
@@ -61,7 +61,7 @@
  pdftitle={Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan},
  pdfkeywords={},
  pdfsubject={},
- pdfcreator={Emacs 27.2 (Org mode 9.4.4)}, 
+ pdfcreator={Emacs 27.2 (Org mode 9.4.4)},
  pdflang={English}}
 \begin{document}
 
@@ -73,8 +73,8 @@
 \label{sec:org9bb72d8}
 \begin{itemize}
 \item \href{mailto:billg@metrumrg.com}{William R. Gillespie} , \href{https://www.metrumrg.com/}{Metrum Research Group}
-\item \href{mailto:yz@yizh.org}{Yi Zhang} , \href{https://www.sagerx.com/}{Sage Therapeutics}
-\item \href{mailto:charles.margossian@columbia.edu}{Charles Margossian} , Columbia University, Department of Statistics
+\item \href{mailto:yz@yizh.org}{Yi Zhang} , \href{https://www.c-path.org/}{Critical Path Institute}
+\item \href{mailto:cmargossian@flatironinstitute.org}{Charles Margossian} , Flatiron Institute
 \end{itemize}
 \chapter*{Acknowledgements}
 \label{sec:org4fd8ba7}
@@ -114,7 +114,7 @@ Torsten/cmdstan/stan/lib/stan_math
 
 Additionally Torsten's own mathematical functions are in a separate
 repository. It is a submodule of \texttt{Stan/Math} that
-contains all of Torsten functions 
+contains all of Torsten functions
 
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
 Torsten/cmdstan/stan/lib/stan_math/stan/math/torsten
@@ -136,7 +136,7 @@ understand the design, let us take a look at the user-facing \texttt{pmx\_solve\
   template <typename F, typename... Ts>
   auto pmx_solve_rk45(const F& f, const int nCmt, Ts... args) {
     using scheme_t = torsten::dsolve::odeint_scheme_rk45;
-    return 
+    return
     PMXSolveODE<dsolve::PMXOdeIntegrator<dsolve::PMXVariadicOdeSystem, dsolve::PMXOdeintIntegrator<scheme_t>>>::solve(f, nCmt, args...);
 }
 \end{minted}
@@ -155,8 +155,8 @@ template arguments. The first is \texttt{PMXVariadicOdeSystem} that will be
 constructed using \texttt{f} and provides the ODE information (RHS, Jacobian,
 etc). The second is \texttt{PMXOdeintIntegrator} that indicates we will be
 using an integrator from \texttt{Boost::odeint} library. The specific
-integrator is \texttt{torsten::dsolve::odeint\_scheme\_rk45}. An alternative 
-is 
+integrator is \texttt{torsten::dsolve::odeint\_scheme\_rk45}. An alternative
+is
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{cpp}
 torsten::dsolve::odeint_scheme_ckrk
 \end{minted}
@@ -173,7 +173,7 @@ based on.
 The \texttt{PMXSolveODE} class uses the type of ODE integrator and ODE
 system as arguments. It is the basis of all user-facing numerical
 ODE functions. It provides a \texttt{static} function \texttt{solve} that uses
-event schedule arguments and ODE controls to 
+event schedule arguments and ODE controls to
 \begin{itemize}
 \item construct events from NMTRAN arguments,
 \item construct requested ODE integrator,
@@ -333,7 +333,7 @@ doxygen process as in \texttt{stan/math}.
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
 make doxygen
 \end{minted}
-To access the generated Torsten documentation, point the browser to 
+To access the generated Torsten documentation, point the browser to
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
 /stan_math/doc/api/html/index.html
 \end{minted}
@@ -423,11 +423,11 @@ sample transition(sample& init_sample, callbacks::logger& logger) {
 }
 \end{minted}
 The \texttt{this -> use\_cross\_chain\_adapt} condition controls if cross-chain
-warmup is used and choose the adaptation accordingly. 
+warmup is used and choose the adaptation accordingly.
 
 \chapter{\texttt{stanc3}}
 \label{sec:org4ca4b46}
-The forked \texttt{stanc3} contains a 
+The forked \texttt{stanc3} contains a
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
 stanc3/src/middle/torsten.ml
 \end{minted}
@@ -515,12 +515,12 @@ add_func
 \end{minted}
 One can easily map the above argumentss and return value to the C++
 function. Note that we need to make the Stan language aware of whether
-an argument could be parameter (\texttt{AutoDiffable}) or not (\texttt{DataOnly}). 
+an argument could be parameter (\texttt{AutoDiffable}) or not (\texttt{DataOnly}).
 
 \section{Adding a new high-order function}
 \label{sec:org532ee4b}
 Torsten's numerical ODE solvers are high-order functions, i.e. functions with function arguments.
-Adding a new high-order function is slightly more complicated. 
+Adding a new high-order function is slightly more complicated.
 Let us use \texttt{pmx\_solve\_rk45} as an example. As shown in
 Section 1, the function uses variadic arguments in order to support
 different signatures. Here let us assume the one of them as follows.
@@ -550,7 +550,7 @@ compartments, and \texttt{msgs} for I/O of the ODE solver messages.
 In order to support the above signature in Stan, in the \texttt{torsten.ml}
 we need first define the ODE function signature.
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{ocaml}
-let pmx_solve_ode_func = 
+let pmx_solve_ode_func =
   [ ( UnsizedType.AutoDiffable
     , UnsizedType.UFun
         ( [ (UnsizedType.AutoDiffable, UnsizedType.UReal) (* time *)
@@ -635,7 +635,7 @@ automatically when one push to Torsten's \texttt{math} repo fork.
 
 \section{\texttt{Stan}}
 \label{sec:orgaac0db9}
-The treatment for \texttt{Stan} repo follows a same procedure. 
+The treatment for \texttt{Stan} repo follows a same procedure.
 
 \section{\texttt{stanc3}}
 \label{sec:orgb6072a8}
@@ -644,7 +644,7 @@ in \texttt{stanc3} repo. Similar to the previous two repos, we need to first
 merge from upstream.
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
 bash-3.2$ git branch
-  master                        # stanc3 upstream 
+  master                        # stanc3 upstream
   torsten-develop               # torsten branch
 bash-3.2$ git checkout master && git pull
 bash-3.2$ git checkout torsten-develop && git merge master
@@ -696,7 +696,7 @@ stanc3  git@github.com:metrumresearchgroup/stanc3.git (push)
 torsten_math    git@github.com:metrumresearchgroup/torsten_math.git (fetch)
 torsten_math    git@github.com:metrumresearchgroup/torsten_math.git (push)
 \end{minted}
-so that next we can call 
+so that next we can call
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
 ./substree_update.sh cmdstan_branch stan_branch math_branch torsten_math_branch
 \end{minted}
