@@ -1,12 +1,12 @@
 // TwoCptModel.stan
-// Run two compartment model using built-in analytical solution 
+// Run two compartment model using built-in analytical solution
 // Heavily anotated to help new users
 
 data{
   int<lower = 1> nt;  // number of events
   int<lower = 1> nObs;  // number of observation
   array[nObs] int<lower = 1> iObs;  // index of observation
-  
+
   // NONMEM data
   array[nt] int<lower = 1> cmt;
   array[nt] int evid;
@@ -16,7 +16,7 @@ data{
   array[nt] real time;
   array[nt] real rate;
   array[nt] real ii;
-  
+
   vector<lower = 0>[nObs] cObs;  // observed concentration (Dependent Variable)
 }
 
@@ -51,7 +51,7 @@ transformed parameters{
 
   cHat = x[2, :] ./ V1; // we're interested in the amount in the second compartment
 
-  cHatObs = cHat'[iObs]; // predictions for observed data recors
+  cHatObs = cHat[iObs]'; // predictions for observed data recors
 }
 
 model{
