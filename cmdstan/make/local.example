@@ -1,3 +1,10 @@
+# Torsten MPI setup for metworx, assuming MPICH at /data/mpich-install
+# TORSTEN_MPI=1
+# TBB_CXX_TYPE=gcc
+# CXX = /data/mpich-install/bin/mpicxx
+# CC = /data/mpich-install/bin/mpicc
+# CXXFLAGS += -isystem /data/mpich-install/include
+
 # To use this template, make a copy from make/local.example to make/local and uncomment options as needed.
 # Be sure to run `make clean-all` before compiling a model to make sure everything gets rebuilt.
 
