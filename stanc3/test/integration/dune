@@ -1,8 +1,0 @@
-(executable
- (name run_bin_on_args)
- (public_name run_bin_on_args)
- (libraries core unix))
-
-(cram
- (applies_to :whole_subtree)
- (deps %{bin:stanc}))

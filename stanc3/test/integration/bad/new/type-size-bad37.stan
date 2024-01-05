@@ -1,1 +1,0 @@
-data { simplex[0.0 while] x;}
