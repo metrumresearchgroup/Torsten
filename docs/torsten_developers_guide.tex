@@ -583,6 +583,14 @@ add_func
   Common.Helpers.AoS) ;
 \end{minted}
 
+In addition to the above \texttt{pmx\_solve\_...} functions, in \texttt{Stan\_math\_signatures.ml} Torsten uses variadic signatures similar to Stan's for its own \texttt{pmx\_ode\_...} ODE integrators.
+
+\section{Torsten namespace}
+Instead of using \texttt{stan::math} namespace, Torsten's functions should be prepended with \texttt{torsten} namespace. This is done in \texttt{stan\_namespace\_qualify} function in \texttt{Lower\_expr.ml}.
+
+\section{Build binaries}
+Upstream stanc3 repo comes with a workflow 'binaries.yml' to build stanc binaries for Linux(Ubuntu), Windows, and MacOS. Note that the names of the workflow artifacts are not the same as in the \texttt{make/stanc} script in \texttt{cmdstan} repo would download. One need to either change the script or rename the binary artifacts. This is different from upstream Stan which uses Jenkins to build binaries.
+
 \chapter{\texttt{Torsten} container}
 \label{sec:orgd59585c}
 All the above repos are collected in the container repo
