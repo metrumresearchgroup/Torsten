@@ -61,10 +61,9 @@ jobs:
         ./pk2cpt sample data file=pk2cpt.data.R init=pk2cpt.init.R
     - name: Upload Torsten example model output pk2cpt
       uses: actions/upload-artifact@v4
-      working-directory: ./example-models/pk2cpt
       with:
         name: output
-        path: './output.csv'
+        path: './example-models/pk2cpt/output.csv'
 
   # win:
   #   name: windows tests
