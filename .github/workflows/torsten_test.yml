@@ -62,7 +62,7 @@ jobs:
     - name: Upload Torsten example model output pk2cpt
       uses: actions/upload-artifact@v4
       with:
-        name: output
+        name: ${{ matrix.os }}-output
         path: './example-models/pk2cpt/output.csv'
 
   # win:
