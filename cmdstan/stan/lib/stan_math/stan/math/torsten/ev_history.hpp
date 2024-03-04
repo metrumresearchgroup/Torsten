@@ -17,7 +17,7 @@
 #include <functional>
 
 namespace torsten {
-  /** 
+  /**
    * Non-event parameters structure for
    * bioavailability, lag time, real ODEd ata, integer ODE data. Since
    * we allow elision of any of these we need template discerning the
@@ -33,13 +33,13 @@ namespace torsten {
     using biovar_t = std::tuple_element_t<0, std::tuple<Ts...> >;
     using lag_t = std::tuple_element_t<1, std::tuple<Ts...> >;
 
-    /** 
+    /**
      * Get bioavailability given subject id & compartment id
-     * 
+     *
      * @param i subject id
      * @param j compartment id
      * @param array_2d_params bioavailability array
-     * 
+     *
      * @return F[i,j]
      */
     static const auto& bioavailability(int i, int j,
@@ -47,13 +47,13 @@ namespace torsten {
       return std::get<0>(array_2d_params).at(i).at(j);
     }
 
-    /** 
+    /**
      * Get lag time given subject id & compartment id
-     * 
+     *
      * @param i subject id
      * @param j compartment id
      * @param array_2d_params lag time array
-     * 
+     *
      * @return tlag[i,j]
      */
     static const auto& lag_time(int i, int j,
@@ -72,13 +72,13 @@ namespace torsten {
     using biovar_t = T;
     using lag_t = double;
 
-    /** 
+    /**
      * Get bioavailability given subject id & compartment id
-     * 
+     *
      * @param i subject id
      * @param j compartment id
      * @param array_2d_params bioavailability array
-     * 
+     *
      * @return F[i,j]
      */
     static const auto& bioavailability(int i, int j,
@@ -86,13 +86,13 @@ namespace torsten {
       return std::get<0>(array_2d_params).at(i).at(j);
     }
 
-    /** 
+    /**
      * Since lag time is omiited, the default 0.0 is used
-     * 
+     *
      * @param i subject id
      * @param j compartment id
      * @param array_2d_params lag time array.
-     * 
+     *
      * @return tlag[i, j]
      */
     static double lag_time(int i, int j,
@@ -111,13 +111,13 @@ namespace torsten {
     using biovar_t = double;
     using lag_t = double;
 
-    /** 
+    /**
      * Since bioavailability is omiited, the default 1.0 is used
-     * 
+     *
      * @param i subject id
      * @param j compartment id
      * @param array_2d_params bioavailability array
-     * 
+     *
      * @return F[i,j]
      */
     static double bioavailability(int i, int j,
@@ -125,13 +125,13 @@ namespace torsten {
       return 1.0;
     }
 
-    /** 
+    /**
      * Since lag time is omiited, the default 0.0 is used
-     * 
+     *
      * @param i subject id
      * @param j compartment id
      * @param array_2d_params lag time array.
-     * 
+     *
      * @return tlag[i, j]
      */
     static double lag_time(int i, int j,
@@ -151,7 +151,7 @@ namespace torsten {
    *
    * except <code>theta</code>, the above parameters are optional and
    * are handled by parameter packs. Here two packas are used for
-   * different purposes: 
+   * different purposes:
    * 1. bioavailability and lag time are related to PMX events and
    *    grouped into a <code>tuple</code>. One can specify none,
    *    bioavailability only, or bioavailability + tlag.
@@ -160,11 +160,11 @@ namespace torsten {
    *
    * @tparam T0 type for time
    * @tparam T4 type for system parameter, usually refered as <code>pMatrix</code> or <code>theta</code>.
-   * @tparam theta_container type of container,  <code>std::vector</code> or 
+   * @tparam theta_container type of container,  <code>std::vector</code> or
    *                         <code>Eigen::Matrix</code>(for linear * system)
    * @tparam params_tuple_type tuple with a parameter pack for PMX events: bioavailability and lag time.
    * @tparam Ts pack of types for ODE data: real & integer.
-   * 
+   *
    */
   template<typename T0,
            typename T4,
@@ -172,8 +172,8 @@ namespace torsten {
            typename params_tuple_type,
            typename... Ts>
   struct NonEventParameters;
-  
-  /** 
+
+  /**
    * Parameters & controls that are not part of event sequence,
    * specialization when types for both bioavailability and lag time
    * are provided in <code>tuple_pars_t</code>.
@@ -221,9 +221,9 @@ namespace torsten {
       sort();
     }
 
-    /** 
+    /**
      * For unit test.
-     * 
+     *
      * @param id  subject id
      * @param rec nonmen event record
      * @param ibegin_theta beginning index in popultion array for subject id
@@ -234,7 +234,7 @@ namespace torsten {
      * @param isize_tlag length in popultion array for subject id
      * @param theta model param
      * @param array_2d_params0 additional params
-     * 
+     *
      */
     template <typename rec_t>
     NonEventParameters(int id, const rec_t& rec,
@@ -287,6 +287,7 @@ namespace torsten {
     }
 
     inline const T5 bioavailability(int iEvent, int iParameter) const {
+      int i = npar > 1 ? get_par_array(iEvent)[1] : -1
       return NonEventParameters_Impl<tuple_pars_t...>::bioavailability(get_par_array(iEvent)[1], iParameter,
                                                                        event_ctrl);
     }
@@ -317,14 +318,14 @@ namespace torsten {
     }
   };
 
-  /** 
+  /**
    * Find <code>i</code>'th param index for subject <code>id</code>
-   * 
+   *
    * @param id subject index
    * @param i param index for this subject
    * @param rec populatoin event record
    * @param param param for entire population
-   * 
+   *
    * @return <code>i</code>'th param index for subject <code>id</code>
    */
   template<typename rec_t, typename T>
@@ -337,12 +338,12 @@ namespace torsten {
    * Container of a vector of events ordered chronologically.
    * During events generation there are cases where some events are
    * repeated or new events are generated, in addition to the NMTRAN
-   * input. To avoid copying the events, ideally one can use a 
+   * input. To avoid copying the events, ideally one can use a
    * <code>reference_wrapper</code>. Here we simply use an integer
    * vector to store the location of the events in the original NMTRAN
    * input vector. Thus the events are reflected in an <code>std::array</code>
    * type <code> using IDVec = std::array<int, 4> </code>
-   *  
+   *
    * 0: original(0)/generated(1)
    *
    * 1: index in original/generated arrays
@@ -388,58 +389,58 @@ namespace torsten {
     std::vector<int> rate_index; /**< points to the rates for each state time,
                                   * since there is one rates vector per time, not per event. */
 
-    /** 
+    /**
      * Keep the event results or not. Only original NMTRAN input
      * events results are kept.
-     * 
+     *
      * @param id event id
-     * 
+     *
      * @return true keep; false discard
      */
     inline bool keep(const IDVec& id)  const { return id[0] == 0; }
 
-    /** 
+    /**
      * Is the event original or newly generated.
-     * 
+     *
      * @param id event id
-     * 
+     *
      * @return true: generated; false: original
      */
     inline bool isnew(const IDVec& id) const { return id[3] == 1; }
 
-    /** 
+    /**
      * EVID for the given event
-     * 
+     *
      * @param id event id
-     * 
+     *
      * @return event id
      */
     inline int evid (const IDVec& id) const { return id[2] ; }
 
-    /** 
+    /**
      * Keep the event results or not. Only original NMTRAN input
      * events results are kept.
-     * 
+     *
      * @param id event id in the event vector
-     * 
+     *
      * @return true keep; false discard
      */
     inline bool keep(int i)  const { return keep(idx[i]); }
 
-    /** 
+    /**
      * Is the event original or newly generated.
-     * 
+     *
      * @param id event id in the event vector
-     * 
+     *
      * @return true: generated; false: original
      */
     inline bool isnew(int i) const { return isnew(idx[i]); }
 
-    /** 
+    /**
      * EVID for the given event
-     * 
+     *
      * @param id event id in the event vector
-     * 
+     *
      * @return event id
      */
     inline int evid (int i) const { return evid(idx[i]); }
@@ -601,10 +602,10 @@ namespace torsten {
                                               });
     }
 
-    /** 
+    /**
      * Generate end-of-infusion event to indicate the range of the infusion.
      * The new event has a special EVID = 9 and it introduces no action.
-     * 
+     *
      * @param nCmt nb of compartments for the model
      */
     void generate_rates(int nCmt) {
@@ -651,7 +652,7 @@ namespace torsten {
       }
 
       /*
-       * 
+       *
        */
       rate_index.resize(idx.size());
       int iRate = 0;
