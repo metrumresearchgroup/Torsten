@@ -5,12 +5,13 @@ Torsten is a collection of Stan functions to facilitate analysis of pharmacometr
 
 ## Changelog
 
--   Version 0.91.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2023-12-31 Sun&gt;</span></span>
+-   Version 0.91.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2024-03-18 Sun&gt;</span></span>
     -   Changed
         -   Update model examples according to new array syntax.
         -   Update to Stan version 2.33.1.
         -   Removed experimental cross-chain feature.
         -   Deprecation of old Torsten functions not using 'pmx\\\_' prefix.
+        -   Minor bug fixes.
 -   Version 0.90.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-05-18 Wed&gt;</span></span>
     -   Changed
         -   Update model examples according to new array syntax.
