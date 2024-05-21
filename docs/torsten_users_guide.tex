@@ -19,7 +19,7 @@
 \usepackage{bold-extra}
 \usepackage{courier}
 \usepackage{listings}
-\usepackage{siunitx}
+% \usepackage{siunitx}
 \usepackage{booktabs}
 \usepackage[framemethod=TikZ, skipabove=10pt, skipbelow=10pt, backgroundcolor=black!3, roundcorner=4pt, linewidth=1pt]{mdframed}
 \BeforeBeginEnvironment{minted}{\begin{mdframed}}
@@ -924,7 +924,7 @@ processes evenly. Note that to access this feature user must have
 MPI installed, and some MPI installation may require set additional
 compiler arguments, such as \texttt{CXXLFAGS} and \texttt{LDFLAGS}.
 
-\section{ODE  integrator function}
+\section{ODE integrator function}
 \label{sec:org2654f2a}
 \subsection{Description}
 \label{sec:orge3aae27}
@@ -940,7 +940,7 @@ by these functions.
 \label{sec:org13cb90b}
 \index{PMX ODE integrators}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-real[ , ] pmx_integrate_ode_[ adams || bdf || rk45 ](ODE_rhs, real[] y0, real t0, real[] ts, real[] theta, real[] x_r, int[] x_i [ , real rtol, real atol, int max_step ]);
+array[] vector pmx_ode_[ adams || bdf || rk45 || ckrk ](ODE_rhs, vector y0, real t0, real[] ts, ...]);
 \end{minted}
 \subsection{Arguments}
 \label{sec:orgcf984ad}
@@ -951,10 +951,9 @@ It should be defined in
 \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}{functions} block and has the following format
 \end{itemize}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-vector = f(real t, vector y, real[] param, real[] dat_r, int[] dat_i) {...}
+vector = f(real t, vector y, ...) {}
 \end{minted}
-Here \texttt{t} is time, \texttt{y} the unknowns of ODE, \texttt{param} the parameters, \texttt{dat\textbackslash{}\_r} the real data, \texttt{dat\textbackslash{}\_i}
-the integer data.
+Here \texttt{t} is time, \texttt{y} the unknowns of ODE, \texttt{...} the parameters and data.
 \begin{itemize}
 \item \texttt{y0}
 Initial condition \(y_0\).
@@ -962,32 +961,36 @@ Initial condition \(y_0\).
 Initial time \(t_0\).
 \item \texttt{ts}
 Output time when solution is seeked.
-\item \texttt{theta}
-Parameters to be passed to \texttt{ODE\_rhs} function.
-\item \texttt{x\_r}
-Real data to be passed to \texttt{ODE\_rhs} function.
-\item \texttt{x\_i}
-Integer data to be passed to \texttt{ODE\_rhs} function.
+\item \texttt{...}
+Parameters and data to be passed to \texttt{ODE\_rhs} function.
+\end{itemize}
+
+For refined accuracy handling, we recommend the following functions that support additional ODE solver tolerance controls.
+\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
+array[] vector pmx_ode_[ adams || bdf || rk45 ]_ctrl(ODE_rhs, vector y0, real t0, real[] ts, real rtol, real atol, int max_step, ... ]);
+\end{minted}
+\begin{itemize}
 \item \texttt{rtol}
-Relative tolerance, default to 1.e-6(\texttt{rk45}) and 1.e-8(\texttt{adams} and \texttt{bdf}).
+Relative tolerance. \texttt{pmx\_ode\_[ adams || bdf || rk45 || ckrk ]} functions use 1.e-6(\texttt{rk45} and \texttt{ckrk}) and 1.e-8(\texttt{adams} and \texttt{bdf}).
 \item \texttt{atol}
-Absolute tolerance, default to 1.e-6(\texttt{rk45}) and 1.e-8(\texttt{adams} and \texttt{bdf}).
+Absolute tolerance. \texttt{pmx\_ode\_[ adams || bdf || rk45 || ckrk ]} functions use 1.e-6(\texttt{rk45} and \texttt{ckrk}) and 1.e-8(\texttt{adams} and \texttt{bdf}).
 \item \texttt{max\_step}
 Maximum number of steps allowed between neighboring time in \texttt{ts},
 default to 100000.
 \end{itemize}
 \subsection{Return value}
 \label{sec:org0bffd09}
-An \texttt{n}-by-\texttt{nd} 2d-array, where \texttt{n} is the size of \texttt{ts}
+An \texttt{n}-array of \texttt{nd}-vectors, where \texttt{n} is the size of \texttt{ts}
 and \texttt{nd} the dimension of the system.
 \subsection{Note}
 \label{sec:orgf701db1}
 \begin{itemize}
 \item Three numerical integrator are provided:
 \begin{itemize}
-\item \texttt{pmx\_integrate\_ode\_adams}: Adams-Moulton method,
-\item \texttt{pmx\_integrate\_ode\_bdf}: Backward-differentiation formular,
-\item \texttt{pmx\_integrate\_ode\_rk45}: Runge-Kutta 4/5 method.
+\item \texttt{pmx\_ode\_adams}: Adams-Moulton method,
+\item \texttt{pmx\_ode\_bdf}: Backward-differentiation formular,
+\item \texttt{pmx\_ode\_rk45}: Runge-Kutta 4/5 method.
+\item \texttt{pmx\_ode\_ckrk}: Cash-Karp Runge-Kutta 4/5 method.
 \end{itemize}
 When not equipped with further understanding of the ODE system, as a
 rule of thumb we suggest user try
@@ -1016,17 +1019,10 @@ below certain threshold without affecting the rest of
 the dynamic system, setting
 \texttt{atol} greater than that threshold will avoid
 spurious and error-prone computation. See
-\cite{hindmarsh_cvodes_2020} and
-1.4 of \cite{shampine_solving_2003} for details.
-
-\item With optional arguments indicated by square bracket, the following calls are allowed:
+\cite{hindmarsh_cvodes_2020}, \cite[Chap~1.4]{shampine_solving_2003}, and Stan User Guide for details.
 \end{itemize}
-\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-pmx_integrate_ode_[adams || rk45 || bdf](..., x_i);
-pmx_integrate_ode_[adams || rk45 || bdf](..., x_i, rel_tol, abs_tol, max_step);
-\end{minted}
 
-\section{ODE group  integrator Function}
+\section{ODE group integrator Function}
 \label{sec:orge34552c}
 \index{PMX ODE group integrators}
 \subsection{Description}
