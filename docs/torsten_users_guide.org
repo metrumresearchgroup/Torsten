@@ -196,12 +196,13 @@ following:
     :EXPORT_OPTIONS: toc:t num:nil
     :EXPORT_DATE: <2022-05-18 Wed>
     :END:
-- Version 0.91.0 <2023-12-31 Sun>
+- Version 0.91.0 <2024-03-18 Mon>
   + Changed
     - Update model examples according to new array syntax.
     - Update to Stan version 2.33.1.
     - Removed experimental cross-chain feature.
     - Deprecation of old Torsten functions not using 'pmx\_' prefix.
+    - Minor bug fixes.
 - Version 0.90.0 <2022-05-18 Wed>
   + Changed
     - Update model examples according to new array syntax.
@@ -278,7 +279,7 @@ following:
   + Added
     - Dosing rate as parameter
   + Changed
-  - Update to Stan version 2.18.0.
+  + Update to Stan version 2.18.0.
 
 - Version 0.84 <2018-02-24>
   + Added
