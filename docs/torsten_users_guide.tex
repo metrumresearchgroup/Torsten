@@ -49,7 +49,7 @@
 \usepackage{amssymb}
 \usepackage{capt-of}
 \usepackage[newfloat]{minted}
-\usemintedstyle{xcode}
+\usemintedstyle{xcode}          % avoid red boxes in minted blocks
 \usepackage{caption}
 \setcounter{secnumdepth}{3}
 \author{Yi Zhang}
@@ -1027,94 +1027,6 @@ spurious and error-prone computation. See
 1.4 of \cite{shampine_solving_2003} for details.
 
 \end{itemize}
-
-\section{ODE group  integrator Function}
-\label{sec:orge34552c}
-\index{PMX ODE group integrators}
-\subsection{Description}
-\label{sec:org1905897}
-All the preivous functions solves for a single ODE system. Torsten also
-provides group modeling counterparts for ODE integrators. The
-functions solve for a group of ODE systems that share an ODE RHS but with
-different parameters. They have similar
-signatures to single-ODE integration functions.
-\subsection{Usage}
-\label{sec:orgdd1fe48}
-\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-matrix pmx_integrate_ode_group_[adams || rk45 || bdf](ODE_system, real[ , ] y0, real t0, int[] len, real[] ts, real[ , ] theta, real[ , ] x_r, int[ , ] x_i, [ real rtol, real atol, int max_step ] );
-\end{minted}
-Here \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}{[adams || rk45 || bdf]} indicates the
-function name can be of any of the three suffixes. See Section \ref{sec:org2654f2a}.
-\begin{itemize}
-\item \texttt{ODE\_rhs}
-Function that specifies the right-hand-side \(f\). See Section \ref{sec:org2654f2a}.
-\item \texttt{y0}
-Initial condition \(y_0\) for each subsystem in the group. The
-first dimension equals to the size of the group.
-\item \texttt{t0}
-Initial time \(t_0\).
-\item \texttt{len}
-A vector that contains the number of output time points for each
-subsystem. The lenght of the vector equals to the size of the group.
-\item \texttt{ts}
-Output time when solution is seeked, consisting of
-\texttt{ts} of each subsystem concatenated.
-\item \texttt{theta}
-2d-array parameters to be passed to \texttt{ODE\_rhs}
-function. Each row corresponds to one subsystem.
-\item \texttt{x\_r}
-2d-array real data to be passed to \texttt{ODE\_rhs} function.
-Each row corresponds to one subsystem.
-\item \texttt{x\_i}
-2d-array integer data to be passed to \texttt{ODE\_rhs} function.
-Each row corresponds to one subsystem.
-\item \texttt{rtol}
-Relative tolerance.
-\item \texttt{atol}
-Absolute tolerance.
-\item \texttt{max\_step}
-Maximum number of steps allowed between neighboring time in \texttt{ts}.
-\end{itemize}
-
-\subsection{Return value}
-\label{sec:org6c2ec3c}
-An \texttt{n}-by-\texttt{nd} matrix, where \texttt{n} is the size of \texttt{ts}
-and \texttt{nd} the dimension of the system.
-\subsection{Note}
-\label{sec:org076898c}
-\begin{itemize}
-\item With optional arguments indicated by square bracket, the following calls are allowed:
-\end{itemize}
-\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-pmx_integrate_group_[adams || rk45 || bdf](..., x_i);
-pmx_integrate_group_[adams || rk45 || bdf](..., x_i, rel_tol, abs_tol, max_step);
-\end{minted}
-\begin{itemize}
-\item The group integrators support paralleisation through Message Passing
-Interface(MPI). One can access this feature through \texttt{cmdstan} or
-\texttt{cmdstanr} interface.
-\end{itemize}
-\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{bash}
-# cmdstan interface user need to add "TORSTEN_MPI=1" and
-# "TBB_CXX_TYPE=gcc" in "cmdstan/make/local" file. In linux & macos
-# this can be done as
-echo "TORSTEN_MPI=1" > cmdstan/make/local
-echo "TBB_CXX_TYPE=gcc" > cmdstan/make/local # "gcc" should be replaced by user's C compiler
-make path-to-model/model_name
-mpiexec -n number_of_processes model_name sample... # additional cmdstan options
-\end{minted}
-\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{r}
-library("cmdstanr")
-cmdstan_make_local(cpp_options = list("TORSTEN_MPI" = "1", "TBB_CXX_TYPE"="gcc"))  # "gcc" should be replaced by user's C compiler
-rebuild_cmdstan()
-mod <- cmdstan_model(path-to-model-file, quiet=FALSE, force_recompile=TRUE)
-f <- mod$sample_mpi(data = ..., chains = 1, mpi_args = list("n" = number_of_processes), refresh = 200)
-\end{minted}
-Here \(n\) denotes number of MPI processes, so that \(N\)
-ODE systems are distributed to and solved by \(n\)
-processes evenly. Note that to access this feature user must have
-MPI installed, and some MPI installation may require set additional
-compiler arguments, such as \texttt{CXXLFAGS} and \texttt{LDFLAGS}.
 
 \section{Univariate integral}
 \label{sec:org5024381}
