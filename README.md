@@ -1,11 +1,11 @@
 ![img](https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/docs/hugo/static/images/torsten-white-stan-cropped.png)
 
-Torsten is a collection of Stan functions to facilitate analysis of pharmacometric data. See [the user guide](https://github.com/metrumresearchgroup/Torsten/blob/master/docs/torsten_users_guide.pdf) for more details. A slightly outdated web version can be found at <https://metrumresearchgroup.github.io/Torsten/>.
+Torsten is a collection of Stan functions to facilitate analysis of pharmacometric data. See [the user guide](https://github.com/metrumresearchgroup/Torsten/blob/master/docs/torsten_users_guide.pdf) for more details.
 
 
-## Changelog
+# Changelog
 
--   Version 0.91.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2024-03-18 Sun&gt;</span></span>
+-   Version 0.91.0 <span class="timestamp-wrapper"><span class="timestamp">&lt;2024-03-18 Mon&gt;</span></span>
     -   Changed
         -   Update model examples according to new array syntax.
         -   Update to Stan version 2.33.1.
