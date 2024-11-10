@@ -490,18 +490,18 @@ specification(Table \ref{tab:event_args}).
 \begin{tabular}{lll}
 Argument Name & Definition & Stan data type\\
 \hline
-\texttt{time} & event time & \texttt{real[]}\\
-\texttt{amt} & dosing amount & \texttt{real[]}\\
-\texttt{rate} & infusion rate & \texttt{real[]}\\
-\texttt{ii} & interdose interval & \texttt{real[]}\\
-\texttt{evid} & event ID & \texttt{int[]}\\
-\texttt{cmt} & event compartment & \texttt{int[]}\\
-\texttt{addl} & additionial identical doses & \texttt{int[]}\\
-\texttt{ss} & steady-state dosing flag & \texttt{int[]}\\
+\texttt{time} & event time & \texttt{array[] real}\\
+\texttt{amt} & dosing amount & \texttt{array[] real}\\
+\texttt{rate} & infusion rate & \texttt{array[] real}\\
+\texttt{ii} & interdose interval & \texttt{array[] real}\\
+\texttt{evid} & event ID & \texttt{array[] int}\\
+\texttt{cmt} & event compartment & \texttt{array[] int}\\
+\texttt{addl} & additionial identical doses & \texttt{array[] int}\\
+\texttt{ss} & steady-state dosing flag & \texttt{array[] int}\\
 \hline
 \end{tabular}
 \end{table}
-All the \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}{real[]} arguments above are allowed to
+All the \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}{array[] real} arguments above are allowed to
 be \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}{parameters} in a Stan model.
 In addtion, Torsten functions
 support optional arguments and overloaded signatures.
@@ -510,16 +510,18 @@ Table below shows three commonly used PMX model arguments that support
 overloading. In the rest of this document we assume this convention unless indicated otherwise.
 
 \begin{table}[htbp]
-\caption{\label{tab:event_params}PMX model parameter overloadings. One can use 1d array \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}{real[]} to indicate constants of all events, or 2d array \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}{real[ , ]} so that the \(i\)th row of the array describes the model arguments for time interval \((t_{i-1}, t_i)\), and the number of the rows equals to the size of \texttt{time}.}
+\caption{\label{tab:event_params}PMX model parameter overloadings. 1d array \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}{array[] real} indicates shared parameters among all events, and 2d array \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}{real[,] real} the \(i\)th row for the model arguments for time interval \((t_{i-1}, t_i)\). In the latter case the number of the rows should equal to the size of \texttt{time}.}
 \centering
+\footnotesize
 \begin{tabular}{llll}
 Argument Name & Definition & Stan data type & Optional\\
 \hline
-\texttt{theta} & model parameters & \texttt{real[]} or \texttt{real[ , ]} & N\\
-\texttt{biovar} & bioavailability fraction & \texttt{real[]} or \texttt{real[ , ]} & Y (default to 1.0)\\
-\texttt{tlag} & lag time & \texttt{real[]} or \texttt{real[ , ]} & Y (default to 0.0)\\
+\texttt{theta} & model parameters & \texttt{array[] real} or \texttt{array[,] real} & N\\
+\texttt{biovar} & bioavailability fraction & \texttt{array[] real} or \texttt{array[,] real} & Y (default to 1.0)\\
+\texttt{tlag} & lag time & \texttt{array[] } or \texttt{array[,] real} & Y (default to 0.0)\\
 \hline
 \end{tabular}
+\normalsize
 \end{table}
 
 \section{One Compartment Model}
@@ -687,7 +689,7 @@ ODE right-hand-side \(f\). It should be defined in
 \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}{functions} block and has the following format
 \end{itemize}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-vector = f(real t, vector y, real[] param, real[] dat_r, int[] dat_i) {...}
+vector = f(real t, vector y, array[] real param, array[] real dat_r, array[] int dat_i) {...}
 \end{minted}
 Here \texttt{t} is time, \texttt{y} the unknowns of ODE, \texttt{param} the parameters, \texttt{dat\textbackslash{}\_r} the real data, \texttt{dat\textbackslash{}\_i}
 the integer data. \texttt{param},
@@ -755,6 +757,37 @@ pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, x_i, rel_tol, ab
 pmx_solve_[adams || rk45 || bdf](..., theta, biovar, tlag, x_r, x_i, rel_tol, abs_tol, max_step, as_rel_tol, as_abs_tol, as_max_step);
 \end{minted}
 
+\section{PK-Effect Compartment Model Function}
+\label{sec:org9ff6f70}
+\index{PK effcpt Model}
+\subsection{Description}
+\label{sec:org997c5bb}
+Indirect linking between PK and PD models can be realized by considering a hypothetical effect compartment. Function \texttt{pmx\_solve\_onecpt\_effcpt} solves the one-compartment model but with an additional compartment that is connected to the central compartment using a first-order rate parameter.
+\begin{align}\label{eq:onecpt_effcpt}
+  y_1' &= -k_a y_1, \\
+  y_2' &= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2.
+  y_e' &= k_e y_2 - k_ey_e.
+\end{align}
+Similarly, \texttt{pmx\_solve\_twocpt\_effcpt} solves the two-compartment model with an effect compartment.
+\begin{align}\label{eq:onecpt_effcpt}
+  y_1' &= -k_a y_1 \\
+  y_2' &= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2 +  \frac{Q}{V_3}  y_3  \\
+  y_3' &= \frac{Q}{V_2} y_2 - \frac{Q}{V_3} y_3
+  y_e' &= k_e y_2 - k_ey_e.
+\end{align}
+\subsection{Usage}
+\label{sec:orga2d9dc2}
+\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
+matrix pmx_solve_onecpt_effcpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, biovar, tlag ] );
+matrix pmx_solve_twocpt_effcpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, biovar, tlag ] );
+\end{minted}
+\subsection{Arguments}
+\label{sec:org3243540}
+See Tables in Section \ref{sec:org02ca7f5}.
+\subsection{Return value}
+\label{sec:org84c1334}
+An \texttt{ncmt}-by-\texttt{nt} matrix, where \texttt{nt} is the number of time steps and \texttt{ncmt} is the number of compartments, thus \texttt{ncmt=3} for \texttt{pmx\_solve\_onecpt\_effcpt} and \texttt{ncmt=4} for \texttt{pmx\_solve\_twocpt\_effcpt}.
+
 \section{Coupled ODE Model Function}
 \label{sec:org9ff6f77}
 \index{coupled ODE Model}
@@ -794,7 +827,7 @@ system has an almost identical signature to that used for a full
 system, but takes one additional argument: \(y_1\), the PK states,
 i.e. solution to the PK ODEs.
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-vector reduced_ODE_rhs(real t, vector y2, vector y1, real[] theta, real[] x_r, int[] x_i)
+vector reduced_ODE_rhs(real t, vector y2, vector y1, array[] real theta, array[] real x_r, array[] int x_i)
 \end{minted}
 \item \texttt{nCmt}
 The number of compartments. Equivalently, the dimension of the ODE system.
@@ -830,7 +863,7 @@ population, one subject after another.
 \label{sec:orgca1a777}
 \index{General ODE Model}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-matrix pmx_solve_group_[adams || rk45 || bdf](ODE_rhs, int nCmt, int[] len, time, amt, rate, ii, evid, cmt, addl, ss, theta, [ biovar, tlag, real[,] x_r, int [,] x_i, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
+matrix pmx_solve_group_[adams || rk45 || bdf](ODE_rhs, int nCmt, array[] int len, time, amt, rate, ii, evid, cmt, addl, ss, theta, [ biovar, tlag, real[,] x_r, int [,] x_i, real rel_tol, real abs_tol, int max_step, real as_rel_tol, real as_abs_tol, int as_max_step ] );
 \end{minted}
 Here \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}{[adams || rk45 || bdf]} indicates the
 function name can be of any of the three suffixes. See Section \ref{sec:org2654f2a}.
@@ -950,8 +983,8 @@ by these functions.
 \label{sec:org13cb90b}
 \index{PMX ODE integrators}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-real[ , ] pmx_ode_[ adams || bdf || rk45 ](ODE_rhs, vector y0, real t0, real[] ts, ...);
-real[ , ] pmx_ode_[ adams || bdf || rk45 ]_ctrl(ODE_rhs, vector y0, real t0, real[] ts, real rtol, real atol, int max_step, ...);
+array[] vector pmx_ode_[ adams || bdf || rk45 || ckrk ](ODE_rhs, vector y0, real t0, array[] real ts, ...);
+array[] vector pmx_ode_[ adams || bdf || rk45 || ckrk ]_ctrl(ODE_rhs, vector y0, real t0, array[] real ts, real rtol, real atol, int max_step, ...);
 \end{minted}
 \subsection{Arguments}
 \label{sec:orgcf984ad}
@@ -1040,7 +1073,7 @@ real univariate_integral_bdf(f, t0, t1, theta, x_r, x_i)
 Based on the ODE solver capability in Stan, Torsten provides functions
 calculating the integral of a univariate function. The integrand function \(f\) must follow the signature
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-  real f(real t, real[] theta, real[] x_r, int[] x_i) {
+  real f(real t, array[] real theta, array[] real x_r, array[] int x_i) {
     /* ... */
 }
 \end{minted}
@@ -1049,10 +1082,10 @@ calculating the integral of a univariate function. The integrand function \(f\) 
 \label{sec:org5f1a4b1}
 \index{linear interpolation}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-real linear_interpolation(real xout, real[] x, real[] y)
+real linear_interpolation(real xout, array[] real x, array[] real y)
 \end{minted}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-real[] linear_interpolation(real[] xout, real[] x, real[] y)
+array[] real linear_interpolation(array[] real xout, array[] real x, array[] real y)
 \end{minted}
 Torsten also provides function \texttt{linear\_interpolation} for piecewise linear interpolation over a
 set of x, y pairs. It returns the values of a piecewise linear
@@ -1283,7 +1316,7 @@ with first order absorption. User-defined function
 \texttt{ode\_rhs} describes the RHS of the ODEs.
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 functions{
-  vector ode_rhs(real t, vector x, real[] parms, real[] x_r, int[] x_i){
+  vector ode_rhs(real t, vector x, array[] real parms, array[] real x_r, array[] int x_i){
     real CL = parms[1];
     real Q = parms[2];
     real V1 = parms[3];
@@ -1406,7 +1439,7 @@ The model fitting is based on simulated data
 
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 functions{
-  vector FK_ODE(real t, vector y, vector y_pk, real[] theta, real[] rdummy, int[] idummy){
+  vector FK_ODE(real t, vector y, vector y_pk, array[] real theta, array[] real rdummy, array[] int idummy){
     /* PK variables */
     real VC = theta[3];
 
@@ -1562,11 +1595,11 @@ two-compartment population model.
 functions{
 
   // define ODE system for two compartmnt model
-  real[] twoCptModelODE(real t,
-                        real[] x,
-                        real[] parms,
-                        real[] rate,  // in this example, rate is treated as data
-                        int[] dummy){
+  array[] real twoCptModelODE(real t,
+                        array[] real x,
+                        array[] real parms,
+                        array[] real rate,  // in this example, rate is treated as data
+                        array[] int dummy){
 
     // Parameters
     real CL = parms[1];
@@ -1716,11 +1749,11 @@ a Lotka-Volterra group model, based on \href{https://mc-stan.org/users/documenta
 
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 functions {
-  real[] dz_dt(real t,       // time
-               real[] z,     // system state {prey, predator}
-               real[] theta, // parameters
-               real[] x_r,   // unused data
-               int[] x_i) {
+  array[] real dz_dt(real t,       // time
+               array[] real z,     // system state {prey, predator}
+               array[] real theta, // parameters
+               array[] real x_r,   // unused data
+               array[] int x_i) {
     real u = z[1];
     real v = z[2];
 
@@ -1780,7 +1813,7 @@ This example shows how to use \texttt{univariate\_integral\_rk45} to calculate t
 integral of a quadratic function.
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 functions {
-  real fun_ord2(real t, real[] theta, real[] x_r, int[] x_i) {
+  real fun_ord2(real t, array[] real theta, array[] real x_r, array[] int x_i) {
     real a = 2.3;
     real b = 2.0;
     real c = 1.5;
@@ -2239,7 +2272,7 @@ parameters.
 The ODE is defined as
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
 functions{
-    vector twoCptNeutModelODE(real t, vector x, real[] parms, real[] rdummy, int[] idummy){
+    vector twoCptNeutModelODE(real t, vector x, array[] real parms, array[] real rdummy, array[] int idummy){
     real k10;
     real k12;
     real k21;
