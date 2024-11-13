@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.53">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Parallelization</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../stan-users-guide/posterior-prediction.html" rel="next">
+<link href="../stan-users-guide/efficiency-tuning.html" rel="prev">
+<link href="../img/logo_tm.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 200,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../theming/quarto_styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../img/logo_tm.png" alt="Stan logo" class="navbar-logo">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Overview</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../stan-users-guide/index.html" aria-current="page"> 
+<span class="menu-text">Stan Users Guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../reference-manual/index.html"> 
+<span class="menu-text">Reference Manual</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../functions-reference/index.html"> 
+<span class="menu-text">Functions Reference</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-interfaces" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Interfaces</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-interfaces">    
+        <li>
+    <a class="dropdown-item" href="../cmdstan-guide/index.html">
+ <span class="dropdown-text">CmdStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/cmdstanpy">
+ <span class="dropdown-text">CmdStanPy</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/cmdstanr">
+ <span class="dropdown-text">CmdStanR</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/users/interfaces/pystan.html">
+ <span class="dropdown-text">PyStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/rstan">
+ <span class="dropdown-text">RStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="http://stanjulia.github.io/Stan.jl/stable/INTRO/">
+ <span class="dropdown-text">Stan.jl</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other-packages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other Packages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other-packages">    
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/bayesplot/">
+ <span class="dropdown-text">bayesplot</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://roualdes.github.io/bridgestan/latest/">
+ <span class="dropdown-text">BridgeStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://paul-buerkner.github.io/brms/">
+ <span class="dropdown-text">brms</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/loo/">
+ <span class="dropdown-text">loo</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/posterior">
+ <span class="dropdown-text">posterior</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/projpred">
+ <span class="dropdown-text">projpred</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/rstanarm">
+ <span class="dropdown-text">rstanarm</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/rstantools">
+ <span class="dropdown-text">rstantools</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/shinystan">
+ <span class="dropdown-text">shinystan</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools tools-wide">
+    <a href="https://github.com/stan-dev" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+    <a href="https://discourse.mc-stan.org" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-chat-text-fill"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../stan-users-guide/floating-point.html">Programming Techniques</a></li><li class="breadcrumb-item"><a href="../stan-users-guide/parallelization.html">Parallelization</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stan User’s Guide</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Version 2.35</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Example Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regression Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/time-series.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Time-Series Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/missing-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Missing Data and Partially Known Parameters</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/truncation-censoring.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Truncated or Censored Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/finite-mixtures.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Finite Mixtures</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/measurement-error.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Measurement Error and Meta-Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/latent-discrete.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Latent Discrete Parameters</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/sparse-ragged.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sparse and Ragged Data Structures</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/clustering.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Clustering Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/gaussian-processes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gaussian Processes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/hyperspherical-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Directions, Rotations, and Hyperspheres</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/algebraic-equations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Solving Algebraic Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/odes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Differential Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/one-dimensional-integrals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computing One Dimensional Integrals</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/complex-numbers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Complex Numbers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/dae.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Differential-Algebraic Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival Models</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Programming Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/floating-point.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Floating Point Arithmetic</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/matrices-arrays.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Matrices, Vectors, Arrays, and Tuples</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/multi-indexing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Multiple Indexing and Range Indexing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/user-functions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">User-Defined Functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/custom-probability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Custom Probability Functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/proportionality-constants.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Proportionality Constants</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/problematic-posteriors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Problematic Posteriors</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/reparameterization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reparameterization and Change of Variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/efficiency-tuning.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Efficiency Tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/parallelization.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Parallelization</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Posterior Inference &amp; Model Checking</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/posterior-prediction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Posterior Predictive Sampling</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/simulation-based-calibration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulation-Based Calibration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/posterior-predictive-checks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Posterior and Prior Predictive Checks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/cross-validation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Held-Out Evaluation and Cross-Validation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/poststratification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Poststratification</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/decision-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/bootstrap.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Bootstrap and Bagging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/using-stanc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Using the Stan Compiler</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/style-guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stan Program Style Guide</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/for-bugs-users.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Transitioning from BUGS</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#parallelization.chapter" id="toc-parallelization.chapter" class="nav-link active" data-scroll-target="#parallelization.chapter">Parallelization</a>
+  <ul class="collapse">
+  <li><a href="#reduce-sum" id="toc-reduce-sum" class="nav-link" data-scroll-target="#reduce-sum">Reduce-sum</a>
+  <ul class="collapse">
+  <li><a href="#example-logistic-regression" id="toc-example-logistic-regression" class="nav-link" data-scroll-target="#example-logistic-regression">Example: logistic regression</a></li>
+  <li><a href="#reduce-sum-grainsize" id="toc-reduce-sum-grainsize" class="nav-link" data-scroll-target="#reduce-sum-grainsize">Picking the grainsize</a></li>
+  </ul></li>
+  <li><a href="#map-rect" id="toc-map-rect" class="nav-link" data-scroll-target="#map-rect">Map-rect</a>
+  <ul class="collapse">
+  <li><a href="#map-function" id="toc-map-function" class="nav-link" data-scroll-target="#map-function">Map function</a></li>
+  <li><a href="#map-function-signature" id="toc-map-function-signature" class="nav-link" data-scroll-target="#map-function-signature">Map function signature</a></li>
+  <li><a href="#example-logistic-regression-1" id="toc-example-logistic-regression-1" class="nav-link" data-scroll-target="#example-logistic-regression-1">Example: logistic regression</a></li>
+  <li><a href="#example-hierarchical-logistic-regression" id="toc-example-hierarchical-logistic-regression" class="nav-link" data-scroll-target="#example-hierarchical-logistic-regression">Example: hierarchical logistic regression</a></li>
+  <li><a href="#ragged-inputs-and-outputs" id="toc-ragged-inputs-and-outputs" class="nav-link" data-scroll-target="#ragged-inputs-and-outputs">Ragged inputs and outputs</a></li>
+  </ul></li>
+  <li><a href="#opencl" id="toc-opencl" class="nav-link" data-scroll-target="#opencl">OpenCL</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/stan-dev/docs/edit/master/src/stan-users-guide/parallelization.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/stan-dev/docs/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+
+
+<section id="parallelization.chapter" class="level1">
+<h1>Parallelization</h1>
+<p>Stan has support for different types of parallelization: multi-threading with Intel Threading Building Blocks (TBB), multi-processing with Message Passing Interface (MPI) and manycore processing with OpenCL.</p>
+<p>Multi-threading in Stan can be used with two mechanisms: reduce with summation and rectangular map. The latter can also be used with multi-processing.</p>
+<p>The advantages of reduce with summation are:</p>
+<ol type="1">
+<li>More flexible argument interface, avoiding the packing and unpacking that is necessary with rectanguar map.</li>
+<li>Partitions data for parallelization automatically (this is done manually in rectanguar map).</li>
+<li>Is easier to use.</li>
+</ol>
+<p>The advantages of rectangular map are:</p>
+<ol type="1">
+<li>Returns a list of vectors, while the reduce summation returns only a scalar.</li>
+<li>Can be parallelized across multiple cores and multiple computers, while reduce summation can only parallelized across multiple cores on a single machine.</li>
+</ol>
+<p>The actual speedup gained from using these functions will depend on many details. It is strongly recommended to only parallelize the computationally most expensive operations in a Stan program. Oftentimes this is the evaluation of the log likelihood for the observed data. When it is not clear which parts of the model is the most computationally expensive, we recommend using profiling, which is available in Stan 2.26 and newer.</p>
+<p>Since only portions of a Stan program will run in parallel, the maximal speedup one can achieve is capped, a phenomen described by <a href="https://en.wikipedia.org/wiki/Amdahl%27s_law">Amdahl’s law</a>.</p>
+<section id="reduce-sum" class="level2">
+<h2 class="anchored" data-anchor-id="reduce-sum">Reduce-sum</h2>
+<p>It is often necessary in probabilistic modeling to compute the sum of a number of independent function evaluations. This occurs, for instance, when evaluating a number of conditionally independent terms in a log-likelihood. If <code>g: U -&gt; real</code> is the function and <code>{ x1, x2, ... }</code> is an array of inputs, then that sum looks like:</p>
+<p><code>g(x1) + g(x2) + ...</code></p>
+<p><code>reduce_sum</code> and <code>reduce_sum_static</code> are tools for parallelizing these calculations.</p>
+<p>For efficiency reasons the reduce function doesn’t work with the element-wise evaluated function <code>g</code>, but instead the partial sum function <code>f: U[] -&gt; real</code>, where <code>f</code> computes the partial sum corresponding to a slice of the sequence <code>x</code> passed in. Due to the associativity of the sum reduction it holds that:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>g(x1) + g(x2) + g(x3) = f({ x1, x2, x3 })</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>                      = f({ x1, x2 }) + f({ x3 })</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>                      = f({ x1 }) + f({ x2, x3 })</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>                      = f({ x1 }) + f({ x2 }) + f({ x3 })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>With the partial sum function <code>f: U[] -&gt; real</code> reduction of a large number of terms can be evaluated in parallel automatically, since the overall sum can be partitioned into arbitrary smaller partial sums. The exact partitioning into the partial sums is not under the control of the user. However, since the exact numerical result will depend on the order of summation, Stan provides two versions of the reduce summation facility:</p>
+<ul>
+<li><code>reduce_sum</code>: Automatically choose partial sums partitioning based on a dynamic scheduling algorithm.</li>
+<li><code>reduce_sum_static</code>: Compute the same sum as <code>reduce_sum</code>, but partition the input in the same way for given data set (in <code>reduce_sum</code> this partitioning might change depending on computer load).</li>
+</ul>
+<p><code>grainsize</code> is the one tuning parameter. For <code>reduce_sum</code>, <code>grainsize</code> is a suggested partial sum size. A <code>grainsize</code> of 1 leaves the partitioning entirely up to the scheduler. This should be the default way of using <code>reduce_sum</code> unless time is spent carefully picking <code>grainsize</code>. For picking a <code>grainsize</code>, see details <a href="#reduce-sum-grainsize">below</a>.</p>
+<p>For <code>reduce_sum_static</code>, <code>grainsize</code> specifies the maximal partial sum size. With <code>reduce_sum_static</code> it is more important to choose <code>grainsize</code> carefully since it entirely determines the partitioning of work. See details <a href="#reduce-sum-grainsize">below</a>.</p>
+<p>For efficiency and convenience additional shared arguments can be passed to every term in the sum. So for the array <code>{ x1, x2, ... }</code> and the shared arguments <code>s1, s2, ...</code>stan the effective sum (with individual terms) looks like:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>g(x1, s1, s2, ...) + g(x2, s1, s2, ...) + g(x3, s1, s2, ...) + ...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>which can be written equivalently with partial sums to look like:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>f({ x1, x2 }, s1, s2, ...) + f({ x3 }, s1, s2, ...)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>where the particular slicing of the <code>x</code> array can change.</p>
+<p>Given this, the signatures are:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">real</span> reduce_sum(F f, <span class="dt">array</span>[] T x, <span class="dt">int</span> grainsize, T1 s1, T2 s2, ...)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="dt">real</span> reduce_sum_static(F f, <span class="dt">array</span>[] T x, <span class="dt">int</span> grainsize, T1 s1, T2 s2, ...)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ol type="1">
+<li><code>f</code> - User defined function that computes partial sums</li>
+<li><code>x</code> - Array to slice, each element corresponds to a term in the summation</li>
+<li><code>grainsize</code> - Target for size of slices</li>
+<li><code>s1, s2, ...</code> - Arguments shared in every term</li>
+</ol>
+<p>The user-defined partial sum functions have the signature:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">real</span> f(<span class="dt">array</span>[] T x_slice, <span class="dt">int</span> start, <span class="dt">int</span> end, T1 s1, T2 s2, ...)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>and take the arguments:</p>
+<ol type="1">
+<li><code>x_slice</code> - The subset of <code>x</code> (from <code>reduce_sum</code> / <code>reduce_sum_static</code>) for which this partial sum is responsible (<code>x_slice = x[start:end]</code>)</li>
+<li><code>start</code> - An integer specifying the first term in the partial sum</li>
+<li><code>end</code> - An integer specifying the last term in the partial sum (inclusive)</li>
+<li><code>s1, s2, ...</code> - Arguments shared in every term (passed on without modification from the <code>reduce_sum</code> / <code>reduce_sum_static</code> call)</li>
+</ol>
+<p>The user-provided function <code>f</code> is expected to compute the partial sum with the terms <code>start</code> through <code>end</code> of the overall sum. The user function is passed the subset <code>x[start:end]</code> as <code>x_slice</code>. <code>start</code> and <code>end</code> are passed so that <code>f</code>stan can index any of the tailing <code>sM</code> arguments as necessary. The trailing <code>sM</code> arguments are passed without modification to every call of <code>f</code>.</p>
+<p>A <code>reduce_sum</code> (or <code>reduce_sum_static</code>) call:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="dt">real</span> sum = reduce_sum(f, x, grainsize, s1, s2, ...);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>can be replaced by either:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="dt">real</span> sum = f(x, <span class="dv">1</span>, size(x), s1, s2, ...);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>or the code:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="dt">real</span> sum = <span class="fl">0.0</span>;</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span>:size(x)) {</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  sum += f({ x[i] }, i, i, s1, s2, ...);</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="example-logistic-regression" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="example-logistic-regression">Example: logistic regression</h3>
+<p>Logistic regression is a useful example to clarify both the syntax and semantics of reduce summation and how it can be used to speed up a typical model. A basic logistic regression can be coded in Stan as:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> N;</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[N] <span class="dt">int</span> y;</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[N] x;</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[<span class="dv">2</span>] beta;</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  beta ~ std_normal();</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  y ~ bernoulli_logit(beta[<span class="dv">1</span>] + beta[<span class="dv">2</span>] * x);</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In this model predictions are made about the <code>N</code> outputs <code>y</code> using the covariate <code>x</code>. The intercept and slope of the linear equation are to be estimated. The key point to getting this calculation to use reduce summation, is recognizing that the statement:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>y ~ bernoulli_logit(beta[<span class="dv">1</span>] + beta[<span class="dv">2</span>] * x);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>can be rewritten (up to a proportionality constant) as:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> bernoulli_logit_lpmf(y[n] | beta[<span class="dv">1</span>] + beta[<span class="dv">2</span>] * x[n])</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Now it is clear that the calculation is the sum of a number of conditionally independent Bernoulli log probability statements, which is the condition where reduce summation is useful. To use the reduce summation, a function must be written that can be used to compute arbitrary partial sums of the total sum. Using the interface defined in <a href="#reduce-sum">Reduce-Sum</a>, such a function can be written like:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">functions</span> {</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> partial_sum(<span class="dt">array</span>[] <span class="dt">int</span> y_slice,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>                   <span class="dt">int</span> start, <span class="dt">int</span> end,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>                   <span class="dt">vector</span> x,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>                   <span class="dt">vector</span> beta) {</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> bernoulli_logit_lpmf(y_slice | beta[<span class="dv">1</span>] + beta[<span class="dv">2</span>] * x[start:end]);</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The likelihood statement in the model can now be written:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">target +=</span> partial_sum(y, <span class="dv">1</span>, N, x, beta); <span class="co">// Sum terms 1 to N of the likelihood</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In this example, <code>y</code> was chosen to be sliced over because there is one term in the summation per value of <code>y</code>. Technically <code>x</code> would have worked as well. Use whatever conceptually makes the most sense for a given model, e.g.&nbsp;slice over independent terms like conditionally independent observations or groups of observations as in hierarchical models. Because <code>x</code> is a shared argument, it is subset accordingly with <code>start:end</code>. With this function, reduce summation can be used to automatically parallelize the likelihood:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> grainsize = <span class="dv">1</span>;</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="kw">target +=</span> reduce_sum(partial_sum, y,</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                     grainsize,</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>                     x, beta);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The reduce summation facility automatically breaks the sum into pieces and computes them in parallel. <code>grainsize = 1</code> specifies that the <code>grainsize</code> should be estimated automatically. The final model is:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">functions</span> {</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> partial_sum(<span class="dt">array</span>[] <span class="dt">int</span> y_slice,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>                   <span class="dt">int</span> start, <span class="dt">int</span> end,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>                   <span class="dt">vector</span> x,</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>                   <span class="dt">vector</span> beta) {</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> bernoulli_logit_lpmf(y_slice | beta[<span class="dv">1</span>] + beta[<span class="dv">2</span>] * x[start:end]);</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> N;</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[N] <span class="dt">int</span> y;</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[N] x;</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[<span class="dv">2</span>] beta;</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> grainsize = <span class="dv">1</span>;</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>  beta ~ std_normal();</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> reduce_sum(partial_sum, y,</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>                       grainsize,</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>                       x, beta);</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="reduce-sum-grainsize" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="reduce-sum-grainsize">Picking the grainsize</h3>
+<p>The rational for choosing a sensible <code>grainsize</code> is based on balancing the overhead implied by creating many small tasks versus creating fewer large tasks which limits the potential parallelism.</p>
+<p>In <code>reduce_sum</code>, <code>grainsize</code> is a recommendation on how to partition the work in the partial sum into smaller pieces. A <code>grainsize</code> of 1 leaves this entirely up to the internal scheduler and should be chosen if no benchmarking of other grainsizes is done. Ideally this will be efficient, but there are no guarantees.</p>
+<p>In <code>reduce_sum_static</code>, <code>grainsize</code> is an upper limit on the worksize. Work will be split until all partial sums are just smaller than <code>grainsize</code> (and the split will happen the same way every time for the same inputs). For the static version it is more important to select a sensible <code>grainsize</code>.</p>
+<p>In order to figure out an optimal <code>grainsize</code>, if there are <code>N</code> terms and <code>M</code> cores, run a quick test model with <code>grainsize</code> set roughly to <code>N / M</code>. Record the time, cut the <code>grainsize</code> in half, and run the test again. Repeat this iteratively until the model runtime begins to increase. This is a suitable <code>grainsize</code> for the model, because this ensures the calculations can be carried out with the most parallelism without losing too much efficiency.</p>
+<p>For instance, in a model with <code>N=10000</code> and <code>M = 4</code>, start with <code>grainsize = 2500</code>, and sequentially try <code>grainsize = 1250</code>, <code>grainsize = 625</code>, etc.</p>
+<p>It is important to repeat this process until performance gets worse. It is possible after many halvings nothing happens, but there might still be a smaller <code>grainsize</code> that performs better. Even if a sum has many tens of thousands of terms, depending on the internal calculations, a <code>grainsize</code> of thirty or forty or smaller might be the best, and it is difficult to predict this behavior. Without doing these halvings until performance actually gets worse, it is easy to miss this.</p>
+</section>
+</section>
+<section id="map-rect" class="level2">
+<h2 class="anchored" data-anchor-id="map-rect">Map-rect</h2>
+<p>Map-reduce allows large calculations (e.g., log likelihoods) to be broken into components which may be calculated modularly (e.g., data blocks) and combined (e.g., by summation and incrementing the target log density).</p>
+<p>A <em>map function</em> is a higher-order function that applies an argument function to every member of some collection, returning a collection of the results. For example, mapping the square function, <span class="math inline">\(f(x) = x^2\)</span>, over the vector <span class="math inline">\([3, 5, 10]\)</span> produces the vector <span class="math inline">\([9, 25, 100]\)</span>. In other words, map applies the square function elementwise.</p>
+<p>The output of mapping a sequence is often fed into a reduction. A <em>reduction function</em> takes an arbitrarily long sequence of inputs and returns a single output. Examples of reduction functions are summation (with the return being a single value) or sorting (with the return being a sorted sequence). The combination of mapping and reducing is so common it has its own name, <em>map-reduce</em>.</p>
+<section id="map-function" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="map-function">Map function</h3>
+<p>In order to generalize the form of functions and results that are possible and accommodate both parameters (which need derivatives) and data values (which don’t), Stan’s map function operates on more than just a sequence of inputs.</p>
+</section>
+<section id="map-function-signature" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="map-function-signature">Map function signature</h3>
+<p>Stan’s map function has the following signature</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="dt">vector</span> map_rect((<span class="dt">vector</span>, <span class="dt">vector</span>, <span class="dt">array</span>[] <span class="dt">real</span>, <span class="dt">array</span>[] <span class="dt">int</span>):<span class="dt">vector</span> f,</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>                <span class="dt">vector</span> phi, <span class="dt">array</span>[] <span class="dt">vector</span> thetas,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>                <span class="kw">data</span> <span class="dt">array</span>[,] <span class="dt">real</span> x_rs, <span class="kw">data</span> <span class="dt">array</span>[,] <span class="dt">int</span> x_is);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The arrays <code>thetas</code> of parameters, <code>x_rs</code> of real data, and <code>x_is</code> of integer data have the suffix “<code>s</code>” to indicate they are arrays. These arrays must all be the same size, as they will be mapped in parallel by the function <code>f</code>. The value of <code>phi</code> is reused in each mapped operation.</p>
+<p>The <code>_rect</code> suffix in the name arises because the data structures it takes as arguments are rectangular. In order to deal with ragged inputs, ragged inputs must be padded out to rectangular form.</p>
+<p>The last two arguments are two dimensional arrays of real and integer data values. These argument types are marked with the <code>data</code> qualifier to indicate that they must only contain variables originating in the data or transformed data blocks. This will allow such data to be pinned to a processor on which it is being processed to reduce communication overhead.</p>
+<p>The notation <code>(vector, vector, array[] real, array[] int):vector</code> indicates that the function argument <code>f</code> must have the following signature.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="dt">vector</span> f(<span class="dt">vector</span> phi, <span class="dt">vector</span> theta,</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>         <span class="kw">data</span> <span class="dt">array</span>[] <span class="dt">real</span> x_r, <span class="kw">data</span> <span class="dt">array</span>[] <span class="dt">int</span> x_i);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Although <code>f</code> will often return a vector of size one, the built-in flexibility allows general multivariate functions to be mapped, even raggedly.</p>
+<section id="map-function-semantics" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="map-function-semantics">Map function semantics</h4>
+<p>Stan’s map function applies the function <code>f</code> to the shared parameters along with one element each of the job parameters, real data, and integer data arrays. Each of the arguments <code>theta</code>, <code>x_r</code>, and <code>x_i</code> must be arrays of the same size. If the arrays are all size <code>N</code>, the result is defined as follows.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>map_rect(f, phi, thetas, xs, ns)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>= f(phi, thetas[<span class="dv">1</span>], xs[<span class="dv">1</span>], ns[<span class="dv">1</span>]) . f(phi, thetas[<span class="dv">2</span>], xs[<span class="dv">2</span>], ns[<span class="dv">2</span>])</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  . ... . f(phi, thetas[N], xs[N], ns[N])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The dot operators in the notation above are meant to indicate concatenation (implemented as <code>append_row</code> in Stan). The output of each application of <code>f</code> is a vector, and the sequence of <code>N</code> vectors is concatenated together to return a single vector.</p>
+</section>
+</section>
+<section id="example-logistic-regression-1" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="example-logistic-regression-1">Example: logistic regression</h3>
+<p>An example should help to clarify both the syntax and semantics of the mapping operation and how it may be combined with reductions built into Stan to provide a map-reduce implementation.</p>
+<section id="unmapped-logistic-regression" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="unmapped-logistic-regression">Unmapped logistic regression</h4>
+<p>Consider the following simple logistic regression model, which is coded unconventionally to accommodate direct translation to a mapped implementation.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[<span class="dv">12</span>] <span class="dt">int</span> y;</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[<span class="dv">12</span>] <span class="dt">real</span> x;</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[<span class="dv">2</span>] beta;</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>  beta ~ std_normal();</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  y ~ bernoulli_logit(beta[<span class="dv">1</span>] + beta[<span class="dv">2</span>] * to_vector(x));</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The program is unusual in that it (a) hardcodes the data size, which is not required by the map function but is just used here for simplicity, (b) represents the predictors as a real array even though it needs to be used as a vector, and (c) represents the regression coefficients (intercept and slope) as a vector even though they’re used individually. The <code>bernoulli_logit</code> distribution is used because the argument is on the logit scale—it implicitly applies the inverse logit function to map the argument to a probability.</p>
+</section>
+<section id="mapped-logistic-regression" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="mapped-logistic-regression">Mapped logistic regression</h4>
+<p>The unmapped logistic regression model described in the previous subsection may be implemented using Stan’s rectangular mapping functionality as follows.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="kw">functions</span> {</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span> lr(<span class="dt">vector</span> beta, <span class="dt">vector</span> theta, <span class="dt">array</span>[] <span class="dt">real</span> x, <span class="dt">array</span>[] <span class="dt">int</span> y) {</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">real</span> lp = bernoulli_logit_lpmf(y | beta[<span class="dv">1</span>]</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>                                       + to_vector(x) * beta[<span class="dv">2</span>]);</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [lp]';</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb20-7"><a href="#cb20-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[<span class="dv">12</span>] <span class="dt">int</span> y;</span>
+<span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[<span class="dv">12</span>] <span class="dt">real</span> x;</span>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb20-12"><a href="#cb20-12" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed data</span> {</span>
+<span id="cb20-13"><a href="#cb20-13" aria-hidden="true" tabindex="-1"></a>  <span class="co">// K = 3 shards</span></span>
+<span id="cb20-14"><a href="#cb20-14" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[<span class="dv">3</span>, <span class="dv">4</span>] = { y[<span class="dv">1</span>:<span class="dv">4</span>], y[<span class="dv">5</span>:<span class="dv">8</span>], y[<span class="dv">9</span>:<span class="dv">12</span>] <span class="dt">int</span> ys };</span>
+<span id="cb20-15"><a href="#cb20-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[<span class="dv">3</span>, <span class="dv">4</span>] = { x[<span class="dv">1</span>:<span class="dv">4</span>], x[<span class="dv">5</span>:<span class="dv">8</span>], x[<span class="dv">9</span>:<span class="dv">12</span>] <span class="dt">real</span> xs };</span>
+<span id="cb20-16"><a href="#cb20-16" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[<span class="dv">3</span>] <span class="dt">vector</span>[<span class="dv">0</span>] theta;</span>
+<span id="cb20-17"><a href="#cb20-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb20-18"><a href="#cb20-18" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb20-19"><a href="#cb20-19" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[<span class="dv">2</span>] beta;</span>
+<span id="cb20-20"><a href="#cb20-20" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb20-21"><a href="#cb20-21" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb20-22"><a href="#cb20-22" aria-hidden="true" tabindex="-1"></a>  beta ~ std_normal();</span>
+<span id="cb20-23"><a href="#cb20-23" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> sum(map_rect(lr, beta, theta, xs, ys));</span>
+<span id="cb20-24"><a href="#cb20-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The first piece of the code is the actual function to compute the logistic regression. The argument <code>beta</code> will contain the regression coefficients (intercept and slope), as before. The second argument <code>theta</code> of job-specific parameters is not used, but nevertheless must be present. The modeled data <code>y</code> is passed as an array of integers and the predictors <code>x</code> as an array of real values. The function body then computes the log probability mass of <code>y</code> and assigns it to the local variable <code>lp</code>. This variable is then used in <code>[lp]'</code> to construct a row vector and then transpose it to a vector to return.</p>
+<p>The data are taken in as before. There is an additional transformed data block that breaks the data up into three shards.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>The value <code>3</code> is also hard coded; a more practical program would allow the number of shards to be controlled. There are three parallel arrays defined here, each of size three, corresponding to the number of shards. The array <code>ys</code> contains the modeled data variables; each element of the array <code>ys</code> is an array of size four. The second array <code>xs</code> is for the predictors, and each element of it is also of size four. These contained arrays are the same size because the predictors <code>x</code> stand in a one-to-one relationship with the modeled data <code>y</code>. The final array <code>theta</code> is also of size three; its elements are empty vectors, because there are no shard-specific parameters.</p>
+<p>The parameters and the prior are as before. The likelihood is now coded using map-reduce. The function <code>lr</code> to compute the log probability mass is mapped over the data <code>xs</code> and <code>ys</code>, which contain the original predictors and outcomes broken into shards. The parameters <code>beta</code> are in the first argument because they are shared across shards. There are no shard-specific parameters, so the array of job-specific parameters <code>theta</code> contains only empty vectors.</p>
+</section>
+</section>
+<section id="example-hierarchical-logistic-regression" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="example-hierarchical-logistic-regression">Example: hierarchical logistic regression</h3>
+<p>Consider a hierarchical model of American presidential voting behavior based on state of residence.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>Each of the fifty states <span class="math inline">\(k \in \{1,\dotsc,50\}\)</span> will have its own slope <span class="math inline">\(\beta_k\)</span> and intercept <span class="math inline">\(\alpha_k\)</span> to model the log odds of voting for the Republican candidate as a function of income. Suppose there are <span class="math inline">\(N\)</span> voters and with voter <span class="math inline">\(n \in 1{:}N\)</span> being in state <span class="math inline">\(s[n]\)</span> with income <span class="math inline">\(x_n\)</span>. The data model for the vote <span class="math inline">\(y_n \in \{ 0, 1 \}\)</span> is <span class="math display">\[
+y_n \sim \textsf{Bernoulli}
+\Big(
+  \operatorname{logit}^{-1}\left( \alpha_{s[n]} + \beta_{s[n]} \, x_n \right)
+\Big).
+\]</span></p>
+<p>The slopes and intercepts get hierarchical priors, <span class="math display">\[\begin{align*}
+\alpha_k &amp;\sim \textsf{normal}(\mu_{\alpha}, \sigma_{\alpha}) \\
+\beta_k  &amp;\sim \textsf{normal}(\mu_{\beta}, \sigma_{\beta})
+\end{align*}\]</span></p>
+<section id="unmapped-implementation" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="unmapped-implementation">Unmapped implementation</h4>
+<p>This model can be coded up in Stan directly as follows.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; K;</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N;</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[N] <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>, <span class="kw">upper</span>=K&gt; kk;</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[N] x;</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[N] <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=<span class="dv">1</span>&gt; y;</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">matrix</span>[K, <span class="dv">2</span>] beta;</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[<span class="dv">2</span>] mu;</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt;[<span class="dv">2</span>] sigma;</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb21-14"><a href="#cb21-14" aria-hidden="true" tabindex="-1"></a>  mu ~ normal(<span class="dv">0</span>, <span class="dv">2</span>);</span>
+<span id="cb21-15"><a href="#cb21-15" aria-hidden="true" tabindex="-1"></a>  sigma ~ normal(<span class="dv">0</span>, <span class="dv">2</span>);</span>
+<span id="cb21-16"><a href="#cb21-16" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span>:<span class="dv">2</span>) {</span>
+<span id="cb21-17"><a href="#cb21-17" aria-hidden="true" tabindex="-1"></a>    beta[ , i] ~ normal(mu[i], sigma[i]);</span>
+<span id="cb21-18"><a href="#cb21-18" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb21-19"><a href="#cb21-19" aria-hidden="true" tabindex="-1"></a>  y ~ bernoulli_logit(beta[kk, <span class="dv">1</span>] + beta[kk, <span class="dv">2</span>] .* x);</span>
+<span id="cb21-20"><a href="#cb21-20" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For this model the vector of predictors <code>x</code> is coded as a vector, corresponding to how it is used in the model. The priors for <code>mu</code> and <code>sigma</code> are vectorized. The priors on the two components of <code>beta</code> (intercept and slope, respectively) are stored in a <span class="math inline">\(K \times 2\)</span> matrix.</p>
+<p>The distribution statement is also vectorized using multi-indexing with index <code>kk</code> for the states and elementwise multiplication (<code>.*</code>) for the income <code>x</code>. The vectorized distribution statement works out to the same thing as the following less efficient looped form.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  y[n] ~ bernoulli_logit(beta[kk[n], <span class="dv">1</span>] + beta[kk[n], <span class="dv">2</span>] * x[n]);</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="mapped-implementation" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="mapped-implementation">Mapped implementation</h4>
+<p>The mapped version of the model will map over the states <code>K</code>. This means the group-level parameters, real data, and integer-data must be arrays of the same size.</p>
+<p>The mapped implementation requires a function to be mapped. In this function we can’t use distribution statements, but need to accumulate the desired log prior and log likelihood terms to the return value. The following function evaluates both the likelihood for the data observed for a group as well as the prior for the group-specific parameters (the name <code>bernoulli_logit_glm</code> derives from the fact that it’s a generalized linear model with a Bernoulli data model and logistic link function).</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">functions</span> {</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a> <span class="dt">vector</span> bl_glm(<span class="dt">vector</span> mu_sigma, <span class="dt">vector</span> beta,</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>               <span class="dt">array</span>[] <span class="dt">real</span> x, <span class="dt">array</span>[] <span class="dt">int</span> y) {</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>   <span class="dt">vector</span>[<span class="dv">2</span>] mu = mu_sigma[<span class="dv">1</span>:<span class="dv">2</span>];</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>   <span class="dt">vector</span>[<span class="dv">2</span>] sigma = mu_sigma[<span class="dv">3</span>:<span class="dv">4</span>];</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>   <span class="dt">real</span> lp = normal_lpdf(beta | mu, sigma);</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>   <span class="dt">real</span> ll = bernoulli_logit_lpmf(y | beta[<span class="dv">1</span>] + beta[<span class="dv">2</span>] * to_vector(x));</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>   <span class="cf">return</span> [lp + ll]';</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a> }</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The shared parameter <code>mu_sigma</code> contains the locations (<code>mu_sigma[1:2]</code>) and scales (<code>mu_sigma[3:4]</code>) of the priors, which are extracted in the first two lines of the program. The variable <code>lp</code> is assigned the log density of the prior on <code>beta</code>. The vector <code>beta</code> is of size two, as are the vectors <code>mu</code> and <code>sigma</code>, so everything lines up for the vectorization. Next, the variable <code>ll</code> is assigned to the log likelihood contribution for the group. Here <code>beta[1]</code> is the intercept of the regression and <code>beta[2]</code> the slope. The predictor array <code>x</code> needs to be converted to a vector allow the multiplication.</p>
+<p>The data block is identical to that of the previous program, but repeated here for convenience. A transformed data block computes the data structures needed for the mapping by organizing the data into arrays indexed by group.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; K;</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N;</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[N] <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>, <span class="kw">upper</span>=K&gt; kk;</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[N] x;</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[N] <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=<span class="dv">1</span>&gt; y;</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed data</span> {</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; J = N / K;</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[K, J] <span class="dt">real</span> x_r;</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[K, J] <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=<span class="dv">1</span>&gt; x_i;</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>  {</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> pos = <span class="dv">1</span>;</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (k <span class="cf">in</span> <span class="dv">1</span>:K) {</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">int</span> end = pos + J - <span class="dv">1</span>;</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>      x_r[k] = to_array_1d(x[pos:end]);</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>      x_i[k] = to_array_1d(y[pos:end]);</span>
+<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>      pos += J;</span>
+<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The integer <code>J</code> is set to the number of observations per group.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<p>The real data array <code>x_r</code> holds the predictors and the integer data array <code>x_i</code> holds the outcomes. The grouped data arrays are constructed by slicing the predictor vector <code>x</code> (and converting it to an array) and slicing the outcome array <code>y</code>.</p>
+<p>Given the transformed data with groupings, the parameters are the same as the previous program. The model has the same priors for the hyperparameters <code>mu</code> and <code>sigma</code>, but moves the prior for <code>beta</code> and the likelihood to the mapped function.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[K] <span class="dt">vector</span>[<span class="dv">2</span>] beta;</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[<span class="dv">2</span>] mu;</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt;[<span class="dv">2</span>] sigma;</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  mu ~ normal(<span class="dv">0</span>, <span class="dv">2</span>);</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  sigma ~ normal(<span class="dv">0</span>, <span class="dv">2</span>);</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> sum(map_rect(bl_glm, append_row(mu, sigma), beta, x_r, x_i));</span>
+<span id="cb25-10"><a href="#cb25-10" aria-hidden="true" tabindex="-1"></a>                         </span>
+<span id="cb25-11"><a href="#cb25-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The model as written here computes the priors for each group’s parameters along with the likelihood contribution for the group. An alternative mapping would leave the prior in the model block and only map the likelihood computation. In a serial setting this shouldn’t make much of a difference, but with parallelization, there is reduced communication (the prior’s parameters need not be transmitted) and also reduced parallelization with the version that leaves the prior in the model block.</p>
+</section>
+</section>
+<section id="ragged-inputs-and-outputs" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="ragged-inputs-and-outputs">Ragged inputs and outputs</h3>
+<p>The previous examples included rectangular data structures and single outputs. Despite the name, this is not technically required by <code>map_rect</code>.</p>
+<section id="ragged-inputs" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="ragged-inputs">Ragged inputs</h4>
+<p>If each group has a different number of observations, then the rectangular data structures for predictors and outcomes will need to be padded out to be rectangular. In addition, the size of the ragged structure will need to be passed as integer data. This holds for shards with varying numbers of parameters as well as varying numbers of data points.</p>
+</section>
+<section id="ragged-outputs" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="ragged-outputs">Ragged outputs</h4>
+<p>The output of each mapped function is concatenated in order of inputs to produce the output of <code>map_rect</code>. When every shard returns a singleton (size one) array, the result is the same size as the number of shards and is easy to deal with downstream. If functions return longer arrays, they can still be structured using the <code>to_matrix</code> function if they are rectangular.</p>
+<p>If the outputs are of varying sizes, then there will have to be some way to convert it back to a usable form based on the input, because there is no way to directly return sizes or a ragged structure.</p>
+</section>
+</section>
+</section>
+<section id="opencl" class="level2">
+<h2 class="anchored" data-anchor-id="opencl">OpenCL</h2>
+<p>OpenCL (Open Computing Language) is a framework that enables writing programs that execute across heterogeneous platforms. An OpenCL program can be run on CPUs and GPUs. In order to run OpenCL programs, an OpenCL runtime be installed on the target system.</p>
+<p>Stan’s OpenCL backend is currently supported in CmdStan and its wrappers. In order to use it, the model must be compiled with the <code>STAN_OPENCL</code> makefile flag. Setting this flag means that the Stan-to-C++ translator (<code>stanc3</code>) will be supplied the <code>--use-opencl</code> flag and that the OpenCL enabled backend (Stan Math functions) will be enabled.</p>
+<p>In Stan, the following distributions can be automatically run in parallel on both CPUs and GPUs with OpenCL:</p>
+<ul>
+<li>bernoulli_lpmf</li>
+<li>bernoulli_logit_lpmf</li>
+<li>bernoulli_logit_glm_lpmf*</li>
+<li>beta_lpdf</li>
+<li>beta_proportion_lpdf</li>
+<li>binomial_lpmf</li>
+<li>categorical_logit_glm_lpmf*</li>
+<li>cauchy_lpdf</li>
+<li>chi_square_lpdf</li>
+<li>double_exponential_lpdf</li>
+<li>exp_mod_normal_lpdf</li>
+<li>exponential_lpdf</li>
+<li>frechet_lpdf</li>
+<li>gamma_lpdf</li>
+<li>gumbel_lpdf</li>
+<li>inv_chi_square_lpdf</li>
+<li>inv_gamma_lpdf</li>
+<li>logistic_lpdf</li>
+<li>lognormal_lpdf</li>
+<li>neg_binomial_lpmf</li>
+<li>neg_binomial_2_lpmf</li>
+<li>neg_binomial_2_log_lpmf</li>
+<li>neg_binomial_2_log_glm_lpmf*</li>
+<li>normal_lpdf</li>
+<li>normal_id_glm_lpdf*</li>
+<li>ordered_logistic_glm_lpmf*</li>
+<li>pareto_lpdf</li>
+<li>pareto_type_2_lpdf</li>
+<li>poisson_lpmf</li>
+<li>poisson_log_lpmf</li>
+<li>poisson_log_glm_lpmf*</li>
+<li>rayleigh_lpdf</li>
+<li>scaled_inv_chi_square_lpdf</li>
+<li>skew_normal_lpdf</li>
+<li>std_normal_lpdf</li>
+<li>student_t_lpdf</li>
+<li>uniform_lpdf</li>
+<li>weibull_lpdf</li>
+</ul>
+<p>* OpenCL is not used when the covariate argument to the GLM functions is a <code>row_vector</code>.</p>
+
+
+
+</section>
+</section>
+
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-GelmanHill:2007" class="csl-entry" role="listitem">
+Gelman, Andrew, and Jennifer Hill. 2007. <em>Data Analysis Using Regression and Multilevel-Hierarchical Models</em>. Cambridge, United Kingdom: Cambridge University Press.
+</div>
+</div></section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>The term “shard” is borrowed from databases, where it refers to a slice of the rows of a database. That is exactly what it is here if we think of rows of a dataframe. Stan’s shards are more general in that they need not correspond to rows of a dataframe.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>This example is a simplified form of the model described in <span class="citation" data-cites="GelmanHill:2007">(<a href="#ref-GelmanHill:2007" role="doc-biblioref">Gelman and Hill 2007, sec. 14.2</a>)</span><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>This makes the strong assumption that each group has the same number of observations!<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../stan-users-guide/efficiency-tuning.html" class="pagination-link" aria-label="Efficiency Tuning">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Efficiency Tuning</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../stan-users-guide/posterior-prediction.html" class="pagination-link" aria-label="Posterior Predictive Sampling">
+        <span class="nav-page-text">Posterior Predictive Sampling</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/stan-dev/docs/edit/master/src/stan-users-guide/parallelization.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/stan-dev/docs/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

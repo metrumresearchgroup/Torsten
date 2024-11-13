@@ -1,0 +1,162 @@
+---
+pagetitle: Proportionality Constants
+---
+
+# Proportionality Constants  {#proportionality-constants.chapter}
+
+When evaluating a likelihood or prior as part of the log density computation in
+MCMC, variational inference, or optimization, it is usually only necessary to
+compute the functions up to a proportionality constant (or similarly compute
+log densities up to an additive constant). In MCMC this comes from the fact that
+the distribution being sampled does not need to be normalized (and so it is the
+normalization constant that is ignored). Similarly the distribution does not
+need normalized to perform variational inference or do optimizations. The advantage
+of working with unnormalized distributions is they can make computation quite a
+bit cheaper.
+
+There are three different syntaxes to build the model in Stan. The way
+to select between them is by determining if the proportionality constants are
+necessary. If performance is not a problem, it is always safe to use the 
+normalized densities.
+
+The distribution statement (`~`) and log density increment statement
+(`target +=`) with `_lupdf()` use unnormalized densities for $x$
+(dropping proportionality constants):
+
+```stan
+x ~ normal(0, 1);
+target += normal_lupdf(x | 0, 1); // the 'u' is for unnormalized
+```
+
+The log density increment statement (`target +=`) with `_lpdf()`
+uses the full normalized density for $x$ (dropping no constants):
+
+```stan
+target += normal_lpdf(x | 0, 1);
+```
+
+For discrete distributions, the `target +=` syntax is using `_lupmf`
+and `_lpmf` instead:
+
+```stan
+y ~ bernoulli(0.5);
+target += bernoulli_lupmf(y | 0.5);
+target += bernoulli_lpmf(y | 0.5);
+```
+
+## Dropping Proportionality Constants
+
+If a density $p(\theta)$ can be factored into $K g(\theta)$ where $K$ are all
+the factors that are a not a function of $\theta$ and $g(\theta)$ are all the
+terms that are a function of $\theta$, then it is said that $g(\theta)$
+is proportional to $p(\theta)$ up to a constant.
+
+The advantage of all this is that sometimes $K$ is expensive to compute and if
+it is not a function of the distribution that is to be sampled (or optimized or
+approximated with variational inference), there is no need to compute it
+because it will not affect the results.
+
+Stan takes advantage of the proportionality constant fact with the `~` syntax.
+Take for instance the normal data model:
+
+```stan
+data {
+  real mu;
+  real<lower=0.0> sigma;
+}
+parameters {
+  real x;
+}
+model {
+  x ~ normal(mu, sigma);
+}
+```
+
+Syntactically, this is just shorthand for the equivalent model that replaces the
+`~` syntax with a `target +=` statement and a `normal_lupdf` function call:
+
+```stan
+data {
+  real mu;
+  real<lower=0.0> sigma;
+}
+parameters {
+  real x;
+}
+model {
+  target += normal_lupdf(x | mu, sigma)
+}
+```
+
+The function `normal_lupdf` is only guaranteed to return the log density of the
+normal distribution up to a proportionality constant density to be sampled. The
+proportionality constant itself is not defined. The full log density of the
+statement here is:
+
+$$
+\textsf{normal\_lpdf}(x | \mu, \sigma) =
+-\log \left( \sigma \sqrt{2 \pi} \right)
+-\frac{1}{2} \left( \frac{x - \mu}{\sigma} \right)^2.
+$$
+
+Now because the density here is only a function of $x$, the additive terms in
+the log density that are not a function of $x$ can be dropped. In this case it
+is enough to know only the quadratic term:
+
+$$
+\textsf{normal\_lupdf}(x | \mu, \sigma) =
+-\frac{1}{2} \left( \frac{x - \mu}{\sigma} \right)^2.
+$$
+
+## Keeping Proportionality Constants
+
+In the case that the proportionality constants were needed for a normal log
+density the function `normal_lpdf` can be used. For clarity, if there is ever
+a situation where it is unclear if the normalization is necessary, it should
+always be safe to include it. Only use the `~` or `target += normal_lupdf`
+syntaxes if it is absolutely clear that the proportionality constants are not
+necessary.
+
+## User-defined Distributions
+
+When a custom `_lpdf` or `_lpmf` function is defined, the compiler will
+automatically make available a `_lupdf` or `_lupmf` version of the function.
+It is only possible to define custom distributions in the normalized
+form in Stan. Any attempt to define an unnormalized distribution directly will
+result in an error.
+
+The difference in the normalized and unnormalized versions of custom probability
+functions is how probability functions are treated inside these functions. Any
+internal unnormalized probability function call will be replaced with its normalized
+equivalent if the normalized version of the parent custom distribution is called.
+
+The following code demonstrates the different behaviors:
+
+```stan
+functions {
+  real custom1_lpdf(x) {
+    return normal_lupdf(x | 0.0, 1.0)
+  }
+  real custom2_lpdf(x) {
+    return normal_lpdf(x | 0.0, 1.0)
+  }
+}
+parameters {
+  real mu;
+}
+model {
+  mu ~ custom1(); // Normalization constants dropped
+  target += custom1_lupdf(mu); // Normalization constants dropped
+  target += custom1_lpdf(mu);  // Normalization constants kept
+
+  mu ~ custom2();  // Normalization constants kept
+  target += custom2_lupdf(mu);  // Normalization constants kept
+  target += custom2_lpdf(mu);  // Normalization constants kept
+}
+```
+
+## Limitations on Using `_lupdf` and `_lupmf` Functions
+
+To avoid ambiguities in how the normalization constants work, functions ending
+in `_lupdf` and `_lupmf` can only be used in the model block or user-defined
+probability functions (functions ending in `_lpdf` or `_lpmf`).

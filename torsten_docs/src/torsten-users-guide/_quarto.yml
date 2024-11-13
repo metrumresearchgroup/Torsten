@@ -1,0 +1,82 @@
+project:
+  title: "Torsten User's Guide"
+  type: book
+
+bibliography: [../bibtex/all.bib]
+biblio-style: apalike
+toc: true
+toc-depth: 2
+
+format:
+  pdf:
+    latex-tinytex: false
+    block-headings: false
+    pdf-engine: "pdflatex"
+    latex-engine: "pdflatex"
+    latex-auto-install: true
+    documentclass: book
+    subtitle: "Version {{< env STAN_DOCS_VERSION >}}"
+    include-in-header: "../header.tex"
+    toc-title: "Table of Contents"
+    syntax-definitions:
+      - ../theming/stan.xml
+    highlight-style: tango
+    keep-tex: false
+    colorlinks: true
+    linkcolor: darkblue
+    urlcolor: darkblue
+    citecolor: darkgreen
+
+book:
+  title: "Torsten User's Guide"
+  author: "Torsten Development Team"
+  search: true
+
+  chapters:
+    - index.qmd
+    - introduction.qmd
+    - installation.qmd
+    - part: "Function references"
+      chapters:
+        - missing-data.qmd
+        - truncation-censoring.qmd
+        - finite-mixtures.qmd
+        - measurement-error.qmd
+        - latent-discrete.qmd
+        - sparse-ragged.qmd
+        - clustering.qmd
+        - gaussian-processes.qmd
+        - hyperspherical-models.qmd
+        - algebraic-equations.qmd
+        - odes.qmd
+        - one-dimensional-integrals.qmd
+        - complex-numbers.qmd
+        - dae.qmd
+        - survival.qmd
+    - part:  "Programming Techniques"
+      chapters:
+        - floating-point.qmd
+        - matrices-arrays.qmd
+        - multi-indexing.qmd
+        - user-functions.qmd
+        - custom-probability.qmd
+        - proportionality-constants.qmd
+        - problematic-posteriors.qmd
+        - reparameterization.qmd
+        - efficiency-tuning.qmd
+        - parallelization.qmd
+    - part: "Posterior Inference & Model Checking"
+      chapters:
+        - posterior-prediction.qmd
+        - simulation-based-calibration.qmd
+        - posterior-predictive-checks.qmd
+        - cross-validation.qmd
+        - poststratification.qmd
+        - decision-analysis.qmd
+        - bootstrap.qmd
+    - part: "Appendices"
+      chapters:
+        - using-stanc.qmd
+        - style-guide.qmd
+        - for-bugs-users.qmd
+    - references.qmd

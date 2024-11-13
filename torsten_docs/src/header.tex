@@ -1,0 +1,142 @@
+\let\digamma\undefined
+
+\usepackage{mathpazo}
+\usepackage[scale=0.9]{sourcecodepro}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\linespread{1.03}
+
+\usepackage{titlesec}
+\usepackage{titletoc}
+\titleformat{\chapter}{\bfseries\LARGE}{\thechapter.}{1.5pc}{}{}
+\titleformat{\section}{\bfseries\large}{\thesection.}{1em}{}
+\titleformat{\subsection}{\bfseries}{}{0.5em}{}
+\titleformat{\subsubsection}{\slshape}{}{0.2em}{}
+
+\titlespacing{\chapter}{0pt}{0pt}{12pt}
+\titlespacing{\section}{0pt}{9pt}{4pt}
+\titlespacing{\subsection}{0pt}{6pt}{2pt}
+\titlespacing{\subsubsection}{0pt}{6pt}{1pt}
+
+\usepackage[titles]{tocloft}
+\renewcommand{\cftpartfont}{\normalsize\rm\bfseries}
+\renewcommand{\cftpartpagefont}{\normalsize\rm\bfseries}
+\setlength{\cftbeforechapskip}{2ex}
+\setlength{\cftchapnumwidth}{3ex}
+\renewcommand{\cftchapfont}{\normalsize\bf}
+\renewcommand{\cftchappagefont}{\footnotesize\rm}
+\renewcommand{\cftchapaftersnum}{.}
+\renewcommand{\cftchapaftersnumb}{\hspace*{8pt}}
+\renewcommand{\cftchapleader}{\hspace*{1em}}
+\renewcommand{\cftchapafterpnum}{\cftparfillskip}
+\renewcommand{\cftpnumalign}{l}
+\setlength{\cftbeforesecskip}{0.5ex}
+\setlength{\cftsecnumwidth}{5.5ex}
+\setlength{\cftsecindent}{5ex}
+\renewcommand{\cftsecfont}{\normalsize}
+\renewcommand{\cftsecpagefont}{\footnotesize}
+\renewcommand{\cftsecaftersnum}{}
+\renewcommand{\cftsecaftersnumb}{\hspace*{8pt}}
+\renewcommand{\cftsecleader}{\hspace*{1em}}
+\renewcommand{\cftsecafterpnum}{\cftparfillskip}
+\renewcommand{\cftpnumalign}{l}
+\setlength{\cftbeforesubsecskip}{0.5ex}
+\setlength{\cftsubsecnumwidth}{5.5ex}
+\setlength{\cftsubsecindent}{15ex}
+\renewcommand{\cftsubsecfont}{\normalsize}
+\renewcommand{\cftsubsecpagefont}{\footnotesize}
+\renewcommand{\cftsubsecaftersnum}{}
+\renewcommand{\cftsubsecaftersnumb}{\hspace*{8pt}}
+\renewcommand{\cftsubsecleader}{\hspace*{1em}}
+\renewcommand{\cftsubsecafterpnum}{\cftparfillskip}
+\renewcommand{\cftpnumalign}{l}
+
+
+\makeatletter
+\renewcommand{\@tocrmarg}{2.55em plus1fil}
+\makeatother
+
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\@dottedtocline}
+  {\rightskip\@tocrmarg}
+  {\rightskip\@tocrmarg plus 4em \hyphenpenalty\@M}
+  {}{}
+\makeatother
+
+\makeatletter
+\patchcmd{\@verbatim}
+  {\verbatim@font}
+  {\verbatim@font\small}
+  {}{}
+\makeatother
+
+
+
+\usepackage{hyperref}
+\usepackage{xcolor}
+\definecolor{darkblue}{rgb}{0.0, 0.0, 0.55}
+\definecolor{darkred}{rgb}{0.55, 0.0, 0.0}
+\definecolor{darkgreen}{rgb}{0.0, 0.39, 0.0}
+\definecolor{indigo}{rgb}{0.29, 0.0, 0.51}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=indigo,
+    urlcolor=darkblue,
+    citecolor=darkgreen
+}
+
+
+\setlength{\paperwidth}{6in}
+\setlength{\paperheight}{8in}
+\pdfpagewidth=\paperwidth
+\pdfpageheight=\paperheight
+
+\setlength{\textwidth}{5in}
+\setlength{\textheight}{6.75in}
+\setlength{\oddsidemargin}{-0.5in}
+\setlength{\evensidemargin}{-0.5in}
+\setlength{\topmargin}{-0.75in}
+\setlength{\headsep}{18pt}
+
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\floatpagefraction}{0.75}
+\renewcommand{\textfraction}{0.07}
+
+\usepackage{graphicx}
+\graphicspath{{img/}}
+
+% Redefine \maketitle to include an image
+\makeatletter
+\def\maketitle{
+  \begin{center}
+    {\LARGE \@title \par} % Title
+    \vspace{0.5cm}
+    \ifdefined\@subtitle
+      {\large \@subtitle \par} % Subtitle
+      \vspace{0.5cm}
+    \fi
+    {\large \@author \par} % Author
+    \vspace{1cm}
+    \includegraphics[width=0.3\textwidth]{logo_tm.png}
+  \end{center}
+}
+\makeatother
+
+\setcounter{tocdepth}{0}
+
+\raggedbottom
+\sloppy
+
+\let\cleardoublepage\clearpage
+
+\usepackage{makeidx}
+\makeindex
+\frontmatter
+
+\usepackage{fancyhdr}
+\pagestyle{headings}
+
+\thispagestyle{empty}

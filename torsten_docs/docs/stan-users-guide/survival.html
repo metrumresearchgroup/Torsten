@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.53">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Survival Models</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../stan-users-guide/floating-point.html" rel="next">
+<link href="../stan-users-guide/dae.html" rel="prev">
+<link href="../img/logo_tm.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 200,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../theming/quarto_styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../img/logo_tm.png" alt="Stan logo" class="navbar-logo">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Overview</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../stan-users-guide/index.html" aria-current="page"> 
+<span class="menu-text">Stan Users Guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../reference-manual/index.html"> 
+<span class="menu-text">Reference Manual</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../functions-reference/index.html"> 
+<span class="menu-text">Functions Reference</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-interfaces" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Interfaces</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-interfaces">    
+        <li>
+    <a class="dropdown-item" href="../cmdstan-guide/index.html">
+ <span class="dropdown-text">CmdStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/cmdstanpy">
+ <span class="dropdown-text">CmdStanPy</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/cmdstanr">
+ <span class="dropdown-text">CmdStanR</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/users/interfaces/pystan.html">
+ <span class="dropdown-text">PyStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/rstan">
+ <span class="dropdown-text">RStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="http://stanjulia.github.io/Stan.jl/stable/INTRO/">
+ <span class="dropdown-text">Stan.jl</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other-packages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other Packages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other-packages">    
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/bayesplot/">
+ <span class="dropdown-text">bayesplot</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://roualdes.github.io/bridgestan/latest/">
+ <span class="dropdown-text">BridgeStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://paul-buerkner.github.io/brms/">
+ <span class="dropdown-text">brms</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/loo/">
+ <span class="dropdown-text">loo</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/posterior">
+ <span class="dropdown-text">posterior</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/projpred">
+ <span class="dropdown-text">projpred</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/rstanarm">
+ <span class="dropdown-text">rstanarm</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/rstantools">
+ <span class="dropdown-text">rstantools</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/shinystan">
+ <span class="dropdown-text">shinystan</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools tools-wide">
+    <a href="https://github.com/stan-dev" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+    <a href="https://discourse.mc-stan.org" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-chat-text-fill"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../stan-users-guide/regression.html">Example Models</a></li><li class="breadcrumb-item"><a href="../stan-users-guide/survival.html">Survival Models</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stan User’s Guide</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Version 2.35</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Example Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regression Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/time-series.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Time-Series Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/missing-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Missing Data and Partially Known Parameters</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/truncation-censoring.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Truncated or Censored Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/finite-mixtures.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Finite Mixtures</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/measurement-error.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Measurement Error and Meta-Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/latent-discrete.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Latent Discrete Parameters</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/sparse-ragged.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sparse and Ragged Data Structures</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/clustering.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Clustering Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/gaussian-processes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gaussian Processes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/hyperspherical-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Directions, Rotations, and Hyperspheres</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/algebraic-equations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Solving Algebraic Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/odes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Differential Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/one-dimensional-integrals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computing One Dimensional Integrals</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/complex-numbers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Complex Numbers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/dae.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Differential-Algebraic Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/survival.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Survival Models</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Programming Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/floating-point.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Floating Point Arithmetic</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/matrices-arrays.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Matrices, Vectors, Arrays, and Tuples</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/multi-indexing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Multiple Indexing and Range Indexing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/user-functions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">User-Defined Functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/custom-probability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Custom Probability Functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/proportionality-constants.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Proportionality Constants</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/problematic-posteriors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Problematic Posteriors</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/reparameterization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reparameterization and Change of Variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/efficiency-tuning.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Efficiency Tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/parallelization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parallelization</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Posterior Inference &amp; Model Checking</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/posterior-prediction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Posterior Predictive Sampling</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/simulation-based-calibration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulation-Based Calibration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/posterior-predictive-checks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Posterior and Prior Predictive Checks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/cross-validation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Held-Out Evaluation and Cross-Validation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/poststratification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Poststratification</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/decision-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/bootstrap.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Bootstrap and Bagging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/using-stanc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Using the Stan Compiler</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/style-guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stan Program Style Guide</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/for-bugs-users.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Transitioning from BUGS</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#survival-models" id="toc-survival-models" class="nav-link active" data-scroll-target="#survival-models">Survival Models</a>
+  <ul class="collapse">
+  <li><a href="#exponential-survival-model" id="toc-exponential-survival-model" class="nav-link" data-scroll-target="#exponential-survival-model">Exponential survival model</a>
+  <ul class="collapse">
+  <li><a href="#stan-program" id="toc-stan-program" class="nav-link" data-scroll-target="#stan-program">Stan program</a></li>
+  </ul></li>
+  <li><a href="#weibull-survival-model" id="toc-weibull-survival-model" class="nav-link" data-scroll-target="#weibull-survival-model">Weibull survival model</a>
+  <ul class="collapse">
+  <li><a href="#stan-program-1" id="toc-stan-program-1" class="nav-link" data-scroll-target="#stan-program-1">Stan program</a></li>
+  </ul></li>
+  <li><a href="#survival-with-covariates" id="toc-survival-with-covariates" class="nav-link" data-scroll-target="#survival-with-covariates">Survival with covariates</a></li>
+  <li><a href="#hazard-and-survival-functions" id="toc-hazard-and-survival-functions" class="nav-link" data-scroll-target="#hazard-and-survival-functions">Hazard and survival functions</a></li>
+  <li><a href="#proportional-hazards-model" id="toc-proportional-hazards-model" class="nav-link" data-scroll-target="#proportional-hazards-model">Proportional hazards model</a>
+  <ul class="collapse">
+  <li><a href="#partial-likelihood-function" id="toc-partial-likelihood-function" class="nav-link" data-scroll-target="#partial-likelihood-function">Partial likelihood function</a></li>
+  <li><a href="#stan-program-2" id="toc-stan-program-2" class="nav-link" data-scroll-target="#stan-program-2">Stan program</a></li>
+  <li><a href="#stan-model-for-tied-survival-times" id="toc-stan-model-for-tied-survival-times" class="nav-link" data-scroll-target="#stan-model-for-tied-survival-times">Stan model for tied survival times</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/stan-dev/docs/edit/master/src/stan-users-guide/survival.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/stan-dev/docs/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+
+
+<section id="survival-models" class="level1">
+<h1>Survival Models</h1>
+<p>Survival models apply to animals and plants as well as inanimate objects such as machine parts or electrical components. Survival models arise when there is an event of interest for a group of subjects, machine component, or other item that is</p>
+<ul>
+<li>certain to occur after some amount of time,</li>
+<li>but only measured for a fixed period of time, during which the event may not have occurred for all subjects.</li>
+</ul>
+<p>For example, one might wish to estimate the the distribution of time to failure for solid state drives in a data center, but only measure drives for a two year period, after which some number will have failed and some will still be in service.</p>
+<p>Survival models are often used comparatively, such as comparing time to death of patients diagnosed with stage one liver cancer under a new treatment and a standard treatment (pure controls are not allowed when there is an effective existing treatment for a serious condition). During a two year trial, some patients will die and others will survive.</p>
+<p>Survival models may involve covariates, such as the factory at which a component is manufactured, the day on which it is manufactured, and the amount of usage it gets. A clinical trial might be adjusted for the sex and age of a cancer patient or the hospital at which treatment is received.</p>
+<p>Survival models come in two main flavors, parametric and semi-parametric. In a parametric model, the survival time of a subject is modeled explicitly using a parametric probability distribution. There is a great deal of flexibility in how the parametric probability distribution is constructed. The sections below consider exponential and Weibull distributed survival times.</p>
+<p>Rather than explicitly modeling a parametric survival probability, semi-parametric survival models instead model the relative effect on survival of covariates. The final sections of this chapter consider the proportional hazards survival model.</p>
+<section id="exponential-survival-model" class="level2">
+<h2 class="anchored" data-anchor-id="exponential-survival-model">Exponential survival model</h2>
+<p>The exponential distribution is commonly used in survival models where there is a constant risk of failure that does not go up the longer a subject survives. This is because the exponential distribution is memoryless in sense that if <span class="math inline">\(T \sim \textrm{exponential}(\lambda)\)</span> for some rate <span class="math inline">\(\lambda &gt; 0,\)</span> then <span class="math display">\[\begin{equation*}
+\Pr[T &gt; t] = \Pr[T &gt; t + t' \mid T &gt; t'].
+\end{equation*}\]</span> If component survival times are distributed exponentially, it means the distribution of time to failure is the same no matter how long the item has already survived. This can be a reasonable assumption for electronic components, but is not a reasonable model for animal survival.</p>
+<p>The exponential survival model has a single parameter for the rate, which assumes all subjects have the same distribution of failure time (this assumption is relaxed in the next section by introducing per-subject covariates). With the rate parameterization, the expected survival time for a component with survival time represented as the random variable <span class="math inline">\(T\)</span> is <span class="math display">\[\begin{equation*}
+\mathbb{E}[T \mid \lambda] = \frac{1}{\lambda}.
+\end{equation*}\]</span> The exponential distribution is sometimes parameterized in terms of a scale (i.e., inverse rate) <span class="math inline">\(\beta = 1 / \lambda\)</span>.</p>
+<p>The data for a survival model consists of two components. First, there is a vector <span class="math inline">\(t \in (0, \infty)^N\)</span> of <span class="math inline">\(N\)</span> observed failure times. Second, there is a censoring time <span class="math inline">\(t^{\textrm{cens}}\)</span> such that failure times greater than <span class="math inline">\(t^{\textrm{cens}}\)</span> are not observed. The censoring time assumption imposes a constraint which requires <span class="math inline">\(t_n &lt; t^{\textrm{cens}}\)</span> for all <span class="math inline">\(n \in 1{:}N.\)</span> For the censored subjects, the only thing required in the model is their total count, <span class="math inline">\(N^\textrm{cens}\)</span> (their covariates are also required for models with covariates).</p>
+<p>The model for the observed failure times is exponential, so that for <span class="math inline">\(n \in 1{:}N,\)</span> <span class="math display">\[\begin{equation*}
+t_n \sim \textrm{exponential}(\lambda).
+\end{equation*}\]</span></p>
+<p>The model for the censored failure times is also exponential. All that is known of a censored item is that its failure time is greater than the censoring time, so each censored item contributes a factor to the likelihood of <span class="math display">\[\begin{equation*}
+\Pr[T &gt; t^{\textrm{cens}}] = 1 - F_T(t^{\textrm{cens}}),
+\end{equation*}\]</span> where <span class="math inline">\(F_T\)</span> is the cumulative distribution function (cdf) of survival time <span class="math inline">\(T\)</span> (<span class="math inline">\(F_X(x) = \Pr[X \leq x]\)</span> is standard notation for the cdf of a random variable <span class="math inline">\(X\)</span>). The function <span class="math inline">\(1 - F_T(t)\)</span> is the complementary cumulative distribution function (ccdf), and it is used directly to define the likelihood <span class="math display">\[\begin{eqnarray*}
+p(t, t^{\textrm{cens}}, N^{\textrm{cens}} \mid \lambda)
+&amp; = &amp;
+\prod_{n=1}^N \textrm{exponential}(t_n \mid \lambda)
+\cdot
+\prod_{n=1}^{N^{\textrm{cens}}}
+\textrm{exponentialCCDF}(t^{\textrm{cens}} \mid \lambda)
+\\
+&amp; = &amp;
+\prod_{n=1}^N \textrm{exponential}(t_n \mid \lambda)
+\cdot
+\textrm{exponentialCCDF}(t^{\textrm{cens}} \mid \lambda)^{N^{\textrm{cens}}}.
+\end{eqnarray*}\]</span></p>
+<p>On the log scale, that’s <span class="math display">\[\begin{eqnarray*}
+\log p(t, t^{\textrm{cens}}, N^{\textrm{cens}} \mid \lambda)
+&amp; = &amp;
+\sum_{n=1}^N \log \textrm{exponential}(t_n \mid \lambda)
+\\
+&amp; &amp; { } + N^{\textrm{cens}} \cdot \log \textrm{exponentialCCDF}(t^{\textrm{cens}} \mid \lambda).
+\end{eqnarray*}\]</span></p>
+<p>The model can be completed with a standard lognormal prior on <span class="math inline">\(\lambda,\)</span> <span class="math display">\[\begin{equation*}
+\lambda \sim \textrm{lognormal}(0, 1),
+\end{equation*}\]</span> which is reasonable if failure times are in the range of 0.1 to 10 time units, because that’s roughly the 95% central interval for a variable distributed <span class="math inline">\(\textrm{lognormal}(0, 1)\)</span>. In general, the range of the prior (and likelihood!) should be adjusted with prior knowledge of expected failure times.</p>
+<section id="stan-program" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="stan-program">Stan program</h3>
+<p>The data for a simple survival analysis without covariates can be coded as follows.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N;</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[N] t;</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N_cens;</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; t_cens;</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>In this program, <code>N</code> is the number of uncensored observations and <code>t</code> contains the times of the uncensored observations. There are a further <code>N_cens</code> items that are right censored at time <code>t_cens</code>. Right censoring means that if the time to failure is greater than</p>
+<p><code>t_cens</code>, it is only observed that the part survived until time <code>t_cens</code>. In the case where there are no covariates, the model only needs the number of censored items because they all share the same censoring time.</p>
+<p>There is a single rate parameter, the inverse of which is the expected time to failure.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; lambda;</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The exponential survival model and the prior are coded directly using vectorized distribution and ccdf statements. This both simplifies the code and makes it more computationally efficient by sharing computation across instances.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  t ~ exponential(lambda);</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> N_cens * exponential_lccdf(t_cens | lambda);</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  lambda ~ lognormal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The likelihood for rate <code>lambda</code> is just the density of exponential distribution for observed failure time. The Stan code is vectorized, modeling each entry of the vector <code>t</code> as a having an exponential distribution with rate <code>lambda</code>. This data model could have been written as</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  t[n] ~ exponential(lambda);</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The log likelihood contribution given censored items is the number of censored items times the log complementary cumulative distribution function (lccdf) at the censoring time of the exponential distribution with rate <code>lambda</code>. The log likelihood terms arising from the censored events could have been added to the target log density one at a time,</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> exponential_lccdf(t_cens | lambda);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>to define the same log density, but it is much more efficient computationally to multiply by a constant than do a handful of sequential additions.</p>
+</section>
+</section>
+<section id="weibull-survival-model" class="level2">
+<h2 class="anchored" data-anchor-id="weibull-survival-model">Weibull survival model</h2>
+<p>The Weibull distribution is a popular alternative to the exponential distribution in cases where there is a decreasing probability of survival as a subject gets older. The Weibull distribution models this by generalizing the exponential distribution to include a power-law trend.</p>
+<p>The Weibull distribution is parameterized by a shape <span class="math inline">\(\alpha &gt; 0\)</span> and scale <span class="math inline">\(\sigma &gt; 0.\)</span> For an outcome <span class="math inline">\(t \geq 0\)</span>, the Weibull distribution’s probability density function is <span class="math display">\[\begin{equation*}
+\textrm{Weibull}(t \mid \alpha, \sigma)
+= \frac{\alpha}{\sigma}
+  \cdot \left( \frac{t}{\sigma} \right)^{\alpha - 1}
+  \cdot \exp\left(-\left(\frac{t}{\sigma}\right)^{\alpha}\right).
+\end{equation*}\]</span> In contrast, recall that the exponential distribution can be expressed using a rate (inverse scale) parameter <span class="math inline">\(\beta &gt; 0\)</span> with probability density function <span class="math display">\[\begin{equation*}
+\textrm{exponential}(t \mid \beta) =
+\beta
+\cdot
+\exp(-\beta \cdot t).
+\end{equation*}\]</span> When <span class="math inline">\(\alpha = 1,\)</span> the Weibull distribution reduces to an exponential distribution, <span class="math display">\[\begin{equation*}
+\textrm{Weibull}(t \mid 1, \sigma)
+=
+\textrm{exponential}\!\left(t \,\bigg|\, \frac{1}{\sigma}\right).
+\end{equation*}\]</span> In other words, the Weibull is a continuous expansion of the exponential distribution.</p>
+<p>If <span class="math inline">\(T \sim \textrm{Weibull}(\alpha, \sigma),\)</span> then the expected survival time is <span class="math display">\[\begin{equation*}
+\mathbb{E}[T] = \sigma \cdot \Gamma\!\left(1 + \frac{1}{\alpha}\right),
+\end{equation*}\]</span> where the <span class="math inline">\(\Gamma\)</span> function is the continuous completion of the factorial function (i.e., <span class="math inline">\(\Gamma(1 + n) = n!\ \)</span> for <span class="math inline">\(n \in
+\mathbb{N}\)</span>). As <span class="math inline">\(\alpha \rightarrow 0\)</span> for a fixed <span class="math inline">\(\sigma\)</span> or as <span class="math inline">\(\sigma \rightarrow \infty\)</span> for a fixed <span class="math inline">\(\alpha\)</span>, the expected survival time goes to infinity.</p>
+<p>There are three regimes of the Weibull distribution.</p>
+<ul>
+<li><p><span class="math inline">\(\alpha &lt; 1.\)</span> A subject is more likely to fail early. When <span class="math inline">\(\alpha
+&lt; 1,\)</span> the Weibull density approaches infinity as <span class="math inline">\(t \rightarrow 0.\)</span></p></li>
+<li><p><span class="math inline">\(\alpha = 1.\)</span> The Weibull distribution reduces to the exponential distribution, with a constant rate of failure over time. When <span class="math inline">\(\alpha = 1,\)</span> the Weibull distribution approaches <span class="math inline">\(\sigma\)</span> as <span class="math inline">\(t
+\rightarrow 0.\)</span></p></li>
+<li><p><span class="math inline">\(\alpha &gt; 1.\)</span> Subjects are less likely to fail early. When <span class="math inline">\(\alpha &lt; 1,\)</span> the Weibull density approaches zero as <span class="math inline">\(t \rightarrow 0.\)</span></p></li>
+</ul>
+<p>With <span class="math inline">\(\alpha \leq 1,\)</span> the mode is zero (<span class="math inline">\(t = 0\)</span>), whereas with <span class="math inline">\(\alpha &gt; 1,\)</span> the mode is nonzero (<span class="math inline">\(t &gt; 0\)</span>).</p>
+<section id="stan-program-1" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="stan-program-1">Stan program</h3>
+<p>With Stan, one can just swap the exponential distribution for the Weibull distribution with the appropriate parameters and the model remains essentially the same. Recall the exponential model’s parameters and model block.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; beta;</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  t ~ exponential(beta);</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> N_cens * exponential_lccdf(t_cens | beta);</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  beta ~ lognormal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The Stan program for the Weibull model just swaps in the Weibull distribution and complementary cumulative distribution function with shape (<code>alpha</code>) and scale (<code>sigma</code>) parameters.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; alpha;</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; sigma;</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  t ~ weibull(alpha, sigma);</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> N_cens * weibull_lccdf(t_cens | alpha, sigma);</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  alpha ~ lognormal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  sigma ~ lognormal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>As usual, if more is known about expected survival times, <code>alpha</code> and <code>sigma</code> should be given more informative priors.</p>
+</section>
+</section>
+<section id="survival-with-covariates" class="level2">
+<h2 class="anchored" data-anchor-id="survival-with-covariates">Survival with covariates</h2>
+<p>Suppose that for each of <span class="math inline">\(n \in 1{:}N\)</span> items observed, both censored and uncensored, there is a covariate (row) vector <span class="math inline">\(x_n \in
+\mathbb{R}^K.\)</span> For example, a clinical trial may include the age (or a one-hot encoding of an age group) and the sex of a participant; an electronic component might include a one-hot encoding of the factory at which it was manufactured and a covariate for the load under which it has been run.</p>
+<p>Survival with covariates replaces what is essentially a simple regression with only an intercept <span class="math inline">\(\lambda\)</span> with a generalized linear model with a log link, where the rate for item <span class="math inline">\(n\)</span> is <span class="math display">\[\begin{equation*}
+\lambda_n = \exp(x_n \cdot \beta),
+\end{equation*}\]</span> where <span class="math inline">\(\beta \in \mathbb{R}^K\)</span> is a <span class="math inline">\(K\)</span>-vector of regression coefficients. Thus <span class="math display">\[\begin{equation*}
+t_n \sim \textrm{exponential}(\lambda_n).
+\end{equation*}\]</span> The censored items have probability <span class="math display">\[\begin{equation*}
+\Pr[n\textrm{-th censored}] =
+\textrm{exponentialCCDF}(t^{\textrm{cens}} \mid x^{\textrm{cens}}_n
+\cdot \beta).
+\end{equation*}\]</span></p>
+<p>The covariates form an <span class="math inline">\(N \times K\)</span> data matrix, <span class="math inline">\(x \in
+\mathbb{R}^{N \times K}\)</span>. An intercept can be introduced by adding a column of 1 values to <span class="math inline">\(x\)</span>.</p>
+<p>A Stan program for the exponential survival model with covariates is as follows. It relies on the fact that the order of failure times (<code>t</code> and <code>t_cens</code>) corresponds to the ordering of items in the covariate matrices (<code>x</code> and <code>x_cens</code>).</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N;</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[N] t;</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N_cens;</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; t_cens;</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; K;</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">matrix</span>[N, K] x;</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">matrix</span>[N_cens, K] x_cens;</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[K] gamma;</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  gamma ~ normal(<span class="dv">0</span>, <span class="dv">2</span>);</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  t ~ exponential(exp(x * gamma));</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> exponential_lccdf(t_cens | exp(x_cens * gamma));</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Both the distribution statement for uncensored times and the log density increment statement for censored times are vectorized, one in terms of the exponential distribution and one in terms of the log complementary cumulative distribution function.</p>
+</section>
+<section id="hazard-and-survival-functions" class="level2">
+<h2 class="anchored" data-anchor-id="hazard-and-survival-functions">Hazard and survival functions</h2>
+<p>Suppose <span class="math inline">\(T\)</span> is a random variable representing a survival time, with a smooth cumulative distribution function <span class="math display">\[\begin{equation*}
+F_T(t) = \Pr[T \leq t],
+\end{equation*}\]</span> so that its probability density function is <span class="math display">\[\begin{equation*}
+p_T(t) = \frac{\textrm{d}}{\textrm{d}t} F_T(t).
+\end{equation*}\]</span></p>
+<p>The <em>survival function</em> <span class="math inline">\(S(t)\)</span> is the probability of surviving until at least time <span class="math inline">\(t\)</span>, which is just the complementary cumulative distribution function (ccdf) of the survival random variable <span class="math inline">\(T\)</span>, <span class="math display">\[\begin{equation*}
+S(t) = 1 - F_T(t).
+\end{equation*}\]</span> The survival function appeared in the Stan model in the previous section as the likelihood for items that did not fail during the period of the experiment (i.e., the censored failure times for the items that survived through the trial period).</p>
+<p>The <em>hazard function</em> <span class="math inline">\(h(t)\)</span> is the instantaneous risk of not surviving past time <span class="math inline">\(t\)</span> assuming survival until time <span class="math inline">\(t\)</span>, which is given by <span class="math display">\[\begin{equation*}
+h(t) = \frac{p_T(t)}{S(t)} = \frac{p_T(t)}{1 - F_T(t)}.
+\end{equation*}\]</span> The <em>cumulative hazard function</em> <span class="math inline">\(H(t)\)</span> is defined to be the accumulated hazard over time, <span class="math display">\[\begin{equation*}
+H(t) = \int_0^t h(u) \, \textrm{d}u.
+\end{equation*}\]</span></p>
+<p>The hazard function and survival function are related through the differential equation <span class="math display">\[\begin{eqnarray*}
+h(t) &amp; = &amp; -\frac{\textrm{d}}{\textrm{d}t} \log S(t).
+\\[4pt]
+&amp; = &amp; -\frac{1}{S(t)} \frac{\textrm{d}}{\textrm{d}t} S(t)
+\\[4pt]
+&amp; = &amp; \frac{1}{S(t)} \frac{\textrm{d}}{\textrm{d}t} -(1 - F_Y(t))
+\\[4pt]
+&amp; = &amp; \frac{1}{S(t)} \frac{\textrm{d}}{\textrm{d}t} (F_Y(t) - 1)
+\\[4pt]
+&amp; = &amp; \frac{1}{S(t)} \frac{\textrm{d}}{\textrm{d}t} F_Y(t)
+\\[4pt]
+&amp; = &amp; \frac{p_T(t)}{S(t)}.
+\end{eqnarray*}\]</span></p>
+<p>If <span class="math inline">\(T \sim \textrm{exponential}(\beta)\)</span> has an exponential distribution, then its hazard function is constant, <span class="math display">\[\begin{eqnarray*}
+h(t \mid \beta)
+&amp; = &amp; \frac{p_T(t \mid \beta)}{S(t \mid \beta)}
+\\[4pt]
+&amp; = &amp; \frac{\textrm{exponential}(t \mid \beta)}{1 - \textrm{exponentialCCDF}(t \mid \beta)}
+\\[4pt]
+&amp; = &amp; \frac{\beta \cdot \exp(-\beta \cdot t)}
+           {1 - (1 - \exp(-\beta \cdot t))}
+\\[4pt]
+&amp; = &amp; \frac{\beta \cdot \exp(-\beta \cdot t)}
+           {\exp(-\beta \cdot t)}
+\\[4pt]
+&amp; = &amp; \beta.
+\end{eqnarray*}\]</span> The exponential distribution is the only distribution of survival times with a constant hazard function.</p>
+<p>If <span class="math inline">\(T \sim \textrm{Weibull}(\alpha, \sigma),\)</span> then its hazard function is <span class="math display">\[\begin{eqnarray*}
+h(t \mid \alpha, \sigma)
+&amp; = &amp; \frac{p_T(t \mid \alpha, \sigma)}{S(t \mid \alpha, \sigma)}
+\\[4pt]
+&amp; = &amp; \frac{\textrm{Weibull}(t \mid \alpha, \sigma}{1 - \textrm{WeibullCCDF}(t \mid \alpha, \sigma)}
+\\[4pt]
+&amp; = &amp;
+\frac{\frac{\alpha}{\sigma} \cdot \left( \frac{t}{\sigma} \right)^{\alpha - 1}
+      \cdot \exp\left(-\left(\frac{t}{\sigma} \right)^\alpha\right)}
+     {1 - \left(1 -
+       \exp\left(-\left(\frac{t}{\sigma}\right)^\alpha
+     \right)\right)}      
+\\[4pt]
+&amp; = &amp; \frac{\alpha}{\sigma}
+  \cdot
+  \left( \frac{t}{\sigma} \right)^{\alpha - 1}.
+\end{eqnarray*}\]</span></p>
+<p>If <span class="math inline">\(\alpha = 1\)</span> the hazard is constant over time (which also follows from the fact that the Weibull distribution reduces to the exponential distribution when <span class="math inline">\(\alpha = 1\)</span>). When <span class="math inline">\(\alpha &gt; 1,\)</span> the hazard grows as time passes, whereas when <span class="math inline">\(\alpha &lt; 1,\)</span> it decreases as time passes.</p>
+</section>
+<section id="proportional-hazards-model" class="level2">
+<h2 class="anchored" data-anchor-id="proportional-hazards-model">Proportional hazards model</h2>
+<p>The exponential model is parametric in that is specifies an explicit parametric form for the distribution of survival times. <span class="citation" data-cites="cox:1972">Cox (<a href="#ref-cox:1972" role="doc-biblioref">1972</a>)</span> introduced a semi-parametric survival model specified directly in terms of a hazard function <span class="math inline">\(h(t)\)</span> rather than in terms of a distribution over survival times. Cox’s model is semi-parametric in that it does not model the full hazard function, instead modeling only the proportional differences in hazards among subjects.</p>
+<p>Let <span class="math inline">\(x_n \in \mathbb{R}^K\)</span> be a (row) vector of covariates for subject <span class="math inline">\(n\)</span> so that the full covariate data matrix is <span class="math inline">\(x \in \mathbb{R}^{N \times
+K}\)</span>. In Cox’s model, the hazard function for subject <span class="math inline">\(n\)</span> is defined conditionally in terms of their covariates <span class="math inline">\(x_n\)</span> and the parameter vector <span class="math inline">\(\gamma \in \mathbb{R}^K\)</span> as <span class="math display">\[\begin{equation*}
+h(t \mid x_n, \beta) = h_0(t) \cdot \exp(x_n \cdot \gamma),
+\end{equation*}\]</span> where <span class="math inline">\(h_0(t)\)</span> is a shared baseline hazard function and <span class="math inline">\(x_n \cdot
+\gamma = \sum_{k=1}^K x_{n, k} \cdot \beta_k\)</span> is a row vector-vector product.</p>
+<p>In the semi-parametric, proportional hazards model, the baseline hazard function <span class="math inline">\(h_0(t)\)</span> is not modeled. This is why it is called “semi-parametric.” Only the factor <span class="math inline">\(\exp(x_n \cdot \gamma),\)</span> which determines how individual <span class="math inline">\(n\)</span> varies by a proportion from the baseline hazard, is modeled. This is why it’s called “proportional hazards.”</p>
+<p>Cox’s proportional hazards model is not fully generative. There is no way to generate the times of failure because the baseline hazard function <span class="math inline">\(h_0(t)\)</span> is unmodeled; if the baseline hazard were known, failure times could be generated. Cox’s proportional hazards model is generative for the ordering of failures conditional on a number of censored items. Proportional hazard models may also include parametric or non-parametric model for the baseline hazard function<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>
+<section id="partial-likelihood-function" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="partial-likelihood-function">Partial likelihood function</h3>
+<p>Cox’s proportional specification of the hazard function is insufficient to generate random variates because the baseline hazard function <span class="math inline">\(h_0(t)\)</span> is unknown. On the other hand, the proportional specification is sufficient to generate a partial likelihood that accounts for the order of the survival times.</p>
+<p>The hazard function <span class="math inline">\(h(t \mid x_n, \beta) = h_0(t) \cdot \exp(x_n
+\cdot \beta)\)</span> for subject <span class="math inline">\(n\)</span> represents the instantaneous probability that subject <span class="math inline">\(n\)</span> fails at time <span class="math inline">\(t\)</span> given that it has survived until time <span class="math inline">\(t.\)</span> The probability that subject <span class="math inline">\(n\)</span> is the first to fail among <span class="math inline">\(N\)</span> subjects is thus proportional to subject <span class="math inline">\(n\)</span>’s hazard function, <span class="math display">\[\begin{equation*}
+\Pr[n \textrm{ first to fail at time } t]
+\propto h(t \mid x_n, \beta).
+\end{equation*}\]</span> Normalizing yields <span class="math display">\[\begin{eqnarray*}
+\Pr[n \textrm{ first to fail at time } t]
+&amp; = &amp;  \frac{h(t \mid x_n, \beta)}
+            {\sum_{n' = 1}^N h(t \mid x_{n'}, \beta)}
+\\[4pt]
+&amp; = &amp;  \frac{h_0(t) \cdot \exp(x_n \cdot \beta)}
+            {\sum_{n' = 1}^N h_0(t) \cdot \exp(x_{n'} \cdot \beta)}
+\\[4pt]
+&amp; = &amp;  \frac{\exp(x_n \cdot \beta)}
+            {\sum_{n' = 1}^N \exp(x_{n'} \cdot \beta)}.
+\end{eqnarray*}\]</span></p>
+<p>Suppose there are <span class="math inline">\(N\)</span> subjects with strictly <em>ordered</em> survival times <span class="math inline">\(t_1 &lt;
+t_2 &lt; \cdots &lt; t_N\)</span> and covariate (row) vectors <span class="math inline">\(x_1, \ldots, x_N\)</span>. Let <span class="math inline">\(t^{\textrm{cens}}\)</span> be the (right) censoring time and let <span class="math inline">\(N^{\textrm{obs}}\)</span> be the largest value of <span class="math inline">\(n\)</span> such that <span class="math inline">\(t_n \leq
+t^{\textrm{cens}}\)</span>. This means <span class="math inline">\(N^{\textrm{obs}}\)</span> is the number of subjects whose failure time was observed. The ordering is for convenient indexing and does not cause any loss of generality—survival times can simply be sorted into the necessary order.</p>
+<p>With failure times sorted in decreasing order, the partial likelihood for each observed subject <span class="math inline">\(n \in 1{:}N^{\textrm{obs}}\)</span> can be expressed as <span class="math display">\[\begin{equation*}
+\Pr[n \textrm{ first to fail among } n, n + 1, \ldots N]
+= \frac{\exp(x_n \cdot \beta)}
+       {\sum_{n' = n}^N \exp(x_{n'} \cdot \beta)}.
+\end{equation*}\]</span> The group of items for comparison and hence the summation is over all items, including those with observed and censored failure times.</p>
+<p>The partial likelihood, defined in this form by <span class="citation" data-cites="breslow:1975">Breslow (<a href="#ref-breslow:1975" role="doc-biblioref">1975</a>)</span>, is just the product of the partial likelihoods for the observed subjects (i.e., excluding subjects whose failure time is censored). <span class="math display">\[\begin{equation*}
+\Pr[\textrm{observed failures ordered } 1, \ldots, N^{\textrm{obs}} |
+x, \beta]
+= \prod_{n = 1}^{N^{\textrm{obs}}}
+  \frac{\exp(x_n \cdot \beta)}
+       {\sum_{n' = n}^N \exp(x_{n'} \cdot \beta)}.
+\end{equation*}\]</span> On the log scale, <span class="math display">\[\begin{eqnarray*}
+\log \Pr[\textrm{obs.\ fail ordered } 1, \ldots, N^{\textrm{obs}} |
+x, \beta]
+&amp; = &amp;
+\sum_{n = 1}^{N^{\textrm{obs}}}
+  \log \left(
+          \frac{\exp(x_n \cdot \beta)}
+               {\sum_{n' = n}^N \exp(x_{n'} \cdot \beta)}
+       \right)
+\\[4pt]
+&amp; = &amp; x_n \cdot \beta - \log \sum_{n' = n}^N \exp(x_{n'} \cdot \beta)
+\\
+&amp; = &amp; x_n \cdot \beta - \textrm{logSumExp}_{n' = n}^N \ x_{n'} \cdot \beta,
+\end{eqnarray*}\]</span> where <span class="math display">\[\begin{equation*}
+\textrm{logSumExp}_{n = a}^b \ x_n
+= \log \sum_{n = a}^b \exp(x_n)
+\end{equation*}\]</span> is implemented so as to preserve numerical precision.</p>
+<p>This likelihood follows the same approach to ranking as that developed by <span class="citation" data-cites="plackett:1975">Plackett (<a href="#ref-plackett:1975" role="doc-biblioref">1975</a>)</span> for estimating the probability of the order of the first few finishers in a horse race.</p>
+<p>A simple normal prior on the components of <span class="math inline">\(\beta\)</span> completes the model, <span class="math display">\[\begin{equation*}
+\beta \sim \textrm{normal}(0, 2).
+\end{equation*}\]</span> This should be scaled based on knowledge of the predictors.</p>
+</section>
+<section id="stan-program-2" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="stan-program-2">Stan program</h3>
+<p>To simplify the Stan program, the survival times for uncensored events are sorted into decreasing order (unlike in the mathematical presentation, where they were sorted into ascending order). The covariates for censored and uncensored observations are separated into two matrices.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; K;          <span class="co">// num covariates</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; N;          <span class="co">// num uncensored obs</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[N] t;             <span class="co">// event time (non-strict decreasing)</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">matrix</span>[N, K] x;          <span class="co">// covariates for uncensored obs</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> N_c;                 <span class="co">// num censored obs</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=t[N]&gt; t_c;    <span class="co">// censoring time</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">matrix</span>[N_c, K] x_c;      <span class="co">// covariates for censored obs</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The parameters are just the coefficients.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[K] beta;          <span class="co">// slopes (no intercept)</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The prior is a simple independent centered normal distribution on each element of the parameter vector, which is vectorized in the Stan code.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  beta ~ normal(<span class="dv">0</span>, <span class="dv">2</span>);</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  ...</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The log likelihood is implemented so as to minimize duplicated effort. The first order of business is to calculate the linear predictors, which is done separately for the subjects whose event time is observed and those for which the event time is censored.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[N] log_theta = x * beta;</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[N_c] log_theta_c = x_c * beta;</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>These vectors are computed using efficient matrix-vector multiplies. The log of exponential values of the censored covariates times the coefficients is reused in the denominator of each factor, which on the log scale, starts with the log sum of exponentials of the censored items’ linear predictors.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> log_denom = log_sum_exp(log_theta_c);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Then, for each observed survival time, going backwards from the latest to the earliest, the denominator can be incremented (which turns into a log sum of exponentials on the log scale), and then the target is updated with its likelihood contribution.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">1</span>:N) {</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    log_denom = log_sum_exp(log_denom, log_theta[n]);</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">target +=</span> log_theta[n] - log_denom;   <span class="co">// log likelihood</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The running log sum of exponentials is why the list is iterated in reverse order of survival times. It allows the log denominator to be accumulated one term at a time. The condition that the survival times are sorted into decreasing order is not checked. It could be checked very easily in the transformed data block by adding the following code.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed data</span> {</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">2</span>:N) {</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (!(t[n] &lt; t[n - <span class="dv">1</span>])) {</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>      <span class="kw">reject</span>(<span class="st">"times must be strictly decreasing, but found"</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>             <span class="st">"!(t["</span>, n, <span class="st">"] &lt; t[, "</span>, (n - <span class="dv">1</span>), <span class="st">"])"</span>);</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    }   </span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="stan-model-for-tied-survival-times" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="stan-model-for-tied-survival-times">Stan model for tied survival times</h3>
+<p>Technically, for continuous survival times, the probability of two survival times being identical will be zero. Nevertheless, real data sets often round survival times, for instance to the nearest day or week in a multi-year clinical trial. The technically “correct” thing to do in the face of unknown survival times in a range would be to treat their order as unknown and infer it. But considering all <span class="math inline">\(N!\)</span> permutations for a set of <span class="math inline">\(N\)</span> subjects with tied survival times is not tractable. As an alternative, <span class="citation" data-cites="efron:1977">Efron (<a href="#ref-efron:1977" role="doc-biblioref">1977</a>)</span> introduced an approximate partial likelihood with better properties than a random permutation while not being quite as good as considering all permutations. Efron’s model averages the contributions as if they truly did occur simultaneously.</p>
+<p>In the interest of completeness, here is the Stan code for an implementation of Efron’s estimator. It uses two user-defined functions. The first calculates how many different survival times occur in the data.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="kw">functions</span> {</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> num_unique_starts(<span class="dt">vector</span> t) {</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (size(t) == <span class="dv">0</span>) <span class="cf">return</span> <span class="dv">0</span>;</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> us = <span class="dv">1</span>;</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">2</span>:size(t)) {</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (t[n] != t[n - <span class="dv">1</span>]) us += <span class="dv">1</span>;</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> us;</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>This is then used to compute the value <code>J</code> to send into the function that computes the position in the array of failure times where each new failure time starts, plus an end point that goes one past the target. This is a standard way in Stan to code ragged arrays.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[] <span class="dt">int</span> unique_starts(<span class="dt">vector</span> t, <span class="dt">int</span> J) {</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">array</span>[J + <span class="dv">1</span>] <span class="dt">int</span> starts;</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (J == <span class="dv">0</span>) <span class="cf">return</span> starts;</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    starts[<span class="dv">1</span>] = <span class="dv">1</span>;</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> pos = <span class="dv">2</span>;</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (n <span class="cf">in</span> <span class="dv">2</span>:size(t)) {</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (t[n] != t[n - <span class="dv">1</span>]) {</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>    starts[pos] = n;</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    pos += <span class="dv">1</span>;</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>    starts[J + <span class="dv">1</span>] = size(t) + <span class="dv">1</span>;</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> starts;</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The data format is exactly the same as for the model in the previous section, but in this case, the transformed data block is used to cache some precomputations required for the model, namely the ragged array grouping elements that share the same survival time.</p>
+<pre><code>transformed data {
+  int&lt;lower=0&gt; J = num_unique_starts(t);
+  array[J + 1] int&lt;lower=0&gt; starts = unique_starts(t, J);
+}</code></pre>
+<p>For each unique survival time <code>j</code> in <code>1:J</code>, the subjects indexed from <code>starts[j]</code> to <code>starts[j + 1] - 1</code> (inclusive) share the same survival time. The number of elements with survival time <code>j</code> is thus <code>(starts[j + 1] - 1) - starts[j] + 1</code>, or just <code>starts[j + 1] - starts[j]</code>.</p>
+<p>The parameters and prior are also the same—just a vector <code>beta</code> of coefficients with a centered normal prior. Although it starts with the same caching of results for later, and uses the same accumulator for the denominator, the overall partial likelihood is much more involved, and depends on the user-defined functions defining the transformed data variables <code>J</code> and <code>starts</code>.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[N] log_theta = x * beta;</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[N_c] log_theta_c = x_c * beta;</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> log_denom_lhs = log_sum_exp(log_theta_c);</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span>:J) {</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> start = starts[j];</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> end = starts[j + <span class="dv">1</span>] - <span class="dv">1</span>;</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> len = end - start + <span class="dv">1</span>;</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">real</span> log_len = log(len);</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">real</span> numerator = sum(log_theta[start:end]);</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    log_denom_lhs = log_sum_exp(log_denom_lhs,</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>                                log_sum_exp(log_theta[start:end]));</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">vector</span>[len] diff;</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (ell <span class="cf">in</span> <span class="dv">1</span>:len) {</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>      diff[ell] = log_diff_exp(log_denom_lhs,</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>                               log(ell - <span class="dv">1</span>) - log_len</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>                               + log_sum_exp(log_theta[start:end]));</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">target +=</span> numerator - sum(diff);</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The special function <code>log_diff_exp</code> is defined as</p>
+<p><span class="math display">\[\begin{equation*}
+\textrm{logDiffExp}(u, v) = \log(\exp(u) - \exp(v)).
+\end{equation*}\]</span></p>
+<p>Because of how <code>J</code> and <code>starts</code> are constructed, the length <code>len</code> will always be strictly positive so that the log is well defined.</p>
+
+
+
+</section>
+</section>
+</section>
+
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-breslow:1975" class="csl-entry" role="listitem">
+Breslow, N. E. 1975. <span>“Analysis of Survival Data Under the Proportional Hazards Model.”</span> <em>International Statisticas Review</em> 43 (1): 45–58.
+</div>
+<div id="ref-cox:1972" class="csl-entry" role="listitem">
+Cox, David R. 1972. <span>“Regression Models and Life-Tables.”</span> <em>Journal of the Royal Statistical Society: Series B (Methodological)</em> 34 (2): 187–202.
+</div>
+<div id="ref-efron:1977" class="csl-entry" role="listitem">
+Efron, Bradley. 1977. <span>“The Efficiency of <span>C</span>ox’s Likelihood Function for Censored Data.”</span> <em>Journal of the American Statistical Association</em> 72 (359): 557–65.
+</div>
+<div id="ref-plackett:1975" class="csl-entry" role="listitem">
+Plackett, Robin L. 1975. <span>“The Analysis of Permutations.”</span> <em>Journal of the Royal Statistical Society Series C: Applied Statistics</em> 24 (2): 193–202.
+</div>
+</div></section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>Cox mentioned in his seminal paper that modeling the baseline hazard function would improve statistical efficiency, but he did not do it for computational reasons.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../stan-users-guide/dae.html" class="pagination-link" aria-label="Differential-Algebraic Equations">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Differential-Algebraic Equations</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../stan-users-guide/floating-point.html" class="pagination-link" aria-label="Floating Point Arithmetic">
+        <span class="nav-page-text">Floating Point Arithmetic</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/stan-dev/docs/edit/master/src/stan-users-guide/survival.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/stan-dev/docs/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

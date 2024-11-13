@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.53">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Problematic Posteriors</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../stan-users-guide/reparameterization.html" rel="next">
+<link href="../stan-users-guide/proportionality-constants.html" rel="prev">
+<link href="../img/logo_tm.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 200,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../theming/quarto_styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../img/logo_tm.png" alt="Stan logo" class="navbar-logo">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Overview</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../stan-users-guide/index.html" aria-current="page"> 
+<span class="menu-text">Stan Users Guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../reference-manual/index.html"> 
+<span class="menu-text">Reference Manual</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../functions-reference/index.html"> 
+<span class="menu-text">Functions Reference</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-interfaces" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Interfaces</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-interfaces">    
+        <li>
+    <a class="dropdown-item" href="../cmdstan-guide/index.html">
+ <span class="dropdown-text">CmdStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/cmdstanpy">
+ <span class="dropdown-text">CmdStanPy</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/cmdstanr">
+ <span class="dropdown-text">CmdStanR</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/users/interfaces/pystan.html">
+ <span class="dropdown-text">PyStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/rstan">
+ <span class="dropdown-text">RStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="http://stanjulia.github.io/Stan.jl/stable/INTRO/">
+ <span class="dropdown-text">Stan.jl</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other-packages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other Packages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other-packages">    
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/bayesplot/">
+ <span class="dropdown-text">bayesplot</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://roualdes.github.io/bridgestan/latest/">
+ <span class="dropdown-text">BridgeStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://paul-buerkner.github.io/brms/">
+ <span class="dropdown-text">brms</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/loo/">
+ <span class="dropdown-text">loo</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/posterior">
+ <span class="dropdown-text">posterior</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/projpred">
+ <span class="dropdown-text">projpred</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/rstanarm">
+ <span class="dropdown-text">rstanarm</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/rstantools">
+ <span class="dropdown-text">rstantools</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/shinystan">
+ <span class="dropdown-text">shinystan</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools tools-wide">
+    <a href="https://github.com/stan-dev" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+    <a href="https://discourse.mc-stan.org" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-chat-text-fill"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../stan-users-guide/floating-point.html">Programming Techniques</a></li><li class="breadcrumb-item"><a href="../stan-users-guide/problematic-posteriors.html">Problematic Posteriors</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stan User’s Guide</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Version 2.35</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Example Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regression Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/time-series.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Time-Series Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/missing-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Missing Data and Partially Known Parameters</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/truncation-censoring.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Truncated or Censored Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/finite-mixtures.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Finite Mixtures</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/measurement-error.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Measurement Error and Meta-Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/latent-discrete.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Latent Discrete Parameters</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/sparse-ragged.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sparse and Ragged Data Structures</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/clustering.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Clustering Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/gaussian-processes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gaussian Processes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/hyperspherical-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Directions, Rotations, and Hyperspheres</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/algebraic-equations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Solving Algebraic Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/odes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Differential Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/one-dimensional-integrals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computing One Dimensional Integrals</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/complex-numbers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Complex Numbers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/dae.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Differential-Algebraic Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival Models</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Programming Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/floating-point.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Floating Point Arithmetic</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/matrices-arrays.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Matrices, Vectors, Arrays, and Tuples</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/multi-indexing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Multiple Indexing and Range Indexing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/user-functions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">User-Defined Functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/custom-probability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Custom Probability Functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/proportionality-constants.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Proportionality Constants</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/problematic-posteriors.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Problematic Posteriors</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/reparameterization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reparameterization and Change of Variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/efficiency-tuning.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Efficiency Tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/parallelization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parallelization</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Posterior Inference &amp; Model Checking</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/posterior-prediction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Posterior Predictive Sampling</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/simulation-based-calibration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulation-Based Calibration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/posterior-predictive-checks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Posterior and Prior Predictive Checks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/cross-validation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Held-Out Evaluation and Cross-Validation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/poststratification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Poststratification</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/decision-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/bootstrap.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Bootstrap and Bagging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/using-stanc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Using the Stan Compiler</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/style-guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stan Program Style Guide</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/for-bugs-users.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Transitioning from BUGS</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#problematic-posteriors.chapter" id="toc-problematic-posteriors.chapter" class="nav-link active" data-scroll-target="#problematic-posteriors.chapter">Problematic Posteriors</a>
+  <ul class="collapse">
+  <li><a href="#collinearity.section" id="toc-collinearity.section" class="nav-link" data-scroll-target="#collinearity.section">Collinearity of predictors in regressions</a>
+  <ul class="collapse">
+  <li><a href="#examples-of-collinearity" id="toc-examples-of-collinearity" class="nav-link" data-scroll-target="#examples-of-collinearity">Examples of collinearity</a></li>
+  <li><a href="#mitigating-the-invariances" id="toc-mitigating-the-invariances" class="nav-link" data-scroll-target="#mitigating-the-invariances">Mitigating the invariances</a></li>
+  </ul></li>
+  <li><a href="#label-switching-problematic.section" id="toc-label-switching-problematic.section" class="nav-link" data-scroll-target="#label-switching-problematic.section">Label switching in mixture models</a>
+  <ul class="collapse">
+  <li><a href="#mixture-models" id="toc-mixture-models" class="nav-link" data-scroll-target="#mixture-models">Mixture models</a></li>
+  <li><a href="#convergence-monitoring-and-effective-sample-size" id="toc-convergence-monitoring-and-effective-sample-size" class="nav-link" data-scroll-target="#convergence-monitoring-and-effective-sample-size">Convergence monitoring and effective sample size</a></li>
+  <li><a href="#some-inferences-are-invariant" id="toc-some-inferences-are-invariant" class="nav-link" data-scroll-target="#some-inferences-are-invariant">Some inferences are invariant</a></li>
+  <li><a href="#highly-multimodal-posteriors" id="toc-highly-multimodal-posteriors" class="nav-link" data-scroll-target="#highly-multimodal-posteriors">Highly multimodal posteriors</a></li>
+  <li><a href="#hacks-as-fixes" id="toc-hacks-as-fixes" class="nav-link" data-scroll-target="#hacks-as-fixes">Hacks as fixes</a></li>
+  </ul></li>
+  <li><a href="#component-collapsing-in-mixture-models" id="toc-component-collapsing-in-mixture-models" class="nav-link" data-scroll-target="#component-collapsing-in-mixture-models">Component collapsing in mixture models</a></li>
+  <li><a href="#posteriors-with-unbounded-densities" id="toc-posteriors-with-unbounded-densities" class="nav-link" data-scroll-target="#posteriors-with-unbounded-densities">Posteriors with unbounded densities</a>
+  <ul class="collapse">
+  <li><a href="#mixture-models-with-varying-scales" id="toc-mixture-models-with-varying-scales" class="nav-link" data-scroll-target="#mixture-models-with-varying-scales">Mixture models with varying scales</a></li>
+  <li><a href="#beta-binomial-models-with-skewed-data-and-weak-priors" id="toc-beta-binomial-models-with-skewed-data-and-weak-priors" class="nav-link" data-scroll-target="#beta-binomial-models-with-skewed-data-and-weak-priors">Beta-binomial models with skewed data and weak priors</a></li>
+  </ul></li>
+  <li><a href="#posteriors-with-unbounded-parameters" id="toc-posteriors-with-unbounded-parameters" class="nav-link" data-scroll-target="#posteriors-with-unbounded-parameters">Posteriors with unbounded parameters</a>
+  <ul class="collapse">
+  <li><a href="#separability-in-logistic-regression" id="toc-separability-in-logistic-regression" class="nav-link" data-scroll-target="#separability-in-logistic-regression">Separability in logistic regression</a></li>
+  </ul></li>
+  <li><a href="#uniform-posteriors" id="toc-uniform-posteriors" class="nav-link" data-scroll-target="#uniform-posteriors">Uniform posteriors</a></li>
+  <li><a href="#sampling-difficulties-with-problematic-priors" id="toc-sampling-difficulties-with-problematic-priors" class="nav-link" data-scroll-target="#sampling-difficulties-with-problematic-priors">Sampling difficulties with problematic priors</a>
+  <ul class="collapse">
+  <li><a href="#gibbs-sampling" id="toc-gibbs-sampling" class="nav-link" data-scroll-target="#gibbs-sampling">Gibbs sampling</a></li>
+  <li><a href="#hamiltonian-monte-carlo-sampling" id="toc-hamiltonian-monte-carlo-sampling" class="nav-link" data-scroll-target="#hamiltonian-monte-carlo-sampling">Hamiltonian Monte Carlo sampling</a></li>
+  <li><a href="#no-u-turn-sampling" id="toc-no-u-turn-sampling" class="nav-link" data-scroll-target="#no-u-turn-sampling">No-U-turn sampling</a></li>
+  <li><a href="#examples-fits-in-stan" id="toc-examples-fits-in-stan" class="nav-link" data-scroll-target="#examples-fits-in-stan">Examples: fits in Stan</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/stan-dev/docs/edit/master/src/stan-users-guide/problematic-posteriors.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/stan-dev/docs/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+
+
+<section id="problematic-posteriors.chapter" class="level1">
+<h1>Problematic Posteriors</h1>
+<p>Mathematically speaking, with a proper posterior, one can do Bayesian inference and that’s that. There is not even a need to require a finite variance or even a finite mean—all that’s needed is a finite integral. Nevertheless, modeling is a tricky business and even experienced modelers sometimes code models that lead to improper priors. Furthermore, some posteriors are mathematically sound, but ill-behaved in practice. This chapter discusses issues in models that create problematic posterior inferences, either in general for Bayesian inference or in practice for Stan.</p>
+<section id="collinearity.section" class="level2">
+<h2 class="anchored" data-anchor-id="collinearity.section">Collinearity of predictors in regressions</h2>
+<p>This section discusses problems related to the classical notion of identifiability, which lead to ridges in the posterior density and wreak havoc with both sampling and inference.</p>
+<section id="examples-of-collinearity" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="examples-of-collinearity">Examples of collinearity</h3>
+<section id="redundant-intercepts" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="redundant-intercepts">Redundant intercepts</h4>
+<p>The first example of collinearity is an artificial example involving redundant intercept parameters.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>Suppose there are observations <span class="math inline">\(y_n\)</span> for <span class="math inline">\(n \in \{1,\dotsc,N\}\)</span>, two intercept parameters <span class="math inline">\(\lambda_1\)</span> and <span class="math inline">\(\lambda_2\)</span>, a scale parameter <span class="math inline">\(\sigma &gt; 0\)</span>, and the data model <span class="math display">\[
+y_n \sim \textsf{normal}(\lambda_1 + \lambda_2, \sigma).
+\]</span></p>
+<p>For any constant <span class="math inline">\(q\)</span>, the sampling density for <span class="math inline">\(y\)</span> does not change if we add <span class="math inline">\(q\)</span> to <span class="math inline">\(\lambda_1\)</span> and subtract it from <span class="math inline">\(\lambda_2\)</span>, i.e., <span class="math display">\[
+p(y \mid \lambda_1, \lambda_2,\sigma)
+=
+p(y \mid \lambda_1 + q, \lambda_2 - q, \sigma).
+\]</span></p>
+<p>The consequence is that an improper uniform prior <span class="math inline">\(p(\mu,\sigma)
+\propto 1\)</span> leads to an improper posterior. This impropriety arises because the neighborhoods around <span class="math inline">\(\lambda_1 + q, \lambda_2 - q\)</span> have the same mass no matter what <span class="math inline">\(q\)</span> is. Therefore, a sampler would need to spend as much time in the neighborhood of <span class="math inline">\(\lambda_1=1\,000\,000\,000\)</span> and <span class="math inline">\(\lambda_2=-1\,000\,000\,000\)</span> as it does in the neighborhood of <span class="math inline">\(\lambda_1=0\)</span> and <span class="math inline">\(\lambda_2=0\)</span>, and so on for ever more far-ranging values.</p>
+<p>The marginal posterior <span class="math inline">\(p(\lambda_1,\lambda_2 \mid y)\)</span> for this model is thus improper.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>The impropriety shows up visually as a ridge in the posterior density, as illustrated in the left-hand plot. The ridge for this model is along the line where <span class="math inline">\(\lambda_2 = \lambda_1 + c\)</span> for some constant <span class="math inline">\(c\)</span>.</p>
+<p>Contrast this model with a simple regression with a single intercept parameter <span class="math inline">\(\mu\)</span> and data model <span class="math display">\[
+y_n \sim \textsf{normal}(\mu,\sigma).
+\]</span> Even with an improper prior, the posterior is proper as long as there are at least two data points <span class="math inline">\(y_n\)</span> with distinct values.</p>
+</section>
+<section id="ability-and-difficulty-in-irt-models" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="ability-and-difficulty-in-irt-models">Ability and difficulty in IRT models</h4>
+<p>Consider an item-response theory model for students <span class="math inline">\(j \in 1{:}J\)</span> with abilities <span class="math inline">\(\alpha_j\)</span> and test items <span class="math inline">\(i \in 1{:}I\)</span> with difficulties <span class="math inline">\(\beta_i\)</span>. The observed data are an <span class="math inline">\(I \times J\)</span> array with entries <span class="math inline">\(y_{i, j} \in \{ 0, 1 \}\)</span> coded such that <span class="math inline">\(y_{i, j} = 1\)</span> indicates that student <span class="math inline">\(j\)</span> answered question <span class="math inline">\(i\)</span> correctly. The sampling distribution for the data is <span class="math display">\[
+y_{i, j} \sim \textsf{Bernoulli}(\operatorname{logit}^{-1}(\alpha_j - \beta_i)).
+\]</span></p>
+<p>For any constant <span class="math inline">\(c\)</span>, the probability of <span class="math inline">\(y\)</span> is unchanged by adding a constant <span class="math inline">\(c\)</span> to all the abilities and subtracting it from all the difficulties, i.e., <span class="math display">\[
+p(y \mid \alpha, \beta)
+=
+p(y \mid \alpha + c, \beta - c).
+\]</span></p>
+<p>This leads to a multivariate version of the ridge displayed by the regression with two intercepts discussed above.</p>
+</section>
+<section id="general-collinear-regression-predictors" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="general-collinear-regression-predictors">General collinear regression predictors</h4>
+<p>The general form of the collinearity problem arises when predictors for a regression are collinear. For example, consider a linear regression data model <span class="math display">\[
+y_n \sim \textsf{normal}(x_n \beta, \sigma)
+\]</span> for an <span class="math inline">\(N\)</span>-dimensional observation vector <span class="math inline">\(y\)</span>, an <span class="math inline">\(N \times K\)</span> predictor matrix <span class="math inline">\(x\)</span>, and a <span class="math inline">\(K\)</span>-dimensional coefficient vector <span class="math inline">\(\beta\)</span>.</p>
+<p>Now suppose that column <span class="math inline">\(k\)</span> of the predictor matrix is a multiple of column <span class="math inline">\(k'\)</span>, i.e., there is some constant <span class="math inline">\(c\)</span> such that <span class="math inline">\(x_{n,k} = c
+\, x_{n,k'}\)</span> for all <span class="math inline">\(n\)</span>. In this case, the coefficients <span class="math inline">\(\beta_k\)</span> and <span class="math inline">\(\beta_{k'}\)</span> can covary without changing the predictions, so that for any <span class="math inline">\(d \neq 0\)</span>, <span class="math display">\[
+p(y \mid \ldots, \beta_k, \dotsc, \beta_{k'}, \dotsc, \sigma)
+=
+p(y \mid \ldots, d \beta_k, \dotsc, \frac{d}{c} \, \beta_{k'}, \dotsc,
+\sigma).
+\]</span></p>
+<p>Even if columns of the predictor matrix are not exactly collinear as discussed above, they cause similar problems for inference if they are nearly collinear.</p>
+</section>
+<section id="multiplicative-issues-with-discrimination-in-irt" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="multiplicative-issues-with-discrimination-in-irt">Multiplicative issues with discrimination in IRT</h4>
+<p>Consider adding a discrimination parameter <span class="math inline">\(\delta_i\)</span> for each question in an IRT model, with data model <span class="math display">\[
+y_{i, j} \sim \textsf{Bernoulli}(\operatorname{logit}^{-1}(\delta_i(\alpha_j - \beta_i))).
+\]</span> For any constant <span class="math inline">\(c \neq 0\)</span>, multiplying <span class="math inline">\(\delta\)</span> by <span class="math inline">\(c\)</span> and dividing <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> by <span class="math inline">\(c\)</span> produces the same likelihood, <span class="math display">\[
+p(y \mid \delta,\alpha,\beta)
+= p(y \mid c \delta, \frac{1}{c}\alpha, \frac{1}{c}\beta).
+\]</span> If <span class="math inline">\(c &lt; 0\)</span>, this switches the signs of every component in <span class="math inline">\(\alpha\)</span>, <span class="math inline">\(\beta\)</span>, and <span class="math inline">\(\delta\)</span> without changing the density.</p>
+</section>
+<section id="softmax-with-k-vs.-k-1-parameters" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="softmax-with-k-vs.-k-1-parameters">Softmax with <span class="math inline">\(K\)</span> vs.&nbsp;<span class="math inline">\(K-1\)</span> parameters</h4>
+<p>In order to parameterize a <span class="math inline">\(K\)</span>-simplex (i.e., a <span class="math inline">\(K\)</span>-vector with non-negative values that sum to one), only <span class="math inline">\(K - 1\)</span> parameters are necessary because the <span class="math inline">\(K\)</span>th is just one minus the sum of the first <span class="math inline">\(K
+- 1\)</span> parameters, so that if <span class="math inline">\(\theta\)</span> is a <span class="math inline">\(K\)</span>-simplex, <span class="math display">\[
+\theta_K = 1 - \sum_{k=1}^{K-1} \theta_k.
+\]</span></p>
+<p>The <code>softmax</code> function maps a <span class="math inline">\(K\)</span>-vector <span class="math inline">\(\alpha\)</span> of linear predictors to a <span class="math inline">\(K\)</span>-simplex <span class="math inline">\(\theta = \texttt{softmax}(\alpha)\)</span> by defining <span class="math display">\[
+\theta_k = \frac{\exp(\alpha_k)}{\sum_{k'=1}^K \exp(\alpha_{k'})}.
+\]</span></p>
+<p>The <code>softmax</code> function is many-to-one, which leads to a lack of identifiability of the unconstrained parameters <span class="math inline">\(\alpha\)</span>. In particular, adding or subtracting a constant from each <span class="math inline">\(\alpha_k\)</span> produces the same simplex <span class="math inline">\(\theta\)</span>.</p>
+</section>
+</section>
+<section id="mitigating-the-invariances" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="mitigating-the-invariances">Mitigating the invariances</h3>
+<p>All of the examples discussed in the previous section allow translation or scaling of parameters while leaving the data probability density invariant. These problems can be mitigated in several ways.</p>
+<section id="removing-redundant-parameters-or-predictors" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="removing-redundant-parameters-or-predictors">Removing redundant parameters or predictors</h4>
+<p>In the case of the multiple intercepts, <span class="math inline">\(\lambda_1\)</span> and <span class="math inline">\(\lambda_2\)</span>, the simplest solution is to remove the redundant intercept, resulting in a model with a single intercept parameter <span class="math inline">\(\mu\)</span> and sampling distribution <span class="math inline">\(y_n \sim \textsf{normal}(\mu, \sigma)\)</span>. The same solution works for solving the problem with collinearity—just remove one of the columns of the predictor matrix <span class="math inline">\(x\)</span>.</p>
+</section>
+<section id="pinning-parameters" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="pinning-parameters">Pinning parameters</h4>
+<p>The IRT model without a discrimination parameter can be fixed by pinning one of its parameters to a fixed value, typically 0. For example, the first student ability <span class="math inline">\(\alpha_1\)</span> can be fixed to 0. Now all other student ability parameters can be interpreted as being relative to student 1. Similarly, the difficulty parameters are interpretable relative to student 1’s ability to answer them.</p>
+<p>This solution is not sufficient to deal with the multiplicative invariance introduced by the question discrimination parameters <span class="math inline">\(\delta_i\)</span>. To solve this problem, one of the difficulty parameters, say <span class="math inline">\(\delta_1\)</span>, must also be constrained. Because it’s a multiplicative and not an additive invariance, it must be constrained to a non-zero value, with 1 being a convenient choice. Now all of the discrimination parameters may be interpreted relative to item 1’s discrimination.</p>
+<p>The many-to-one nature of <span class="math inline">\(\texttt{softmax}(\alpha)\)</span> is typically mitigated by pinning a component of <span class="math inline">\(\alpha\)</span>, for instance fixing <span class="math inline">\(\alpha_K = 0\)</span>. The resulting mapping is one-to-one from <span class="math inline">\(K-1\)</span> unconstrained parameters to a <span class="math inline">\(K\)</span>-simplex. This is roughly how simplex-constrained parameters are defined in Stan; see the reference manual chapter on constrained parameter transforms for a precise definition. The Stan code for creating a simplex from a <span class="math inline">\(K-1\)</span>-vector can be written as</p>
+<pre><code>vector softmax_id(vector alpha) {
+  vector[num_elements(alpha) + 1] alphac1;
+  for (k in 1:num_elements(alpha)) {
+    alphac1[k] = alpha[k];
+  }
+  alphac1[num_elements(alphac1)] = 0;
+  return softmax(alphac1);
+}</code></pre>
+</section>
+<section id="adding-priors" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="adding-priors">Adding priors</h4>
+<p>So far, the models have been discussed as if the priors on the parameters were improper uniform priors.</p>
+<p>A more general Bayesian solution to these invariance problems is to impose proper priors on the parameters. This approach can be used to solve problems arising from either additive or multiplicative invariance.</p>
+<p>For example, normal priors on the multiple intercepts, <span class="math display">\[
+\lambda_1, \lambda_2 \sim \textsf{normal}(0,\tau),
+\]</span> with a constant scale <span class="math inline">\(\tau\)</span>, ensure that the posterior mode is located at a point where <span class="math inline">\(\lambda_1 = \lambda_2\)</span>, because this minimizes <span class="math inline">\(\log \textsf{normal}(\lambda_1 \mid 0,\tau) + \log
+\textsf{normal}(\lambda_2 \mid 0,\tau)\)</span>.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<p>The following plots show the posteriors for two intercept parameterization without prior, two intercept parameterization with standard normal prior, and one intercept reparameterization without prior. For all three cases, the posterior is plotted for 100 data points drawn from a standard normal.</p>
+<p>The two intercept parameterization leads to an improper prior with a ridge extending infinitely to the northwest and southeast.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/non-identified.png" class="img-fluid figure-img"></p>
+<figcaption>Two intercepts with improper prior</figcaption>
+</figure>
+</div>
+<p>Adding a standard normal prior for the intercepts results in a proper posterior.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/non-identified-plus-prior.png" class="img-fluid figure-img"></p>
+<figcaption>Two intercepts with proper prior</figcaption>
+</figure>
+</div>
+<p>The single intercept parameterization with no prior also has a proper posterior.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/one-param-identified.png" class="img-fluid figure-img"></p>
+<figcaption>Single intercepts with improper prior</figcaption>
+</figure>
+</div>
+<p>The addition of a prior to the two intercepts model is shown in the second plot; the final plot shows the result of reparameterizing to a single intercept.</p>
+<p>An alternative strategy for identifying a <span class="math inline">\(K\)</span>-simplex parameterization <span class="math inline">\(\theta = \texttt{softmax}(\alpha)\)</span> in terms of an unconstrained <span class="math inline">\(K\)</span>-vector <span class="math inline">\(\alpha\)</span> is to place a prior on the components of <span class="math inline">\(\alpha\)</span> with a fixed location (that is, specifically avoid hierarchical priors with varying location). Unlike the approaching of pinning <span class="math inline">\(\alpha_K =
+0\)</span>, the prior-based approach models the <span class="math inline">\(K\)</span> outcomes symmetrically rather than modeling <span class="math inline">\(K-1\)</span> outcomes relative to the <span class="math inline">\(K\)</span>-th. The pinned parameterization, on the other hand, is usually more efficient statistically because it does not have the extra degree of (prior constrained) wiggle room.</p>
+</section>
+<section id="vague-strongly-informative-and-weakly-informative-priors" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="vague-strongly-informative-and-weakly-informative-priors">Vague, strongly informative, and weakly informative priors</h4>
+<p>Care must be used when adding a prior to resolve invariances. If the prior is taken to be too broad (i.e., too vague), the resolution is in theory only, and samplers will still struggle.</p>
+<p>Ideally, a realistic prior will be formulated based on substantive knowledge of the problem being modeled. Such a prior can be chosen to have the appropriate strength based on prior knowledge. A strongly informative prior makes sense if there is strong prior information.</p>
+<p>When there is not strong prior information, a weakly informative prior strikes the proper balance between controlling computational inference without dominating the data in the posterior. In most problems, the modeler will have at least some notion of the expected scale of the estimates and be able to choose a prior for identification purposes that does not dominate the data, but provides sufficient computational control on the posterior.</p>
+<p>Priors can also be used in the same way to control the additive invariance of the IRT model. A typical approach is to place a strong prior on student ability parameters <span class="math inline">\(\alpha\)</span> to control scale simply to control the additive invariance of the basic IRT model and the multiplicative invariance of the model extended with a item discrimination parameters; such a prior does not add any prior knowledge to the problem. Then a prior on item difficulty can be chosen that is either informative or weakly informative based on prior knowledge of the problem.</p>
+</section>
+</section>
+</section>
+<section id="label-switching-problematic.section" class="level2">
+<h2 class="anchored" data-anchor-id="label-switching-problematic.section">Label switching in mixture models</h2>
+<p>Where collinearity in regression models can lead to infinitely many posterior maxima, swapping components in a mixture model leads to finitely many posterior maxima.</p>
+<section id="mixture-models" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="mixture-models">Mixture models</h3>
+<p>Consider a normal mixture model with two location parameters <span class="math inline">\(\mu_1\)</span> and <span class="math inline">\(\mu_2\)</span>, a shared scale <span class="math inline">\(\sigma &gt; 0\)</span>, a mixture ratio <span class="math inline">\(\theta \in
+[0,1]\)</span>, and data model <span class="math display">\[
+p(y \mid \theta,\mu_1,\mu_2,\sigma)
+= \prod_{n=1}^N \big( \theta \, \textsf{normal}(y_n \mid \mu_1,\sigma)
+                       + (1 - \theta) \, \textsf{normal}(y_n \mid \mu_2,\sigma) \big).
+\]</span> The issue here is exchangeability of the mixture components, because <span class="math display">\[
+p(\theta,\mu_1,\mu_2,\sigma \mid y) = p\big((1-\theta),\mu_2,\mu_1,\sigma \mid y\big).
+\]</span> The problem is exacerbated as the number of mixture components <span class="math inline">\(K\)</span> grows, as in clustering models, leading to <span class="math inline">\(K!\)</span> identical posterior maxima.</p>
+</section>
+<section id="convergence-monitoring-and-effective-sample-size" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="convergence-monitoring-and-effective-sample-size">Convergence monitoring and effective sample size</h3>
+<p>The analysis of posterior convergence and effective sample size is also difficult for mixture models. For example, the <span class="math inline">\(\hat{R}\)</span> convergence statistic reported by Stan and the computation of effective sample size are both compromised by label switching. The problem is that the posterior mean, a key ingredient in these computations, is affected by label switching, resulting in a posterior mean for <span class="math inline">\(\mu_1\)</span> that is equal to that of <span class="math inline">\(\mu_2\)</span>, and a posterior mean for <span class="math inline">\(\theta\)</span> that is always 1/2, no matter what the data are.</p>
+</section>
+<section id="some-inferences-are-invariant" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="some-inferences-are-invariant">Some inferences are invariant</h3>
+<p>In some sense, the index (or label) of a mixture component is irrelevant. Posterior predictive inferences can still be carried out without identifying mixture components. For example, the log probability of a new observation does not depend on the identities of the mixture components. The only sound Bayesian inferences in such models are those that are invariant to label switching. Posterior means for the parameters are meaningless because they are not invariant to label switching; for example, the posterior mean for <span class="math inline">\(\theta\)</span> in the two component mixture model will always be 1/2.</p>
+</section>
+<section id="highly-multimodal-posteriors" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="highly-multimodal-posteriors">Highly multimodal posteriors</h3>
+<p>Theoretically, this should not present a problem for inference because all of the integrals involved in posterior predictive inference will be well behaved. The problem in practice is computation.</p>
+<p>Being able to carry out such invariant inferences in practice is an altogether different matter. It is almost always intractable to find even a single posterior mode, much less balance the exploration of the neighborhoods of multiple local maxima according to the probability masses. In Gibbs sampling, it is unlikely for <span class="math inline">\(\mu_1\)</span> to move to a new mode when sampled conditioned on the current values of <span class="math inline">\(\mu_2\)</span> and <span class="math inline">\(\theta\)</span>. For HMC and NUTS, the problem is that the sampler gets stuck in one of the two “bowls” around the modes and cannot gather enough energy from random momentum assignment to move from one mode to another.</p>
+<p>Even with a proper posterior, all known sampling and inference techniques are notoriously ineffective when the number of modes grows super-exponentially as it does for mixture models with increasing numbers of components.</p>
+</section>
+<section id="hacks-as-fixes" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="hacks-as-fixes">Hacks as fixes</h3>
+<p>Several hacks (i.e., “tricks”) have been suggested and employed to deal with the problems posed by label switching in practice.</p>
+<section id="parameter-ordering-constraints" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="parameter-ordering-constraints">Parameter ordering constraints</h4>
+<p>One common strategy is to impose a constraint on the parameters that identifies the components. For instance, we might consider constraining <span class="math inline">\(\mu_1 &lt; \mu_2\)</span> in the two-component normal mixture model discussed above. A problem that can arise from such an approach is when there is substantial probability mass for the opposite ordering <span class="math inline">\(\mu_1 &gt; \mu_2\)</span>. In these cases, the posteriors are affected by the constraint and true posterior uncertainty in <span class="math inline">\(\mu_1\)</span> and <span class="math inline">\(\mu_2\)</span> is not captured by the model with the constraint. In addition, standard approaches to posterior inference for event probabilities is compromised. For instance, attempting to use <span class="math inline">\(M\)</span> posterior samples to estimate <span class="math inline">\(\Pr[\mu_1 &gt; \mu_2]\)</span>, will fail, because the estimator <span class="math display">\[
+\Pr[\mu_1 &gt; \mu_2]
+\approx
+\sum_{m=1}^M \textrm{I}\left(\mu_1^{(m)} &gt; \mu_2^{(m)}\right)
+\]</span> will result in an estimate of 0 because the posterior respects the constraint in the model.</p>
+</section>
+<section id="initialization-around-a-single-mode" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="initialization-around-a-single-mode">Initialization around a single mode</h4>
+<p>Another common approach is to run a single chain or to initialize the parameters near realistic values.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<p>This can work better than the hard constraint approach if reasonable initial values can be found and the labels do not switch within a Markov chain. The result is that all chains are glued to a neighborhood of a particular mode in the posterior.</p>
+</section>
+</section>
+</section>
+<section id="component-collapsing-in-mixture-models" class="level2">
+<h2 class="anchored" data-anchor-id="component-collapsing-in-mixture-models">Component collapsing in mixture models</h2>
+<p>It is possible for two mixture components in a mixture model to collapse to the same values during sampling or optimization. For example, a mixture of <span class="math inline">\(K\)</span> normals might devolve to have <span class="math inline">\(\mu_i =
+\mu_j\)</span> and <span class="math inline">\(\sigma_i = \sigma_j\)</span> for <span class="math inline">\(i \neq j\)</span>.</p>
+<p>This will typically happen early in sampling due to initialization in MCMC or optimization or arise from random movement during MCMC. Once the parameters match for a given draw <span class="math inline">\((m)\)</span>, it can become hard to escape because there can be a trough of low-density mass between the current parameter values and the ones without collapsed components.</p>
+<p>It may help to use a smaller step size during warmup, a stronger prior on each mixture component’s membership responsibility. A more extreme measure is to include additional mixture components to deal with the possibility that some of them may collapse.</p>
+<p>In general, it is difficult to recover exactly the right <span class="math inline">\(K\)</span> mixture components in a mixture model as <span class="math inline">\(K\)</span> increases beyond one (yes, even a two-component mixture can have this problem).</p>
+</section>
+<section id="posteriors-with-unbounded-densities" class="level2">
+<h2 class="anchored" data-anchor-id="posteriors-with-unbounded-densities">Posteriors with unbounded densities</h2>
+<p>In some cases, the posterior density grows without bounds as parameters approach certain poles or boundaries. In such, there are no posterior modes and numerical stability issues can arise as sampled parameters approach constraint boundaries.</p>
+<section id="mixture-models-with-varying-scales" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="mixture-models-with-varying-scales">Mixture models with varying scales</h3>
+<p>One such example is a binary mixture model with scales varying by component, <span class="math inline">\(\sigma_1\)</span> and <span class="math inline">\(\sigma_2\)</span> for locations <span class="math inline">\(\mu_1\)</span> and <span class="math inline">\(\mu_2\)</span>. In this situation, the density grows without bound as <span class="math inline">\(\sigma_1 \rightarrow 0\)</span> and <span class="math inline">\(\mu_1 \rightarrow y_n\)</span> for some <span class="math inline">\(n\)</span>; that is, one of the mixture components concentrates all of its mass around a single data item <span class="math inline">\(y_n\)</span>.</p>
+</section>
+<section id="beta-binomial-models-with-skewed-data-and-weak-priors" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="beta-binomial-models-with-skewed-data-and-weak-priors">Beta-binomial models with skewed data and weak priors</h3>
+<p>Another example of unbounded densities arises with a posterior such as <span class="math inline">\(\textsf{beta}(\phi \mid 0.5,0.5)\)</span>, which can arise if seemingly weak beta priors are used for groups that have no data. This density is unbounded as <span class="math inline">\(\phi \rightarrow 0\)</span> and <span class="math inline">\(\phi \rightarrow 1\)</span>. Similarly, a Bernoulli data model coupled with a “weak” beta prior, leads to a posterior <span class="math display">\[\begin{align*}
+p(\phi \mid y)
+&amp;\propto
+   \textsf{beta}(\phi \mid 0.5,0.5) \times \prod_{n=1}^N \textsf{Bernoulli}(y_n \mid \phi) \\
+&amp;=
+   \textsf{beta}\left(\phi \,\middle|\, 0.5 + \sum_{n=1}^N y_n, 0.5 + N - \sum_{n=1}^N y_n\right).
+\end{align*}\]</span></p>
+<p>If <span class="math inline">\(N = 9\)</span> and each <span class="math inline">\(y_n = 1\)</span>, the posterior is <span class="math inline">\(\textsf{beta}(\phi \mid 9.5,0,5)\)</span>. This posterior is unbounded as <span class="math inline">\(\phi
+\rightarrow 1\)</span>. Nevertheless, the posterior is proper, and although there is no posterior mode, the posterior mean is well-defined with a value of exactly 0.95.</p>
+<section id="constrained-vs.-unconstrained-scales" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="constrained-vs.-unconstrained-scales">Constrained vs.&nbsp;unconstrained scales</h4>
+<p>Stan does not sample directly on the constrained <span class="math inline">\((0,1)\)</span> space for this problem, so it doesn’t directly deal with unconstrained density values. Rather, the probability values <span class="math inline">\(\phi\)</span> are logit-transformed to <span class="math inline">\((-\infty,\infty)\)</span>. The boundaries at 0 and 1 are pushed out to <span class="math inline">\(-\infty\)</span> and <span class="math inline">\(\infty\)</span> respectively. The Jacobian adjustment that Stan automatically applies ensures the unconstrained density is proper. The adjustment for the particular case of <span class="math inline">\((0,1)\)</span> is <span class="math inline">\(\log
+\operatorname{logit}^{-1}(\phi) + \log \operatorname{logit}(1 - \phi)\)</span>.</p>
+<p>There are two problems that still arise, though. The first is that if the posterior mass for <span class="math inline">\(\phi\)</span> is near one of the boundaries, the logit-transformed parameter will have to sweep out long paths and thus can dominate the U-turn condition imposed by the no-U-turn sampler (NUTS). The second issue is that the inverse transform from the unconstrained space to the constrained space can underflow to 0 or overflow to 1, even when the unconstrained parameter is not infinite. Similar problems arise for the expectation terms in logistic regression, which is why the logit-scale parameterizations of the Bernoulli and binomial distributions are more stable.</p>
+</section>
+</section>
+</section>
+<section id="posteriors-with-unbounded-parameters" class="level2">
+<h2 class="anchored" data-anchor-id="posteriors-with-unbounded-parameters">Posteriors with unbounded parameters</h2>
+<p>In some cases, the posterior density will not grow without bound, but parameters will grow without bound with gradually increasing density values. Like the models discussed in the previous section that have densities that grow without bound, such models also have no posterior modes.</p>
+<section id="separability-in-logistic-regression" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="separability-in-logistic-regression">Separability in logistic regression</h3>
+<p>Consider a logistic regression model with <span class="math inline">\(N\)</span> observed outcomes <span class="math inline">\(y_n
+\in \{ 0, 1 \}\)</span>, an <span class="math inline">\(N \times K\)</span> matrix <span class="math inline">\(x\)</span> of predictors, a <span class="math inline">\(K\)</span>-dimensional coefficient vector <span class="math inline">\(\beta\)</span>, and data model <span class="math display">\[
+y_n \sim \textsf{Bernoulli}(\operatorname{logit}^{-1}(x_n \beta)).
+\]</span> Now suppose that column <span class="math inline">\(k\)</span> of the predictor matrix is such that <span class="math inline">\(x_{n,k} &gt; 0\)</span> if and only if <span class="math inline">\(y_n = 1\)</span>, a condition known as “separability.” In this case, predictive accuracy on the observed data continue to improve as <span class="math inline">\(\beta_k \rightarrow \infty\)</span>, because for cases with <span class="math inline">\(y_n = 1\)</span>, <span class="math inline">\(x_n \beta \rightarrow \infty\)</span> and hence <span class="math inline">\(\operatorname{logit}^{-1}(x_n \beta) \rightarrow 1\)</span>.</p>
+<p>With separability, there is no maximum to the likelihood and hence no maximum likelihood estimate. From the Bayesian perspective, the posterior is improper and therefore the marginal posterior mean for <span class="math inline">\(\beta_k\)</span> is also not defined. The usual solution to this problem in Bayesian models is to include a proper prior for <span class="math inline">\(\beta\)</span>, which ensures a proper posterior.</p>
+</section>
+</section>
+<section id="uniform-posteriors" class="level2">
+<h2 class="anchored" data-anchor-id="uniform-posteriors">Uniform posteriors</h2>
+<p>Suppose your model includes a parameter <span class="math inline">\(\psi\)</span> that is defined on <span class="math inline">\([0,1]\)</span> and is given a flat prior <span class="math inline">\(\textsf{uniform}(\psi \mid 0,1)\)</span>. Now if the data don’t tell us anything about <span class="math inline">\(\psi\)</span>, the posterior is also <span class="math inline">\(\textsf{uniform}(\psi \mid 0,1)\)</span>.</p>
+<p>Although there is no maximum likelihood estimate for <span class="math inline">\(\psi\)</span>, the posterior is uniform over a closed interval and hence proper. In the case of a uniform posterior on <span class="math inline">\([0,1]\)</span>, the posterior mean for <span class="math inline">\(\psi\)</span> is well-defined with value <span class="math inline">\(1/2\)</span>. Although there is no posterior mode, posterior predictive inference may nevertheless do the right thing by simply integrating (i.e., averaging) over the predictions for <span class="math inline">\(\psi\)</span> at all points in <span class="math inline">\([0,1]\)</span>.</p>
+</section>
+<section id="sampling-difficulties-with-problematic-priors" class="level2">
+<h2 class="anchored" data-anchor-id="sampling-difficulties-with-problematic-priors">Sampling difficulties with problematic priors</h2>
+<p>With an improper posterior, it is theoretically impossible to properly explore the posterior. However, Gibbs sampling as performed by BUGS and JAGS, although still unable to properly sample from such an improper posterior, behaves differently in practice than the Hamiltonian Monte Carlo sampling performed by Stan when faced with an example such as the two intercept model discussed in the <a href="#collinearity.section">collinearity section</a> and illustrated in the non-identifiable density plot.</p>
+<section id="gibbs-sampling" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="gibbs-sampling">Gibbs sampling</h3>
+<p>Gibbs sampling, as performed by BUGS and JAGS, may appear to be efficient and well behaved for this unidentified model, but as discussed in the previous subsection, will not actually explore the posterior properly.</p>
+<p>Consider what happens with initial values <span class="math inline">\(\lambda_1^{(0)}, \lambda_2^{(0)}\)</span>. Gibbs sampling proceeds in iteration <span class="math inline">\(m\)</span> by drawing <span class="math display">\[\begin{align*}
+\lambda_1^{(m)} &amp;\sim p(\lambda_1 \mid \lambda_2^{(m-1)}, \sigma^{(m-1)},  y) \\
+\lambda_2^{(m)} &amp;\sim p(\lambda_2 \mid \lambda_1^{(m)},   \sigma^{(m-1)},  y) \\
+\sigma^{(m)}    &amp;\sim p(\sigma    \mid \lambda_1^{(m)},   \lambda_2^{(m)}, y).
+\end{align*}\]</span></p>
+<p>Now consider the draw for <span class="math inline">\(\lambda_1\)</span> (the draw for <span class="math inline">\(\lambda_2\)</span> is symmetric), which is conjugate in this model and thus can be done efficiently. In this model, the range from which the next <span class="math inline">\(\lambda_1\)</span> can be drawn is highly constrained by the current values of <span class="math inline">\(\lambda_2\)</span> and <span class="math inline">\(\sigma\)</span>. Gibbs will run quickly and provide seemingly reasonable inferences for <span class="math inline">\(\lambda_1 + \lambda_2\)</span>. But it will not explore the full range of the posterior; it will merely take a slow random walk from the initial values. This random walk behavior is typical of Gibbs sampling when posteriors are highly correlated and the primary reason to prefer Hamiltonian Monte Carlo to Gibbs sampling for models with parameters correlated in the posterior.</p>
+</section>
+<section id="hamiltonian-monte-carlo-sampling" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="hamiltonian-monte-carlo-sampling">Hamiltonian Monte Carlo sampling</h3>
+<p>Hamiltonian Monte Carlo (HMC), as performed by Stan, is much more efficient at exploring posteriors in models where parameters are correlated in the posterior. In this particular example, the Hamiltonian dynamics (i.e., the motion of a fictitious particle given random momentum in the field defined by the negative log posterior) is going to run up and down along the valley defined by the potential energy (ridges in log posteriors correspond to valleys in potential energy). In practice, even with a random momentum for <span class="math inline">\(\lambda_1\)</span> and <span class="math inline">\(\lambda_2\)</span>, the gradient of the log posterior is going to adjust for the correlation and the simulation will run <span class="math inline">\(\lambda_1\)</span> and <span class="math inline">\(\lambda_2\)</span> in opposite directions along the valley corresponding to the ridge in the posterior log density.</p>
+</section>
+<section id="no-u-turn-sampling" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="no-u-turn-sampling">No-U-turn sampling</h3>
+<p>Stan’s default no-U-turn sampler (NUTS), is even more efficient at exploring the posterior <span class="citation" data-cites="Hoffman-Gelman:2014">(see <a href="#ref-Hoffman-Gelman:2014" role="doc-biblioref">Hoffman and Gelman 2014</a>)</span>. NUTS simulates the motion of the fictitious particle representing the parameter values until it makes a U-turn, it will be defeated in most cases, as it will just move down the potential energy valley indefinitely without making a U-turn. What happens in practice is that the maximum number of leapfrog steps in the simulation will be hit in many of the iterations, causing a large number of log probability and gradient evaluations (1000 if the max tree depth is set to 10, as in the default). Thus sampling will appear to be slow. This is indicative of an improper posterior, not a bug in the NUTS algorithm or its implementation. It is simply not possible to sample from an improper posterior! Thus the behavior of HMC in general and NUTS in particular should be reassuring in that it will clearly fail in cases of improper posteriors, resulting in a clean diagnostic of sweeping out large paths in the posterior.</p>
+<p>Here are results of Stan runs with default parameters fit to <span class="math inline">\(N=100\)</span> data points generated from <span class="math inline">\(y_n \sim \textsf{normal}(0,1)\)</span>:</p>
+<p><em>Two Scale Parameters, Improper Prior</em></p>
+<pre><code>Inference for Stan model: improper_stan
+Warmup took (2.7, 2.6, 2.9, 2.9) seconds, 11 seconds total
+Sampling took (3.4, 3.7, 3.6, 3.4) seconds, 14 seconds total
+
+                  Mean     MCSE   StdDev        5%       95%  N_Eff  N_Eff/s  R_hat
+lp__          -5.3e+01  7.0e-02  8.5e-01  -5.5e+01  -5.3e+01    150       11    1.0
+n_leapfrog__   1.4e+03  1.7e+01  9.2e+02   3.0e+00   2.0e+03   2987      212    1.0
+lambda1        1.3e+03  1.9e+03  2.7e+03  -2.3e+03   6.0e+03    2.1     0.15    5.2
+lambda2       -1.3e+03  1.9e+03  2.7e+03  -6.0e+03   2.3e+03    2.1     0.15    5.2
+sigma          1.0e+00  8.5e-03  6.2e-02   9.5e-01   1.2e+00     54      3.9    1.1
+mu             1.6e-01  1.9e-03  1.0e-01  -8.3e-03   3.3e-01   2966      211    1.0</code></pre>
+<p><em>Two Scale Parameters, Weak Prior</em></p>
+<pre><code>Warmup took (0.40, 0.44, 0.40, 0.36) seconds, 1.6 seconds total
+Sampling took (0.47, 0.40, 0.47, 0.39) seconds, 1.7 seconds total
+
+                 Mean     MCSE   StdDev        5%    95%  N_Eff  N_Eff/s  R_hat
+lp__              -54  4.9e-02  1.3e+00  -5.7e+01    -53    728      421    1.0
+n_leapfrog__      157  2.8e+00  1.5e+02   3.0e+00    511   3085     1784    1.0
+lambda1          0.31  2.8e-01  7.1e+00  -1.2e+01     12    638      369    1.0
+lambda2         -0.14  2.8e-01  7.1e+00  -1.2e+01     12    638      369    1.0
+sigma             1.0  2.6e-03  8.0e-02   9.2e-01    1.2    939      543    1.0
+mu               0.16  1.8e-03  1.0e-01  -8.1e-03   0.33   3289     1902    1.0</code></pre>
+<p><em>One Scale Parameter, Improper Prior</em></p>
+<pre><code>Warmup took (0.011, 0.012, 0.011, 0.011) seconds, 0.044 seconds total
+Sampling took (0.017, 0.020, 0.020, 0.019) seconds, 0.077 seconds total
+
+                Mean     MCSE  StdDev        5%   50%   95%  N_Eff  N_Eff/s  R_hat
+lp__             -54  2.5e-02    0.91  -5.5e+01   -53   -53   1318    17198    1.0
+n_leapfrog__     3.2  2.7e-01     1.7   1.0e+00   3.0   7.0     39      507    1.0
+mu              0.17  2.1e-03    0.10  -3.8e-03  0.17  0.33   2408    31417    1.0
+sigma            1.0  1.6e-03   0.071   9.3e-01   1.0   1.2   2094    27321    1.0</code></pre>
+<p>On the top is the non-identified model with improper uniform priors and data model <span class="math inline">\(y_n \sim \textsf{normal}(\lambda_1 + \lambda_2,
+\sigma)\)</span>.</p>
+<p>In the middle is the same data model as in top plus priors <span class="math inline">\(\lambda_k \sim \textsf{normal}(0,10)\)</span>.</p>
+<p>On the bottom is an identified model with an improper prior, with data model <span class="math inline">\(y_n \sim \textsf{normal}(\mu,\sigma)\)</span>. All models estimate <span class="math inline">\(\mu\)</span> at roughly 0.16 with low Monte Carlo standard error, but a high posterior standard deviation of 0.1; the true value <span class="math inline">\(\mu=0\)</span> is within the 90% posterior intervals in all three models.</p>
+</section>
+<section id="examples-fits-in-stan" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="examples-fits-in-stan">Examples: fits in Stan</h3>
+<p>To illustrate the issues with sampling from non-identified and only weakly identified models, we fit three models with increasing degrees of identification of their parameters. The posteriors for these models is illustrated in the non-identifiable density plot. The first model is the unidentified model with two location parameters and no priors discussed in the <a href="#collinearity.section">collinearity section</a>.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> N;</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[N] <span class="dt">real</span> y;</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> lambda1;</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> lambda2;</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; sigma;</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed parameters</span> {</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> mu;</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  mu = lambda1 + lambda2;</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  y ~ normal(mu, sigma);</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The second adds priors to the model block for <code>lambda1</code> and <code>lambda2</code> to the previous model.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>lambda1 ~ normal(<span class="dv">0</span>, <span class="dv">10</span>);</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>lambda2 ~ normal(<span class="dv">0</span>, <span class="dv">10</span>);</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The third involves a single location parameter, but no priors.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> N;</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[N] <span class="dt">real</span> y;</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> mu;</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; sigma;</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  y ~ normal(mu, sigma);</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>All three of the example models were fit in Stan 2.1.0 with default parameters (1000 warmup iterations, 1000 sampling iterations, NUTS sampler with max tree depth of 10). The results are shown in the non-identified fits figure. The key statistics from these outputs are the following.</p>
+<ul>
+<li><p>As indicated by <code>R_hat</code> column, all parameters have converged other than <span class="math inline">\(\lambda_1\)</span> and <span class="math inline">\(\lambda_2\)</span> in the non-identified model.</p></li>
+<li><p>The average number of leapfrog steps is roughly 3 in the identified model, 150 in the model identified by a weak prior, and 1400 in the non-identified model.</p></li>
+<li><p>The number of effective samples per second for <span class="math inline">\(\mu\)</span> is roughly 31,000 in the identified model, 1,900 in the model identified with weakly informative priors, and 200 in the non-identified model; the results are similar for <span class="math inline">\(\sigma\)</span>.</p></li>
+<li><p>In the non-identified model, the 95% interval for <span class="math inline">\(\lambda_1\)</span> is (-2300,6000), whereas it is only (-12,12) in the model identified with weakly informative priors.</p></li>
+<li><p>In all three models, the simulated value of <span class="math inline">\(\mu=0\)</span> and <span class="math inline">\(\sigma=1\)</span> are well within the posterior 90% intervals.</p></li>
+</ul>
+<p>The first two points, lack of convergence and hitting the maximum number of leapfrog steps (equivalently maximum tree depth) are indicative of improper posteriors. Thus rather than covering up the problem with poor sampling as may be done with Gibbs samplers, Hamiltonian Monte Carlo tries to explore the posterior and its failure is a clear indication that something is amiss in the model.</p>
+
+
+
+</section>
+</section>
+</section>
+
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-Hoffman-Gelman:2014" class="csl-entry" role="listitem">
+Hoffman, Matthew D., and Andrew Gelman. 2014. <span>“<span>T</span>he <span>N</span>o-<span>U</span>-<span>T</span>urn <span>S</span>ampler: <span>A</span>daptively <span>S</span>etting <span>P</span>ath <span>L</span>engths in <span>H</span>amiltonian <span>M</span>onte <span>C</span>arlo.”</span> <em>Journal of Machine Learning Research</em> 15: 1593–623. <a href="http://jmlr.org/papers/v15/hoffman14a.html">http://jmlr.org/papers/v15/hoffman14a.html</a>.
+</div>
+<div id="ref-Neal:1996b" class="csl-entry" role="listitem">
+Neal, Radford M. 1996. <span>“Sampling from Multimodal Distributions Using Tempered Transitions.”</span> <em>Statistics and Computing</em> 6 (4): 353–66.
+</div>
+<div id="ref-SwendsenWang:1986" class="csl-entry" role="listitem">
+Swendsen, Robert H., and Jian-Sheng Wang. 1986. <span>“Replica <span>M</span>onte <span>C</span>arlo Simulation of Spin Glasses.”</span> <em>Physical Review Letters</em> 57: 2607–9.
+</div>
+</div></section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>This example was raised by Richard McElreath on the Stan users group in a query about the difference in behavior between Gibbs sampling as used in BUGS and JAGS and the Hamiltonian Monte Carlo (HMC) and no-U-turn samplers (NUTS) used by Stan.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>The marginal posterior <span class="math inline">\(p(\sigma \mid y)\)</span> for <span class="math inline">\(\sigma\)</span> is proper here as long as there are at least two distinct data points.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>A Laplace prior (or an L1 regularizer for penalized maximum likelihood estimation) is not sufficient to remove this additive invariance. It provides shrinkage, but does not in and of itself identify the parameters because adding a constant to <span class="math inline">\(\lambda_1\)</span> and subtracting it from <span class="math inline">\(\lambda_2\)</span> results in the same value for the prior density.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>Tempering methods may be viewed as automated ways to carry out such a search for modes, though most MCMC tempering methods continue to search for modes on an ongoing basis; see <span class="citation" data-cites="SwendsenWang:1986 Neal:1996b">(<a href="#ref-SwendsenWang:1986" role="doc-biblioref">Swendsen and Wang 1986</a>; <a href="#ref-Neal:1996b" role="doc-biblioref">Neal 1996</a>)</span>.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../stan-users-guide/proportionality-constants.html" class="pagination-link" aria-label="Proportionality Constants">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Proportionality Constants</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../stan-users-guide/reparameterization.html" class="pagination-link" aria-label="Reparameterization and Change of Variables">
+        <span class="nav-page-text">Reparameterization and Change of Variables</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/stan-dev/docs/edit/master/src/stan-users-guide/problematic-posteriors.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/stan-dev/docs/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

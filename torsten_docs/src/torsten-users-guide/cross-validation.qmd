@@ -1,0 +1,449 @@
+---
+pagetitle: Held-Out Evaluation and Cross-Validation
+---
+
+# Held-Out Evaluation and Cross-Validation
+
+Held-out evaluation involves splitting a data set into two parts, a
+training data set and a test data set.  The training data is used to
+estimate the model and the test data is used for evaluation.  Held-out
+evaluation is commonly used to declare winners in predictive modeling
+competitions such as those run by [Kaggle](https://kaggle.com).
+
+Cross-validation involves repeated held-out evaluations performed by
+partitioning a single data set in different ways.  The training/test
+split can be done either by randomly selecting the test set, or by
+partitioning the data set into several equally-sized subsets and then
+using each subset in turn as the test data with the other folds as
+training data.
+
+Held-out evaluation and cross-validation may involve any kind
+of predictive statistics, with common choices being the predictive log
+density on test data, squared error of parameter estimates, or accuracy
+in a classification task.
+
+## Evaluating posterior predictive densities {#evaluating-posterior-predictive.section}
+
+Given training data $(x, y)$ consisting of parallel sequences of
+predictors and observations and test data $(\tilde{x}, \tilde{y})$ of
+the same structure, the posterior predictive density is
+$$
+p(\tilde{y} \mid \tilde{x}, x, y)
+=
+\int
+  p(\tilde{y} \mid \tilde{x}, \theta)
+  \cdot p(\theta \mid x, y)
+\, \textrm{d}\theta,
+$$
+
+where $\theta$ is the vector of model parameters.  This predictive
+density is the density of the test observations, conditioned on both
+the test predictors $\tilde{x}$ and the training data $(x, y).$
+
+This integral may be calculated with Monte Carlo methods as usual,
+$$
+p(\tilde{y} \mid \tilde{x}, x, y)
+\approx
+\frac{1}{M} \sum_{m = 1}^M p(\tilde{y} \mid \tilde{x}, \theta^{(m)}),
+$$
+where the $\theta^{(m)} \sim p(\theta \mid x, y)$ are draws from the
+posterior given only the training data $(x, y).$
+
+To avoid underflow in calculations, it will be more stable
+to compute densities on the log scale.  Taking the logarithm and
+pushing it through results in a stable computation,
+\begin{eqnarray*}
+\log p(\tilde{y} \mid \tilde{x}, x, y)
+& \approx &
+\log \frac{1}{M} \sum_{m = 1}^M p(\tilde{y} \mid \tilde{x}, \theta^{(m)}),
+\\[4pt]
+& = & -\log M + \log \sum_{m = 1}^M p(\tilde{y} \mid \tilde{x}, \theta^{(m)}),
+\\[4pt]
+& = & -\log M + \log \sum_{m = 1}^M \exp(\log p(\tilde{y} \mid \tilde{x}, \theta^{(m)}))
+\\[4pt]
+& = & -\log M + \textrm{log-sum-exp}_{m = 1}^M \log p(\tilde{y} \mid \tilde{x}, \theta^{(m)})
+\end{eqnarray*}
+where the log sum of exponentials function is defined so as
+to make the above equation hold,
+$$
+\textrm{log-sum-exp}_{m = 1}^M \, \mu_m
+= \log \sum_{m=1}^M \exp(\mu_m).
+$$
+The log sum of exponentials function can be implemented so as to avoid
+underflow and maintain high arithmetic precision as
+$$
+\textrm{log-sum-exp}_{m = 1}^M \mu_m
+= \textrm{max}(\mu)
++ \log \sum_{m = 1}^M \exp(\mu_m - \textrm{max}(\mu)).
+$$
+Pulling the maximum out preserves all of its precision.  By
+subtracting the maximum, the terms $\mu_m - \textrm{max}(\mu) \leq 0$,
+and thus will not overflow.
+
+### Stan program {-}
+
+To evaluate the log predictive density of a model, it suffices to
+implement the log predictive density of the test data in the generated quantities
+block.  The log sum of exponentials calculation must be done on the
+outside of Stan using the posterior draws of $\log p(\tilde{y} \mid \tilde{x},
+\theta^{(m)}).$
+
+Here is the code for evaluating the log posterior predictive density
+in a simple linear regression of the test data $\tilde{y}$ given
+predictors $\tilde{x}$ and training data $(x, y).$
+```stan
+data {
+  int<lower=0> N;
+  vector[N] y;
+  vector[N] x;
+  int<lower=0> N_tilde;
+  vector[N_tilde] x_tilde;
+  vector[N_tilde] y_tilde;
+}
+parameters {
+  real alpha;
+  real beta;
+  real<lower=0> sigma;
+}
+model {
+  y ~ normal(alpha + beta * x, sigma);
+}
+generated quantities {
+  real log_p = normal_lpdf(y_tilde | alpha + beta * x_tilde, sigma);
+}
+```
+Only the training data `x` and `y` are used in the model block.  The
+test data `y_tilde` and test predictors `x_tilde` appear in only the
+generated quantities block.  Thus the program is not cheating by using
+the test data during training.  Although this model does not do so,
+it would be fair to use `x_tilde` in the model block---only the
+test observations `y_tilde` are unknown before they are predicted.
+
+Given $M$ posterior draws from Stan, the sequence `log_p[1:M]` will be
+available, so that the log posterior predictive density of the test
+data given training data and predictors is just `log_sum_exp(log_p) -
+log(M)`.
+
+
+## Estimation error
+
+### Parameter estimates {-}
+
+Estimation is usually considered for unknown parameters.  If the data
+from which the parameters were estimated came from simulated data, the
+true value of the parameters may be known.  If $\theta$ is the true
+value and $\hat{\theta}$ the estimate, then error is just the
+difference between the prediction and the true value,
+$$
+\textrm{err} = \hat{\theta} - \theta.
+$$
+
+If the estimate is larger than the true value, the error is positive,
+and if it's smaller, then error is negative.  If an estimator's
+unbiased, then expected error is zero.  So typically, absolute error
+or squared error are used, which will always have positive
+expectations for an imperfect estimator.  *Absolute error* is defined as
+$$
+\textrm{abs-err} = \left| \hat{\theta} - \theta \right|
+$$
+and *squared error* as
+$$
+\textrm{sq-err} = \left( \hat{\theta} - \theta \right)^2.
+$$
+@GneitingRaftery:2007 provide a thorough overview of such scoring rules
+and their properties.
+
+Bayesian posterior means minimize expected square error, whereas
+posterior medians minimize expected absolute error.  Estimates based
+on modes rather than probability, such as (penalized) maximum
+likelihood estimates or maximum a posterior estimates, do not have
+these properties.
+
+### Predictive estimates {-}
+
+In addition to parameters, other unknown quantities may be estimated,
+such as the score of a football match or the effect of a medical
+treatment given to a subject.  In these cases, square error is defined
+in the same way.  If there are multiple exchangeable outcomes being
+estimated, $z_1, \ldots, z_N,$ then it is common to report *mean square
+error* (MSE),
+$$
+\textrm{mse}
+= \frac{1}{N} \sum_{n = 1}^N \left( \hat{z}_n - z_n\right)^2.
+$$
+To put the error back on the scale of the original value, the square
+root may be applied, resulting in what is known prosaically
+as *root mean square error* (RMSE),
+$$
+\textrm{rmse} = \sqrt{\textrm{mean-sq-err}}.
+$$
+
+### Predictive estimates in Stan {-}
+
+Consider a simple linear regression model, parameters for the
+intercept $\alpha$ and slope $\beta$, along with predictors
+$\tilde{x}_n$.  The standard Bayesian estimate is the expected value
+of $\tilde{y}$ given the predictors and training data,
+\begin{eqnarray*}
+\hat{\tilde{y}}_n
+& = & \mathbb{E}[\tilde{y}_n \mid \tilde{x}_n, x, y]
+\\[4pt]
+& \approx & \frac{1}{M} \sum_{m = 1}^M \tilde{y}_n^{(m)}
+\end{eqnarray*}
+where $\tilde{y}_n^{(m)}$ is drawn from the data model
+$$
+\tilde{y}_n^{(m)}
+\sim p(\tilde{y}_n \mid \tilde{x}_n, \alpha^{(m)}, \beta^{(m)}),
+$$
+for parameters $\alpha^{(m)}$ and $\beta^{(m)}$ drawn from the posterior,
+$$
+(\alpha^{(m)}, \beta^{(m)}) \sim p(\alpha, \beta \mid x, y).
+$$
+
+In the linear regression case, two stages of simplification can be
+carried out, the first of which helpfully reduces the variance of the
+estimator. First, rather than averaging samples $\tilde{y}_n^{(m)}$,
+the same result is obtained by averaging linear predictions,
+\begin{eqnarray*}
+\hat{\tilde{y}}_n
+& = & \mathbb{E}\left[
+          \alpha + \beta \cdot \tilde{x}_n
+          \mid \tilde{x}_n, x, y
+       \right]
+\\[4pt]
+& \approx &
+\frac{1}{M} \sum_{m = 1}^M
+  \alpha^{(m)} + \beta^{(m)} \cdot \tilde{x}_n.
+\end{eqnarray*}
+This is possible because
+$$
+\tilde{y}_n^{(m)} \sim \textrm{normal}(\tilde{y}_n \mid \alpha^{(m)} +
+\beta^{(m)} \cdot \tilde{x}_n, \sigma^{(m)}),
+$$
+and the normal distribution has symmetric error so that the expectation of
+$\tilde{y}_n^{(m)}$ is the same as $\alpha^{(m)} + \beta^{(m)} \cdot
+\tilde{x}_n$.  Replacing the sampled quantity $\tilde{y}_n^{(m)}$ with
+its expectation is a general variance reduction technique for Monte
+Carlo estimates known as *Rao-Blackwellization* [@Rao:1945; @Blackwell:1947].
+
+In the linear case, because the predictor is linear in the
+coefficients, the estimate can be further simplified to use the
+estimated coefficients,
+\begin{eqnarray*}
+\tilde{y}_n^{(m)}
+& \approx &
+\frac{1}{M} \sum_{m = 1}^M
+  \left( \alpha^{(m)} + \beta^{(m)} \cdot \tilde{x}_n \right)
+\\[4pt]
+& = & \frac{1}{M} \sum_{m = 1}^M \alpha^{(m)}
+      + \frac{1}{M} \sum_{m = 1}^M (\beta^{(m)} \cdot \tilde{x}_n)
+\\[4pt]
+& = & \frac{1}{M} \sum_{m = 1}^M \alpha^{(m)}
+      + \left( \frac{1}{M} \sum_{m = 1}^M \beta^{(m)}\right) \cdot \tilde{x}_n
+\\[4pt]
+& = & \hat{\alpha} + \hat{\beta} \cdot \tilde{x}_n.
+\end{eqnarray*}
+
+In Stan, only the first of the two steps (the important variance
+reduction step) can be coded in the object model.  The linear
+predictor is defined in the generated quantities block.
+```stan
+data {
+  int<lower=0> N_tilde;
+  vector[N_tilde] x_tilde;
+  // ...
+}
+// ...
+generated quantities {
+  vector[N_tilde] tilde_y = alpha + beta * x_tilde;
+}
+```
+The posterior mean of `tilde_y` calculated by Stan is the Bayesian
+estimate $\hat{\tilde{y}}.$  The posterior median may also be
+calculated and used as an estimate, though square error and the
+posterior mean are more commonly reported.
+
+## Cross-validation
+
+Cross-validation involves choosing multiple subsets of a data set as
+the test set and using the other data as training.  This can be done
+by partitioning the data and using each subset in turn as the test set
+with the remaining subsets as training data.  A partition into ten
+subsets is common to reduce computational overhead.  In the limit,
+when the test set is just a single item, the result is known as
+leave-one-out (LOO) cross-validation [@VehtariEtAl:2017].
+
+Partitioning the data and reusing the partitions is very fiddly in the
+indexes and may not lead to even divisions of the data. It's far
+easier to use random partitions, which support arbitrarily sized
+test/training splits and can be easily implemented in Stan.  The
+drawback is that the variance of the resulting estimate is higher than
+with a balanced block partition.
+
+
+### Stan implementation with random folds {-}
+
+For the simple linear regression model, randomized cross-validation
+can be implemented in a single model.  To randomly permute a vector in
+Stan, the simplest approach is the following.
+```stan
+functions {
+  array[] int permutation_rng(int N) {
+    array[N] int y;
+    for (n in 1 : N) {
+      y[n] = n;
+    }
+    vector[N] theta = rep_vector(1.0 / N, N);
+    for (n in 1 : size(y)) {
+      int i = categorical_rng(theta);
+      int temp = y[n];
+      y[n] = y[i];
+      y[i] = temp;
+    }
+    return y;
+  }
+}
+```
+The name of the function must end in `_rng` because it uses other
+random functions internally.  This will restrict its usage to the
+transformed data and generated quantities block.  The code walks
+through an array of integers exchanging each item with another randomly chosen
+item, resulting in a uniformly drawn permutation of the integers
+`1:N`.^[The traditional approach is to walk through a vector and replace each item with a random element from the remaining elements, which is guaranteed to only move each item once. This was not done here as it'd require new categorical `theta` because Stan does not have a uniform discrete RNG built in.]
+
+The transformed data block uses the permutation RNG to generate
+training data and test data by taking prefixes and suffixes of the
+permuted data.
+```stan
+data {
+  int<lower=0> N;
+  vector[N] x;
+  vector[N] y;
+  int<lower=0, upper=N> N_test;
+}
+transformed data {
+  int N_train = N - N_test;
+  array[N] int permutation = permutation_rng(N);
+  vector[N_train] x_train = x[permutation[1 : N_train]];
+  vector[N_train] y_train = y[permutation[1 : N_train]];
+  vector[N_test] x_test = x[permutation[N_train + 1 : N]];
+  vector[N_test] y_test = y[permutation[N_train + 1 : N]];
+}
+```
+Recall that in Stan, `permutation[1:N_train]` is an array of integers,
+so that `x[permutation[1 : N_train]]` is a vector defined for `i in 1:N_train`
+by
+```stan
+x[permutation[1 : N_train]][i] = x[permutation[1:N_train][i]]
+                               = x[permutation[i]]
+```
+Given the test/train split, the rest of the model is straightforward.
+```stan
+parameters {
+  real alpha;
+  real beta;
+  real<lower=0> sigma;
+}
+model {
+  y_train ~ normal(alpha + beta * x_train, sigma);
+  { alpha, beta, sigma } ~ normal(0, 1);
+}
+generated quantities {
+  vector[N] y_test_hat = normal_rng(alpha + beta * x_test, sigma);
+  vector[N] err = y_test_sim - y_hat;
+}
+```
+The prediction `y_test_hat` is defined in the generated quantities
+block using the general form involving all uncertainty.  The posterior
+of this quantity corresponds to using a posterior mean estimator,
+\begin{eqnarray*}
+\hat{y}^{\textrm{test}}
+& = & \mathbb{E}\left[ y^{\textrm{test}} \mid x^{\textrm{test}}, x^{\textrm{train}} y^{\textrm{train}} \right]
+\\[4pt]
+& \approx & \frac{1}{M} \sum_{m = 1}^M \hat{y}^{\textrm{test}(m)}.
+\end{eqnarray*}
+
+Because the test set is constant and the expectation operator is
+linear, the posterior mean of `err` as defined in the Stan program
+will be the error of the posterior mean estimate,
+\begin{eqnarray*}
+  \hat{y}^{\textrm{test}} - y^{\textrm{test}}
+& = &
+\mathbb{E}\left[
+  \hat{y}^{\textrm{test}}
+  \mid x^{\textrm{test}}, x^{\textrm{train}}, y^{\textrm{train}}
+\right]
+  - y^{\textrm{test}}
+\\[4pt]
+& = &
+\mathbb{E}\left[
+  \hat{y}^{\textrm{test}} - y^{\textrm{test}}
+  \mid x^{\textrm{test}}, x^{\textrm{train}}, y^{\textrm{train}}
+\right]
+\\[4pt]
+& \approx &
+\frac{1}{M} \sum_{m = 1}^M \hat{y}^{\textrm{test}(m)} - y^{\textrm{test}},
+\end{eqnarray*}
+where
+$$
+\hat{y}^{\textrm{test}(m)}
+\sim p(y \mid x^{\textrm{test}}, x^{\textrm{train}},
+y^{\textrm{train}}).
+$$
+This just calculates error; taking absolute value or squaring will
+compute absolute error and mean square error. Note that the absolute
+value and square operation should *not* be done within the Stan
+program because neither is a linear function and the result of
+averaging squares is not the same as squaring an average in general.
+
+Because the test set size is chosen for convenience in
+cross-validation, results should be presented on a per-item scale,
+such as average absolute error or root mean square error, not on the
+scale of error in the fold being evaluated.
+
+### User-defined permutations {-}
+
+It is straightforward to declare the variable `permutation` in the
+data block instead of the transformed data block and read it in as
+data.  This allows an external program to control the blocking,
+allowing non-random partitions to be evaluated.
+
+
+### Cross-validation with structured data {-}
+
+Cross-validation must be done with care if the data is inherently
+structured.  For example, in a simple natural language application,
+data might be structured by document.  For cross-validation, one needs
+to cross-validate at the document level, not at the individual word
+level.  This is related to [mixed replication in posterior predictive
+checking](posterior-predictive-checks.qmd#mixed-replication), where there is a choice to simulate new
+elements of existing groups or generate entirely new groups.
+
+Education testing applications are typically grouped by school
+district, by school, by classroom, and by demographic features of the
+individual students or the school as a whole.  Depending on the
+variables of interest, different structured subsets should be
+evaluated.  For example, the focus of interest may be on the
+performance of entire classrooms, so it would make sense to
+cross-validate at the class or school level on classroom performance.
+
+
+### Cross-validation with spatio-temporal data {-}
+
+Often data measurements have spatial or temporal properties.  For
+example, home energy consumption varies by time of day, day of week,
+on holidays, by season, and by ambient temperature (e.g., a hot spell
+or a cold snap).  Cross-validation must be tailored to the predictive
+goal.  For example, in predicting energy consumption, the quantity of
+interest may be the prediction for next week's energy consumption
+given historical data and current weather covariates.  This suggests
+an alternative to cross-validation, wherein individual weeks are each
+tested given previous data.  This often allows comparing how well
+prediction performs with more or less historical data.
+
+### Approximate cross-validation {-}
+
+@VehtariEtAl:2017 introduce a method that approximates the evaluation
+of leave-one-out cross validation inexpensively using only the data
+point log likelihoods from a single model fit.  This method is
+documented and implemented in the R package loo [@GabryEtAl:2019].

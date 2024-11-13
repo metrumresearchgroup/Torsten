@@ -1,0 +1,245 @@
+---
+pagetitle: The Bootstrap and Bagging
+---
+
+# The Bootstrap and Bagging
+
+The bootstrap is a technique for approximately sampling from the error
+distribution for an estimator.  Thus it can be used as a Monte Carlo
+method to estimate standard errors and confidence intervals for point
+estimates [@EfronTibshirani1986; -@EfronTibshirani1994].  It works by
+subsampling the original data and computing sample estimates from the
+subsample.  Like other Monte Carlo methods, the bootstrap is
+plug-and-play, allowing great flexibility in both model choice and
+estimator.
+
+Bagging is a technique for combining bootstrapped estimators for model
+criticism and more robust inference [@Breiman:1996; @HugginsMiller:2019].
+
+## The bootstrap
+
+### Estimators {-}
+
+An estimator is nothing more than a function mapping a data set to one
+or more numbers, which are called "estimates".  For example, the mean
+function maps a data set $y_{1,\ldots, N}$ to a number by
+$$
+\textrm{mean}(y) = \frac{1}{N} \sum_{n=1}^N y_n,
+$$
+and hence meets the definition of an estimator.  Given the likelihood
+function
+$$
+p(y \mid \mu) = \prod_{n=1}^N \textrm{normal}(y_n \mid \mu, 1),
+$$
+the mean is the maximum likelihood estimator,
+
+$$
+\textrm{mean}(y) = \textrm{arg max}_{\mu} \ p(y \mid \mu, 1)
+$$
+A Bayesian approach to point estimation would be to add a prior and
+use the posterior mean or median as an estimator.  Alternatively, a
+penalty function could be added to the likelihood so that optimization
+produces a penalized maximum likelihood estimate.  With any of these
+approaches, the estimator is just a function from data to a number.
+
+In analyzing estimators, the data set is being modeled as a random
+variable.  It is assumed that the observed data is just one of many
+possible random samples of data that may have been produced.  If the
+data is modeled a random variable, then the estimator applied to the
+data is also a random variable.  The simulations being done for the
+bootstrap are attempts to randomly sample replicated data sets and
+compute the random properties of the estimators using standard Monte
+Carlo methods.
+
+### The bootstrap in pseudocode {-}
+
+The bootstrap works by applying an estimator to replicated data sets.
+These replicates are created by subsampling the original data with
+replacement.  The sample quantiles may then be used to estimate
+standard errors and confidence intervals.
+
+The following pseudocode estimates 95% confidence intervals and
+standard errors for a generic estimate $\hat{\theta}$ that is a
+function of data $y$.
+```stan
+for (m in 1:M) {
+  y_rep[m] <- sample_uniform(y)
+  theta_hat[m] <- estimate_theta(y_rep[m])
+}
+std_error = sd(theta_hat)
+conf_95pct = [ quantile(theta_hat, 0.025),
+               quantile(theta_hat, 0.975) ]
+```
+The `sample_uniform` function works by independently assigning each
+element of `y_rep` an element of `y` drawn uniformly at random.  This
+produces a sample *with replacement.* That is, some elements of `y`
+may show up more than once in `y_rep` and some may not appear at all.
+
+## Coding the bootstrap in Stan
+
+The bootstrap procedure can be coded quite generally in Stan models.  The
+following code illustrates a Stan model coding the likelihood for a
+simple linear regression.  There is a parallel vector
+`x` of predictors in addition to outcomes `y`.  To allow a single
+program to fit both the original data and random subsamples, the
+variable `resample` is set to 1 to resample and 0 to use the original data.
+```stan
+data {
+  int<lower=0> N;
+  vector[N] x;
+  vector[N] y;
+  int<lower=0, upper=1> resample;
+}
+transformed data {
+  simplex[N] uniform = rep_vector(1.0 / N, N);
+  array[N] int<lower=1, upper=N> boot_idxs;
+  for (n in 1:N) {
+    boot_idxs[n] = resample ? categorical_rng(uniform) : n;
+  }
+}
+parameters {
+  real alpha;
+  real beta;
+  real<lower=0> sigma;
+}
+model {
+  y[boot_idxs] ~ normal(alpha + beta * x[boot_idxs], sigma);
+}
+```
+The model accepts data in the usual form for a linear regression as a
+number of observations $N$ with a size $N$ vector $x$ of predictors
+and a size $N$ vector of outcomes.  The transformed data block
+generates a set of indexes into the data that is the same size as the
+data.  This is done by independently sampling each entry of `boot_idxs`
+from `1:N`, using a discrete uniform distribution coded as a
+categorical random number generator with an equal chance for each
+outcome.  If resampling is not done, the array `boot_idxs` is defined
+to be the sequence `1:N`, because `x == x[1:N]` and `y = y[1:N]`.
+
+For example, when `resample == 1`, if $N = 4,$ the value of
+`boot_idxs` might be `{2, 1, 1, 3}`, resulting in a bootstrap sample
+`{y[2], y[1], y[1], y[3]}` with the first element repeated twice and
+the fourth element not sampled at all.
+
+The parameters are the usual regression coefficients for the intercept
+`alpha`, slope `beta`, and error scale `sigma`.  The model uses the
+bootstrap index variable `boot_idx` to index the predictors as
+`x[boot_idx]` and outcomes as `y[boot_idx]`.  This generates a new
+size-$N$ vector whose entries are defined by `x[boot_idx][n] =
+x[boot_idx[n]]` and similarly for `y`.  For example, if $N = 4$ and
+`boot_idxs = {2, 1, 1, 3}`, then `x[boot_idxs] = [x[2], x[1], x[1],
+x[3]]'` and `y[boot_idxs] = [y[2], y[1], y[1], y[3]]'`.  The predictor
+and outcome vectors remain aligned, with both elements of the pair
+`x[1]` and `y[1]` repeated twice.
+
+With the model defined this way, if `resample` is 1, the model is fit
+to a bootstrap subsample of the data.  If `resample` is 0, the model
+is fit to the original data as given.  By running the bootstrap fit
+multiple times, confidence intervals can be generated from quantiles
+of the results. 
+
+
+## Error statistics from the bootstrap
+
+Running the model multiple times produces a Monte Carlo sample of
+estimates from multiple alternative data sets subsampled from the
+original data set.  The error distribution is just the distribution of
+the bootstrap estimates minus the estimate for the original data set.
+
+To estimate standard errors and confidence intervals for maximum
+likelihood estimates the Stan program is executed multiple times using
+optimization (which turns off Jacobian adjustments for constraints and
+finds maximum likelihood estimates).  On the order of one hundred
+replicates is typically enough to get a good sense of standard error;
+more will be needed to accurate estimate the boundaries of a 95%
+confidence interval.  On the other hand, given that there is inherent
+variance due to sampling the original data $y$, it is usually not
+worth calculating bootstrap estimates to high precision.
+
+### Standard errors {-}
+
+Here's the result of calculating standard errors for the linear
+regression model above with $N = 50$ data points, $\alpha = 1.2, \beta
+= -0.5,$ and $\sigma = 1.5.$ With a total of $M = 100$ bootstrap
+samples, there are 100 estimates of $\alpha$, 100 of $\beta$, and 100
+of $\sigma$.  These are then treated like Monte Carlo draws.
+For example, the sample standard deviation of the draws for $\alpha$
+provide the bootstrap estimate of the standard error in the estimate
+for $\alpha$.  Here's what it looks like for the above model with $M =
+100$
+```
+ parameter   estimate    std err
+ ---------   --------    -------
+     alpha      1.359      0.218
+      beta     -0.610      0.204
+     sigma      1.537      0.142
+```
+With the data set fixed, these estimates of standard error will display
+some Monte Carlo error.  For example, here are the standard error
+estimates from five more runs holding the data the same, but allowing
+the subsampling to vary within Stan:
+```
+ parameter   estimate    std err
+ ---------   --------    -------
+     alpha      1.359      0.206
+     alpha      1.359      0.240
+     alpha      1.359      0.234
+     alpha      1.359      0.249
+     alpha      1.359      0.227
+```
+Increasing $M$ will reduce Monte Carlo error, but this is not usually
+worth the extra computation time as there is so much other uncertainty
+due to the original data sample $y$.
+
+### Confidence intervals {-}
+
+As usual with Monte Carlo methods, confidence intervals are estimated
+using quantiles of the draws.  That is, if there are $M = 1000$
+estimates of $\hat{\alpha}$ in different subsamples, the 2.5% quantile
+and 97.5% quantile pick out the boundaries of the 95% confidence
+interval around the estimate for the actual data set $y$.  To get
+accurate 97.5% quantile estimates requires a much larger number of
+Monte Carlo simulations (roughly twenty times as large as needed for
+the median).
+
+## Bagging
+
+When bootstrapping is carried through inference it is known as
+bootstrap aggregation, or *bagging*, in the machine-learning
+literature [@Breiman:1996].  In the simplest case, this involves
+bootstrapping the original data, fitting a model to each bootstrapped
+data set, then averaging the predictions.  For instance, rather than
+using an estimate $\hat{\sigma}$ from the original data set,
+bootstrapped data sets $y^{\textrm{boot}(1)}, \ldots,
+y^{\textrm{boot}(N)}$ are generated.  Each is used to generate an
+estimate $\hat{\sigma}^{\textrm{boot}(n)}.$ The final estimate is
+$$
+\hat{\sigma} = \frac{1}{N} \sum_{n = 1}^N \hat{\sigma}^{\textrm{boot}(n)}.
+$$
+The same would be done to estimate a predictive quantity $\tilde{y}$
+for as yet unseen data.
+$$
+\hat{\tilde{y}} = \frac{1}{N} \sum_{n = 1}^N
+\hat{\tilde{y}}^{\textrm{boot}(n)}.
+$$
+For discrete parameters, voting is used to select the outcome.
+
+One way of viewing bagging is as a classical attempt to get something
+like averaging over parameter estimation uncertainty.
+
+## Bayesian bootstrap and bagging
+
+A Bayesian estimator may be analyzed with the bootstrap in exactly the
+same way as a (penalized) maximum likelihood estimate.  For example,
+the posterior mean and posterior median are two different Bayesian
+estimators.  The bootstrap may be used  estimate standard errors and
+confidence intervals, just as for any other estimator.
+
+[@HugginsMiller:2019] use the bootstrap to assess model calibration
+and fitting in a Bayesian framework and further suggest using bagged
+estimators as a guard against model misspecification.  Bagged
+posteriors will typically have wider posterior intervals than those
+fit with just the original data, showing that the method is not a pure
+Bayesian approach to updating, and indicating it would not be
+calibrated if the model were well specified.  The hope is that it
+can guard against over-certainty in a poorly specified model.

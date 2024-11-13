@@ -1,0 +1,282 @@
+project:
+  title: "Stan Docs"
+  type: website
+  output-dir: _website
+  pre-render:
+    - ../gen_index.py
+  render:
+    - "index.qmd"
+    - "404.qmd"
+    - "cmdstan-guide/*.qmd"
+    - "functions-reference/*.qmd"
+    - "reference-manual/*.qmd"
+    - "stan-users-guide/*.qmd"
+    - "!sdlc.qmd"
+
+bibliography: bibtex/all.bib
+biblio-style: apalike
+
+title-prefix: ""
+toc: true
+toc-depth: 3
+
+filters:
+  - html-index.lua
+
+website:
+  favicon: img/logo_tm.png
+  image: img/logo_tm.png
+  reader-mode: true
+  page-navigation: true
+  search:
+    limit: 200 # potentially slow but workaround for https://github.com/quarto-dev/quarto-cli/issues/8986
+  back-to-top-navigation: true
+  repo-url: https://github.com/stan-dev/docs
+  repo-subdir: src
+  repo-branch: master
+  repo-actions: [edit, issue]
+  site-path: "/docs/" # needed for 404 page to work
+
+
+  navbar:
+    logo: "img/logo_tm.png"
+    logo-alt: "Stan logo"
+    title: false
+    left:
+      - text: "Overview"
+        href: index.qmd
+      - text: "Stan Users Guide"
+        href: stan-users-guide/index.qmd
+      - text: "Reference Manual"
+        href: reference-manual/index.qmd
+      - text: "Functions Reference"
+        href: functions-reference/index.qmd
+      - text: "Interfaces"
+        menu:
+          - text: "CmdStan"
+            href: cmdstan-guide/index.qmd
+          - text: "CmdStanPy"
+            url: https://mc-stan.org/cmdstanpy
+          - text: "CmdStanR"
+            url: https://mc-stan.org/cmdstanr
+          - text: "PyStan"
+            url: https://mc-stan.org/users/interfaces/pystan.html
+          - text: "RStan"
+            url: https://mc-stan.org/rstan
+          - text: "Stan.jl"
+            url: http://stanjulia.github.io/Stan.jl/stable/INTRO/
+      - text: "Other Packages"
+        menu:
+          - text: "bayesplot"
+            href: https://mc-stan.org/bayesplot/
+          - text: "BridgeStan"
+            href: https://roualdes.github.io/bridgestan/latest/
+          - text: "brms"
+            url: https://paul-buerkner.github.io/brms/
+          - text: "loo"
+            href: https://mc-stan.org/loo/
+          - text: "posterior"
+            url: https://mc-stan.org/posterior
+          - text: "projpred"
+            url: https://mc-stan.org/projpred
+          - text: "rstanarm"
+            url: https://mc-stan.org/rstanarm
+          - text: "rstantools"
+            url: https://mc-stan.org/rstantools
+          - text: "shinystan"
+            url: https://mc-stan.org/shinystan
+
+
+    tools:
+      - icon: github
+        url: https://github.com/stan-dev
+      - icon: chat-text-fill
+        href: "https://discourse.mc-stan.org"
+
+  sidebar:
+    - id: stan-users-guide
+      title: "Stan User's Guide"
+      contents:
+        - stan-users-guide/index.qmd
+        - section: "Version {{< env STAN_DOCS_VERSION >}}"
+        - section: "Example Models"
+          contents:
+            - stan-users-guide/regression.qmd
+            - stan-users-guide/time-series.qmd
+            - stan-users-guide/missing-data.qmd
+            - stan-users-guide/truncation-censoring.qmd
+            - stan-users-guide/finite-mixtures.qmd
+            - stan-users-guide/measurement-error.qmd
+            - stan-users-guide/latent-discrete.qmd
+            - stan-users-guide/sparse-ragged.qmd
+            - stan-users-guide/clustering.qmd
+            - stan-users-guide/gaussian-processes.qmd
+            - stan-users-guide/hyperspherical-models.qmd
+            - stan-users-guide/algebraic-equations.qmd
+            - stan-users-guide/odes.qmd
+            - stan-users-guide/one-dimensional-integrals.qmd
+            - stan-users-guide/complex-numbers.qmd
+            - stan-users-guide/dae.qmd
+            - stan-users-guide/survival.qmd
+        - section:  "Programming Techniques"
+          contents:
+            - stan-users-guide/floating-point.qmd
+            - stan-users-guide/matrices-arrays.qmd
+            - stan-users-guide/multi-indexing.qmd
+            - stan-users-guide/user-functions.qmd
+            - stan-users-guide/custom-probability.qmd
+            - stan-users-guide/proportionality-constants.qmd
+            - stan-users-guide/problematic-posteriors.qmd
+            - stan-users-guide/reparameterization.qmd
+            - stan-users-guide/efficiency-tuning.qmd
+            - stan-users-guide/parallelization.qmd
+        - section: "Posterior Inference & Model Checking"
+          contents:
+            - stan-users-guide/posterior-prediction.qmd
+            - stan-users-guide/simulation-based-calibration.qmd
+            - stan-users-guide/posterior-predictive-checks.qmd
+            - stan-users-guide/cross-validation.qmd
+            - stan-users-guide/poststratification.qmd
+            - stan-users-guide/decision-analysis.qmd
+            - stan-users-guide/bootstrap.qmd
+        - section: "Appendices"
+          contents:
+            - stan-users-guide/using-stanc.qmd
+            - stan-users-guide/style-guide.qmd
+            - stan-users-guide/for-bugs-users.qmd
+
+    - id: reference-manual
+      title: "Reference Manual"
+      contents:
+        - reference-manual/index.qmd
+        - section: "Version {{< env STAN_DOCS_VERSION >}}"
+        - section: "Language"
+          contents:
+            - reference-manual/encoding.qmd
+            - reference-manual/includes.qmd
+            - reference-manual/comments.qmd
+            - reference-manual/whitespace.qmd
+            - reference-manual/types.qmd
+            - reference-manual/expressions.qmd
+            - reference-manual/statements.qmd
+            - reference-manual/blocks.qmd
+            - reference-manual/user-functions.qmd
+            - reference-manual/transforms.qmd
+            - reference-manual/syntax.qmd
+            - reference-manual/execution.qmd
+            - reference-manual/deprecations.qmd
+            - reference-manual/removals.qmd
+        - section: "Algorithms"
+          contents:
+            - reference-manual/mcmc.qmd
+            - reference-manual/analysis.qmd
+            - reference-manual/optimization.qmd
+            - reference-manual/pathfinder.qmd
+            - reference-manual/variational.qmd
+            - reference-manual/laplace.qmd
+            - reference-manual/diagnostics.qmd
+        - section: "Usage"
+          contents:
+            - reference-manual/reproducibility.qmd
+            - reference-manual/licenses.qmd
+
+    - id: functions-reference
+      title: "Stan Functions"
+      contents:
+        - functions-reference/index.qmd
+        - section: "Version {{< env STAN_DOCS_VERSION >}}"
+        - section: "Built-in Functions"
+          contents:
+            - functions-reference/void_functions.qmd
+            - functions-reference/integer-valued_basic_functions.qmd
+            - functions-reference/real-valued_basic_functions.qmd
+            - functions-reference/complex-valued_basic_functions.qmd
+            - functions-reference/array_operations.qmd
+            - functions-reference/matrix_operations.qmd
+            - functions-reference/complex_matrix_operations.qmd
+            - functions-reference/sparse_matrix_operations.qmd
+            - functions-reference/mixed_operations.qmd
+            - functions-reference/compound_arithmetic_and_assignment.qmd
+            - functions-reference/higher-order_functions.qmd
+            - functions-reference/deprecated_functions.qmd
+            - functions-reference/removed_functions.qmd
+            - functions-reference/conventions_for_probability_functions.qmd
+        - section: "Discrete Distributions"
+          contents:
+            - functions-reference/binary_distributions.qmd
+            - functions-reference/bounded_discrete_distributions.qmd
+            - functions-reference/unbounded_discrete_distributions.qmd
+            - functions-reference/multivariate_discrete_distributions.qmd
+        - section: "Continuous Distributions"
+          contents:
+            - functions-reference/unbounded_continuous_distributions.qmd
+            - functions-reference/positive_continuous_distributions.qmd
+            - functions-reference/positive_lower-bounded_distributions.qmd
+            - functions-reference/continuous_distributions_on_0_1.qmd
+            - functions-reference/circular_distributions.qmd
+            - functions-reference/bounded_continuous_distributions.qmd
+            - functions-reference/distributions_over_unbounded_vectors.qmd
+            - functions-reference/simplex_distributions.qmd
+            - functions-reference/correlation_matrix_distributions.qmd
+            - functions-reference/covariance_matrix_distributions.qmd
+        - section: "Additional Distributions"
+          contents:
+            - functions-reference/hidden_markov_models.qmd
+        - section: "Appendix"
+          contents:
+            - functions-reference/mathematical_functions.qmd
+            - functions-reference/functions_index.qmd
+
+    - id: cmdstan-guide
+      title: "CmdStan Guide"
+      contents:
+        - cmdstan-guide/index.qmd
+        - section: "Version {{< env STAN_DOCS_VERSION >}}"
+        - section: "Getting Started"
+          contents:
+            - cmdstan-guide/installation.qmd
+            - cmdstan-guide/example_model_data.qmd
+            - cmdstan-guide/compiling_stan_programs.qmd
+            - cmdstan-guide/parallelization.qmd
+        - section: "Running CmdStan"
+          contents:
+            - cmdstan-guide/command_line_options.qmd
+            - cmdstan-guide/mcmc_config.qmd
+            - cmdstan-guide/optimize_config.qmd
+            - cmdstan-guide/pathfinder_config.qmd
+            - cmdstan-guide/variational_config.qmd
+            - cmdstan-guide/generate_quantities_config.qmd
+            - cmdstan-guide/laplace_sample_config.qmd
+            - cmdstan-guide/log_prob_config.qmd
+            - cmdstan-guide/diagnose_config.qmd
+        - section: "Tools and Utilities"
+          contents:
+            - cmdstan-guide/stanc.qmd
+            - cmdstan-guide/stansummary.qmd
+            - cmdstan-guide/diagnose_utility.qmd
+            - cmdstan-guide/print.qmd
+        - section: "Appendices"
+          contents:
+            - cmdstan-guide/stan_csv_apdx.qmd
+            - cmdstan-guide/json_apdx.qmd
+            - cmdstan-guide/rdump_apdx.qmd
+            - cmdstan-guide/external_code.qmd
+
+format:
+  html:
+    theme:
+      light: [cosmo, theming/theme.scss]
+      dark: [cosmo, theming/theme-dark.scss]
+    syntax-definitions:
+      - theming/stan.xml
+    highlight-style:
+      light: theming/tango.theme
+      dark: theming/nord.theme
+    code-copy: true
+    code-overflow: wrap
+    css: theming/quarto_styles.css
+    toc: true
+    grid:
+      sidebar-width: 250px
+      body-width: 900px
+      margin-width: 300px

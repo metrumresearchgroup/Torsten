@@ -1,0 +1,257 @@
+---
+pagetitle: Decision Analysis
+---
+
+# Decision Analysis
+
+Statistical decision analysis is about making decisions under
+uncertainty.  In order to make decisions, outcomes must have some
+notion of "utility" associated with them.  The so-called "Bayes
+optimal" decision is the one that maximizes expected utility (or
+equivalently, minimizes expected loss).  This chapter shows how Stan
+can be used to simultaneously estimate the distribution of outcomes
+based on decisions and compute the required expected utilities.
+
+## Outline of decision analysis
+
+Following @GelmanEtAl:2013, Bayesian decision analysis can be
+factored into the following four steps.
+
+1. Define a set $X$ of possible outcomes and a set $D$ of possible
+decisions.
+
+2.  Define a probability distribution of outcomes conditional on
+decisions through a conditional density function $p(x \mid d)$
+for $x \in X$ and $d \in D.$
+
+3.  Define a utility function $U : X \rightarrow \mathbb{R}$ mapping
+outcomes to their utility.
+
+4.  Choose action $d^* \in D$ with highest expected utility,
+$$
+d^* = \textrm{arg max}_d \ \mathbb{E}[U(x) \mid d].
+$$
+
+The outcomes should represent as much information as possible that is
+relevant to utility.  In Bayesian decision analysis, the distribution
+of outcomes will typically be a posterior predictive distribution
+conditioned on observed data.  There is a large literature in
+psychology and economics related to defining utility functions.  For
+example, the utility of money is usually assumed to be strictly
+concave rather than linear (i.e., the marginal utility of getting
+another unit of money decreases the more money one has).
+
+## Example decision analysis
+
+This section outlines a very simple decision analysis for a commuter
+deciding among modes of transportation to get to work: walk, bike
+share, public transportation, or cab.  Suppose the commuter has been
+taking various modes of transportation for the previous year and the
+transportation conditions and costs have not changed during that
+time.  Over the year, such a commuter might accumulate two hundred
+observations of the time it takes to get to work given a choice of
+commute mode.
+
+### Step 1. Define decisions and outcomes {-}
+
+A decision consists of the choice of commute mode and the outcome is a
+time and cost.  More formally,
+
+* the set of decisions is $D = 1:4$, corresponding to the commute
+  types walking, bicycling, public transportation, and cab,
+  respectively, and
+
+* the set of outcomes $X = \mathbb{R} \times \mathbb{R}_+$ contains
+  pairs of numbers $x = (c, t)$ consisting of a cost $c$ and
+  time $t \geq 0$.
+
+### Step 2. Define density of outcome conditioned on decision {-}
+
+The density required is $p(x \mid d),$ where $d \in D$ is a decision and
+$x = (c, t) \in X$ is an outcome.  Being a statistical decision
+problem, this density will the a posterior predictive distribution
+conditioned on previously observed outcome and decision pairs, based
+on a parameter model with parameters $\theta,$
+$$
+p(x \mid d, x^{\textrm{obs}}, d^{\textrm{obs}})
+=
+\int
+  p(x \mid d, \theta)
+  \cdot p(\theta \mid x^{\textrm{obs}}, d^{\textrm{obs}})
+  \, \textrm{d}\theta.
+$$
+The observed data for a year of commutes consists of choice of the
+chosen commute mode $d^{\textrm{obs}}_n$ and observed costs and times
+$x^{\textrm{obs}}_n = (c^{\textrm{obs}}_n, t^{\textrm{obs}}_n)$ for $n
+\in 1:200.$
+
+For simplicity, commute time $t_n$ for trip $n$ will be modeled as
+lognormal for a given choice of transportation $d_n \in 1:4,$
+$$
+t_n \sim \textrm{lognormal}(\mu_{d[n]}, \sigma_{d[n]}).
+$$
+To understand the notation, $d_n$, also written $d[n]$, is the mode of
+transportation used for trip $n$.  For example if trip $n$ was by
+bicycle, then $t_n \sim \textrm{lognormal}(\mu_2, \sigma_2),$ where
+$\mu_2$ and $\sigma_2$ are the lognormal parameters for bicycling.
+
+Simple fixed priors are used for each mode of transportation $k \in 1:4,$
+\begin{eqnarray*}
+\mu_k & \sim & \textrm{normal}(0, 5)
+\\[2pt]
+\sigma_k & \sim & \textrm{lognormal}(0, 1).
+\end{eqnarray*}
+These priors are consistent with a broad range of commute times; in a
+more realistic model each commute mode would have its own prior based
+on knowledge of the city and the time of day would be used as a covariate;
+here the commutes are taken to be exchangeable.
+
+Cost is usually a constant function for public transportation,
+walking, and bicycling.  Nevertheless, for simplicity, all costs will
+be modeled as lognormal,
+$$
+c_n \sim \textrm{lognormal}(\nu_{d[n]}, \tau_{d[n]}).
+$$
+Again, the priors are fixed for the modes of transportation,
+\begin{eqnarray*}
+\nu_k & \sim & \textrm{normal}(0, 5)
+\\[2pt]
+\tau_k & \sim & \textrm{lognormal}(0, 1).
+\end{eqnarray*}
+A more realistic approach would model cost conditional on time,
+because the cost of a cab depends on route chosen and the time it
+takes.
+
+The full set of parameters that are marginalized in the posterior
+predictive distribution is
+$$
+\theta = (\mu_{1:4}, \sigma_{1:4}, \nu_{1:4}, \tau_{1:4}).
+$$
+
+
+### Step 3. Define the utility function {-}
+
+For the sake of concreteness, the utility function will be assumed to
+be a simple function of cost and time.  Further suppose the commuter
+values their commute time at $25 per hour and has a utility function that is
+linear in the commute cost and time.  Then the utility function may be
+defined as
+
+$$
+U(c, t) = -(c + 25 \cdot t)
+$$
+
+The sign is negative because high cost is undesirable.  A better
+utility function might have a step function or increasing costs for
+being late, different costs for different modes of transportation
+because of their comfort and environmental impact, and non-linearity
+of utility in cost.
+
+
+### Step 4. Maximize expected utility {-}
+
+At this point, all that is left is to calculate expected utility for
+each decision and choose the optimum.  If the decisions
+consist of a small set of discrete choices, expected utility can be
+easily coded in Stan.  The utility function is coded as a function,
+the observed data is coded as data, the model parameters coded as
+parameters, and the model block itself coded to follow the sampling
+distributions of each parameter.
+```stan
+functions {
+  real U(real c, real t) {
+    return -(c + 25 * t);
+  }
+}
+data {
+  int<lower=0> N;
+  array[N] int<lower=1, upper=4> d;
+  array[N] real c;
+  array[N] real<lower=0> t;
+}
+parameters {
+  vector[4] mu;
+  vector<lower=0>[4] sigma;
+  array[4] real nu;
+  array[4] real<lower=0> tau;
+}
+model {
+  mu ~ normal(0, 1);
+  sigma ~ lognormal(0, 0.25);
+  nu ~ normal(0, 20);
+  tau ~ lognormal(0, 0.25);
+  t ~ lognormal(mu[d], sigma[d]);
+  c ~ lognormal(nu[d], tau[d]);
+}
+generated quantities {
+  array[4] real util;
+  for (k in 1:4) {
+    util[k] = U(lognormal_rng(nu[k], tau[k]),
+                lognormal_rng(mu[k], sigma[k]));
+  }
+}
+```
+
+The generated quantities block defines an array variable `util` where
+`util[k]`, which will hold the utility derived from a random commute
+for choice `k` generated according to the model parameters for that
+choice.  This randomness is required to appropriately characterize the
+posterior predictive distribution of utility.
+
+For simplicity in this initial formulation, all four commute options
+have their costs estimated, even though cost is fixed for three of the
+options.  To deal with the fact that some costs are fixed, the costs
+would have to be hardcoded or read in as data, `nu` and
+`tau` would be declared as univariate, and the RNG for cost would only
+be employed when `k == 4`.
+
+Defining the utility function for pairs of vectors would allow the
+random number generation in the generated quantities block to be
+vectorized.
+
+All that is left is to run Stan. The posterior mean for `util[k]`
+is the expected utility, which written out with full conditioning, is
+\begin{eqnarray*}
+\mathbb{E}\!\left[U(x) \mid d = k, d^{\textrm{obs}}, x^{\textrm{obs}}\right]
+& = &
+\int
+  U(x)
+  \cdot p(x \mid d = k, \theta)
+  \cdot p(\theta \mid d^{\textrm{obs}}, x^{\textrm{obs}})
+  \, \textrm{d}\theta
+\\[4pt]
+& \approx &
+\frac{1}{M} \sum_{m = 1}^M  U(x^{(m)} ),
+\end{eqnarray*}
+where
+$$
+x^{(m)} \sim p(x \mid d = k, \theta^{(m)} )
+$$
+and
+$$
+\theta^{(m)}
+\sim p(\theta \mid d^{\textrm{obs}}, x^{\textrm{obs}}).
+$$
+
+In terms of Stan's execution, the random generation of $x^{(m)}$ is
+carried out with the `lognormal_rng` operations after $\theta^{(m)}$
+is drawn from the model posterior.  The average is then calculated
+after multiple chains are run and combined.
+
+It only remains to make the decision `k` with highest expected
+utility, which will correspond to the choice with the highest
+posterior mean for `util[k]`.  This can be read off of the `mean`
+column of the Stan's summary statistics or accessed programmatically
+through Stan's interfaces.
+
+## Continuous choices
+
+Many choices, such as how much to invest for retirement or how long to
+spend at the gym are not discrete, but continuous.  In these cases,
+the continuous choice can be coded as data in the Stan program.  Then
+the expected utilities may be calculated.  In other words, Stan can be
+used as a function from a choice to expected utilities.  Then an
+external optimizer can call that function.  This optimization can be
+difficult without gradient information.  Gradients could be supplied
+by automatic differentiation, but Stan is not currently instrumented
+to calculate those derivatives.

@@ -1,0 +1,57 @@
+/*-- scss:defaults --*/
+
+
+@import "theme-colors";
+
+
+// Base document colors
+$body-bg: #181818;
+$body-color: $off-white;
+$link-color: $pale-aquatic-blue;
+
+$light: #525252;
+
+// Navigation element colors
+$footer-bg: #181818;
+$navbar-bg: #303030;
+
+
+// Code blocks
+$code-block-bg-alpha: -.8;
+
+// Bootstrap popovers
+$popover-bg: #242424;
+
+// Bootstrap inputs
+$input-bg: #242424;
+$dropdown-bg: $body-bg;
+$dropdown-color: $body-color;
+$dropdown-link-color: $body-color;
+$dropdown-link-hover-bg: $gray-600;
+$dropdown-link-hover-color: $off-white;
+
+$quarto-body-bg: $body-bg;
+$quarto-body-color: $body-color;
+$bs-body-bg: $body-bg;
+$bs-body-color: $body-color;
+
+
+$bs-dark-warm: $palest-beige;
+
+
+$sidebar-bg: #353535;
+$sidebar-fg: $off-white;
+
+// re-export the colors as CSS variables
+:root {
+    --stan-bg: #242424;
+    --stan-highlight: #{$warm-gray};
+    --stan-secondary: #{$pale-aquatic-blue};
+}
+
+
+/*-- scss:rules --*/
+
+.layout-example {
+    background: $gray-700;
+  }

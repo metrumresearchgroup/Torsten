@@ -1,0 +1,1886 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.53">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Latent Discrete Parameters</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../stan-users-guide/sparse-ragged.html" rel="next">
+<link href="../stan-users-guide/measurement-error.html" rel="prev">
+<link href="../img/logo_tm.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 200,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../theming/quarto_styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../img/logo_tm.png" alt="Stan logo" class="navbar-logo">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Overview</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../stan-users-guide/index.html" aria-current="page"> 
+<span class="menu-text">Stan Users Guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../reference-manual/index.html"> 
+<span class="menu-text">Reference Manual</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../functions-reference/index.html"> 
+<span class="menu-text">Functions Reference</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-interfaces" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Interfaces</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-interfaces">    
+        <li>
+    <a class="dropdown-item" href="../cmdstan-guide/index.html">
+ <span class="dropdown-text">CmdStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/cmdstanpy">
+ <span class="dropdown-text">CmdStanPy</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/cmdstanr">
+ <span class="dropdown-text">CmdStanR</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/users/interfaces/pystan.html">
+ <span class="dropdown-text">PyStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/rstan">
+ <span class="dropdown-text">RStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="http://stanjulia.github.io/Stan.jl/stable/INTRO/">
+ <span class="dropdown-text">Stan.jl</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other-packages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other Packages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other-packages">    
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/bayesplot/">
+ <span class="dropdown-text">bayesplot</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://roualdes.github.io/bridgestan/latest/">
+ <span class="dropdown-text">BridgeStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://paul-buerkner.github.io/brms/">
+ <span class="dropdown-text">brms</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/loo/">
+ <span class="dropdown-text">loo</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/posterior">
+ <span class="dropdown-text">posterior</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/projpred">
+ <span class="dropdown-text">projpred</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/rstanarm">
+ <span class="dropdown-text">rstanarm</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/rstantools">
+ <span class="dropdown-text">rstantools</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/shinystan">
+ <span class="dropdown-text">shinystan</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools tools-wide">
+    <a href="https://github.com/stan-dev" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+    <a href="https://discourse.mc-stan.org" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-chat-text-fill"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../stan-users-guide/regression.html">Example Models</a></li><li class="breadcrumb-item"><a href="../stan-users-guide/latent-discrete.html">Latent Discrete Parameters</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stan User’s Guide</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Version 2.35</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Example Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regression Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/time-series.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Time-Series Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/missing-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Missing Data and Partially Known Parameters</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/truncation-censoring.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Truncated or Censored Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/finite-mixtures.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Finite Mixtures</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/measurement-error.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Measurement Error and Meta-Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/latent-discrete.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Latent Discrete Parameters</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/sparse-ragged.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sparse and Ragged Data Structures</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/clustering.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Clustering Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/gaussian-processes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gaussian Processes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/hyperspherical-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Directions, Rotations, and Hyperspheres</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/algebraic-equations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Solving Algebraic Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/odes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Differential Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/one-dimensional-integrals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computing One Dimensional Integrals</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/complex-numbers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Complex Numbers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/dae.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Differential-Algebraic Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival Models</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Programming Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/floating-point.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Floating Point Arithmetic</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/matrices-arrays.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Matrices, Vectors, Arrays, and Tuples</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/multi-indexing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Multiple Indexing and Range Indexing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/user-functions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">User-Defined Functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/custom-probability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Custom Probability Functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/proportionality-constants.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Proportionality Constants</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/problematic-posteriors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Problematic Posteriors</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/reparameterization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reparameterization and Change of Variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/efficiency-tuning.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Efficiency Tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/parallelization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parallelization</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Posterior Inference &amp; Model Checking</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/posterior-prediction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Posterior Predictive Sampling</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/simulation-based-calibration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulation-Based Calibration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/posterior-predictive-checks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Posterior and Prior Predictive Checks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/cross-validation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Held-Out Evaluation and Cross-Validation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/poststratification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Poststratification</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/decision-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/bootstrap.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Bootstrap and Bagging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/using-stanc.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Using the Stan Compiler</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/style-guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stan Program Style Guide</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/for-bugs-users.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Transitioning from BUGS</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#latent-discrete.chapter" id="toc-latent-discrete.chapter" class="nav-link active" data-scroll-target="#latent-discrete.chapter">Latent Discrete Parameters</a>
+  <ul class="collapse">
+  <li><a href="#rao-blackwell.section" id="toc-rao-blackwell.section" class="nav-link" data-scroll-target="#rao-blackwell.section">The benefits of marginalization</a></li>
+  <li><a href="#change-point.section" id="toc-change-point.section" class="nav-link" data-scroll-target="#change-point.section">Change point models</a>
+  <ul class="collapse">
+  <li><a href="#model-with-latent-discrete-parameter" id="toc-model-with-latent-discrete-parameter" class="nav-link" data-scroll-target="#model-with-latent-discrete-parameter">Model with latent discrete parameter</a></li>
+  <li><a href="#marginalizing-out-the-discrete-parameter" id="toc-marginalizing-out-the-discrete-parameter" class="nav-link" data-scroll-target="#marginalizing-out-the-discrete-parameter">Marginalizing out the discrete parameter</a></li>
+  <li><a href="#coding-the-model-in-stan" id="toc-coding-the-model-in-stan" class="nav-link" data-scroll-target="#coding-the-model-in-stan">Coding the model in Stan</a></li>
+  <li><a href="#fitting-the-model-with-mcmc" id="toc-fitting-the-model-with-mcmc" class="nav-link" data-scroll-target="#fitting-the-model-with-mcmc">Fitting the model with MCMC</a></li>
+  <li><a href="#posterior-distribution-of-the-discrete-change-point" id="toc-posterior-distribution-of-the-discrete-change-point" class="nav-link" data-scroll-target="#posterior-distribution-of-the-discrete-change-point">Posterior distribution of the discrete change point</a></li>
+  <li><a href="#discrete-sampling" id="toc-discrete-sampling" class="nav-link" data-scroll-target="#discrete-sampling">Discrete sampling</a></li>
+  <li><a href="#posterior-covariance" id="toc-posterior-covariance" class="nav-link" data-scroll-target="#posterior-covariance">Posterior covariance</a></li>
+  <li><a href="#multiple-change-points" id="toc-multiple-change-points" class="nav-link" data-scroll-target="#multiple-change-points">Multiple change points</a></li>
+  </ul></li>
+  <li><a href="#mark-recapture-models" id="toc-mark-recapture-models" class="nav-link" data-scroll-target="#mark-recapture-models">Mark-recapture models</a>
+  <ul class="collapse">
+  <li><a href="#simple-mark-recapture-model" id="toc-simple-mark-recapture-model" class="nav-link" data-scroll-target="#simple-mark-recapture-model">Simple mark-recapture model</a></li>
+  <li><a href="#cormack-jolly-seber-with-discrete-parameter" id="toc-cormack-jolly-seber-with-discrete-parameter" class="nav-link" data-scroll-target="#cormack-jolly-seber-with-discrete-parameter">Cormack-Jolly-Seber with discrete parameter</a></li>
+  <li><a href="#collective-cormack-jolly-seber-model" id="toc-collective-cormack-jolly-seber-model" class="nav-link" data-scroll-target="#collective-cormack-jolly-seber-model">Collective Cormack-Jolly-Seber model</a></li>
+  <li><a href="#individual-cormack-jolly-seber-model" id="toc-individual-cormack-jolly-seber-model" class="nav-link" data-scroll-target="#individual-cormack-jolly-seber-model">Individual Cormack-Jolly-Seber model</a></li>
+  </ul></li>
+  <li><a href="#data-coding-models.section" id="toc-data-coding-models.section" class="nav-link" data-scroll-target="#data-coding-models.section">Data coding and diagnostic accuracy models</a>
+  <ul class="collapse">
+  <li><a href="#diagnostic-accuracy" id="toc-diagnostic-accuracy" class="nav-link" data-scroll-target="#diagnostic-accuracy">Diagnostic accuracy</a></li>
+  <li><a href="#data-coding" id="toc-data-coding" class="nav-link" data-scroll-target="#data-coding">Data coding</a></li>
+  <li><a href="#noisy-categorical-measurement-model" id="toc-noisy-categorical-measurement-model" class="nav-link" data-scroll-target="#noisy-categorical-measurement-model">Noisy categorical measurement model</a></li>
+  <li><a href="#model-parameters" id="toc-model-parameters" class="nav-link" data-scroll-target="#model-parameters">Model parameters</a></li>
+  <li><a href="#noisy-measurement-model" id="toc-noisy-measurement-model" class="nav-link" data-scroll-target="#noisy-measurement-model">Noisy measurement model</a></li>
+  <li><a href="#stan-implementation" id="toc-stan-implementation" class="nav-link" data-scroll-target="#stan-implementation">Stan implementation</a></li>
+  </ul></li>
+  <li><a href="#marginalization-mathematics.section" id="toc-marginalization-mathematics.section" class="nav-link" data-scroll-target="#marginalization-mathematics.section">The mathematics of recovering marginalized parameters</a>
+  <ul class="collapse">
+  <li><a href="#introduction" id="toc-introduction" class="nav-link" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#estimating-expectations" id="toc-estimating-expectations" class="nav-link" data-scroll-target="#estimating-expectations">Estimating expectations</a></li>
+  <li><a href="#evaluating-the-conditional-expectation" id="toc-evaluating-the-conditional-expectation" class="nav-link" data-scroll-target="#evaluating-the-conditional-expectation">Evaluating the conditional expectation</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/stan-dev/docs/edit/master/src/stan-users-guide/latent-discrete.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/stan-dev/docs/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+
+
+<section id="latent-discrete.chapter" class="level1">
+<h1>Latent Discrete Parameters</h1>
+<p>Stan does not support sampling discrete parameters. So it is not possible to directly translate BUGS or JAGS models with discrete parameters (i.e., discrete stochastic nodes). Nevertheless, it is possible to code many models that involve bounded discrete parameters by marginalizing out the discrete parameters.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>This chapter shows how to code several widely-used models involving latent discrete parameters. The next chapter, the <a href="../stan-users-guide/clustering.html">clustering chapter</a>, on clustering models, considers further models involving latent discrete parameters.</p>
+<section id="rao-blackwell.section" class="level2">
+<h2 class="anchored" data-anchor-id="rao-blackwell.section">The benefits of marginalization</h2>
+<p>Although it requires some algebra on the joint probability function, a pleasant byproduct of the required calculations is the posterior expectation of the marginalized variable, which is often the quantity of interest for a model. This allows far greater exploration of the tails of the distribution as well as more efficient sampling on an iteration-by-iteration basis because the expectation at all possible values is being used rather than itself being estimated through sampling a discrete parameter.</p>
+<p>Standard optimization algorithms, including expectation maximization (EM), are often provided in applied statistics papers to describe maximum likelihood estimation algorithms. Such derivations provide exactly the marginalization needed for coding the model in Stan.</p>
+</section>
+<section id="change-point.section" class="level2">
+<h2 class="anchored" data-anchor-id="change-point.section">Change point models</h2>
+<p>The first example is a model of coal mining disasters in the U.K. for the years 1851–1962.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<section id="model-with-latent-discrete-parameter" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="model-with-latent-discrete-parameter">Model with latent discrete parameter</h3>
+<p><span class="citation" data-cites="PyMC:2014">Fonnesbeck et al. (<a href="#ref-PyMC:2014" role="doc-biblioref">2013, sec. 3.1</a>)</span> provides a Poisson model of disaster <span class="math inline">\(D_t\)</span> in year <span class="math inline">\(t\)</span> with two rate parameters, an early rate (<span class="math inline">\(e\)</span>) and late rate (<span class="math inline">\(l\)</span>), that change at a given point in time <span class="math inline">\(s\)</span>. The full model expressed using a latent discrete parameter <span class="math inline">\(s\)</span> is <span class="math display">\[\begin{align*}
+e   &amp;\sim  \textsf{exponential}(r_e) \\
+l   &amp;\sim  \textsf{exponential}(r_l) \\
+s   &amp;\sim  \textsf{uniform}(1, T) \\
+D_t &amp;\sim  \textsf{Poisson}(t &lt; s \; ? \; e \: : \: l)
+\end{align*}\]</span></p>
+<p>The last line uses the conditional operator (also known as the ternary operator), which is borrowed from C and related languages. The conditional operator has the same behavior as its counterpart in C++.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<p>It uses a compact notation involving separating its three arguments by a question mark (<code>?</code>) and a colon (<code>:</code>). The conditional operator is defined by <span class="math display">\[
+c \; ? \; x_1 \: : \: x_2
+=
+\begin{cases}
+\ x_1 &amp; \quad\text{if } c \text{ is true (i.e., non-zero), and} \\
+\ x_2 &amp; \quad\text{if } c \text{ is false (i.e., zero).}
+\end{cases}
+\]</span></p>
+</section>
+<section id="marginalizing-out-the-discrete-parameter" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="marginalizing-out-the-discrete-parameter">Marginalizing out the discrete parameter</h3>
+<p>To code this model in Stan, the discrete parameter <span class="math inline">\(s\)</span> must be marginalized out to produce a model defining the log of the probability function <span class="math inline">\(p(e,l,D_t)\)</span>. The full joint probability factors as <span class="math display">\[\begin{align*}
+p(e,l,s,D) &amp;=  p(e) \, p(l) \, p(s) \, p(D \mid s, e, l) \\
+&amp;= \textsf{exponential}(e \mid r_e) \ \textsf{exponential}(l \mid r_l) \,
+    \textsf{uniform}(s \mid 1, T) \\
+&amp; \qquad \prod_{t=1}^T \textsf{Poisson}(D_t \mid t &lt; s \; ? \; e \: : \: l).
+\end{align*}\]</span></p>
+<p>To marginalize, an alternative factorization into prior and likelihood is used, <span class="math display">\[
+p(e,l,D) = p(e,l) \, p(D \mid e,l),
+\]</span></p>
+<p>where the likelihood is defined by marginalizing <span class="math inline">\(s\)</span> as <span class="math display">\[\begin{align*}
+p(D \mid e,l) &amp;= \sum_{s=1}^T p(s, D \mid e,l) \\
+&amp;= \sum_{s=1}^T p(s) \, p(D \mid s,e,l) \\
+&amp;= \sum_{s=1}^T \textsf{uniform}(s \mid 1,T) \,
+    \prod_{t=1}^T \textsf{Poisson}(D_t \mid t &lt; s \; ? \; e \: : \: l).
+\end{align*}\]</span></p>
+<p>Stan operates on the log scale and thus requires the log likelihood, <span class="math display">\[\begin{align*}
+\log p(D \mid e,l)
+&amp;= \texttt{log}\mathtt{\_}\texttt{sum}\mathtt{\_}\texttt{exp}_{s=1}^T
+    \left( \log \textsf{uniform}(s \mid 1, T) \vphantom{\sum_{t=1}^T}\right. \\
+&amp;\qquad \left.
+    + \sum_{t=1}^T \log \textsf{Poisson}(D_t \mid t &lt; s \; ? \; e \: : \: l)
+\right),
+\end{align*}\]</span> where the log sum of exponents function is defined by <span class="math display">\[
+\texttt{log}\mathtt{\_}\texttt{sum}\mathtt{\_}\texttt{exp}_{n=1}^N \, \alpha_n =
+\log \sum_{n=1}^N \exp(\alpha_n).
+\]</span></p>
+<p>The log sum of exponents function allows the model to be coded directly in Stan using the built-in function <code>log_sum_exp</code>, which provides both arithmetic stability and efficiency for mixture model calculations.</p>
+</section>
+<section id="coding-the-model-in-stan" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="coding-the-model-in-stan">Coding the model in Stan</h3>
+<p>The Stan program for the change point model is shown in the figure below. The transformed parameter <code>lp[s]</code> stores the quantity <span class="math inline">\(\log p(s, D \mid e, l)\)</span>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; r_e;</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; r_l;</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>&gt; T;</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[T] <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; D;</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed data</span> {</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> log_unif;</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  log_unif = -log(T);</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; e;</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; l;</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed parameters</span> {</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>[T] lp;</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  lp = rep_vector(log_unif, T);</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (s <span class="cf">in</span> <span class="dv">1</span>:T) {</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">1</span>:T) {</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>      lp[s] = lp[s] + poisson_lpmf(D[t] | t &lt; s ? e : l);</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  e ~ exponential(r_e);</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>  l ~ exponential(r_l);</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> log_sum_exp(lp);</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>A change point model in which disaster rates <code>D[t]</code> have one rate, <code>e</code>, before the change point and a different rate, <code>l</code>, after the change point. The change point itself, <code>s</code>, is marginalized out as described in the text.</p>
+<p>Although the change-point model is coded directly, the doubly nested loop used for <code>s</code> and <code>t</code> is quadratic in <code>T</code>. Luke Wiklendt pointed out that a linear alternative can be achieved by the use of dynamic programming similar to the forward-backward algorithm for Hidden Markov models; he submitted a slight variant of the following code to replace the transformed parameters block of the above Stan program.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed parameters</span> {</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">vector</span>[T] lp;</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>      <span class="dt">vector</span>[T + <span class="dv">1</span>] lp_e;</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>      <span class="dt">vector</span>[T + <span class="dv">1</span>] lp_l;</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>      lp_e[<span class="dv">1</span>] = <span class="dv">0</span>;</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>      lp_l[<span class="dv">1</span>] = <span class="dv">0</span>;</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">1</span>:T) {</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>        lp_e[t + <span class="dv">1</span>] = lp_e[t] + poisson_lpmf(D[t] | e);</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>        lp_l[t + <span class="dv">1</span>] = lp_l[t] + poisson_lpmf(D[t] | l);</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>      lp = rep_vector(log_unif + lp_l[T + <span class="dv">1</span>], T)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>           + head(lp_e, T) - head(lp_l, T);</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>As should be obvious from looking at it, it has linear complexity in <code>T</code> rather than quadratic. The result for the mining-disaster data is about 20 times faster; the improvement will be greater for larger <code>T</code>.</p>
+<p>The key to understanding Wiklendt’s dynamic programming version is to see that <code>head(lp_e)</code> holds the forward values, whereas <code>lp_l[T + 1] - head(lp_l, T)</code> holds the backward values; the clever use of subtraction allows <code>lp_l</code> to be accumulated naturally in the forward direction.</p>
+</section>
+<section id="fitting-the-model-with-mcmc" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="fitting-the-model-with-mcmc">Fitting the model with MCMC</h3>
+<p>This model is easy to fit using MCMC with NUTS in its default configuration. Convergence is fast and sampling produces roughly one effective sample every two iterations. Because it is a relatively small model (the inner double loop over time is roughly 20,000 steps), it is fast.</p>
+<p>The value of <code>lp</code> for each iteration for each change point is available because it is declared as a transformed parameter. If the value of <code>lp</code> were not of interest, it could be coded as a local variable in the model block and thus avoid the I/O overhead of saving values every iteration.</p>
+</section>
+<section id="posterior-distribution-of-the-discrete-change-point" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="posterior-distribution-of-the-discrete-change-point">Posterior distribution of the discrete change point</h3>
+<p>The value of <code>lp[s]</code> in a given iteration is given by <span class="math inline">\(\log
+p(s,D \mid e,l)\)</span> for the values of the early and late rates, <span class="math inline">\(e\)</span> and <span class="math inline">\(l\)</span>, in the iteration. In each iteration after convergence, the early and late disaster rates, <span class="math inline">\(e\)</span> and <span class="math inline">\(l\)</span>, are drawn from the posterior <span class="math inline">\(p(e,l \mid D)\)</span> by MCMC sampling and the associated <code>lp</code> calculated. The value of <code>lp</code> may be normalized to calculate <span class="math inline">\(p(s \mid e,l,D)\)</span> in each iteration, based on on the current values of <span class="math inline">\(e\)</span> and <span class="math inline">\(l\)</span>. Averaging over iterations provides an unnormalized probability estimate of the change point being <span class="math inline">\(s\)</span> (see below for the normalizing constant), <span class="math display">\[\begin{align*}
+p(s \mid D) &amp;\propto q(s \mid D) \\
+&amp;= \frac{1}{M} \sum_{m=1}^{M} \exp(\texttt{lp}[m,s]).
+\end{align*}\]</span> where <span class="math inline">\(\texttt{lp}[m,s]\)</span> represents the value of <code>lp</code> in posterior draw <span class="math inline">\(m\)</span> for change point <span class="math inline">\(s\)</span>. By averaging over draws, <span class="math inline">\(e\)</span> and <span class="math inline">\(l\)</span> are themselves marginalized out, and the result has no dependence on a given iteration’s value for <span class="math inline">\(e\)</span> and <span class="math inline">\(l\)</span>. A final normalization then produces the quantity of interest, the posterior probability of the change point being <span class="math inline">\(s\)</span> conditioned on the data <span class="math inline">\(D\)</span>, <span class="math display">\[
+p(s \mid D) = \frac{q(s \mid D)}{\sum_{s'=1}^T q(s' \mid D)}.
+\]</span></p>
+<p>A plot of the values of <span class="math inline">\(\log p(s \mid D)\)</span> computed using Stan 2.4’s default MCMC implementation is shown in the posterior plot.</p>
+<p>Log probability of change point being in year, calculated analytically.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./img/change-point-posterior.png" class="img-fluid figure-img" style="width:50.0%"></p>
+<figcaption>Analytical change-point posterior</figcaption>
+</figure>
+</div>
+<p>The frequency of change points generated by sampling the discrete change points.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="./img/s-discrete-posterior.png" class="img-fluid figure-img" style="width:50.0%"></p>
+<figcaption>Sampled change-point posterior</figcaption>
+</figure>
+</div>
+<p>In order their range of estimates be visible, the first plot is on the log scale and the second plot on the linear scale; note the narrower range of years in the second plot resulting from sampling. The posterior mean of <span class="math inline">\(s\)</span> is roughly 1891.</p>
+</section>
+<section id="discrete-sampling" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="discrete-sampling">Discrete sampling</h3>
+<p>The generated quantities block may be used to draw discrete parameter values using the built-in pseudo-random number generators. For example, with <code>lp</code> defined as above, the following program draws a random value for <code>s</code> at every iteration.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">generated quantities</span> {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>, <span class="kw">upper</span>=T&gt; s;</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  s = categorical_logit_rng(lp);</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>A posterior histogram of draws for <span class="math inline">\(s\)</span> is shown on the second change point posterior figure above.</p>
+<p>Compared to working in terms of expectations, discrete sampling is highly inefficient, especially for tails of distributions, so this approach should only be used if draws from a distribution are explicitly required. Otherwise, expectations should be computed in the generated quantities block based on the posterior distribution for <code>s</code> given by <code>softmax(lp)</code>.</p>
+</section>
+<section id="posterior-covariance" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="posterior-covariance">Posterior covariance</h3>
+<p>The discrete sample generated for <span class="math inline">\(s\)</span> can be used to calculate covariance with other parameters. Although the sampling approach is straightforward, it is more statistically efficient (in the sense of requiring far fewer iterations for the same degree of accuracy) to calculate these covariances in expectation using <code>lp</code>.</p>
+</section>
+<section id="multiple-change-points" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="multiple-change-points">Multiple change points</h3>
+<p>There is no obstacle in principle to allowing multiple change points. The only issue is that computation increases from linear to quadratic in marginalizing out two change points, cubic for three change points, and so on. There are three parameters, <code>e</code>, <code>m</code>, and <code>l</code>, and two loops for the change point and then one over time, with log densities being stored in a matrix.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">matrix</span>[T, T] lp;</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>lp = rep_matrix(log_unif, T);</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s1 <span class="cf">in</span> <span class="dv">1</span>:T) {</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (s2 <span class="cf">in</span> <span class="dv">1</span>:T) {</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">1</span>:T) {</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>      lp[s1,s2] = lp[s1,s2]</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        + poisson_lpmf(D[t] | t &lt; s1 ? e : (t &lt; s2 ? m : l));</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The matrix can then be converted back to a vector using <code>to_vector</code> before being passed to <code>log_sum_exp</code>.</p>
+</section>
+</section>
+<section id="mark-recapture-models" class="level2">
+<h2 class="anchored" data-anchor-id="mark-recapture-models">Mark-recapture models</h2>
+<p>A widely applied field method in ecology is to capture (or sight) animals, mark them (e.g., by tagging), then release them. This process is then repeated one or more times, and is often done for populations on an ongoing basis. The resulting data may be used to estimate population size.</p>
+<p>The first subsection describes a simple mark-recapture model that does not involve any latent discrete parameters. The following subsections describes the Cormack-Jolly-Seber model, which involves latent discrete parameters for animal death.</p>
+<section id="simple-mark-recapture-model" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="simple-mark-recapture-model">Simple mark-recapture model</h3>
+<p>In the simplest case, a one-stage mark-recapture study produces the following data</p>
+<ul>
+<li><span class="math inline">\(M\)</span> : number of animals marked in first capture,</li>
+<li><span class="math inline">\(C\)</span> : number animals in second capture, and</li>
+<li><span class="math inline">\(R\)</span> : number of marked animals in second capture.</li>
+</ul>
+<p>The estimand of interest is</p>
+<ul>
+<li><span class="math inline">\(N\)</span> : number of animals in the population.</li>
+</ul>
+<p>Despite the notation, the model will take <span class="math inline">\(N\)</span> to be a continuous parameter; just because the population must be finite doesn’t mean the parameter representing it must be. The parameter will be used to produce a real-valued estimate of the population size.</p>
+<p>The Lincoln-Petersen <span class="citation" data-cites="Lincoln:1930 Petersen:1896">(<a href="#ref-Lincoln:1930" role="doc-biblioref">Lincoln 1930</a>; <a href="#ref-Petersen:1896" role="doc-biblioref">Petersen 1896</a>)</span> method for estimating population size is <span class="math display">\[
+\hat{N} = \frac{M C}{R}.
+\]</span></p>
+<p>This population estimate would arise from a probabilistic model in which the number of recaptured animals is distributed binomially, <span class="math display">\[
+R \sim \textsf{binomial}(C, M / N)
+\]</span> given the total number of animals captured in the second round (<span class="math inline">\(C\)</span>) with a recapture probability of <span class="math inline">\(M/N\)</span>, the fraction of the total population <span class="math inline">\(N\)</span> marked in the first round.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; M;</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; C;</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=min(M, C)&gt; R;</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=(C - R + M)&gt; N;</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  R ~ binomial(C, M / N);</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>A probabilistic formulation of the Lincoln-Petersen estimator for population size based on data from a one-step mark-recapture study. The lower bound on <span class="math inline">\(N\)</span> is necessary to efficiently eliminate impossible values.</p>
+<p>The probabilistic variant of the Lincoln-Petersen estimator can be directly coded in Stan as shown in the Lincon-Petersen model figure. The Lincoln-Petersen estimate is the maximum likelihood estimate (MLE) for this model.</p>
+<p>To ensure the MLE is the Lincoln-Petersen estimate, an improper uniform prior for <span class="math inline">\(N\)</span> is used; this could (and should) be replaced with a more informative prior if possible, based on knowledge of the population under study.</p>
+<p>The one tricky part of the model is the lower bound <span class="math inline">\(C - R + M\)</span> placed on the population size <span class="math inline">\(N\)</span>. Values below this bound are impossible because it is otherwise not possible to draw <span class="math inline">\(R\)</span> samples out of the <span class="math inline">\(C\)</span> animals recaptured. Implementing this lower bound is necessary to ensure sampling and optimization can be carried out in an unconstrained manner with unbounded support for parameters on the transformed (unconstrained) space. The lower bound in the declaration for <span class="math inline">\(C\)</span> implies a variable transform <span class="math inline">\(f : (C-R+M,\infty) \rightarrow (-\infty,+\infty)\)</span> defined by <span class="math inline">\(f(N) = \log(N - (C - R + M))\)</span>; the reference manual contains full details of all constrained parameter transforms.</p>
+</section>
+<section id="cormack-jolly-seber-with-discrete-parameter" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="cormack-jolly-seber-with-discrete-parameter">Cormack-Jolly-Seber with discrete parameter</h3>
+<p>The Cormack-Jolly-Seber (CJS) model <span class="citation" data-cites="Cormack:1964 Jolly:1965 Seber:1965">(<a href="#ref-Cormack:1964" role="doc-biblioref">Cormack 1964</a>; <a href="#ref-Jolly:1965" role="doc-biblioref">Jolly 1965</a>; <a href="#ref-Seber:1965" role="doc-biblioref">Seber 1965</a>)</span> is an open-population model in which the population may change over time due to death; the presentation here draws heavily on <span class="citation" data-cites="Schofield:2007">Schofield (<a href="#ref-Schofield:2007" role="doc-biblioref">2007</a>)</span>.</p>
+<p>The basic data are</p>
+<ul>
+<li><span class="math inline">\(I\)</span>: number of individuals,</li>
+<li><span class="math inline">\(T\)</span>: number of capture periods, and</li>
+<li><span class="math inline">\(y_{i,t}\)</span>: Boolean indicating if individual <span class="math inline">\(i\)</span> was captured at time <span class="math inline">\(t\)</span>.</li>
+</ul>
+<p>Each individual is assumed to have been captured at least once because an individual only contributes information conditionally after they have been captured the first time.</p>
+<p>There are two Bernoulli parameters in the model,</p>
+<ul>
+<li><span class="math inline">\(\phi_t\)</span> : probability that animal alive at time <span class="math inline">\(t\)</span> survives until <span class="math inline">\(t + 1\)</span> and</li>
+<li><span class="math inline">\(p_t\)</span> : probability that animal alive at time <span class="math inline">\(t\)</span> is captured at time <span class="math inline">\(t\)</span>.</li>
+</ul>
+<p>These parameters will both be given uniform priors, but information should be used to tighten these priors in practice.</p>
+<p>The CJS model also employs a latent discrete parameter <span class="math inline">\(z_{i,t}\)</span> indicating for each individual <span class="math inline">\(i\)</span> whether it is alive at time <span class="math inline">\(t\)</span>, distributed as <span class="math display">\[
+z_{i,t} \sim \mathsf{Bernoulli}(z_{i,t-1} \; ? \; 0 \: : \: \phi_{t-1}).
+\]</span></p>
+<p>The conditional prevents the model positing zombies; once an animal is dead, it stays dead. The data distribution is then simple to express conditional on <span class="math inline">\(z\)</span> as <span class="math display">\[
+y_{i,t} \sim \mathsf{Bernoulli}(z_{i,t} \; ? \; 0 \: : \: p_t).
+\]</span></p>
+<p>The conditional enforces the constraint that dead animals cannot be captured.</p>
+</section>
+<section id="collective-cormack-jolly-seber-model" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="collective-cormack-jolly-seber-model">Collective Cormack-Jolly-Seber model</h3>
+<p>This subsection presents an implementation of the model in terms of counts for different history profiles for individuals over three capture times. It assumes exchangeability of the animals in that each is assigned the same capture and survival probabilities.</p>
+<p>In order to ease the marginalization of the latent discrete parameter <span class="math inline">\(z_{i,t}\)</span>, the Stan models rely on a derived quantity <span class="math inline">\(\chi_t\)</span> for the probability that an individual is never captured again if it is alive at time <span class="math inline">\(t\)</span> (if it is dead, the recapture probability is zero). this quantity is defined recursively by <span class="math display">\[
+\chi_t
+=
+\begin{cases}
+1 &amp; \quad\text{if } t = T \\
+(1 - \phi_t) + \phi_t (1 - p_{t+1}) \chi_{t+1}
+  &amp; \quad\text{if } t &lt; T
+\end{cases}
+\]</span></p>
+<p>The base case arises because if an animal was captured in the last time period, the probability it is never captured again is 1 because there are no more capture periods. The recursive case defining <span class="math inline">\(\chi_{t}\)</span> in terms of <span class="math inline">\(\chi_{t+1}\)</span> involves two possibilities: (1) not surviving to the next time period, with probability <span class="math inline">\((1 - \phi_t)\)</span>, or (2) surviving to the next time period with probability <span class="math inline">\(\phi_t\)</span>, not being captured in the next time period with probability <span class="math inline">\((1 - p_{t+1})\)</span>, and not being captured again after being alive in period <span class="math inline">\(t+1\)</span> with probability <span class="math inline">\(\chi_{t+1}\)</span>.</p>
+<p>With three capture times, there are eight captured/not-captured profiles an individual may have. These may be naturally coded as binary numbers as follows.</p>
+<p><span class="math display">\[
+\begin{array}{crclc}
+\hline
+&amp; \qquad\qquad &amp; captures &amp; \qquad\qquad &amp;  \\
+\mathrm{profile} &amp; 1 &amp; 2 &amp; 3 &amp; \mathrm{probability} \\
+\hline
+0 &amp; - &amp; - &amp; - &amp; n/a \\
+1 &amp; - &amp; - &amp; + &amp; n/a \\
+2 &amp; - &amp; + &amp; - &amp; \chi_2 \\
+3 &amp; - &amp; + &amp; + &amp; \phi_2 \, p_3 \\
+4 &amp; + &amp; - &amp; - &amp; \chi_1 \\
+5 &amp; + &amp; - &amp; + &amp; \phi_1 \, (1 - p_2) \, \phi_2 \, p_3 \\
+6 &amp; + &amp; + &amp; - &amp; \phi_1 \, p_2 \, \chi_2 \\
+7 &amp; + &amp; + &amp; + &amp; \phi_1 \, p_2 \, \phi_2 \, p_3 \\
+\hline
+\end{array}
+\]</span></p>
+<p>History 0, for animals that are never captured, is unobservable because only animals that are captured are observed. History 1, for animals that are only captured in the last round, provides no information for the CJS model, because capture/non-capture status is only informative when conditioned on earlier captures. For the remaining cases, the contribution to the likelihood is provided in the final column.</p>
+<p>By defining these probabilities in terms of <span class="math inline">\(\chi\)</span> directly, there is no need for a latent binary parameter indicating whether an animal is alive at time <span class="math inline">\(t\)</span> or not. The definition of <span class="math inline">\(\chi\)</span> is typically used to define the likelihood (i.e., marginalize out the latent discrete parameter) for the CJS model <span class="citation" data-cites="Schofield:2007">(<a href="#ref-Schofield:2007" role="doc-biblioref">Schofield 2007</a>)</span>.</p>
+<p>The Stan model defines <span class="math inline">\(\chi\)</span> as a transformed parameter based on parameters <span class="math inline">\(\phi\)</span> and <span class="math inline">\(p\)</span>. In the model block, the log probability is incremented for each history based on its count. This second step is similar to collecting Bernoulli observations into a binomial or categorical observations into a multinomial, only it is coded directly in the Stan program using <code>target +=</code> rather than being part of a built-in probability function.</p>
+<p>The following is the Stan program for the Cormack-Jolly-Seber mark-recapture model that considers counts of individuals with observation histories of being observed or not in three capture periods</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[<span class="dv">7</span>] <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; history;</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[<span class="dv">2</span>] <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=<span class="dv">1</span>&gt; phi;</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[<span class="dv">3</span>] <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=<span class="dv">1</span>&gt; p;</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed parameters</span> {</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[<span class="dv">2</span>] <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=<span class="dv">1</span>&gt; chi;</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  chi[<span class="dv">2</span>] = (<span class="dv">1</span> - phi[<span class="dv">2</span>]) + phi[<span class="dv">2</span>] * (<span class="dv">1</span> - p[<span class="dv">3</span>]);</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  chi[<span class="dv">1</span>] = (<span class="dv">1</span> - phi[<span class="dv">1</span>]) + phi[<span class="dv">1</span>] * (<span class="dv">1</span> - p[<span class="dv">2</span>]) * chi[<span class="dv">2</span>];</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> history[<span class="dv">2</span>] * log(chi[<span class="dv">2</span>]);</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> history[<span class="dv">3</span>] * (log(phi[<span class="dv">2</span>]) + log(p[<span class="dv">3</span>]));</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> history[<span class="dv">4</span>] * (log(chi[<span class="dv">1</span>]));</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> history[<span class="dv">5</span>] * (log(phi[<span class="dv">1</span>]) + log1m(p[<span class="dv">2</span>])</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>                            + log(phi[<span class="dv">2</span>]) + log(p[<span class="dv">3</span>]));</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> history[<span class="dv">6</span>] * (log(phi[<span class="dv">1</span>]) + log(p[<span class="dv">2</span>])</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>                            + log(chi[<span class="dv">2</span>]));</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  <span class="kw">target +=</span> history[<span class="dv">7</span>] * (log(phi[<span class="dv">1</span>]) + log(p[<span class="dv">2</span>])</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>                            + log(phi[<span class="dv">2</span>]) + log(p[<span class="dv">3</span>]));</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="kw">generated quantities</span> {</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=<span class="dv">1</span>&gt; beta3;</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  beta3 = phi[<span class="dv">2</span>] * p[<span class="dv">3</span>];</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="identifiability" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="identifiability">Identifiability</h4>
+<p>The parameters <span class="math inline">\(\phi_2\)</span> and <span class="math inline">\(p_3\)</span>, the probability of death at time 2 and probability of capture at time 3 are not identifiable, because both may be used to account for lack of capture at time 3. Their product, <span class="math inline">\(\beta_3 = \phi_2 \, p_3\)</span>, is identified. The Stan model defines <code>beta3</code> as a generated quantity. Unidentified parameters pose a problem for Stan’s samplers’ adaptation. Although the problem posed for adaptation is mild here because the parameters are bounded and thus have proper uniform priors, it would be better to formulate an identified parameterization. One way to do this would be to formulate a hierarchical model for the <span class="math inline">\(p\)</span> and <span class="math inline">\(\phi\)</span> parameters.</p>
+</section>
+</section>
+<section id="individual-cormack-jolly-seber-model" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="individual-cormack-jolly-seber-model">Individual Cormack-Jolly-Seber model</h3>
+<p>This section presents a version of the Cormack-Jolly-Seber (CJS) model cast at the individual level rather than collectively as in the previous subsection. It also extends the model to allow an arbitrary number of time periods. The data will consist of the number <span class="math inline">\(T\)</span> of capture events, the number <span class="math inline">\(I\)</span> of individuals, and a boolean flag <span class="math inline">\(y_{i,t}\)</span> indicating if individual <span class="math inline">\(i\)</span> was observed at time <span class="math inline">\(t\)</span>. In Stan,</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">2</span>&gt; T;</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; I;</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[I, T] <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=<span class="dv">1</span>&gt; y;</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The advantages to the individual-level model is that it becomes possible to add individual “random effects” that affect survival or capture probability, as well as to avoid the combinatorics involved in unfolding <span class="math inline">\(2^T\)</span> observation histories for <span class="math inline">\(T\)</span> capture times.</p>
+<section id="utility-functions" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="utility-functions">Utility functions</h4>
+<p>The individual CJS model is written involves several function definitions. The first two are used in the transformed data block to compute the first and last time period in which an animal was captured.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">functions</span> {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> first_capture(<span class="dt">array</span>[] <span class="dt">int</span> y_i) {</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (k <span class="cf">in</span> <span class="dv">1</span>:size(y_i)) {</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (y_i[k]) {</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> k;</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span>;</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> last_capture(<span class="dt">array</span>[] <span class="dt">int</span> y_i) {</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (k_rev <span class="cf">in</span> <span class="dv">0</span>:(size(y_i) - <span class="dv">1</span>)) {</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">int</span> k;</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>      k = size(y_i) - k_rev;</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (y_i[k]) {</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> k;</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span>;</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ...</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>These two functions are used to define the first and last capture time for each individual in the transformed data block.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed data</span> {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[I] <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=T&gt; first;</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[I] <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=T&gt; last;</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=I&gt;[T] n_captured;</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span>:I) {</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    first[i] = first_capture(y[i]);</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span>:I) {</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    last[i] = last_capture(y[i]);</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  n_captured = rep_vector(<span class="dv">0</span>, T);</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">1</span>:T) {</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span>:I) {</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> (y[i, t]) {</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        n_captured[t] = n_captured[t] + <span class="dv">1</span>;</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The transformed data block also defines <code>n_captured[t]</code>, which is the total number of captures at time <code>t</code>. The variable <code>n_captured</code> is defined as a vector instead of an integer array so that it can be used in an elementwise vector operation in the generated quantities block to model the population estimates at each time point.</p>
+<p>The parameters and transformed parameters are as before, but now there is a function definition for computing the entire vector <code>chi</code>, the probability that if an individual is alive at <code>t</code> that it will never be captured again.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=<span class="dv">1</span>&gt;[T - <span class="dv">1</span>] phi;</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=<span class="dv">1</span>&gt;[T] p;</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed parameters</span> {</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=<span class="dv">1</span>&gt;[T] chi;</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  chi = prob_uncaptured(T, p, phi);</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The definition of <code>prob_uncaptured</code>, from the functions block, is</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">functions</span> {</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ...</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span> prob_uncaptured(<span class="dt">int</span> T, <span class="dt">vector</span> p, <span class="dt">vector</span> phi) {</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">vector</span>[T] chi;</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    chi[T] = <span class="fl">1.0</span>;</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (t <span class="cf">in</span> <span class="dv">1</span>:(T - <span class="dv">1</span>)) {</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">int</span> t_curr;</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">int</span> t_next;</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>      t_curr = T - t;</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>      t_next = t_curr + <span class="dv">1</span>;</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>      chi[t_curr] = (<span class="dv">1</span> - phi[t_curr])</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>                     + phi[t_curr]</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>                       * (<span class="dv">1</span> - p[t_next])</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>                       * chi[t_next];</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> chi;</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The function definition directly follows the mathematical definition of <span class="math inline">\(\chi_t\)</span>, unrolling the recursion into an iteration and defining the elements of <code>chi</code> from <code>T</code> down to 1.</p>
+</section>
+<section id="the-model" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="the-model">The model</h4>
+<p>Given the precomputed quantities, the model block directly encodes the CJS model’s log likelihood function. All parameters are left with their default uniform priors and the model simply encodes the log probability of the observations <code>q</code> given the parameters <code>p</code> and <code>phi</code> as well as the transformed parameter <code>chi</code> defined in terms of <code>p</code> and <code>phi</code>.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span>:I) {</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (first[i] &gt; <span class="dv">0</span>) {</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (t <span class="cf">in</span> (first[i]+<span class="dv">1</span>):last[i]) {</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        <span class="dv">1</span> ~ bernoulli(phi[t - <span class="dv">1</span>]);</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>        y[i, t] ~ bernoulli(p[t]);</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>      <span class="dv">1</span> ~ bernoulli(chi[last[i]]);</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The outer loop is over individuals, conditional skipping individuals <code>i</code> which are never captured. The never-captured check depends on the convention of the first-capture and last-capture functions returning 0 for <code>first</code> if an individual is never captured.</p>
+<p>The inner loop for individual <code>i</code> first increments the log probability based on the survival of the individual with probability <code>phi[t - 1]</code>. The outcome of 1 is fixed because the individual must survive between the first and last capture (i.e., no zombies). The loop starts after the first capture, because all information in the CJS model is conditional on the first capture.</p>
+<p>In the inner loop, the observed capture status <code>y[i, t]</code> for individual <code>i</code> at time <code>t</code> has a Bernoulli distribution based on the capture probability <code>p[t]</code> at time <code>t</code>.</p>
+<p>After the inner loop, the probability of an animal never being seen again after being observed at time <code>last[i]</code> is included, because <code>last[i]</code> was defined to be the last time period in which animal <code>i</code> was observed.</p>
+</section>
+<section id="identified-parameters" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="identified-parameters">Identified parameters</h4>
+<p>As with the collective model described in the previous subsection, this model does not identify <code>phi[T - 1]</code> and <code>p[T]</code>, but does identify their product, <code>beta</code>. Thus <code>beta</code> is defined as a generated quantity to monitor convergence and report.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">generated quantities</span> {</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> beta;</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ...</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  beta = phi[T - <span class="dv">1</span>] * p[T];</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ...</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The parameter <code>p[1]</code> is also not modeled and will just be uniform between 0 and 1. A more finely articulated model might have a hierarchical or time-series component, in which case <code>p[1]</code> would be an unknown initial condition and both <code>phi[T - 1]</code> and <code>p[T]</code> could be identified.</p>
+</section>
+<section id="population-size-estimates" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="population-size-estimates">Population size estimates</h4>
+<p>The generated quantities also calculates an estimate of the population mean at each time <code>t</code> in the same way as in the simple mark-recapture model as the number of individuals captured at time <code>t</code> divided by the probability of capture at time <code>t</code>. This is done with the elementwise division operation for vectors (<code>./</code>) in the generated quantities block.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="kw">generated quantities</span> {</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ...</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt;[T] pop;</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="co">// ...</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  pop = n_captured ./ p;</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  pop[<span class="dv">1</span>] = -<span class="dv">1</span>;</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="generalizing-to-individual-effects" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="generalizing-to-individual-effects">Generalizing to individual effects</h4>
+<p>All individuals are modeled as having the same capture probability, but this model could be easily generalized to use a logistic regression here based on individual-level inputs to be used as predictors.</p>
+</section>
+</section>
+</section>
+<section id="data-coding-models.section" class="level2">
+<h2 class="anchored" data-anchor-id="data-coding-models.section">Data coding and diagnostic accuracy models</h2>
+<p>Although seemingly disparate tasks, the rating/coding/annotation of items with categories and diagnostic testing for disease or other conditions, share several characteristics which allow their statistical properties to be modeled similarly.</p>
+<section id="diagnostic-accuracy" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="diagnostic-accuracy">Diagnostic accuracy</h3>
+<p>Suppose you have diagnostic tests for a condition of varying sensitivity and specificity. Sensitivity is the probability a test returns positive when the patient has the condition and specificity is the probability that a test returns negative when the patient does not have the condition. For example, mammograms and puncture biopsy tests both test for the presence of breast cancer. Mammograms have high sensitivity and low specificity, meaning lots of false positives, whereas puncture biopsies are the opposite, with low sensitivity and high specificity, meaning lots of false negatives.</p>
+<p>There are several estimands of interest in such studies. An epidemiological study may be interested in the prevalence of a kind of infection, such as malaria, in a population. A test development study might be interested in the diagnostic accuracy of a new test. A health care worker performing tests might be interested in the disease status of a particular patient.</p>
+</section>
+<section id="data-coding" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="data-coding">Data coding</h3>
+<p>Humans are often given the task of coding (equivalently rating or annotating) data. For example, journal or grant reviewers rate submissions, a political study may code campaign commercials as to whether they are attack ads or not, a natural language processing study might annotate Tweets as to whether they are positive or negative in overall sentiment, or a dentist looking at an X-ray classifies a patient as having a cavity or not. In all of these cases, the data coders play the role of the diagnostic tests and all of the same estimands are in play — data coder accuracy and bias, true categories of items being coded, or the prevalence of various categories of items in the data.</p>
+</section>
+<section id="noisy-categorical-measurement-model" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="noisy-categorical-measurement-model">Noisy categorical measurement model</h3>
+<p>In this section, only categorical ratings are considered, and the challenge in the modeling for Stan is to marginalize out the discrete parameters.</p>
+<p><span class="citation" data-cites="DawidSkene:1979">Dawid and Skene (<a href="#ref-DawidSkene:1979" role="doc-biblioref">1979</a>)</span> introduce a noisy-measurement model for coding and apply it in the epidemiological setting of coding what doctors say about patient histories; the same model can be used for diagnostic procedures.</p>
+<section id="data" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="data">Data</h4>
+<p>The data for the model consists of <span class="math inline">\(J\)</span> raters (diagnostic tests), <span class="math inline">\(I\)</span> items (patients), and <span class="math inline">\(K\)</span> categories (condition statuses) to annotate, with <span class="math inline">\(y_{i, j} \in \{1, \dotsc, K\}\)</span> being the rating provided by rater <span class="math inline">\(j\)</span> for item <span class="math inline">\(i\)</span>. In a diagnostic test setting for a particular condition, the raters are diagnostic procedures and often <span class="math inline">\(K=2\)</span>, with values signaling the presence or absence of the condition.<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a></p>
+<p>It is relatively straightforward to extend Dawid and Skene’s model to deal with the situation where not every rater rates each item exactly once.</p>
+</section>
+</section>
+<section id="model-parameters" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="model-parameters">Model parameters</h3>
+<p>The model is based on three parameters, the first of which is discrete:</p>
+<ul>
+<li><span class="math inline">\(z_i\)</span> : a value in <span class="math inline">\(\{1, \dotsc, K\}\)</span> indicating the true category of item <span class="math inline">\(i\)</span>,</li>
+<li><span class="math inline">\(\pi\)</span> : a <span class="math inline">\(K\)</span>-simplex for the prevalence of the <span class="math inline">\(K\)</span> categories in the population, and</li>
+<li><span class="math inline">\(\theta_{j,k}\)</span> : a <span class="math inline">\(K\)</span>-simplex for the response of annotator <span class="math inline">\(j\)</span> to an item of true category <span class="math inline">\(k\)</span>.</li>
+</ul>
+</section>
+<section id="noisy-measurement-model" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="noisy-measurement-model">Noisy measurement model</h3>
+<p>The true category of an item is assumed to be generated by a simple categorical distribution based on item prevalence, <span class="math display">\[
+z_i \sim \textsf{categorical}(\pi).
+\]</span></p>
+<p>The rating <span class="math inline">\(y_{i, j}\)</span> provided for item <span class="math inline">\(i\)</span> by rater <span class="math inline">\(j\)</span> is modeled as a categorical response of rater <span class="math inline">\(i\)</span> to an item of category <span class="math inline">\(z_i\)</span>,<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a> <span class="math display">\[
+y_{i, j} \sim \textsf{categorical}(\theta_{j,\pi_{z[i]}}).
+\]</span></p>
+<section id="priors-and-hierarchical-modeling" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="priors-and-hierarchical-modeling">Priors and hierarchical modeling</h4>
+<p>Dawid and Skene provided maximum likelihood estimates for <span class="math inline">\(\theta\)</span> and <span class="math inline">\(\pi\)</span>, which allows them to generate probability estimates for each <span class="math inline">\(z_i\)</span>.</p>
+<p>To mimic Dawid and Skene’s maximum likelihood model, the parameters <span class="math inline">\(\theta_{j,k}\)</span> and <span class="math inline">\(\pi\)</span> can be given uniform priors over <span class="math inline">\(K\)</span>-simplexes. It is straightforward to generalize to Dirichlet priors, <span class="math display">\[
+\pi \sim \textsf{Dirichlet}(\alpha)
+\]</span> and <span class="math display">\[
+\theta_{j,k} \sim \textsf{Dirichlet}(\beta_k)
+\]</span> with fixed hyperparameters <span class="math inline">\(\alpha\)</span> (a vector) and <span class="math inline">\(\beta\)</span> (a matrix or array of vectors). The prior for <span class="math inline">\(\theta_{j,k}\)</span> must be allowed to vary in <span class="math inline">\(k\)</span>, so that, for instance, <span class="math inline">\(\beta_{k,k}\)</span> is large enough to allow the prior to favor better-than-chance annotators over random or adversarial ones.</p>
+<p>Because there are <span class="math inline">\(J\)</span> coders, it would be natural to extend the model to include a hierarchical prior for <span class="math inline">\(\beta\)</span> and to partially pool the estimates of coder accuracy and bias.</p>
+</section>
+<section id="marginalizing-out-the-true-category" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="marginalizing-out-the-true-category">Marginalizing out the true category</h4>
+<p>Because the true category parameter <span class="math inline">\(z\)</span> is discrete, it must be marginalized out of the joint posterior in order to carry out sampling or maximum likelihood estimation in Stan. The joint posterior factors as <span class="math display">\[
+p(y, \theta, \pi) = p(y \mid \theta,\pi) \, p(\pi) \, p(\theta),
+\]</span> where <span class="math inline">\(p(y \mid \theta,\pi)\)</span> is derived by marginalizing <span class="math inline">\(z\)</span> out of <span class="math display">\[
+p(z, y \mid \theta, \pi) =
+\prod_{i=1}^I \left( \textsf{categorical}(z_i \mid \pi)
+                     \prod_{j=1}^J
+                     \textsf{categorical}(y_{i, j} \mid \theta_{j, z[i]})
+              \right).
+\]</span></p>
+<p>This can be done item by item, with <span class="math display">\[
+p(y \mid \theta, \pi) =
+\prod_{i=1}^I \sum_{k=1}^K
+  \left( \textsf{categorical}(k \mid \pi)
+         \prod_{j=1}^J
+         \textsf{categorical}(y_{i, j} \mid \theta_{j, k})
+  \right).
+\]</span></p>
+<p>In the missing data model, only the observed labels would be used in the inner product.</p>
+<p><span class="citation" data-cites="DawidSkene:1979">Dawid and Skene (<a href="#ref-DawidSkene:1979" role="doc-biblioref">1979</a>)</span> derive exactly the same equation in their Equation (2.7), required for the E-step in their expectation maximization (EM) algorithm. Stan requires the marginalized probability function on the log scale, <span class="math display">\[\begin{align*}
+\log p(y \mid \theta, \pi)
+&amp;= \sum_{i=1}^I \log \left( \sum_{k=1}^K \exp
+    \left(\log \textsf{categorical}(k \mid \pi) \vphantom{\sum_{j=1}^J}\right.\right.
+    \left.\left. + \ \sum_{j=1}^J
+           \log \textsf{categorical}(y_{i, j} \mid \theta_{j, k})
+    \right) \right),
+\end{align*}\]</span> which can be directly coded using Stan’s built-in <code>log_sum_exp</code> function.</p>
+</section>
+</section>
+<section id="stan-implementation" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="stan-implementation">Stan implementation</h3>
+<p>The Stan program for the Dawid and Skene model is provided below <span class="citation" data-cites="DawidSkene:1979">(<a href="#ref-DawidSkene:1979" role="doc-biblioref">Dawid and Skene 1979</a>)</span>.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">2</span>&gt; K;</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>&gt; I;</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>&gt; J;</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[I, J] <span class="dt">int</span>&lt;<span class="kw">lower</span>=<span class="dv">1</span>, <span class="kw">upper</span>=K&gt; y;</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt;[K] alpha;</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">vector</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt;[K] beta[K];</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">simplex</span>[K] pi;</span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[J, K] <span class="dt">simplex</span>[K] theta;</span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed parameters</span> {</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[I] <span class="dt">vector</span>[K] log_q_z;</span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span>:I) {</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    log_q_z[i] = log(pi);</span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span>:J) {</span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span> (k <span class="cf">in</span> <span class="dv">1</span>:K) {</span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a>        log_q_z[i, k] = log_q_z[i, k]</span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>                         + log(theta[j, k, y[i, j]]);</span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a>  pi ~ dirichlet(alpha);</span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span>:J) {</span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> (k <span class="cf">in</span> <span class="dv">1</span>:K) {</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>      theta[j, k] ~ dirichlet(beta[k]);</span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span>:I) {</span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a>    <span class="kw">target +=</span> log_sum_exp(log_q_z[i]);</span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The model marginalizes out the discrete parameter <span class="math inline">\(z\)</span>, storing the unnormalized conditional probability <span class="math inline">\(\log q(z_i=k|\theta,\pi)\)</span> in <code>log_q_z[i, k]</code>.</p>
+<p>The Stan model converges quickly and mixes well using NUTS starting at diffuse initial points, unlike the equivalent model implemented with Gibbs sampling over the discrete parameter. Reasonable weakly informative priors are <span class="math inline">\(\alpha_k = 3\)</span> and <span class="math inline">\(\beta_{k,k} = 2.5 K\)</span> and <span class="math inline">\(\beta_{k,k'} = 1\)</span> if <span class="math inline">\(k \neq k'\)</span>. Taking <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta_k\)</span> to be unit vectors and applying optimization will produce the same answer as the expectation maximization (EM) algorithm of <span class="citation" data-cites="DawidSkene:1979">Dawid and Skene (<a href="#ref-DawidSkene:1979" role="doc-biblioref">1979</a>)</span>.</p>
+<section id="inference-for-the-true-category" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="inference-for-the-true-category">Inference for the true category</h4>
+<p>The quantity <code>log_q_z[i]</code> is defined as a transformed parameter. It encodes the (unnormalized) log of <span class="math inline">\(p(z_i \mid \theta,
+\pi)\)</span>. Each iteration provides a value conditioned on that iteration’s values for <span class="math inline">\(\theta\)</span> and <span class="math inline">\(\pi\)</span>. Applying the softmax function to <code>log_q_z[i]</code> provides a simplex corresponding to the probability mass function of <span class="math inline">\(z_i\)</span> in the posterior. These may be averaged across the iterations to provide the posterior probability distribution over each <span class="math inline">\(z_i\)</span>.</p>
+</section>
+</section>
+</section>
+<section id="marginalization-mathematics.section" class="level2">
+<h2 class="anchored" data-anchor-id="marginalization-mathematics.section">The mathematics of recovering marginalized parameters</h2>
+<section id="introduction" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="introduction">Introduction</h3>
+<p>This section describes in more detail the mathematics of statistical inference using the output of marginalized Stan models, such as those presented in the last three sections. It provides a mathematical explanation of why and how certain manipulations of Stan’s output produce valid summaries of the posterior distribution when discrete parameters have been marginalized out of a statistical model. Ultimately, however, fully understanding the mathematics in this section is <em>not</em> necessary to fit models with discrete parameters using Stan.</p>
+<p>Throughout, the model under consideration consists of both continuous parameters, <span class="math inline">\(\Theta\)</span>, and discrete parameters, <span class="math inline">\(Z\)</span>. It is also assumed that <span class="math inline">\(Z\)</span> can only take finitely many values, as is the case for all the models described in this chapter of the User’s Guide. To simplify notation, any conditioning on data is suppressed in this section, except where specified. As with all Bayesian analyses, however, all inferences using models with marginalized parameters are made conditional on the observed data.</p>
+</section>
+<section id="estimating-expectations" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="estimating-expectations">Estimating expectations</h3>
+<p>When performing Bayesian inference, interest often centers on estimating some (constant) low-dimensional summary statistics of the posterior distribution. Mathematically, we are interested in estimating <span class="math inline">\(\mu\)</span>, say, where <span class="math inline">\(\mu = \mathbb{E}[g(\Theta, Z)]\)</span> and <span class="math inline">\(g(\cdot)\)</span> is an arbitrary function. An example of such a quantity is <span class="math inline">\(\mathbb{E}[\Theta]\)</span>, the posterior mean of the continuous parameters, where we would take <span class="math inline">\(g(\theta, z) = \theta\)</span>. To estimate <span class="math inline">\(\mu\)</span> the most common approach is to sample a series of values, at least approximately, from the posterior distribution of the parameters of interest. The numerical values of these draws can then be used to calculate the quantities of interest. Often, this process of calculation is trivial, but more care is required when working with marginalized posteriors as we describe in this section.</p>
+<p>If both <span class="math inline">\(\Theta\)</span> and <span class="math inline">\(Z\)</span> were continuous, Stan could be used to sample <span class="math inline">\(M\)</span> draws from the joint posterior <span class="math inline">\(p_{\Theta, Z}(\theta, z)\)</span> and then estimate <span class="math inline">\(\mu\)</span> with <span class="math display">\[
+\hat{\mu} = \frac{1}{M} \sum_{i = 1}^M {g(\theta^{(i)}, z^{(i)})}.
+\]</span> Given <span class="math inline">\(Z\)</span> is discrete, however, Stan cannot be used to sample from the joint posterior (or even to do optimization). Instead, as outlined in the previous sections describing specific models, the user can first marginalize out <span class="math inline">\(Z\)</span> from the joint posterior to give the marginalized posterior <span class="math inline">\(p_\Theta(\theta)\)</span>. This marginalized posterior can then be implemented in Stan as usual, and Stan will give draws <span class="math inline">\(\{\theta^{(i)}\}_{i = 1}^M\)</span> from the marginalized posterior.</p>
+<p>Using only these draws, how can we estimate <span class="math inline">\(\mathbb{E}[g(\Theta, Z)]\)</span>? We can use a conditional estimator. We explain in more detail below, but at a high level the idea is that, for each function <span class="math inline">\(g\)</span> of interest, we compute <span class="math display">\[
+h(\Theta) = \mathbb{E}[g(\Theta, Z) \mid \Theta]
+\]</span> and then estimate <span class="math inline">\(\mathbb{E}[g(\Theta, Z)]\)</span> with <span class="math display">\[
+\hat{\mu} = \frac{1}{M} \sum_{i = 1}^M h(\theta^{(i)}).
+\]</span> This estimator is justified by the law of iterated expectation, the fact that <span class="math display">\[
+\mathbb{E}[h(\Theta)] = \mathbb{E}[\mathbb{E}[g(\Theta, Z)] \mid \Theta] = \mathbb{E}[g(\Theta, Z)] = \mu.
+\]</span> Using this marginalized estimator provides a way to estimate the expectation of any function <span class="math inline">\(g(\cdot)\)</span> for all combinations of discrete or continuous parameters in the model. However, it presents a possible new challenge: evaluating the conditional expectation <span class="math inline">\(\mathbb{E}[g(\Theta, Z) \mid \Theta]\)</span>.</p>
+</section>
+<section id="evaluating-the-conditional-expectation" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="evaluating-the-conditional-expectation">Evaluating the conditional expectation</h3>
+<p>Fortunately, the discrete nature of <span class="math inline">\(Z\)</span> makes evaluating <span class="math inline">\(\mathbb{E}[g(\Theta, Z) \mid \Theta]\)</span> easy. The function <span class="math inline">\(h(\Theta)\)</span> can be written as: <span class="math display">\[
+h(\Theta)
+= \mathbb{E}[g(\Theta, Z) \mid \Theta]
+= \sum_{k} g(\Theta, k) \Pr[Z = k \mid \Theta],
+\]</span> where we sum over the possible values of the latent discrete parameters. An essential part of this formula is the probability of the discrete parameters conditional on the continuous parameters, <span class="math inline">\(\Pr[Z = k \mid \Theta]\)</span>. More detail on how this quantity can be calculated is included below. Note that if <span class="math inline">\(Z\)</span> takes infinitely many values then computing the infinite sums will involve, potentially computationally expensive, approximation.</p>
+<p>When <span class="math inline">\(g(\theta, z)\)</span> is a function of either <span class="math inline">\(\theta\)</span> or <span class="math inline">\(z\)</span> only, the above formula simplifies further.</p>
+<p>In the first case, where <span class="math inline">\(g(\theta, z) = g(\theta)\)</span>, we have: <span class="math display">\[\begin{align*}
+h(\Theta)
+&amp;= \sum_{k} g(\Theta) \Pr[Z = k \mid \Theta] \\
+&amp;= g(\Theta) \sum_{k} \Pr[Z = k \mid \Theta] \\
+&amp;= g(\Theta).
+\end{align*}\]</span> This means that we can estimate <span class="math inline">\(\mathbb{E}[g(\Theta)]\)</span> with the standard, seemingly unconditional, estimator: <span class="math display">\[
+\frac{1}{M} \sum_{i = 1}^M g(\theta^{(i)}).
+\]</span> Even after marginalization, computing expectations of functions of the continuous parameters can be performed as if no marginalization had taken place.</p>
+<p>In the second case, where <span class="math inline">\(g(\theta, z) = g(z)\)</span>, the conditional expectation instead simplifies as follows: <span class="math display">\[
+h(\Theta) = \sum_{k} g(k) \Pr[Z = k \mid \Theta].
+\]</span> An important special case of this result is when <span class="math inline">\(g(\theta, z) = \textrm{I}(z = k)\)</span>, where <span class="math inline">\(\textrm{I}\)</span> is the indicator function. This choice allows us to recover the probability mass function of the discrete random variable <span class="math inline">\(Z\)</span>, since <span class="math inline">\(\mathbb{E}[\textrm{I}(Z = k)] = \Pr[Z = k]\)</span>. In this case, <span class="math display">\[
+h(\Theta)
+= \sum_{k} \textrm{I}(z = k) \Pr[Z = k \mid \Theta]
+= \Pr[Z = k \mid \Theta].
+\]</span> The quantity <span class="math inline">\(\Pr[Z = k]\)</span> can therefore be estimated with: <span class="math display">\[
+\frac{1}{M} \sum_{i = 1}^M \Pr[Z = k \mid \Theta = \theta^{(i)}].
+\]</span> When calculating this conditional probability it is important to remember that we are also conditioning on the observed data, <span class="math inline">\(Y\)</span>. That is, we are really estimating <span class="math inline">\(\Pr[Z = k \mid Y]\)</span> with <span class="math display">\[
+\frac{1}{M} \sum_{i = 1}^M \Pr[Z = k \mid \Theta = \theta^{(i)}, Y].
+\]</span> This point is important as it suggests one of the main ways of calculating the required conditional probability. Using Bayes’s theorem gives us <span class="math display">\[
+\Pr[Z = k \mid \Theta = \theta^{(i)}, Y]
+= \frac{\Pr[Y \mid Z = k, \Theta = \theta^{(i)}]
+\Pr[Z = k \mid \Theta = \theta^{(i)}]}
+{\sum_{k = 1}^K \Pr[Y \mid Z = k, \Theta = \theta^{(i)}]
+\Pr[Z = k \mid \Theta = \theta^{(i)}]}.
+\]</span> Here, <span class="math inline">\(\Pr[Y \mid \Theta = \theta^{(i)}, Z = k]\)</span> is the likelihood conditional on a particular value of the latent variables. Crucially, all elements of the expression can be calculated using the draws from the posterior of the continuous parameters and knowledge of the model structure.</p>
+<p>Other than the use of Bayes’s theorem, <span class="math inline">\(\Pr[Z = k \mid \theta = \theta^{(i)}, Y]\)</span> can also be extracted by coding the Stan model to include the conditional probability explicitly (as is done for the <a href="#data-coding-models.section">Dawid–Skene model</a>).</p>
+<p>For a longer introduction to the mathematics of marginalization in Stan, which also covers the connections between Rao–Blackwellization and marginalization, see <span class="citation" data-cites="PullinEtAl:2021">Pullin, Gurrin, and Vukcevic (<a href="#ref-PullinEtAl:2021" role="doc-biblioref">2021</a>)</span>.</p>
+
+
+
+</section>
+</section>
+</section>
+
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a><div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-Cormack:1964" class="csl-entry" role="listitem">
+Cormack, R. M. 1964. <span>“Estimates of Survival from the Sighting of Marked Animals.”</span> <em>Biometrika</em> 51 (3/4): 429–38.
+</div>
+<div id="ref-DawidSkene:1979" class="csl-entry" role="listitem">
+Dawid, A. P., and A. M. Skene. 1979. <span>“Maximum Likelihood Estimation of Observer Error-Rates Using the <span>EM</span> Algorithm.”</span> <em>Journal of the Royal Statistical Society. Series C (Applied Statistics)</em> 28 (1): 20–28.
+</div>
+<div id="ref-dempster-et-al:1977" class="csl-entry" role="listitem">
+Dempster, A. P., N. M. Laird, and D. B. Rubin. 1977. <span>“Maximum Likelihood from Incomplete Data via the <span>EM</span> Algorithm.”</span> <em>Journal of the Royal Statistical Society. Series B (Methodological)</em> 39 (1): 1–38.
+</div>
+<div id="ref-PyMC:2014" class="csl-entry" role="listitem">
+Fonnesbeck, Chris, Anand Patil, David Huard, and John Salvatier. 2013. <em>PyMC User’s Guide</em>.
+</div>
+<div id="ref-Jarret:1979" class="csl-entry" role="listitem">
+Jarrett, R. G. 1979. <span>“A Note on the Intervals Between Coal-Mining Disasters.”</span> <em>Biometrika</em> 66 (1): 191–93.
+</div>
+<div id="ref-Jolly:1965" class="csl-entry" role="listitem">
+Jolly, G. M. 1965. <span>“Explicit Estimates from Capture-Recapture Data with Both Death and Immigration-Stochastic Model.”</span> <em>Biometrika</em> 52 (1/2): 225–47.
+</div>
+<div id="ref-Lincoln:1930" class="csl-entry" role="listitem">
+Lincoln, F. C. 1930. <span>“Calculating Waterfowl Abundance on the Basis of Banding Returns.”</span> <em>United States Department of Agriculture Circular</em> 118: 1–4.
+</div>
+<div id="ref-Petersen:1896" class="csl-entry" role="listitem">
+Petersen, C. G. J. 1896. <span>“The Yearly Immigration of Young Plaice into the <span>L</span>imfjord from the <span>G</span>erman <span>S</span>ea.”</span> <em>Report of the Danish Biological Station</em> 6: 5–84.
+</div>
+<div id="ref-PullinEtAl:2021" class="csl-entry" role="listitem">
+Pullin, Jeffrey, Lyle Gurrin, and Damjan Vukcevic. 2021. <span>“Statistical Models of Repeated Categorical Ratings: The r Package Rater.”</span> <em>arXiv</em> 2010.09335. <a href="https://arxiv.org/abs/2010.09335">https://arxiv.org/abs/2010.09335</a>.
+</div>
+<div id="ref-Schofield:2007" class="csl-entry" role="listitem">
+Schofield, Matthew R. 2007. <span>“Hierarchical Capture-Recapture Models.”</span> PhD thesis, Department of Statistics, University of Otago, Dunedin.
+</div>
+<div id="ref-Seber:1965" class="csl-entry" role="listitem">
+Seber, G. A. F. 1965. <span>“A Note on the Multiple-Recapture Census.”</span> <em>Biometrika</em> 52 (1/2): 249–59.
+</div>
+</div></section><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>The computations are similar to those involved in expectation maximization (EM) algorithms <span class="citation" data-cites="dempster-et-al:1977">(<a href="#ref-dempster-et-al:1977" role="doc-biblioref">Dempster, Laird, and Rubin 1977</a>)</span>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>The source of the data is <span class="citation" data-cites="Jarret:1979">(<a href="#ref-Jarret:1979" role="doc-biblioref">Jarrett 1979</a>)</span>, which itself is a note correcting an earlier data collection.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>The R counterpart, <code>ifelse</code>, is slightly different in that it is typically used in a vectorized situation. The conditional operator is not (yet) vectorized in Stan.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>An alternative would be to compute this on the outside and feed it into the Stan model as preprocessed data. Yet another alternative encoding would be a sparse one recording only the capture events along with their time and identifying the individual captured.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>Both functions return 0 if the individual represented by the input array was never captured. Individuals with no captures are not relevant for estimating the model because all probability statements are conditional on earlier captures. Typically they would be removed from the data, but the program allows them to be included even though they make not contribution to the log probability function.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>Diagnostic procedures are often ordinal, as in stages of cancer in oncological diagnosis or the severity of a cavity in dental diagnosis. Dawid and Skene’s model may be used as is or naturally generalized for ordinal ratings using a latent continuous rating and cutpoints as in ordinal logistic regression.<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p>In the subscript, <span class="math inline">\(z_i\)</span> is written as <span class="math inline">\(z[i]\)</span> to improve legibility.<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../stan-users-guide/measurement-error.html" class="pagination-link" aria-label="Measurement Error and Meta-Analysis">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">Measurement Error and Meta-Analysis</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../stan-users-guide/sparse-ragged.html" class="pagination-link" aria-label="Sparse and Ragged Data Structures">
+        <span class="nav-page-text">Sparse and Ragged Data Structures</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/stan-dev/docs/edit/master/src/stan-users-guide/latent-discrete.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/stan-dev/docs/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

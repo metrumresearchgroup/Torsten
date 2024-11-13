@@ -1,0 +1,33 @@
+# Node rules:
+## Grunt intermediate storage (http://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+## Dependency directory
+## Commenting this out is preferred by some people, see
+## https://docs.npmjs.com/misc/faq#should-i-check-my-node_modules-folder-into-git
+node_modules
+
+# Book build output
+_book
+_bookdown_files
+*.log
+*.pyc
+
+# quarto build output
+src/_website
+*._pdf
+
+
+src/**/*.html
+src/**/*.tex
+!header.tex
+!json.html
+
+# eBook build output
+*.epub
+*.mobi
+
+# For the Mac (Finder metatdata files)
+*.DS_Store
+
+.luarc.json

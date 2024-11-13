@@ -1,0 +1,9 @@
+#### Copyright and trademark {-}
+
+* Copyright 2016--2024, Torsten Development Team and their assignees.
+
+#### Licensing {-}
+
+* *Text content:*  [CC-BY ND 4.0 license](https://creativecommons.org/licenses/by-nd/4.0/legalcode)
+
+* *Computer code:*  [BSD 3-clause license](https://opensource.org/licenses/BSD-3-Clause)

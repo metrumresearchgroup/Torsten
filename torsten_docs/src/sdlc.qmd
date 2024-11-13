@@ -1,0 +1,447 @@
+---
+title: "Stan's Software Development Lifecycle"
+author: "Stan Development Team"
+date: "24 May 2020"
+output:
+  html_document:
+    theme: cerulean
+    toc: true
+    toc_depth: 2
+---
+
+### Abstract {-}
+
+The development, release, and maintenance of Stan is a collaborative
+process involving the Stan development team.  The team covers multiple
+statistical and computational disciplines and its members work in
+academia, industry, or both.  The Stan project employs standard
+software development, code review, and testing methodologies.
+
+This document describes the software development lifecycle (SDLC) for
+projects managed by the Stan project and hosted by Stan's GitHub
+organization [stan-dev](https://github.com/stan-dev).  Projects
+covered include the math library, core C++ algorithms, parser and
+code generator, and all of the interface and visualization packages.
+
+The layout and content of this document very closely follows the [R
+regulatory compliance and validation
+document](https://www.r-project.org/doc/R-FDA.pdf).
+
+
+## Communication
+
+Communication among team members takes place in several venues.  Most
+discussions take place openly on the Stan forum.
+
+* Stan's forum is hosted by Discourse at http://discourse.mc-stan.org
+
+The Stan forums are archived and may be read by anyone at any
+time. Communication that's not suitable for the public, such as grant
+funding, is carried out on a private group restricted to the core Stan
+developers. Further issue-specific discussion takes place concurrently
+with development and source control.
+
+* Stan's issue trackers are hosted by GitHub.
+
+Bigger design issues require design documents in the form of a community
+RFC.
+
+* stan/dev:design-docs is hosted on GitHub
+
+Various project meetings among developers and users take place online
+in various forums including Zoom and Google Hangouts. These are not
+recorded or stored.  Developers also meet informally at their places
+of employment or at conferences and workshops when multiple team
+members are in attendance.  The developers also host meetups for the
+public in locations including Berlin, Boston, London, Sydney, and New
+York.
+
+
+## Licensing
+
+Stan's C++ library and the CmdStan interface are released under the
+terms of the new (3 clause) BSD license, with two dependent libraries
+(Boost and Eigen), released under compatible libraries. The R
+interface RStan and Python interface PyStan are released under the
+GPLv3 license.
+
+## Community size
+
+The size of the Stan community is difficult to estimate reliably
+because there are no sales transactions and Stan's version control
+distribution system (GitHub) does not provide download statistics.
+There were over 2000 users subscribed the users group on Google before
+it was moved to Discourse, on which there are dozens of active threads
+at any given time. This substantial user base provides the means to do
+continuous reviews of real-world performance in real settings. Unlike
+proprietary software only available in binary form, Stan's open-source
+code base allows users to provide feedback at the code and
+documentation level.
+
+## Source code management
+
+## Hosting and version control
+
+All of the code is hosted on public version control
+repositories and may be reviewed at any time by all members of the
+Stan community.  This allows continuous feedback for both coding
+standards, functionality, and statistical accuracy.
+
+The source code for Stan's C++ library, CmdStan, PyStan, and RStan is
+managed in separate version-control libraries based on Git
+and hosted by GitHub under the GitHub organization stan-dev:
+
+* https://github.com/stan-dev
+
+Push access (i.e., the ability to write to the repository,
+specifically in approving pull requests and merging) is restricted to
+core developers and very closely managed. At the same time, any user
+may provide (and many users have provided) pull requests with patches
+for the system (which are treated as any other pull request and fully
+tested and code reviewed). Because of Git's distributed nature,
+everyone who clones a repository produces a full backup of the system
+and all past versions.
+
+Stan follows the Git process outlined by Vincent Driessen in his blog
+post, [a successful branching model for
+Git](https://nvie.com/posts/a-successful-git-branching-model/).
+
+New features and ordinary (not hot) bugfixes are developed in branches
+from and merged back into the development branch. These are then
+collected into releases and merged with the master branch, which
+tracks the releases. Hotfix branches are like feature or ordinary
+bugfix branches, but branch from master and merge back into master.
+
+The basic Git process for branching, releasing, hotfixing, and merging
+follows standard Git procedure. A diagram
+outlining the process is presented in the figure above. The key
+idea is that the master branch is always at the latest release, with
+older commits tagged for previous releases.
+
+The development branch always represents the current state of
+development. Feature and bugfix branches branch from the development
+branch. Before being merged back into the development branch, they
+must be wrapped in a pull request for GitHub, which supplies
+differences with current code and a forum for code review and comment
+on the issue. All branches must have appropriate unit tests and
+documentation as part of their pull request before they will be merged
+(see the [pull request
+template](https://github.com/stan-dev/stan/wiki/Pull-Request-Template),
+which all requests must follow). Each pull request must provide a
+summary of the change, a detailed description of the intended effect
+(often coupled with pointers to one or more issues on the issue
+tracker and one or more Wiki pages), a description of how the change
+was tested and its effects can be verified, a description of any side
+effects, a description of any user-facing documentation changes, and
+suggestions for reviewers.
+
+Taken together, the testing, code review, and merge process ensures
+that the development branch is always in a releasable state.
+
+Git itself provides extensive log facilities for comparing changes
+made in any given commit (which has a unique ID under Git) with any
+other commit, including the current development or master branch.
+GitHub provides further graphical facilities for commentary and
+graphical differences.
+
+For each release, the Git logs are scanned and a set of user-facing
+release notes provided summarizing the changes. The full set of
+changes, including differences with previous versions, is available
+through Git.  These logs are complete back to the first version of
+Stan, which was originally managed under the Subversion version
+control system.
+
+More information on the mechanics of the process are available from
+on the [Developer process Wiki](https://github.com/stan-dev/stan/wiki/Developer-Process).
+
+## Testing and validation
+
+### Unit testing
+
+Stan C++, CmdStan, PyStan, and RStan are all extensively unit tested.
+The core C++ code and CmdStan code is tested directly in C++ using the
+Google test framework \cite{GoogleTest:2011}. PyStan is tested using
+the [Python unit testing framework
+unittest](https://docs.python.org/3/library/unittest.html).
+
+RStan is tested using the [RUnit package](http://cran.r-project.org/web/packages/RUnit/index.html).
+
+The point of unit testing is to test the program at the application
+programmer interface (API) level, not the end-to-end functional level.
+
+The tests are run automatically when pull requests are created through
+a continuous integration process. Stan packages use a combination of
+the [Travis continuous integration framework](https://travis-ci.org)
+and the [Jenkins continuous integration framework](http://jenkins-ci.org).
+
+The continuous integration servers provide detailed reports of the
+various tests they run and whether they succeeded or failed.  If they
+failed, console output is available pointing to the failed tests.  The
+continuous integration servers also provide graphs and charts
+summarizing ongoing and past testing behavior.
+
+Stan and its interfaces' unit tests are all distributed with the
+system software and may be run by users on their specific platform
+with their specific compilers and configurations to provide support
+for the reliability of a particular installation of Stan.
+
+As with any statistical software, users need to be careful to consider
+the appropriateness of the statistical model, the ability to fit it
+with existing data, and its suitability to its intended application.
+
+The entire source repository is available to users.  A snapshot at any
+given release (or commit within a branch) may be downloaded as an
+archive (zip file) or may be cloned for development under Git.
+Cloning in Git provides a complete copy of all version history,
+including every commit to every branch since the beginning of the
+project.
+
+User feedback is accommodated through three channels. First, and most
+formally, there is an issue tracker for each of Stan C++, CmdStan,
+RStan and PyStan, which allows users to submit formal bug reports or
+make feature requests.  Any user bug report is reviewed by the
+development team, assessed for validity and reproducibility, and
+assigned to a specific developer for a particular release target.
+A second route for reporting bugs is our users group;  bugs reported
+to the user group by users are then submitted to the issue tracker by
+the developers and then put through the usual process.  A third method
+of bug reporting is informal e-mail or comments; like the user group
+reports, these are channeled through the issue tracker by the
+developers before being tackled.
+
+Continuous integration is run on a combination of Windows, Mac OS X,
+and Linux platforms.  All core Stan C++ code is tested on Windows, Mac
+OS, and Linux before release.
+
+
+### Functional testing
+
+In addition to unit testing at the individual function level, Stan
+undergoes rigorous end-to-end testing of its model fitting
+functionality. Models with known answers are evaluated for both speed
+and accuracy. Models without analytic solutions are evaluated in terms
+of MCMC error.
+
+
+## Release cycles
+
+At various stages, typically when major new functionality has been
+added or a serious bug has been fixed, the development branch is
+declared ready for release by the Stan development team. At this
+point, the branch is tested one last time on all platforms before
+being merged with the master branch. Releases are managed through
+GitHub releases mechanism. For example, releases for Stan C++ are
+available as [GitHub
+releases](https://github.com/stan-dev/stan/releases). Each release
+further bundles the manual and provides both a zipped and tar-gzipped
+archive of the release.
+
+Stan is released exclusively as source code, so nothing needs to be
+done with respect to binary release management or compatibility.  The
+source is tested so that it can be used under Windows, Mac OS X, and
+Linux.
+
+Instructions for installing Stan C++, CmdStan, RStan, and PyStan are
+managed separately and distributed with the associated product.
+
+## Versioning and release compatibility
+
+Stan version numbers follow the standard semantic version numbering
+pattern in which version numbers are of the form
+`Major.Minor.Patch`.  For example, version 2.9.1 is major release
+2, minor release 9, and patch release 1.  Semantic versioning signals
+important information about features and compatibility for the Stan
+language and how it is used.   It does not provide information about
+underlying implementation;  changes in implementation do not affect
+version numbering in and of itself.
+
+The reference manual lists deprecated features in an appendix.
+
+
+### Major version and backward compatibility
+
+A change in a library breaks backward compatibility if a program
+using only supported APIs (for Stan, that is the language reference;
+click [here](https://github.com/stan-dev/math/wiki/Supported-external-API) for the Math library) that
+worked in the previous version no longer works the same way in the
+current version.  For backward-compatibility breaking changes, the
+major version number is incremented.  When the major version is
+updated, the minor version reverts to 0.  Because breaking backward
+compatibility is such a disturbance for users, there are very few
+major releases.
+
+### Minor version and forward compatibility
+
+A change in a library introduces a new feature if a program that works
+in the current version will not work in a previous version; that is,
+it breaks forward compatibility. When a version introduces a new
+feature without breaking backward compatibility, its minor version
+number is incremented. Whenever the minor version is incremented, the
+patch level reverts to 0. Most Stan releases increment the minor
+version.
+
+### Bug fixes and patch releases
+
+If a release does not add new functionality or break backward
+compatibility, only its patch version is incremented.  Patch releases
+of Stan are made when an important bug is fixed before any new work is
+done.  Because Stan keeps its development branch clean, pending
+patches are easily rolled into minor releases.
+
+# Deprecating and Removing Features
+
+Before a user-facing feature is removed from software, it is polite to
+deprecate it in order to maintain backward compatibility and provide
+suggestions for upgrading.  The reference manual provides
+a description of all of the deprecated features that are still
+available in Stan and how to replace them with up-to-date features.
+
+Eventually, deprecated features will be removed (aka retired). As
+explained above in the version numbering section, removing deprecated
+features requires a major version number increment. Stan 3 will
+retire most if not all of the currently deprecated features in the
+last Stan 2 version.
+
+
+## Availability of current and historical archive versions
+
+Current and older versions of Stan C++, CmdStan, RStan, and PyStan are
+available through the GitHub pages for the corresponding repository.
+Official releases are bundled as archives and available through
+[GitHub's releases](https://github.com/stan-dev/stan/releases).
+
+Any intermediate commit is also available through GitHub in one of two
+ways. First, all of Stan (or CmdStan, RStan, or PyStan) may be
+downloaded by cloning the repository, at which point a user has a
+complete record of the entire project's commits and branches. After
+first cloning a repository, it may be kept up to date using Git's pull
+command (available from the command-line or platform-specific
+graphical user interfaces).   An alternative delivery mechanism is as
+a zip archive of a snapshot of the system.
+
+
+## Maintenance, support, and retirement
+
+Stan support extends only to the most current release. Specifically,
+patches are not backported to older versions.
+
+Early fixes of bugs are available to users in the form of updated
+development branches. Snapshots of the entire code base at every
+commit, including development patches and official releases, are
+available from GitHub.  Git itself may be used to download a complete
+clone of the entire source code history at any time.
+
+There is extensive documentation in the form of [manuals available for
+the Stan language and
+algorithms](http://mc-stan.org/users/documentation).  There is also
+extensive [interface
+documentation](http://mc-stan.org/users/interfaces) as well as the
+interfaces for the command line, R, Python, MATLAB, Mathematica,
+Stata, Julia, and Scala
+
+There is also an extensive suite of [tutorials and example models](http://mc-stan.org/users/documentation), which may be used directly or
+modified by users. There is also a fairly extensive set of [Wiki pages
+for developers](https://github.com/stan-dev/stan/wiki).
+
+Issue trackers for reporting bugs and requesting features are
+available online for Stan's C++ math library and core library, as well
+as for the interfaces (all available from the [stan-dev organization
+page](https://github.com/stan-dev).
+
+There is [Stan forum for users and
+developers](http://discourse.mc-stan.org). The users topics allow
+users can request support for installation issues, modeling issues, or
+performance/accuracy issues. These lists all come with built-in search
+facilities through their host or simply through top-level web searches
+in the search engine of your choice.
+
+A number of books provide introductions to Stan, including Gelman et
+al.'s *Bayesian Data Analysis, 3rd Edition*, Krushcke's
+*Doing Bayesian Data Analysis, 2nd Edition*, and
+McElreath's *Statistical Rethinking*.
+All of the examples from several other books have been translated to
+Stan, including Lee and Wagnemakers' *Bayesian Cognitive Modeling: A
+Practical Course*, Lunn et al.'s *The BUGS Book*, Gelman and Hill's
+*Data Analysis Using Regression and Multilevel-Hierarchical Models*,
+and Kéry Schaub's *Bayesian population analysis using WinBUGS*.
+
+The major.minor.0 releases are maintained through patch releases
+major.minor.*n* releases.  At each new major.minor.0 release, prior
+versions are retired from support.  All efforts are focused on the
+current release.  No further development or bug fixes are made
+available for earlier versions.  The earlier versions can still be
+accessed through version control.
+
+
+## Qualified personnel
+
+The members of the Stan development team are drawn from multiple
+computational, scientific, and statistical disciplines across
+academic, not-for-profit, and industrial laboratories.
+
+Many of Stan's developers have Ph.D. degrees, some have Master's
+degrees, and some are currently enrolled as undergraduate or graduate
+students. All of the developers with advanced degrees have published
+extensively in peer reviewed journals. Several have written books on
+statistics and/or computing. Many members of the core development team
+were well known internationally outside of their contributions to Stan.
+The group overall is widely acknowledged as leading experts in
+statistical computing, software development, and applied statistics.
+
+The managers of the development process have extensive industrial
+programming experience and have designed or contributed to other
+software systems that are still in production.
+
+Institutions at which the members of the Stan development team hold
+appointments as of Stan release 2.17.1 include Columbia University,
+Adobe Creative Technologies Lab, University of Warwick, University of
+Toronto (Scarborough), Dartmouth College, University of Washington,
+Lucidworks, CNRS (Paris), St. George's, University of London,
+University of Massachusetts (Amherst), Aalto University, and Novartis
+Pharma.
+
+
+## Physical and logical security
+
+The Stan project maintains its integration servers for Stan C++ and
+CmdStan on site at Columbia University. The integration servers for
+Stan C++ and CmdStan are password protected and run on isolated,
+standalone machines used only as integration servers. The network is
+maintained by Columbia University's Information Technology (CUIT)
+group.
+
+The integration server for PyStan is hosted by the Travis open-source
+continuous integration project, and is password protected on an
+account basis.
+
+The version control system is hosted by [GitHub](http://github.com).
+Due to Git's distributed nature, each developer maintains a complete
+record of the entire project's commit history. Everything is openly
+available, but privileges to modify the existing branches is
+restricted to the core developers. Any change to the code base is
+easily reversed through Git.
+
+The archived releases as well as clones of the full repositories are
+also managed through GitHub.
+
+Stan's web pages are also served by [GitHub](http://github.com) and
+are password protected. The web pages are purely informational and
+nothing is distributed through the web pages themselves other than
+case studies and documentation.
+
+Individual contributors work on their own personal computers or on
+compute clusters at Columbia or elsewhere.
+
+
+## Disaster recovery
+
+The entire history of the Stan C++, CmdStan, RStan, and PyStan
+repositories is maintained on the GitHub servers as well as on each
+developer's individual copy of the repository. Specifically, each
+repository can be reconstituted from any of the core
+developers' machines.
+
+------------------------------
+
+<small> Copyright (2020) Stan Development Team and their assignees.
+Licensed under CC-BY ND 4.0.</small>

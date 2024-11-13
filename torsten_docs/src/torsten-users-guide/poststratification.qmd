@@ -1,0 +1,528 @@
+---
+pagetitle: Poststratification
+---
+
+# Poststratification
+
+Stratification is a technique developed for survey sampling in which a
+population is partitioned into subgroups (i.e., stratified) and each
+group (i.e., stratum) is sampled independently.  If the subgroups are
+more homogeneous (i.e., lower variance) than the population as a
+whole, this can reduce variance in the estimate of a quantity of
+interest at the population level.
+
+Poststratification is a technique for adjusting a non-representative
+sample (i.e., a convenience sample or other observational data) for
+which there are demographic predictors characterizing the strata.  It
+is carried out after a model is fit to the observed data, hence the
+name *post*stratification [@Little:1993].  Poststratification can be
+fruitfully combined with regression modeling (or more general
+parametric modeling), which provides estimates based on combinations
+of predictors (or general parameters) rather than raw counts in each
+stratum.  Multilevel modeling is useful in determining how much
+partial pooling to apply in the regressions, leading to the popularity
+of the combination of multilevel regression and poststratification
+(MRP) [@Park:2004].
+
+## Some examples
+
+### Earth science {-}
+
+Stratification and poststratification can be applied to many
+applications beyond survey sampling [@Kennedy:2019].  For example,
+large-scale whole-earth soil-carbon models are fit with parametric
+models of how soil-carbon depends on features of an area such as soil
+composition, flora, fauna, temperature, humidity, etc.  Given a model
+that predicts soil-carbon concentration given these features, a
+whole-earth model can be created by stratifying the earth into a grid
+of say 10km by 10km "squares" (they can't literally be square because the
+earth's surface is topologically a sphere).  Each grid area has an
+estimated makeup of soil type, forestation, climate, etc.  The global
+level of soil carbon is then estimated using poststratification by
+simply summing the expected soil carbon estimated for each square in
+the grid [@Paustian:1997].  Dynamic models can then be constructed by
+layering a time-series component, varying the poststratification
+predictors over time, or both [@Field:1998].  
+
+
+### Polling {-}
+
+Suppose a university's administration would like to estimate the
+support for a given proposal among its students.  A poll is carried
+out in which 490 respondents are undergraduates, 112 are graduate
+students, and 47 are continuing education students.  Now suppose that
+support for the issue among the poll respondents is is 25% among
+undergraduate students (subgroup 1), 40% among graduate students
+(subgroup 2), and 80% among continuing education students (subgroup
+3).  Now suppose that the student body is made up of 20,000
+undergraduates, 5,000 graduate students, and 2,000 continuing
+education students.  It is important that our subgroups are exclusive
+and exhaustive, i.e., they form a partition of the population.
+
+The proportion of support in the poll among students in each group
+provides a simple maximum likelihood estimate $\theta^* = (0.25, 0.5,
+0.8)$ of support in each group for a simple Bernoulli model where
+student $n$'s vote is modeled as
+$$
+y_n \sim \textrm{bernoulli}(\theta_{jj[n]}),
+$$
+where $jj[n] \in 1:3$ is the subgroup to which the $n$-th student
+belongs.  
+
+An estimate of the population prevalence of support for the
+issue among students can be constructed by simply multiplying
+estimated support in each group by the size of each group.  Letting
+$N = (20\,000,\, 5\,000,\, 2\,000)$ be the subgroup sizes, the
+poststratified estimate of support in the population $\phi^*$ is
+estimated by 
+$$
+\phi^*
+= \frac{\displaystyle \sum_{j = 1}^3 \theta_j^* \cdot N_j}
+       {\displaystyle \sum_{j = 1}^3 N_j}.
+$$
+Plugging in our estimates and population counts yields
+\begin{eqnarray*}
+\phi*
+& = & \frac{0.25 \cdot 20\,000 + 0.4 \cdot 5\,000 + 0.8 \cdot 2\,000}
+           {20\,000 + 5\,000 + 2\,000}
+\\[4pt] & = & \frac{8\,600}{27\,000}
+\\[4pt] & \approx & 0.32.
+\end{eqnarray*}
+
+## Bayesian poststratification
+
+Considering the same polling data from the previous section in a
+Bayesian setting, the uncertainty in the estimation of subgroup
+support is pushed through predictive inference in order to get some
+idea of the uncertainty of estimated support.  Continuing the example
+of the previous section, the data model remains the same,
+$$
+y_n \sim \textrm{bernoulli}(\theta_{jj[n]}),
+$$
+where $jj[n] \in 1:J$ is the group to which item $n$ belongs and
+$\theta_j$ is the proportion of support in group $j$.
+
+This can be reformulated from a Bernoulli model to a binomial model in
+the usual way.  Letting $A_j$ be the number of respondents in group
+$j$ and $a_j$ be the number of positive responses in group $j$, the
+data model may be reduced to the form
+$$
+a_j \sim \textrm{binomial}(A_j, \theta_j).
+$$
+A simple uniform prior on the proportion of support in each group
+completes the model,
+$$
+\theta_j \sim \textrm{beta}(1, 1).
+$$
+A more informative prior could be used if there is prior information
+available about support among the student body.
+
+Using sampling, draws $\theta^{(m)} \sim p(\theta \mid y)$ from the
+posterior may be combined with the population sizes $N$ to estimate
+$\phi$, the proportion of support in the population,
+$$
+\phi^{(m)}
+= \frac{\displaystyle \sum_{j = 1}^J \theta_j^{(m)} \cdot N_j}
+       {\displaystyle \sum_{j = 1}^J N_j}.
+$$
+The posterior draws for $\phi^{(m)}$ characterize expected support for
+the issue in the entire population.  These draws may be used to
+estimate expected support (the average of the $\phi^{(m)}$),
+posterior intervals (quantiles of the $\phi^{(m)}$), or to plot a
+histogram. 
+
+## Poststratification in Stan
+
+The maximum likelihood and Bayesian estimates can be handled with the
+same Stan program.  The model of individual votes is collapsed to a
+binomial, where $A_j$ is the number of voters from group $j$, $a_j$ is
+the number of positive responses from group $j$, and $N_j$ is the size
+of group $j$ in the population.
+
+```stan
+data {
+  int<lower=1> J;
+  array[J] int<lower=0> A; 
+  array[J] int<lower=0> a;
+  vector<lower=0>[J] N;
+}
+parameters {
+  vector<lower=0, upper=1>[J] theta;
+}
+model {
+  a ~ binomial(A, theta);
+}
+generated quantities {t
+  real<lower=0, upper=1> phi = dot(N, theta) / sum(N);
+}
+```
+The binomial distribution statement is vectorized, and implicitly generates 
+the joint likelihood for the $J$ terms.
+The prior is implicitly uniform on $(0, 1),$ the support of $\theta.$
+The summation is computed using a dot product and the sum function,
+which is why `N` was declared as a vector rather than as an array of
+integers.
+
+
+## Regression and poststratification
+
+In applications to polling, there are often numerous demographic
+features like age, gender, income, education, state of residence, etc.
+If each of these demographic features induces a partition on the
+population, then their product also induces a partition on the
+population.  Often sources such as the census have matching (or at
+least matchable) demographic data;  otherwise it must be estimated.  
+
+The problem facing poststratification by demographic feature is that
+the number of strata increases exponentially as a function of the
+number of features.  For instance, 4 age brackets, 2 sexes, 5 income
+brackets, and 50 states of residence leads to $5 \cdot 2 \cdot 5 \cdot
+50 = 2000$ strata.  Adding another 5-way distinction, say for
+education level, leads to 10,000 strata.  A simple model like the one
+in the previous section that takes an independent parameter $\theta_j$
+for support in each stratum is unworkable in that many groups will
+have zero respondents and almost all groups will have very few
+respondents.
+
+A practical approach to overcoming the problem of low data size per
+stratum is to use a regression model.  Each demographic feature will
+require a regression coefficient for each of its subgroups, but now
+the parameters add to rather than multiply the total number of
+parameters.  For example, with 4 age brackets, 2 sexes, 5 income
+brackets, and 50 states of residence, there are only $4 + 2 + 5 + 50 =
+61$ regression coefficients to estimate. Now suppose that
+item $n$ has demographic features $\textrm{age}_n \in 1:5$,
+$\textrm{sex}_n \in 1:2$, $\textrm{income}_n \in 1:5,$ and
+$\textrm{state}_n \in 1:50$.  A logistic regression may be formulated
+as
+$$
+y_n \sim
+\textrm{bernoulli}(\textrm{logit}^{-1}(
+\alpha + \beta_{\textrm{age}[n]}
++ \gamma_{\textrm{sex}[n]}
++ \delta_{\textrm{income}[n]}
++ \epsilon_{\textrm{state}[n]}
+)),
+$$
+where $\textrm{age}[n]$ is the age of the $n$-th respondent,
+$\textrm{sex}[n]$ is their sex, $\textrm{income}[n]$ their income and
+$\textrm{state}[n]$ their state of residence.  These coefficients can
+be assigned priors, resulting in a Bayesian regression model.  
+
+To poststratify the results, the population size for each combination of
+predictors must still be known.  Then the population estimate is
+constructed as
+$$
+\sum_{i = 1}^5 \sum_{j = 1}^2 \sum_{k = 1}^5 \sum_{m = 1}^{50}
+\textrm{logit}^{-1}(\alpha + \beta_i + \gamma_j + \delta_k + \eta_m)
+\cdot \textrm{pop}_{i, j, k, m},
+$$
+where $\textrm{pop}_{i, j, k, m}$ is the size of the subpopulation
+with age $i$, sex $j$, income level $k$, and state of residence $m$.
+
+As formulated, it should be clear that any kind of prediction could be
+used as a basis for poststratification.  For example, a Gaussian
+process or neural network could be used to produce a non-parametric
+model of outcomes $y$ given predictors $x$.
+
+
+## Multilevel regression and poststratification
+
+With large numbers of demographic features, each cell may have very
+few items in it with which to estimate regression coefficients.  For
+example, even in a national-level poll of 10,000 respondents, if they
+are divided by the 50 states, that's only 200 respondents per state on
+average.  When data sizes are small, parameter estimation can be
+stabilized and sharpened by providing hierarchical priors.  With
+hierarchical priors, the data determines the amount of partial
+pooling among the groups.  The only drawback is that if the number of
+groups is small, it can be hard to fit these models without strong
+hyperpriors.
+
+The model introduced in the previous section had the data model
+$$
+y_n \sim
+\textrm{bernoulli}(\textrm{logit}^{-1}(
+\alpha + \beta_{\textrm{age}[n]}
++ \gamma_{\textrm{sex}[n]}
++ \delta_{\textrm{income}[n]}
++ \epsilon_{\textrm{state}[n]}
+)).
+$$
+The overall intercept can be given a broad fixed prior,
+$$
+\alpha \sim \textrm{normal}(0, 5).
+$$
+The other regression parameters can be given hierarchical priors,
+\begin{eqnarray*}
+\beta_{1:4} & \sim & \textrm{normal}(0, \sigma^{\beta})
+\\[2pt]
+\gamma_{1:2} & \sim & \textrm{normal}(0, \sigma^{\gamma})
+\\[2pt]
+\delta_{1:5} & \sim & \textrm{normal}(0, \sigma^{\delta})
+\\[2pt]
+\epsilon_{1:50} & \sim & \textrm{normal}(0, \sigma^{\epsilon}).
+\end{eqnarray*}
+
+
+The hyperparameters for scale of variation within a group can
+be given simple standard hyperpriors,
+$$
+\sigma^{\beta}, \sigma^{\gamma}, \sigma^{\delta}, \sigma^{\epsilon}
+\sim \textrm{normal}(0, 1).
+$$
+The scales of these fixed hyperpriors need to be determined on a
+problem-by-problem basis, though ideally they will be close to
+standard (mean zero, unit variance).
+
+
+### Dealing with small partitions and non-identifiability {-}
+
+The multilevel structure of the models used for multilevel regression
+and poststratification consist of a sum of intercepts that vary by
+demographic feature. This immediately introduces non-identifiability.
+A constant added to each state coefficient and subtracted from each age
+coefficient leads to exactly the same likelihood.
+
+This is non-identifiability that is only mitigated by the
+(hierarchical) priors.  When demographic partitions are small, as they
+are with several categories in the example, it can be more
+computationally tractable to enforce a sum-to-zero constraint on the
+coefficients.  Other values than zero will by necessity be absorbed
+into the intercept, which is why it typically gets a broader prior
+even with standardized data.  With a sum to zero constraint,
+coefficients for binary features will be negations of each other.  For
+example, because there are only two sex categories, $\gamma_2 =
+-\gamma_1.$
+
+To implement sum-to-zero constraints,
+```stan
+parameters {
+  vector[K - 1] alpha_raw;
+// ...
+}
+transformed parameters {
+  vector<multiplier=sigma_alpha>[K] alpha
+    = append_row(alpha_raw, -sum(alpha_raw));
+// ...    
+}
+model {
+  alpha ~ normal(0, sigma_alpha);
+}
+```
+This prior is hard to interpret in that there are `K` normal
+distributions, but only `K - 1` free parameters.  An alternative is to
+put the prior only on `alpha_raw`, but that is also difficult to
+interpret.
+
+Soft constraints can be more computationally tractable.  They are also
+simpler to implement.
+```stan
+parameters {
+  vector<multiplier=alpha>[K] alpha;
+// ...
+}
+model {
+  alpha ~ normal(0, sigma_alpha);
+  sum(alpha) ~ normal(0, 0.001);
+}
+```
+This leaves the regular prior, but adds a second prior that
+concentrates the sum near zero.  The scale of the second prior will
+need to be established on a problem and data-set specific basis so
+that it doesn't shrink the estimates beyond the shrinkage of the
+hierarchical scale parameters.
+
+Note that in the hierarchical model, the values of the coefficients
+when there are only two coefficients should be the same absolute value
+but opposite signs.  Any other difference could be combined into the
+overall intercept $\alpha.$  Even with a wide prior on the intercept,
+the hyperprior on $\sigma^{\gamma}$ may not be strong enough to
+enforce that, leading to a weak form non-identifiability in the
+posterior.  Enforcing a (hard or soft) sum-to-zero constraint can help
+mitigate non-identifiability.  Whatever prior is chosen, prior
+predictive checks can help diagnose problems with it.
+
+None of this work to manage identifiability in multilevel regressions
+has anything to do with the poststratification; it's just required to
+fit a large multilevel regression with multiple discrete categories.
+Having multiple intercepts always leads to weak non-identifiability,
+even with the priors on the intercepts all centered at zero.
+
+
+## Coding MRP in Stan
+
+Multilevel regression and poststratification can be coded directly in
+Stan.  To code the non-centered parameterization for each coefficient,
+which will be required for sampling efficiency, the `multiplier`
+transform is used on each of the parameters.  The combination of
+
+```stan
+vector<multiplier=s>[K] a;
+// ...
+a ~ normal(0, s);
+```
+implements a non-centered parameterization for `a`; a centered
+parameterization would drop the `multiplier` specification.  The prior
+scale `s` is being centered here.  The prior location is fixed to
+zero in multilevel regressions because there is an overall intercept;
+introducing a location parameters in the prior would introduce
+non-identifiability with the overall intercept.  The centered
+parameterization drops the `multiplier`.  
+
+Here is the full Stan model, which performs poststratification in the
+generated quantities using population sizes made available through
+data variable `P`.
+```stan
+data {
+  int<lower=0> N;
+  array[N] int<lower=1, upper=4> age;
+  array[N] int<lower=1, upper=5> income;
+  array[N] int<lower=1, upper=50> state;
+  array[N] int<lower=0> y;
+  array[4, 5, 50] int<lower=0> P;
+}
+parameters {
+  real alpha;
+  real<lower=0> sigma_beta;
+  vector<multiplier=sigma_beta>[4] beta;
+  real<lower=0> sigma_gamma;
+  vector<multiplier=sigma_gamma>[5] gamma;
+  real<lower=0> sigma_delta;
+  vector<multiplier=sigma_delta>[50] delta;
+}
+model {
+  y ~ bernoulli_logit(alpha + beta[age] + gamma[income] + delta[state]);
+  alpha ~ normal(0, 2);
+  beta ~ normal(0, sigma_beta);
+  gamma ~ normal(0, sigma_gamma);
+  delta ~ normal(0, sigma_delta);
+  { sigma_beta, sigma_gamma, sigma_delta } ~ normal(0, 1);
+}
+generated quantities {
+  real expect_pos = 0;
+  int total = 0;
+  for (b in 1:4) {
+    for (c in 1:5) {
+      for (d in 1:50) {
+        total += P[b, c, d];
+        expect_pos
+          += P[b, c, d]
+             * inv_logit(alpha + beta[b] + gamma[c] + delta[d]);
+      }
+    }
+  }
+  real<lower=0, upper=1> phi = expect_pos / total;
+}
+```
+Unlike in posterior predictive inference aimed at uncertainty, there
+is no need to introduce binomial sampling uncertainty into the
+estimate of expected positive votes.  Instead, generated quantities
+are computed as expectations.  In general, it is more efficient to
+work in expectation if possible (the Rao-Blackwell theorem says it's
+at least as efficient to work in expectation, but in practice, it can
+be much much more efficient, especially for discrete quantities).
+
+### Binomial coding {-}
+
+In some cases, it can be more efficient to break the data down by
+group.  Suppose there are $4 \times 5 \times 2 \times 50 = 2000$
+groups.  The data can be broken down into a size-2000 array, with
+entries corresponding to total vote counts in that group
+```stan
+int<lower=0> G;
+array[G] int<lower=1, upper=4> age;
+array[G] int<lower=1, upper=5> income;
+array[G] int<lower=1, upper=50> state;
+```
+Then the number of positive votes and the number of total votes are
+collected into two parallel arrays indexed by group.
+```stan
+array[G] int<lower=0> pos_votes;
+array[G] int<lower=0> total_votes;
+```
+Finally, the data model is converted to binomial.
+```stan
+pos_votes ~ binomial_logit(total_votes,
+                           alpha + beta[age] + ...);
+```
+The predictors look the same because of the way the `age` and other
+data items are coded.
+
+
+### Coding binary groups {-}
+
+In this first model, sex is not included as a predictor.  With only
+two categories, it needs to be modeled separately, because it is not
+feasible to build a hierarchical model with only two cases.
+A sex predictor is straightforward to add to the data block; it takes
+on values 1 or 2 for each of the `N` data points.
+```stan
+  array[N] int<lower=1, upper=2> sex;
+```
+Then add a single regression coefficient as a parameter,
+```
+  real epsilon;
+```
+In the log odds calculation, introduce a new term
+```
+[epsilon, -epsilon][sex]';
+```
+That is, the data model will now look like
+```stan
+  y ~ bernoulli_logit(alpha + beta[age] + gamma[income] + delta[state]
+                      + [epsilon, -epsilon][sex]');
+```
+
+For data point `n`, the expression `[epsilon, -epsilon][sex]` takes on
+value `[epsilon, -epsilon][sex][n]`, which with Stan's multi-indexing
+reduces to `[epsilon, -epsilon][sex[n]]`.  This term evaluates to
+`epsilon` if `sex[n]` is 1 and to `-epsilon` if `sex[n]` is 2.  The
+result is effectively a sum-to-zero constraint on two sex
+coefficients. The `'` at the end transposes `[epsilon, -epsilon][sex]`
+which is a `row_vector` into a `vector` that can be added to the other
+variables.
+
+Finally, a prior is needed for the coefficient in the model block,
+```stan
+epsilon ~ normal(0, 2);
+```
+As with other priors in multilevel models, the posterior for `epsilon`
+should be investigated to make sure it is not unrealistically wide.
+
+## Adding group-level predictors
+
+If there are group-level predictors, such as average income in a
+state, or vote share in a previous election, these may be used as
+predictors in the regression.  They will not pose an obstacle to
+poststratification because they are at the group level.  For example,
+suppose the average income level in the state is available as the data
+variable 
+```stan
+array[50] real<lower=0> income;
+```
+then a regression coefficient `psi` can be added for the effect of
+average state income,
+```stan
+real psi;
+```
+with a fixed prior, 
+```stan
+psi ~ normal(0, 2);
+```
+This prior assumes the `income` predictor has been standardized.
+Finally, a term is added to the regression for the fixed predictor,
+```stan
+y ~ bernoulli_logit(alpha + beta[age] + ... + delta[state]
+                    + income[state] * psi);
+```
+And finally, the formula in the generated quantities block is also
+updated,
+```stan
+expect_pos
+  += P[b, c, d]
+     * inv_logit(alpha + beta[b] + gamma[c] + delta[d]
+	         + income[d] * psi);
+```
+Here `d` is the loop variable looping over states.  This ensures that
+the poststratification formula matches the model formula.

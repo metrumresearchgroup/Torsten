@@ -1,0 +1,249 @@
+---
+pagetitle: Complex Numbers
+---
+
+# Complex Numbers
+
+Stan supports complex scalars, matrices, and vectors as well as
+real-based ones.
+
+
+## Working with complex numbers
+
+This section describes the complex scalar type, including how to build
+complex numbers, assign them, and use them in arrays and functions.
+
+### Constructing and accessing complex numbers {-}
+
+Complex numbers can be constructed using imaginary literals.  For example,
+
+```stan
+complex z = -1.1 + 2.3i;
+```
+
+produces the complex number $-1.1 + 2.3i$.  This only works if the
+real and imaginary components are literal numerals.  To construct a
+complex number out of arbitrary real variables, the `to_complex()`
+function may be used.  For example, the following code will work if
+`x` and `y` are parameters, transformed data, or local variables in a
+function or model block.
+
+```stan
+real x = // ...
+real y = // ...
+complex z = to_complex(x, y);
+```
+
+The real and imaginary parts of the complex number can be accessed
+with getters as follows.
+
+```stan
+real x = get_real(z);  // x = -1.1
+real y = get_imag(z);  // y = 2.3
+```
+
+Complex numbers can be compared using equality (or inequality), but
+not with greater than or less than operators.  For example, after
+running the code above, the following code snippet will print
+"hello".
+
+```stan
+complex a = 3.2 + 2i;
+complex b = to_complex(3.2, 2);
+if (a == b) print("hello");
+```
+
+
+### Complex assignment and promotion {-}
+
+Integer- or real-valued expressions may be assigned to complex
+numbers, with the corresponding imaginary component set to zero.
+
+```stan
+complex z1 = 3;  // int promoted to 3 + 0i
+complex z2 = 3.2;  // real promoted to 3.2 + 0.i
+```
+
+
+### Complex arrays {-}
+
+Arrays of complex numbers work as usual and allow the usual
+curly bracket constructors.
+
+```stan
+complex z1;  complex z2;  complex z3;
+// ...
+array[3] complex zs = { z1, z2, z3 };
+for (z in zs) {
+  print(z);
+}
+```
+
+Complex arrays allow assignment into their elements, with integer or
+real assigned values being promoted to complex.
+
+
+### Complex functions {-}
+
+All of the standard complex functions are available, including
+natural logarithm `log(z)`, natural exponentiation `exp(z)`, and
+powers `pow(z1, z2)`, as well as all of the trig and hyperbolic
+trigonometric functions and their inverse, such as `sin(z)`,
+`acos(z)`, `tanh(z)` and `asinh(z)`.
+
+Promotion also works for complex-valued function arguments, which may
+be passed integer or real values, which will be promoted before the
+function is evaluated.  For example, the following user-defined
+complex function will accept integer, real, or complex arguments.
+
+```stan
+complex times_i(complex z) {
+  complex i = to_complex(0, 1);
+  return i * z;
+}
+```
+
+For instance, `times_i(1)` evaluates to the imaginary base $i$, as
+does `times_i(1.0)`.
+
+
+## Complex random variables
+
+The simplest way to model a distribution over a complex random number
+$z = x + yi$ is to consider its real part $x$ and imaginary part $y$
+to have a bivariate normal distribution.  For example, a complex prior
+can be expressed as follows.
+
+```stan
+complex z;
+vector[2] mu;
+cholesky_cov[2] L_Sigma;
+// ...
+[get_real(z), get_imag(z)]' ~ multi_normal_cholesky(mu, L_Sigma);
+```
+
+For example, if `z` is data, this can be used to estimate `mu` and the
+covariance Cholesky factor `L_Sigma`.  Alternatively, if `z` is
+a parameter, `mu` and `L_Sigma` may constants defining a prior or
+further parameters defining a hierarchical model.
+
+
+## Complex matrices and vectors
+
+Stan supports complex matrices, vectors, and row vectors.  Variables
+of these types are declared with sizes in the same way as their
+real-based counterparts.
+
+```stan
+complex_vector[3] v;
+complex_row_vector[2] rv;
+complex_matrix[3, 2] m;
+```
+
+We can construct vectors and matrices using brackets in the same way
+as for real-valued vectors and matrices.  For example, given the
+declaration of `rv` above, we could assign it to a constructed row
+vector.
+
+```stan
+rv =  [2 + 3i, 1.9 - 2.3i];
+```
+
+Complex matrices and vectors support all of the standard arithetmic
+operations including negation, addition, subtraction, and
+multiplication (division involves a solve, and isn't a simple
+arithmetic operation for matrices).  They also support transposition.
+
+Furthermore, it is possible to convert back and forth between arrays
+and matrices using the `to_array` functions.
+
+
+## Complex linear regression
+
+Complex valued linear regression with complex predictors and
+regression coefficients looks just like standard regression.  For
+example, if we take `x` to be predictors, `y` to be an array of
+outcomes.  For example, consider the following complete Stan program
+for an intercept and slope.
+
+```stan
+data {
+  int<lower=0> N;
+  complex_vector[N] x;
+  complex_vector[N] y;
+}
+parameters {
+  complex alpha;
+  complex beta;
+}
+model {
+  complex_vector[N] eps = y - (alpha + beta * x);
+  eps ~  // ...error distribution...
+}
+```
+
+The question remains of how to fill in the error distribution and
+there are several alternatives.  We consider only two simple
+alternatives, and do not consider penalizing the absolute value of the
+error.
+
+
+### Independent real and imaginary error {-}
+
+The simplest approach to error in complex regression is to give the
+real and imaginary parts of `eps_n` independent
+independent normal distributions, as follows.
+
+```stan
+parameters {
+  // ...
+  vector[2] sigma;
+}
+// ...
+model {
+  // ...
+  get_real(eps) ~ normal(0, sigma[1]);
+  get_imag(eps) ~ normal(0, sigma[2]);
+  sigma ~ //...hyperprior...
+}
+```
+
+A new error scale vector `sigma` is introduced, and it should itself
+get a prior based on the expected scale of error for the problem.
+
+
+### Dependent complex error {-}
+
+The next simplest approach is to treat the real and imaginary parts of
+the complex number as having a multivariate normal prior.  This can be
+done by adding a parameter for correlation to the above, or just
+working with a multivariate covariance matrix, as we do here.
+
+```stan
+parameters {
+  cholesky_factor_corr[2] L_Omega;  // correlation matrix
+  vector[2] sigma;                  // real, imag error scales
+  // ...
+}
+// ...
+model {
+  array[N] vector[2] eps_arr;
+  for (n in 1:N) {
+    eps_arr[n] = { to_real(eps[n]), to_imag(eps[n]) };
+  }
+  eps_arr ~ multi_normal_cholesky([0, 0]',
+                                  diag_pre_multiply(sigma, L_Omega));
+  L_Omega ~ lkj_cholesky(4);  // shrink toward diagonal correlation
+  sigma ~ // ... hyperprior ...
+}
+```
+
+Here, the real and imaginary components of the error get a joint
+distribution with correlation and independent scales.  The error gets
+a multivariate normal distribution with zero mean and a Cholesky
+factor representation of covariance, consisting of a scale vector
+`sigma` and a Cholesky factor or a correlation matrix, `L_Omega`.  The
+prior on the correlations is concentrated loosely around diagonal
+covariance, and the prior on the scales is left open.  In order to
+vectorize the call to `multi_normal_cholesky`, the vector of complex
+numbers needs to be converted to an array of size 2 vectors.

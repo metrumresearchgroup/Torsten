@@ -1,0 +1,308 @@
+---
+pagetitle: Computing One Dimensional Integrals
+---
+
+# Computing One Dimensional Integrals {#integrate-1d}
+
+
+Definite and indefinite one dimensional integrals can be performed in Stan
+using the [`integrate_1d` function](https://mc-stan.org/docs/functions-reference/higher-order_functions.html#functions-1d-integrator)
+
+As an example, the normalizing constant of a left-truncated normal distribution is
+
+$$
+  \int_a^\infty \frac{1}{\sqrt{2 \pi \sigma^2}} e^{-\frac{1}{2}\frac{(x - \mu)^2}{\sigma^2}}
+$$
+
+
+To compute this integral in Stan, the integrand must first be defined as a Stan function
+(see the Stan Reference Manual chapter on User-Defined Functions
+for more information on coding user-defined functions).
+
+```stan
+real normal_density(real x,             // Function argument
+                    real xc,            // Complement of function argument
+                                        //  on the domain (defined later)
+                    array[] real theta, // parameters
+                    array[] real x_r,   // data (real)
+                    array[] int x_i) {  // data (integer)
+  real mu = theta[1];
+  real sigma = theta[2];
+
+  return 1 / (sqrt(2 * pi()) * sigma) * exp(-0.5 * ((x - mu) / sigma)^2);
+}
+```
+
+
+This function is expected to return the value of the integrand evaluated at point `x`. The
+argument `xc` is used in definite integrals to avoid loss of precision near
+the limits of integration and is set to NaN when either limit is infinite
+(see the  section on precision/loss in the chapter on
+Higher-Order Functions
+of the Stan Functions Reference for details on how to use this).
+The argument `theta` is used to pass in arguments of the integral
+that are a function of the parameters in our model. The arguments `x_r`
+and `x_i` are used to pass in real and integer arguments of the integral that are
+not a function of our parameters.
+
+The function defining the integrand must have exactly the argument types and
+return type of `normal_density` above, though argument naming is not important.
+Even if `x_r` and `x_i` are unused in the integrand, they must be
+included in the function signature. This may require passing in zero-length arrays
+for data or a zero-length vector for parameters if the integral does not involve
+data or parameters.
+
+## Calling the integrator
+
+Suppose that our model requires evaluating the lpdf of a left-truncated normal, but
+the truncation limit is to be estimated as a parameter. Because the truncation
+point is a parameter, we must include the normalization term of the truncated pdf when
+computing our model's log density. Note this is just an example of how to use the
+1D integrator. The more efficient way to perform the correct normalization in Stan
+is described in the chapter on Truncated or Censored Data of this guide.
+
+Such a model might look like (include the function defined at the beginning of this
+chapter to make this code compile):
+
+```stan
+data {
+  int N;
+  array[N] real y;
+}
+
+transformed data {
+  array[0] real x_r;
+  array[0] int x_i;
+}
+
+parameters {
+  real mu;
+  real<lower=0.0> sigma;
+  real left_limit;
+}
+
+model {
+  mu ~ normal(0, 1);
+  sigma ~ normal(0, 1);
+  left_limit ~ normal(0, 1);
+  target += normal_lpdf(y | mu, sigma);
+  target += log(integrate_1d(normal_density,
+                             left_limit,
+                             positive_infinity(),
+                             { mu, sigma }, x_r, x_i));
+}
+```
+
+### Limits of integration {-}
+
+The limits of integration can be finite or infinite. The infinite limits are
+made available via the Stan calls `negative_infinity()` and
+`positive_infinity()`.
+
+If both limits are either `negative_infinity()` or
+`positive_infinity()`, the integral and its gradients are set to zero.
+
+### Data vs. parameters {-}
+
+The arguments for the real data `x_r` and the integer data `x_i`
+must be expressions that only involve data or transformed data variables.
+`theta`, on the other hand, can be a function of data, transformed data,
+parameters, or transformed parameters.
+
+The endpoints of integration can be data or parameters (and internally the
+derivatives of the integral with respect to the endpoints are handled
+with the Leibniz integral rule).
+
+## Integrator convergence
+
+The integral is performed with the iterative 1D double exponential quadrature methods implemented
+in the Boost library [@BoostQuadrature:2017]. If the $n$th estimate of the
+integral is denoted $I_n$ and the $n$th estimate of the norm of the integral is
+denoted $|I|_n$, the iteration is terminated when
+
+$$
+  \frac{{|I_{n + 1} - I_n|}}{{|I|_{n + 1}}} < \text{relative tolerance}.
+$$
+
+The `relative_tolerance` parameter can be optionally specified as the
+last argument to `integrate_1d`. By default, `integrate_1d` follows the
+Boost library recommendation of setting `relative_tolerance` to the square
+root of the machine epsilon of double precision floating point numbers
+(about `1e-8`). If the Boost integrator is not able to reach the relative tolerance
+an exception is raised with a message somehing like "Exception: integrate: error
+estimate of integral 4.25366e-13 exceeds the given relative tolerance times norm of integral".
+If `integrate_1d` causes an exception in transformed parameters block or model block, the
+result has the same effect as assigning a $-\infty$ log probability, which causes rejection 
+of the current proposal in MCMC samplers and adjustment of search parameters in optimization.
+If `integrate_1d` causes an exception in generated quantities block, the returned output from
+`integrate_1d` is NaN. In these cases, a bigger `relative_tolerance` value can be specified.
+
+### Zero-crossing integrals {- #zero-crossing}
+
+Integrals on the (possibly infinite) interval $(a, b)$ that cross zero are
+split into two integrals, one from $(a, 0)$ and one from $(0, b)$. This is
+because the quadrature methods employed internally can have difficulty near
+zero.
+
+In this case, each integral is separately integrated to the given
+`relative_tolerance`.
+
+### Avoiding precision loss near limits of integration in definite integrals {- #integral-precision}
+
+If care is not taken, the quadrature can suffer from numerical loss of
+precision near the endpoints of definite integrals.
+
+For instance, in integrating the pdf of a beta distribution when the values of
+$\alpha$ and $\beta$ are small, most of the probability mass is lumped near zero
+and one.
+
+The pdf of a beta distribution is proportional to
+
+$$
+p(x) \propto x^{\alpha - 1}(1 - x)^{\beta - 1}
+$$
+
+
+Normalizing this distribution requires computing the integral of $p(x)$ from
+zero to one. In Stan code, the integrand might look like:
+
+```stan
+real beta(real x, real xc, array[] real theta, array[] real x_r, array[] int x_i) {
+  real alpha = theta[1];
+  real beta = theta[2];
+
+  return x^(alpha - 1.0) * (1.0 - x)^(beta - 1.0);
+}
+```
+
+The issue is that there will be numerical breakdown in the precision of
+`1.0 - x` as `x` gets close to one. This is because of the limited
+precision of double precision floating numbers. This integral will fail to
+converge for values of `alpha` and `beta` much less than one.
+
+This is where `xc` is useful. It is defined, for definite integrals, as a high
+precision version of the distance from `x` to the nearest endpoint --- `a - x`
+or `b - x` for a lower endpoint `a` and an upper endpoint `b`. To make use of
+this for the beta integral, the integrand can be re-coded:
+
+```stan
+real beta(real x, real xc, array[] real theta, array[] real x_r, array[] int x_i) {
+  real alpha = theta[1];
+  real beta = theta[2];
+  real v;
+
+  if(x > 0.5) {
+    v = x^(alpha - 1.0) * xc^(beta - 1.0);
+  } else {
+    v = x^(alpha - 1.0) * (1.0 - x)^(beta - 1.0);
+  }
+
+  return v;
+}
+```
+
+In this case, as we approach the upper limit of integration $a = 1$, `xc` will
+take on the value of $a - x = 1 - x$. This version of the integrand will
+converge for much smaller values of `alpha` and `beta` than otherwise possible.
+
+Consider another example: let's say we have a log-normal distribution that is
+both shifted away from zero by some amount $\delta$, and truncated at some
+value $b$. If we were interested in calculating the expectation of a variable
+$X$ distributed in this way, we would need to calculate
+$$
+\int_a^b xf(x)\,dx = \int_{\delta}^b xf(x)\,dx
+$$
+in the numerator, where $f(x)$ is the probability density function for the
+shifted log-normal distribution. This probability density function can be
+coded in Stan as:
+
+```stan
+real shift_lognormal_pdf(real x,
+                         real mu,
+                         real sigma,
+                         real delta) {
+  real p;
+
+  p = (1.0 / ((x - delta) * sigma * sqrt(2 * pi()))) *
+    exp(-1 * (log(x - delta) - mu)^2 / (2 * sigma^2));
+
+  return p;
+}
+```
+
+Therefore, the function that we want to integrate is:
+
+```stan
+real integrand(real x,
+               real xc,
+               array[] real theta,
+               array[] real x_r,
+               array[] int x_i) {
+  real numerator;
+  real p;
+
+  real mu = theta[1];
+  real sigma = theta[2];
+  real delta = theta[3];
+  real b = theta[4];
+
+  p = shift_lognormal_pdf(x, mu, sigma, delta);
+
+  numerator = x * p;
+
+  return numerator;
+}
+```
+
+What happens here is that, given that the log-normal distribution is shifted by
+$\delta$, when we then try to integrate the numerator, our `x` starts at
+values just above `delta`. This, in turn, causes the `x - delta` term to be
+near zero, leading to a breakdown.
+
+We can use `xc`, and define the `integrand` as:
+
+```stan
+real integrand(real x,
+               real xc,
+               array[] real theta,
+               array[] real x_r,
+               array[] int x_i) {
+  real numerator;
+  real p;
+
+  real mu = theta[1];
+  real sigma = theta[2];
+  real delta = theta[3];
+  real b = theta[4];
+
+  if (x < delta + 1) {
+    p = shift_lognormal_pdf(xc, mu, sigma, delta);
+  } else {
+    p = shift_lognormal_pdf(x, mu, sigma, delta);
+  }
+
+  numerator = x * p;
+
+  return numerator;
+}
+```
+
+Why does this work? When our values of `x` are less than `delta + 1` (so, when
+they're near `delta`, given that our lower bound of integration is equal to
+$\delta$), we pass `xc` as an argument to our `shift_lognormal_pdf` function.
+This way, instead of dealing with `x - delta` in `shift_lognormal_pdf`, we are
+working with `xc - delta` which is equal to `delta - x - delta`, as `delta` is
+the lower endpoint in that case. The `delta` terms cancel out, and we are left
+with a high-precision version of `x`. We don't encounter the same problem at
+the upper limit $b$ so we don't adjust the code for that case.
+
+Note, `xc` is only used for definite integrals. If either the left endpoint
+is at negative infinity or the right endpoint is at positive infinity, `xc`
+will be NaN.
+
+For zero-crossing definite integrals (see section [Zero Crossing](#zero-crossing)) the
+integrals are broken into two pieces ($(a, 0)$ and $(0, b)$ for endpoints
+$a < 0$ and $b > 0$) and `xc` is a high precision version of the distance
+to the limits of each of the two integrals separately. This means `xc` will
+be a high precision version of `a - x`, `x`, or `b - x`,
+depending on the value of x and the endpoints.

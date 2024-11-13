@@ -1,0 +1,55 @@
+---
+format:
+    html:
+        title: Torsten User's Guide
+        subtitle: "Version {{< env STAN_DOCS_VERSION >}}"
+        toc: false
+---
+
+::: {.content-visible when-format="pdf"}
+# *Overview* {-}
+:::
+
+::: {.content-visible when-format="html"}
+![](img/logo_tm.png "Torsten Logo"){width=225 .column-margin .d-none .d-md-block}
+:::
+
+This is the official user's guide for
+[Torsten](https://github.com/metrumresearchgroup/Torsten).  It
+provides function references, and model examples for coding statistical models in Torsten.
+
+* Acknowledgements {#acknowledgements.section}
+This work was funded in part by the following organizations:
+- Office of Naval Research (ONR) contract N00014-16-P-2039 provided as part of the Small Business Technology Transfer (STTR)
+program. The content of the information presented in this document
+does not necessarily reflect the position or policy of the Government
+and no official endorsement should be inferred.
+
+- Bill \& Melinda Gates Foundation.
+
+- We thank Metrum Research Group, Columbia University, and AstraZeneca.
+We also thank the Stan Development Team for giving us guidance on how to
+create new Stan functions and adding features to Stan's core language
+that facilitate building ODE-based models.  We also thank Kyle Baron and Hunter Ford for helpful advice on coding
+in C++ and using GitHub, Curtis Johnston for reviewing the User
+Manual, and Yaming Su for using Torsten and giving us feedback.
+
+<!-- - Part 1 gives Stan code and discussions for several important classes -->
+<!-- of models. -->
+
+<!-- - Part 2 discusses various general Stan programming techniques that are -->
+<!-- not tied to any particular model. -->
+
+<!-- - Part 3 introduces algorithms for calibration and model checking that -->
+<!-- require multiple runs of Stan. -->
+
+<!-- - The appendices provide an introduction to the stanc3 compiler used in the -->
+<!--   various interfaces to Stan, a style guide, and advice for users of BUGS and -->
+<!--   JAGS. -->
+
+::: {.content-visible when-format="html"}
+[Download the pdf version of this manual](https://mc-stan.org/docs/{{< env STAN_DOCS_VERSION_PATH >}}/stan-users-guide-{{< env STAN_DOCS_VERSION_PATH >}}.pdf).
+:::
+
+
+{{< include ../copyright_licensing.qmd >}}

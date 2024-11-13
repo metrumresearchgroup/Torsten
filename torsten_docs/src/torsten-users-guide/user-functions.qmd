@@ -1,0 +1,785 @@
+---
+pagetitle: User-Defined Functions
+---
+
+# User-Defined Functions  {#functions-programming.chapter}
+
+This chapter explains functions from a user perspective with examples;
+see the language reference for a full specification.  User-defined
+functions allow computations to be encapsulated into a single named
+unit and invoked elsewhere by name.  Similarly, functions allow
+complex procedures to be broken down into more understandable
+components.  Writing modular code using descriptively named functions
+is easier to understand than a monolithic program, even if the latter
+is heavily commented.^[The main problem with comments is that they can be misleading, either due to misunderstandings on the programmer's part or because the program's behavior is modified after the comment is written.  The program always behaves the way the code is written, which is why refactoring complex code into understandable units is preferable to simply adding comments.]
+
+## Basic functions {#basic-functions.section}
+
+Here's an example of a skeletal Stan program with a user-defined
+relative difference function employed in the generated quantities
+block to compute a relative differences between two parameters.
+
+```stan
+functions {
+  real relative_diff(real x, real y) {
+    real abs_diff;
+    real avg_scale;
+    abs_diff = abs(x - y);
+    avg_scale = (abs(x) + abs(y)) / 2;
+    return abs_diff / avg_scale;
+  }
+}
+// ...
+generated quantities {
+  real rdiff;
+  rdiff = relative_diff(alpha, beta);
+}
+```
+
+The function is named `relative_diff`, and is declared to have
+two real-valued arguments and return a real-valued result.   It is
+used the same way a built-in function would be used in the generated
+quantities block.
+
+### User-defined functions block {-}
+
+All functions are defined in their own block, which is labeled
+`functions` and must appear before all other program blocks.  The
+user-defined functions block is optional.
+
+### Function bodies {-}
+
+The body (the part between the curly braces) contains ordinary Stan
+code, including local variables.  The new function is used in the
+generated quantities block just as any of Stan's built-in functions
+would be used.
+
+### Return statements {-}
+
+Return statements, such as the one on the last line of the definition
+of `relative_diff` above, are only allowed in the bodies of
+function definitions.  Return statements may appear anywhere in a
+function, but functions with non-void return types must end in a
+return statement.
+
+### Reject and error statements {-}
+
+The Stan `reject` statement provides a mechanism to report errors or
+problematic values encountered during program execution.  It accepts
+any number of quoted string literals or Stan expressions as arguments.
+This statement is typically embedded in a conditional statement in
+order to detect bad or illegal outcomes of some processing step.
+
+If an error is indicative of a problem from which it is not expected
+to be able to recover, Stan provides a `fatal_error` statement.
+
+#### Catching errors {-}
+
+Rejection is used to flag errors that arise in inputs or in program
+state.  It is far better to fail early with a localized informative
+error message than to run into problems much further downstream (as in
+rejecting a state or failing to compute a derivative).
+
+The most common errors that are coded is to test that all of the
+arguments to a function are legal.  The following function takes a
+square root of its input, so requires non-negative inputs; it is coded
+to guard against illegal inputs.
+
+```stan
+real dbl_sqrt(real x) {
+  if (!(x >= 0)) {
+    reject("dblsqrt(x): x must be positive; found x = ", x);
+  }
+  return 2 * sqrt(x);
+}
+```
+
+The negation of the positive test is important, because it also
+catches the case where `x` is a not-a-number value.  If the
+condition had been coded as `(x < 0)` it would not catch the
+not-a-number case, though it could be written as
+`(x < 0 || is_nan(x))`.  The positive infinite case is allowed
+through, but could also be checked with the `is_inf(x)` function.
+The square root function does not itself reject, but some downstream
+consumer of `dbl_sqrt(-2)` would be likely to raise an error, at
+which point the origin of the illegal input requires detective work.
+Or even worse, as Matt Simpson pointed out in the GitHub comments, the
+function could go into an infinite loop if it starts with an infinite
+value and tries to reduce it by arithmetic, likely consuming all
+available memory and crashing an interface.  Much better to catch
+errors early and report on their origin.
+
+The effect of rejection depends on the program block in which the
+rejection is executed.  In transformed data, rejections cause the
+program to fail to load.  In transformed parameters or in the model
+block, rejections cause the current state to be rejected in the
+Metropolis sense.^[Just because this makes it possible to code a rejection sampler does not make it a good idea.  Rejections break differentiability and the smooth exploration of the posterior.  In Hamiltonian Monte Carlo, it can cause the sampler to be reduced to a diffusive random walk.]
+
+In generated quantities there is no way to recover and generate
+the remaining parameters, so rejections cause subsequent values
+to be reported as NaNs. Extra care should be taken in calling functions
+which may reject in the generated quantities block.
+
+### Type declarations for functions {-}
+
+Function argument and return types for vector and matrix types
+are not declared with their sizes, unlike type declarations for variables.
+Function argument type declarations may not be
+declared with constraints, either lower or upper bounds or structured
+constraints like forming a simplex or correlation matrix, (as is also
+the case for local variables);  see the table of types in the [reference
+manual](https://mc-stan.org/docs/reference-manual/types.html#variable-declaration)
+for full details.
+
+For example, here's a function to compute the entropy of a categorical
+distribution with simplex parameter `theta`.
+
+```stan
+real entropy(vector theta) {
+  return sum(theta .* log(theta));
+}
+```
+
+Although `theta` must be a simplex, only the type `vector`
+is used.^[A range of built-in validation routines is coming to Stan soon! Alternatively, the `reject` statement can be used to check constraints on the simplex.]
+
+Upper or lower bounds on values or constrained types are not allowed
+as return types or argument types in function declarations.
+
+### Array types for function declarations {-}
+
+Array arguments have their own syntax, which follows that used in this
+manual for function signatures.  For example, a function that operates
+on a two-dimensional array to produce a one-dimensional array might be
+declared as follows.
+
+```stan
+array[] real baz(array[,] real x);
+```
+
+The notation `[ ]` is used for one-dimensional arrays (as in the
+return above), `[ , ]` for two-dimensional arrays,
+`[ , , ]` for three-dimensional arrays, and so on.
+
+Functions support arrays of any type, including matrix and vector
+types.  As with other types, no constraints are allowed.
+
+### Data-only function arguments {-}
+
+A function argument which is a real-valued type or
+a container of a real-valued type,
+i.e., not an integer type or integer array type,
+can be qualified using the prefix qualifier `data`.
+The following is an example of a data-only function argument.
+
+```stan
+real foo(real y, data real mu) {
+  return -0.5 * (y - mu)^2;
+}
+```
+
+
+This qualifier restricts this argument to being invoked
+with expressions which consist only of data variables,
+transformed data variables, literals, and function calls.
+A data-only function argument cannot involve real variables declared
+in the parameters, transformed parameters, or model block.
+Attempts to invoke a function using an expression which contains
+parameter, transformed parameters, or model block variables
+as a data-only argument will result in an error message from the
+parser.
+
+Use of the `data` qualifier must be consistent between the
+forward declaration and the definition of a functions.
+
+This qualifier should be used when writing functions that call the
+built-in ordinary differential equation (ODE) solvers, algebraic
+solvers, or map functions.  These higher-order functions have strictly
+specified signatures where some arguments of are data only
+expressions. (See the [ODE solver chapter](odes.qmd) for
+more usage details and the functions reference manual for full
+definitions.)  When writing a function which calls the ODE or
+algebraic solver, arguments to that function which are passed into the
+call to the solver, either directly or indirectly, should have the
+`data` prefix qualifier.  This allows for compile-time type checking
+and increases overall program understandability.
+
+
+
+## Functions as statements
+
+In some cases, it makes sense to have functions that do not return a
+value.  For example, a routine to print the lower-triangular portion
+of a matrix can be defined as follows.
+
+```stan
+functions {
+  void pretty_print_tri_lower(matrix x) {
+    if (rows(x) == 0) {
+      print("empty matrix");
+      return;
+    }
+    print("rows=", rows(x), " cols=", cols(x));
+    for (m in 1:rows(x)) {
+      for (n in 1:m) {
+        print("[", m, ",", n, "]=", x[m, n]);
+      }
+    }
+  }
+}
+```
+
+The special symbol `void` is used as the return type.  This is
+not a type itself in that there are no values of type `void`; it
+merely indicates the lack of a value.  As such, return statements for
+void functions are not allowed to have arguments, as in the return
+statement in the body of the previous example.
+
+Void functions applied to appropriately typed arguments may be used on
+their own as statements.  For example, the pretty-print function
+defined above may be applied to a covariance matrix being defined in
+the transformed parameters block.
+
+```stan
+transformed parameters {
+  cov_matrix[K] Sigma;
+  // ... code to set Sigma ...
+  pretty_print_tri_lower(Sigma);
+  // ...
+}
+```
+
+
+## Functions accessing the log probability accumulator
+
+Functions whose names end in `_lp` are allowed to use sampling
+statements and `target +=` statements; other
+functions are not.  Because of this access, their use is restricted to
+the transformed parameters and model blocks.
+
+Here is an example of a function to assign standard normal priors to a
+vector of coefficients, along with a center and scale, and return the
+translated and scaled coefficients; see the [reparameterization
+section](efficiency-tuning.qmd#reparameterization.section) for more information on
+efficient non-centered parameterizations
+
+```stan
+functions {
+  vector center_lp(vector beta_raw, real mu, real sigma) {
+    beta_raw ~ std_normal();
+    sigma ~ cauchy(0, 5);
+    mu ~ cauchy(0, 2.5);
+    return sigma * beta_raw + mu;
+  }
+  // ...
+}
+parameters {
+  vector[K] beta_raw;
+  real mu_beta;
+  real<lower=0> sigma_beta;
+  // ...
+}
+transformed parameters {
+  vector[K] beta;
+  // ...
+  beta = center_lp(beta_raw, mu_beta, sigma_beta);
+  // ...
+}
+```
+
+## Functions implementing change-of-variable adjustments
+
+Functions whose names end in `_jacobian` can use the
+`jacobian +=` statement. This can be used to implement a custom
+change of variables for arbitrary parameters.
+
+For example, this function recreates the built-in
+`<upper=x>` transform on real numbers:
+```stan
+real upper_bound_jacobian(real x, real ub) {
+  jacobian += x;
+  return ub - exp(x);
+}
+```
+
+It can be used as a replacement for `real<lower=ub>` as follows:
+
+```stan
+functions {
+  // upper_bound_jacobian as above
+}
+data {
+  real ub;
+}
+parameters {
+  real b_raw;
+}
+transformed parameters {
+  real b = upper_bound_jacobian(b_raw, ub);
+}
+model {
+  b ~ lognormal(0, 1);
+  // ...
+}
+```
+
+## Functions acting as random number generators
+
+A user-specified function can be declared to act as a (pseudo) random
+number generator (PRNG) by giving it a name that ends in `_rng`.
+Giving a function a name that ends in `_rng` allows it to access
+built-in functions and user-defined functions that end in
+`_rng`, which includes all the built-in PRNG functions.  Only
+functions ending in `_rng` are able access the built-in PRNG
+functions.  The use of functions ending in `_rng` must therefore
+be restricted to transformed data and generated quantities blocks like
+other PRNG functions; they may also be used in the bodies of other
+user-defined functions ending in `_rng`.
+
+For example, the following function generates an $N \times K$ data
+matrix, the first column of which is filled with 1 values for the
+intercept and the remaining entries of which have values drawn
+from a standard normal PRNG.
+
+```stan
+matrix predictors_rng(int N, int K) {
+  matrix[N, K] x;
+  for (n in 1:N) {
+    x[n, 1] = 1.0;  // intercept
+    for (k in 2:K) {
+      x[n, k] = normal_rng(0, 1);
+    }
+  }
+  return x;
+}
+```
+
+The following function defines a simulator for regression outcomes
+based on a data matrix `x`, coefficients `beta`, and noise
+scale `sigma`.
+
+```stan
+vector regression_rng(vector beta, matrix x, real sigma) {
+  vector[rows(x)] y;
+  vector[rows(x)] mu;
+  mu = x * beta;
+  for (n in 1:rows(x)) {
+    y[n] = normal_rng(mu[n], sigma);
+  }
+  return y;
+}
+```
+
+These might be used in a generated quantity block to simulate some
+fake data from a fitted regression model as follows.
+
+```stan
+parameters {
+  vector[K] beta;
+  real<lower=0> sigma;
+  // ...
+}
+generated quantities {
+  matrix[N_sim, K] x_sim;
+  vector[N_sim] y_sim;
+  x_sim = predictors_rng(N_sim, K);
+  y_sim = regression_rng(beta, x_sim, sigma);
+}
+```
+
+A more sophisticated simulation might fit a multivariate\ normal to the
+predictors `x` and use the resulting parameters to generate
+multivariate normal draws for `x_sim`.
+
+## User-defined probability functions
+
+Probability functions are distinguished in Stan by names ending in
+`_lpdf` for density functions and `_lpmf` for mass
+functions; in both cases, they must have `real` return types.
+
+Suppose a model uses several standard normal distributions, for which
+there is not a specific overloaded density nor defaults in Stan.  So
+rather than writing out the location of 0 and scale of 1 for all of
+them, a new density function may be defined and reused.
+
+```stan
+functions {
+  real unit_normal_lpdf(real y) {
+    return normal_lpdf(y | 0, 1);
+  }
+}
+// ...
+model {
+  alpha ~ unit_normal();
+  beta ~ unit_normal();
+  // ...
+}
+```
+
+The ability to use the `unit_normal` function as a density is
+keyed off its name ending in `_lpdf` (names ending in
+`_lpmf` for probability mass functions work the same way).
+
+In general, if `foo_lpdf` is defined to consume $N + 1$
+arguments, then
+
+```stan
+y ~ foo(theta1, ..., thetaN);
+```
+
+can be used as shorthand for
+
+```stan
+target += foo_lpdf(y | theta1, ..., thetaN);
+```
+
+As with the built-in functions, the suffix `_lpdf` is dropped and
+the first argument moves to the left of the tilde symbol (`~`)
+in the distribution statement.
+
+Functions ending in `_lpmf` (for probability mass functions),
+behave exactly the same way.  The difference is that the first
+argument of a density function (`_lpdf`) must be continuous (not
+an integer or integer array), whereas the first argument of a mass
+function (`_lpmf`) must be discrete (integer or integer array).
+
+
+## Overloading functions
+
+As described in the
+[reference manual](https://mc-stan.org/docs/reference-manual/user-functions.html#function-names)
+function overloading is permitted in Stan, beginning in version 2.29.
+
+This means multiple functions can be defined with the same name as long as
+they accept different numbers or types of arguments. User-defined functions can
+also overload Stan library functions.
+
+### Warning on usage {-}
+
+Overloading is a powerful productivity tool in programming languages, but it can
+also lead to confusion.
+In particular, it can be unclear at first glance which version of a function is
+being called at any particular call site, especially with type promotion allowed
+between scalar types. Because of this, it is a programming best practice that
+overloaded functions maintain the same meaning across definitions.
+
+For example, consider a function `triple` which has the following three
+signatures
+```stan
+real triple(real x);
+complex triple(complex x);
+array[] real triple(array[] real);
+```
+One should expect that all overloads of this function perform the same basic task.
+This should lead to definitions of these functions which would satisfy the
+following assumptions that someone reading the program would expect
+```stan
+// The function does what it says
+triple(3.0) == 9.0
+// It is defined reasonably for different types
+triple(to_complex(3.0)) == to_complex(triple(3.0))
+// A container version of this function works by element
+triple({3.0, 4.0})[0] == triple({3.0, 4.0}[0])
+```
+
+Note that none of these properties are enforced by Stan, they are mentioned
+merely to warn against uses of overloading which cause confusion.
+
+### Function resolution {-}
+
+Stan resolves overloaded functions by the number and type of arguments passed to
+the function. This can be subtle when multiple signatures with the same number
+of arguments are present.
+
+Consider the following function signatures
+```stan
+real foo(int a, real b);
+real foo(real a, real b);
+```
+Given these, the function call `foo(1.5, 2.5)` is unambiguous - it must resolve
+to the second signature.
+But, the function call `foo(1, 1.5)` could be valid for _either_ under Stan's
+promotion rules, which allow integers to be promoted to real numbers.
+
+To resolve this, Stan selects the signature which requires the fewest number of
+promotions for a given function call. In the above case, this means
+the call `foo(1, 1.5)` would select the first signature, because it requires 0
+promotions (the second signature would require 1 promotion).
+
+Furthermore, there must be only one such signature, e.g., the minimum number of
+promotions must be a unique minimum. This requirement forbids certain kinds of
+overloading. For example, consider the function signatures
+```stan
+real bar(int x, real y);
+real bar(real x, int y);
+```
+These signatures do not have a unique minimum number of promotions for the call
+`bar(1, 2)`. Both signatures require one `int` to `real` promotion, and so it
+cannot be determined which is correct. Stan will produce a compilation error in
+this case.
+
+Promotion from integers to complex numbers is considered to be two
+separate promotions, first from `int` to `real`, then from `real` to `complex`. This
+means that integer arguments will "prefer" a signature with real types over
+complex types.
+
+For example, consider the function signatures
+```stan
+real pop(real x);
+real pop(complex x);
+```
+Stan will select the first signature when `pop` is called with an integer
+argument such as `pop(0)`.
+
+
+## Documenting functions {#documenting-functions.section}
+
+Functions will ideally be documented at their interface level.  The
+Stan style guide for function documentation follows the same format as
+used by the Doxygen (C++) and Javadoc (Java) automatic documentation
+systems.  Such specifications indicate the variables and their types
+and the return value, prefaced with some descriptive text.
+
+For example, here's some documentation for the prediction matrix
+generator.
+
+```stan
+/**
+ * Return a data matrix of specified size with rows
+ * corresponding to items and the first column filled
+ * with the value 1 to represent the intercept and the
+ * remaining columns randomly filled with unit-normal draws.
+ *
+ * @param N Number of rows corresponding to data items
+ * @param K Number of predictors, counting the intercept, per
+ *          item.
+ * @return Simulated predictor matrix.
+ */
+matrix predictors_rng(int N, int K) {
+  // ...
+```
+
+The comment begins with `/**`, ends with `*/`, and has an
+asterisk (`*`) on each line.  It uses `@param` followed by
+the argument's identifier to document a function argument.  The tag
+`@return` is used to indicate the return value.  Stan does not
+(yet) have an automatic documentation generator like Javadoc or
+Doxygen, so this just looks like a big comment starting with `/*`
+and ending with `*/` to the Stan parser.
+
+For functions that raise exceptions, exceptions can be documented using
+`@throws`.^[As of Stan 2.9.0, the only way a user-defined producer will raise an exception is if a function it calls (including distribution statements) raises an exception via the reject statement.]
+
+For example,
+
+```stan
+ /** ...
+ * @param theta
+ * @throws If any of the entries of theta is negative.
+ */
+real entropy(vector theta) {
+  // ...
+}
+```
+
+Usually an exception type would be provided, but these are not exposed
+as part of the Stan language, so there is no need to document them.
+
+
+## Summary of function types
+
+Functions may have a void or non-void return type and they may or may
+not have one of the special suffixes, `_lpdf`, `_lpmf`,
+`_lp`, or `_rng`.
+
+### Void vs. non-void return {-}
+
+Only functions declared to return `void` may be used as
+statements.  These are also the only functions that use `return`
+statements with no arguments.
+
+Only functions declared to return non-`void` values may be used
+as expressions.  These functions require `return` statements with
+arguments of a type that matches the declared return type.
+
+### Suffixed or non-suffixed {-}
+
+Only functions ending in `_lpmf` or `_lpdf` and with
+return type `real` may be used as probability functions in
+distribution statements.
+
+Only functions ending in `_lp` may access the log probability
+accumulator through distribution statements or `target +=`
+statements.  Such functions may only be used in the transformed
+parameters or model blocks.
+
+Only functions ending in `_rng` may access the built-in
+pseudo-random number generators.  Such functions may only be used in
+the generated quantities block or transformed data block, or in the
+bodies of other user-defined functions ending in `_rng`.
+
+
+## Recursive functions
+
+Stan supports recursive function definitions, which can be useful for
+some applications.  For instance, consider the matrix power operation,
+$A^n$, which is defined for a square matrix $A$ and positive integer
+$n$ by
+$$
+A^n
+=
+\begin{cases}
+\textrm{I} & \quad\text{if } n = 0, \text{ and} \\
+A \, A^{n-1} & \quad\text{if } n > 0.
+\end{cases}
+$$
+
+where $\textrm{I}$ is the identity matrix.  This definition can be
+directly translated to a recursive function definition.
+
+```stan
+matrix matrix_pow(matrix a, int n) {
+  if (n == 0) {
+    return diag_matrix(rep_vector(1, rows(a)));
+  } else {
+    return a *  matrix_pow(a, n - 1);
+  }
+}
+```
+It would be more efficient to not allow the recursion to go all the way to
+the base case, adding the following conditional clause.
+
+```stan
+else if (n == 1) {
+  return a;
+}
+```
+
+
+## Truncated random number generation
+
+### Generation with inverse CDFs {-}
+
+To generate random numbers, it is often sufficient to invert their
+cumulative distribution functions.  This is built into many of the
+random number generators.  For example, to generate a standard
+logistic variate, first generate a uniform variate
+$u \sim \textsf{uniform}(0, 1)$, then run through the inverse
+cumulative distribution function, $y = \textrm{logit}(u)$.  If this
+were not already built in as `logistic_rng(0, 1)`, it could be
+coded in Stan directly as
+
+```stan
+real standard_logistic_rng() {
+  real u = uniform_rng(0, 1);
+  real y = logit(u);
+  return y;
+}
+```
+
+
+Following the same pattern, a standard normal RNG could be coded as
+
+```stan
+real standard_normal_rng() {
+  real u = uniform_rng(0, 1);
+  real y = inv_Phi(u);
+  return y;
+}
+```
+
+that is, $y = \Phi^{-1}(u)$, where $\Phi^{-1}$ is the inverse cumulative
+distribution function for the standard normal distribution, implemented in
+the Stan function `inv_Phi`.
+
+In order to generate non-standard variates of the location-scale
+variety, the variate is scaled by the scale parameter and shifted by
+the location parameter.  For example, to generate
+$\textsf{normal}(\mu, \sigma)$ variates, it is enough to generate a
+uniform variate $u \sim \textsf{uniform}(0, 1)$, then convert it to a
+standard normal variate, $z = \Phi(u)$, where
+$\Phi$ is the inverse cumulative distribution function for the
+standard normal, and then, finally, scale and translate it, $y = \mu +
+\sigma \times z$.  In code,
+
+```stan
+real my_normal_rng(real mu, real sigma) {
+  real u = uniform_rng(0, 1);
+  real z = inv_Phi(u);
+  real y = mu + sigma * z;
+  return y;
+}
+```
+
+A robust version of this function would test that the arguments are
+finite and that `sigma` is non-negative, e.g.,
+
+```stan
+  if (is_nan(mu) || is_inf(mu)) {
+    reject("my_normal_rng: mu must be finite; ",
+           "found mu = ", mu);
+  }
+  if (is_nan(sigma) || is_inf(sigma) || sigma < 0) {
+    reject("my_normal_rng: sigma must be finite and non-negative; ",
+           "found sigma = ", sigma);
+  }
+```
+
+### Truncated variate generation {-}
+
+Often truncated uniform variates are needed, as in survival analysis
+when a time of death is censored beyond the end of the observations.
+To generate a truncated random variate, the cumulative distribution is
+used to find the truncation point in the inverse CDF, a uniform
+variate is generated in range, and then the inverse CDF translates it
+back.
+
+#### Truncating below {-}
+
+For example, the following code generates
+a $\textsf{Weibull}(\alpha, \sigma)$ variate truncated below
+at a time $t$,^[The original code and impetus for including this in the manual came from the [Stan forums post](http://discourse.mc-stan.org/t/rng-for-truncated-distributions/3122/7); by user `lcomm`, who also explained truncation above and below.]
+
+```stan
+real weibull_lb_rng(real alpha, real sigma, real t) {
+  real p = weibull_cdf(lt | alpha, sigma);   // cdf for lb
+  real u = uniform_rng(p, 1);               // unif in bounds
+  real y = sigma * (-log1m(u))^inv(alpha);  // inverse cdf
+  return y;
+}
+```
+
+#### Truncating above and below {-}
+
+If there is a lower bound and upper bound, then the CDF trick is used
+twice to find a lower and upper bound.  For example, to generate a
+$\textsf{normal}(\mu, \sigma)$ truncated to a region $(a, b)$, the
+following code suffices,
+
+```stan
+real normal_lub_rng(real mu, real sigma, real lb, real ub) {
+  real p_lb = normal_cdf(lb | mu, sigma);
+  real p_ub = normal_cdf(ub | mu, sigma);
+  real u = uniform_rng(p_lb, p_ub);
+  real y = mu + sigma * inv_Phi(u);
+  return y;
+}
+```
+
+To make this more robust, all variables should be tested for
+finiteness, `sigma` should be tested for positiveness, and
+`lb` and `ub` should be tested to ensure the upper bound is
+greater than the lower bound.  While it may be tempting to compress
+lines, the variable names serve as a kind of chunking of operations
+and naming for readability;  compare the multiple statement version
+above with the single statement
+
+```stan
+  return mu + sigma * inv_Phi(uniform_rng(normal_cdf(lb | mu, sigma),
+                                          normal_cdf(ub | mu, sigma)));
+```
+
+for readability.  The names like `p` indicate probabilities, and
+`p_lb` and `p_ub` indicate the probabilities of the
+bounds.  The variable `u` is clearly named as a uniform variate,
+and `y` is used to denote the variate being generated itself.

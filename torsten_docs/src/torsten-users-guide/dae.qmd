@@ -1,0 +1,224 @@
+---
+pagetitle: Differential-Algebraic Equations
+---
+
+# Differential-Algebraic Equations  {#dae-solver.chapter}
+
+Stan support solving systems of differential-algebraic equations
+(DAEs) of index 1 [@serban_user:2021]. The solver adaptively
+refines the solutions in order to satisfy given tolerances.
+
+One can think a differential-algebraic system of equations
+as ODEs with additional algebraic constraints applied to some
+of the variables. In such a system, the variable derivatives may not be
+expressed explicitly with a right-hand-side as in ODEs, but implicitly
+constrained.
+
+Similar to ODE solvers, the DAE
+solvers must not only provide the solution to the DAE itself, but also
+the gradient of the DAE solution with respect to parameters (the
+sensitivities). Stan's DAE solver uses
+the *forward sensitivity* calculation to expand the base DAE system
+with additional DAE equations for the gradients of the solution.
+For each parameter, an additional full set of $N$
+sensitivity states are added meaning that the full DAE solved has
+$N \, + N \cdot M$ states.
+
+Two interfaces are provided for the forward sensitivity solver: one
+with default tolerances and default max number of steps, and one
+that allows these controls to be modified. Choosing tolerances is
+important for making any of the solvers work well -- the defaults
+will not work everywhere. The tolerances should be chosen primarily
+with consideration to the scales of the solutions, the accuracy
+needed for the solutions, and how the solutions are used in the
+model. The same principles in the [control parameters
+section](odes.qmd#control-ode.section) apply here.
+
+Internally Stan's DAE solver uses a variable-step, variable-order,
+backward-differentiation formula implementation
+[@CohenHindmarsh:1996; @SerbanHindmarsh:2005].
+
+## Notation
+
+A DAE is defined by a set of expressions for the *residuals* of differential equations and algebraic equations
+$r(y', y, t, \theta)$, and *consistent* initial conditions
+$y(t_0, \theta) = y_0, y'(t_0, \theta)=y'_0$. The DAE is define by
+residual function as $r(y', y, t, \theta)=0$.
+The $\theta$ dependence is included in the notation to highlight that
+the solution $y(t)$ is
+a function of any parameters used in the computation.
+
+## Example: chemical kinetics
+
+As an example of a system of DAEs, consider following chemical
+kinetics problem[@robertson_solution:1966]. The nondimensionalized DAE consists of two differential equations
+and one algebraic constraint. The differential equations describe the
+reactions from reactants $y_1$ and $y_2$ to the product $y_3$, and the
+algebraic equation describes the mass conservation.
+[@serban_example:2021].
+
+\begin{align*}
+\frac{dy_1}{dt} + \alpha y_1 - \beta y_2 y_3 = 0 \\
+\frac{dy_2}{dt} - \alpha y_1 + \beta y_2 y_3 + \gamma y_2^2 = 0 \\
+y_1 + y_2 + y_3 - 1.0 = 0
+\end{align*}
+
+The state equations implicitly defines the state $(y_1(t), y_2(t), y_3(t))$ at future times
+as a function of an initial state and the system parameters, in this
+example the reaction rate coefficients $(\alpha, \beta, \gamma)$.
+
+Unlike solving ODEs, solving DAEs requires a *consistent* initial
+condition. That is, one must specify both $y(t_0)$
+and $y'(t_0)$ so that residual function becomes zero at initial time $t_0$
+\begin{equation*}
+r(y'(t_0), y(t_0), t_0) = 0
+\end{equation*}
+
+
+## Index of DAEs
+
+The index along a DAE solution $y(t)$ is the minimum number of
+differentiations of some of the components of the system required to
+solve for $y'$ uniquely in terms of $y$ and $t$, so that the DAE is
+converted into an ODE for $y$. Thus an ODE system is of index 0. The
+above chemical kinetics DAE is of index 1, as we can perform
+differentiation of the third equation followed by introducing the
+first two equations in order to obtain the ODE for $y_3$.
+
+Most DAE solvers, including the one in Stan, support only index-1
+DAEs. For a high index DAE problem the user must first convert it to a
+lower index system. This often can be done by carrying out
+differentiations analytically [@ascher_computer:1998].
+
+## Coding the DAE system function
+
+The first step in coding an DAE system in Stan is defining the DAE residual
+function. The system functions require a specific signature so that the solvers
+know how to use them properly.
+
+The first argument to the residual function is time, passed as a `real`;
+the second argument to the residual function is the system state $y$,
+passed as a `vector`, the third argument to the residual function is
+the state derivative $y'$, also passed as a `vector`. The residual
+function's return value is a `vector` of the same size as state and
+state derivatives. Additional arguments
+can be included in the residual function to pass other information
+into the solve (these will be passed through the function that starts the DAE
+solution). These argument can be parameters (in our example, the
+reaction rate coefficient $\alpha$, $\beta$, and $\gamma$), data, or any quantities that are needed to define the
+DAE.
+
+The above reaction be coded using the following function
+in Stan (see the [user-defined functions chapter](user-functions.qmd) for
+more information on coding user-defined functions).
+
+```stan
+ vector chem(real t, vector yy, vector yp,
+                 real alpha, real beta, real gamma) {
+    vector[3] res;
+    res[1] = yp[1] + alpha * yy[1] - beta * yy[2] * yy[3];
+    res[2] = yp[2] - alpha * yy[1] + beta * yy[2] * yy[3] + gamma * yy[2] * yy[2];
+    res[3] = yy[1] + yy[2] + yy[3] - 1.0;
+    return res;
+  }
+}
+```
+
+The function takes in a time `t` (a `real`), the system state
+`yy` (a `vector`), state derivative `yp` (a `vector`), as well as parameter
+`alpha` (a `real`),  `beta` (a `real`), and  `gamma` (a `real`). The function returns a
+`vector` of the residuals at time `t`. The DAE coded here does not
+explicitly depend on `t`, however one still needs to specify `t` as
+an argument.
+
+### Strict signature {-}
+
+The types in the DAE residual function are strict. The first argument is the time
+passed as a `real`, the second argument is the state passed as a `vector`,
+the third argument is the state derivative passed as a `vector`,
+and the return type is a `vector`. A model that does not have this signature will
+fail to compile. The fourth argument onwards can be any type, granted all
+the argument types match the types of the respective arguments in the solver
+call.
+
+All of these are possible DAE signatures:
+
+```stan
+vector my_dae1(real t, vector y, vector yp, real a0);
+vector my_dae2(real t, vector y, vector yp, array[] int a0, vector a1);
+vector my_dae3(real t, vector y, vector yp, matrix a0, array[] real a1, row_vector a2);
+```
+
+but these are not allowed:
+
+```stan
+vector my_dae1(real t, array[] real y, vector yp);
+// Second argument is not a vector
+array[] real my_dae2(real t, vector y, vector yp);
+// Return type is not a vector
+vector my_dae3(real t, vector y);
+// First argument is not a real and missing the third argument
+```
+
+## Solving DAEs
+
+Stan provides a `dae` function for solving DAEs, so that the above chemical reaction
+equation can be solved in the following code.
+```stan
+data {
+  int N;
+  vector[3] yy0;
+  vector[3] yp0;
+  real t0;
+  real alpha;
+  real beta;
+  array[N] real ts;
+  array[N] vector[3] y;
+}
+parameters {
+  real gamma;
+}
+transformed parameters {
+  vector[3] y_hat[N] = dae(chem, yy0, yp0, t0, ts, alpha, beta, gamma);
+}
+```
+
+Since `gamma` is a parameter, the DAE solver is called in the transformed parameters block.
+
+## Control parameters for DAE solving {#control-dae.section}
+
+Using `dae_tol` one can specify the `relative_tolerance`, `absolute_tolerance`, and
+`max_num_steps` parameters in order to control the DAE solution.
+
+```stan
+vector[3] y_hat[N] = dae_tol(chem, yy0, yp0, t0, ts,
+                             relative_tolerance,
+                             absolute_tolerance,
+                             max_num_steps,
+                             alpha, beta, gamma);
+```
+
+`relative_tolerance` and `absolute_tolerance` control accuracy the solver tries to achieve, and
+`max_num_steps` specifies the maximum number of steps the solver will
+take between output time points before throwing an error.
+
+The control parameters must be data variables -- they cannot be
+parameters or expressions that depend on parameters, including local
+variables in any block other than transformed data and generated
+quantities. User-defined function arguments may be qualified as only
+allowing data arguments using the `data` qualifier.
+
+The default value of relative and absolute
+tolerances are $10^{-10}$ and the maximum number of steps between outputs is
+one hundred million. We suggest the user choose the control parameters according
+to the problem in hand, and resort to the defaults only when no
+knowledge of the DAE system or the physics it models is available.
+
+### Maximum number of steps {-}
+
+The maximum number of steps can be used to stop a runaway simulation.
+This can arise in when MCMC moves to a part of parameter space very far from
+where a differential equation would typically be solved. In particular this
+can happen during warmup.  With the non-stiff solver, this may happen when
+the sampler moves to stiff regions of parameter space, which will requires small
+step sizes.

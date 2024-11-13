@@ -1,0 +1,1371 @@
+---
+pagetitle: Using the Stan Compiler
+---
+
+# Using the Stan Compiler
+
+Stan is used in most of our
+[interfaces](https://mc-stan.org/users/interfaces/) through the Stan compiler
+`stanc`. Since version 2.22, the Stan compiler has been implemented in OCaml and
+is referred to as [stanc3](https://github.com/stan-dev/stanc3). The binary name
+is still simply `stanc`, so this document uses both stanc and stanc3
+interchangeably.
+
+## Command-line options for stanc3 {#stanc-args}
+
+The stanc3 compiler has the following command-line syntax:
+
+```
+> stanc (options) <model_file>
+```
+where `<model_file>` is a path to either a Stan model
+file ending in suffix `.stan` _or_ a Stan functions
+file which ends in `.stanfunctions`.
+
+The stanc3 options are:
+
+- `--help` - Displays the complete list of stanc3 options, then exits.
+
+- `--version` - Display stanc version number
+
+- `--info` - Print information about the model, such
+as the type information for variables and the list of used distributions.
+
+- `--name=<model_name>` - Specify the name of the class
+used for the implementation of the Stan model in the generated C++ code.
+
+- `--o=<file_name>` - Specify a path to an output file for generated C++ code
+  (default = <model_name>.hpp) or auto-formatting output (default: no file/print
+  to stdout)
+
+- `--allow-undefined` - Do not throw a parser error if there is a function in
+  the Stan program that is declared but not defined in the functions block.
+
+- `--include_paths=<dir1,...dirN>` - Takes a comma-separated list
+  of directories that may contain a file in an `#include` directive.
+
+- `--use-opencl` - If set, will use additional Stan OpenCL
+  features enabled in the Stan-to-C++ compiler.
+
+- `--auto-format` - Pretty prints the program to the console. See [more on auto
+  formatting](#stanc-pretty-printing).
+
+- `--canonicalize` - Make changes to the program before pretty-printing by
+  specifying options in a comma separated list. Options are 'deprecations',
+  'parentheses', 'braces', 'includes'.
+
+- `--max-line-length=<number>` - Set the column number at which formatting with
+  `--auto-format` attempts to split lines. The default value is 78, which
+  results in most lines being shorter than 80 characters.
+
+- `--print-canonical` - Synonymous with `--auto-format --canonicalize=[all
+  options]`.
+
+- `--print-cpp` - If set, output the generated C++ Stan model class to stdout.
+
+- `--standalone-functions` - If set, only generate the code for the functions
+  defined in the file. This is the default behavior for `.stanfunctions` files.
+
+- `--O0` (Default) Do not apply optimizations to the Stan code.
+
+- `--O1` Apply level 1 compiler [optimizations](#optimization) (only basic optimizations).
+
+- `--Oexperimental` **WARNING:** _This is currently an experimental feature whose
+  components are not thoroughly tested and may not improve a programs
+  performance!_ Allow the compiler to apply all [optimizations](#optimization) to the Stan code.
+
+- `--O` **WARNING:** _This is currently an experimental feature whose components
+  are not thoroughly tested and may not improve a programs performance!_ Same as
+  `--Oexperimental`. Allow the compiler to apply all [optimizations](#optimization) to the Stan
+  code.
+
+- `--warn-uninitialized` - Emit warnings about uninitialized variables
+  to stderr. Currently an experimental feature.
+
+- `--warn-pedantic` - Emit warnings in [Pedantic mode](#pedantic-mode)
+  which warns of potential issues in the meaning of your program.
+
+The compiler also provides a number of debug options which are
+primarily of interest to stanc3 developers; use the `--help`
+option to see the full set.
+
+## Understanding stanc3 errors and warnings
+
+During model compilation, stanc can produce a variety of errors (issues that
+prevent the model from being compiled) and warnings (non-fatal issues that
+should still be considered).
+
+### Warnings {-}
+
+Even without the optional `--warn-pedantic` and `--warn-uninitialized` [command
+line flags](#stanc-args), both of which enable additional warnings, stanc can still
+produce warnings about your program. In particular, warnings will be produced
+in two situations
+
+1. A completely blank Stan program will produce the following warning message
+   ```
+   Warning: Empty file 'empty.stan' detected;
+       this is a valid stan model but likely unintended!
+   ```
+2. The use of any [deprecated
+   features](https://mc-stan.org/docs/reference-manual/deprecations.html)
+   will lead to warnings which will look as follows
+   ```
+   Warning in 'deprecated.stan', line 2, column 0: Comments beginning with # are
+    deprecated and this syntax will be removed in Stan 2.32.0. Use // to
+    begin line comments; this can be done automatically using stanc
+    --auto-format
+   ```
+A single Stan program can produce many warnings during compilation.
+
+
+### Errors {-}
+
+Errors differ from warnings in their severity and format. In particular, errors
+are _fatal_ and stop compilation, so at most one error is displayed per run of
+stanc.
+
+There are five kinds of errors emitted by stanc3
+
+1. File errors occur when the file passed to stanc is either missing or cannot
+   be opened (i.e. has permissions issues). They look like
+   ```
+   Error: file 'notfound.stan' not found or cannot be opened
+   ```
+2. Syntactic errors occur whenever a program violates the Stan language's
+   [syntax](https://mc-stan.org/docs/reference-manual/syntax.html) requirements.
+   There are three kinds of errors within syntax errors; "lexing"
+   errors mean that the input was unable to be read properly on the character
+   level, "include" errors which occur when the `#include` directive fails, and
+   "parsing" errors which result when the structure of the program is incorrect.
+
+   * The lexing errors occur due to the use of invalid characters in a program.
+     For example, a lexing error due to the use of `$` in a variable name will
+     look like the following.
+
+     ```
+     Syntax error in 'char.stan', line 2, column 6, lexing error:
+     -------------------------------------------------
+       1:  data {
+       2:     int $ome_variable;
+                  ^
+       3:  }
+     -------------------------------------------------
+     Invalid character found.
+     ```
+
+   * When an include directive is used, it can lead to errors if the included file
+     is not found, or if a file includes itself (including a recursive loop of
+     includes, such as A -> B -> A).
+
+     ```
+     Syntax error in './incl.stan', line 1, column 0, included from
+     './incl.stan', line 1, column 0, included from
+     'incl.stan', line 1, column 0, include error:
+     -------------------------------------------------
+       1:  #include <incl.stan>
+           ^
+     -------------------------------------------------
+     File incl.stan recursively included itself.
+     ```
+
+   * It is much more common to see parsing errors, which tend to have more
+     in-depth explanations of the error found. For example, if a user forgets to
+     put a size on a type like vector, as in the following, this raises a parsing
+     (structural) error in the compiler.
+     ```
+     Syntax error in vec.stan', line 3, column 10 to column 11, parsing error:
+     -------------------------------------------------
+       1:  data {
+       2:     int<lower=0> N;
+       3:     vector x;
+                     ^
+       4:  }
+     -------------------------------------------------
+     "[" expression "]" expected for vector size.
+     ```
+
+3. Semantic errors (also known as type errors) occur when a program is structured
+   correctly but features an error in the [type
+   rules](https://mc-stan.org/docs/reference-manual/syntax.html#extra-grammatical-constraints)
+   imposed by the language. An example of this is assigning a real value to a
+   variable defined as an integer.
+   ```
+   Semantic error in 'type.stan', line 2, column 3 to column 15:
+   -------------------------------------------------
+     1:  transformed data {
+     2:     int x = 1.5;
+            ^
+     3:  }
+   -------------------------------------------------
+   Ill-typed arguments supplied to assignment operator =: lhs has
+   type int and rhs has type real
+   ```
+4. The compiler will raise an error for use of any [removed
+   features](https://mc-stan.org/docs/reference-manual/removals.html)
+   for at least one version following their removal. The deprecation warnings
+   mentioned above eventually turn into this kind of error to prompt the user to
+   update their model. After the version of removal, these errors will be
+   converted to one of the other types listed here, depending on the feature.
+5. Finally, the compiler can raise an internal error. These are caused by bugs
+   in the compiler, **not** your model, and we would appreciate it if you report
+   them on the [stanc3 repo](https://github.com/stan-dev/stanc3/issues) with the
+   error message provided. These errors usually say something like "This should
+   never happen," and we apologize if they do.
+
+
+
+## Pedantic mode
+
+Pedantic mode is a compilation option built into Stanc3 that warns you about
+potential issues in your Stan program.
+
+For example, consider the following program.
+
+```stan
+data {
+  int N;
+  array[N] real x;
+}
+parameters {
+  real sigma;
+}
+model {
+  real mu;
+  x ~ normal(mu, sigma);
+}
+```
+
+When pedantic mode is turned on, the compiler will produce the following warnings.
+
+```
+Warning:
+  The parameter sigma has no priors.
+Warning at 'ped-mode-ex1.stan', line 10, column 14 to column 16:
+  The variable mu may not have been assigned a value before its use.
+Warning at 'ped-mode-ex1.stan', line 10, column 18 to column 23:
+  A normal distribution is given parameter sigma as a scale parameter
+  (argument 2), but sigma was not constrained to be strictly positive.
+```
+
+Here are the kinds of issues that pedantic mode will find (which are described
+in more detail in following sections):
+
+-   *Distribution usages issues.* Distribution arguments don't match the
+    distribution specification, or some specific distribution is used in an
+    inadvisable way.
+-   *Unused parameter.* A parameter is defined but doesn't contribute to target.
+-   *Large or small constant in a distribution.* Very large or very small
+    constants are used as distribution arguments.
+-   *Control flow depends on a parameter.* Branching control flow (like if/else)
+    depends on a parameter value .
+-   *Parameter has multiple tildes.* A parameter is on the left-hand side of
+    multiple tildes.
+-   *Parameter has zero or multiple priors.* A parameter has zero or more than
+    one prior distribution.
+-   *Variable is used before assignment.* A variable is used before being
+    assigned a value.
+-   *Strict or nonsensical parameter bounds.* A parameter is given questionable
+    bounds.
+-   *Nonlinear transformations.* When the left-hand side of a tilde statement
+    (or first argument of a log probability function) contains a nonlinear
+    transform which may require a Jacobian change of variables adjustment.
+
+Some important limitations of pedantic mode are listed at the end of this chapter.
+
+
+### Distribution argument and variate constraint issues {-}
+
+When an argument to a built-in distribution certainly does not match that
+distribution's specification in the [Stan Functions
+Reference](https://mc-stan.org/docs/functions-reference/index.html), a warning
+is thrown. This primarily checks if any distribution argument's bounds at
+declaration, compile-time value, or subtype at declaration (e.g. `simplex`) is
+incompatible with the domain of the distribution. x
+
+For example, consider the following program.
+
+```stan
+parameters {
+  real unb_p;
+  real<lower=0> pos_p;
+}
+model {
+  1 ~ poisson(unb_p);
+  1 ~ poisson(pos_p);
+}
+```
+
+The parameter of `poisson` should be strictly positive, but `unb_p` is not constrained to be positive.
+
+Pedantic mode produces the following warning.
+
+```
+Warning at 'ex-dist-args.stan', line 6, column 14 to column 19:
+  A poisson distribution is given parameter unb_p as a rate parameter
+  (argument 1), but unb_p was not constrained to be strictly positive.
+```
+
+
+### Special-case distribution issues {-}
+
+Pedantic mode checks for some specific uses of distributions that may indicate a
+statistical mistake:
+
+
+#### Uniform distributions {-}
+
+Any use of uniform distribution generates a warning, except when the variate
+parameter's declared `upper` and `lower` bounds exactly match the uniform
+distribution bounds. In general, assigning a parameter a uniform distribution
+can create non-differentiable boundary conditions and is not recommended.
+
+For example, consider the following program.
+
+```stan
+parameters {
+  real a;
+  real<lower=0, upper=1> b;
+}
+model {
+  a ~ uniform(0, 1);
+  b ~ uniform(0, 1);
+}
+```
+
+`a` is assigned a uniform distribution that doesn't match its constraints.
+
+Pedantic mode produces the following warning.
+
+```
+Warning at 'uniform-warn.stan', line 6, column 2 to column 20:
+  Parameter a is given a uniform distribution. The uniform distribution is
+  not recommended, for two reasons: (a) Except when there are logical or
+  physical constraints, it is very unusual for you to be sure that a
+  parameter will fall inside a specified range, and (b) The infinite gradient
+  induced by a uniform density can cause difficulties for Stan's sampling
+  algorithm. As a consequence, we recommend soft constraints rather than hard
+  constraints; for example, instead of giving an elasticity parameter a
+  uniform(0, 1) distribution, try normal(0.5, 0.5).
+```
+
+
+#### (Inverse-) Gamma distributions {-}
+
+Gamma distributions are sometimes used as an attempt to assign an improper prior
+to a parameter. Pedantic mode gives a warning when the Gamma arguments indicate
+that this may be the case.
+
+
+#### lkj\_corr distribution {-}
+
+Any use of the `lkj_corr` distribution generates a warning that suggests using
+the Cholesky variant instead. See
+[the LKJ correlation distribution section](https://mc-stan.org/docs/functions-reference/correlation_matrix_distributions.html#lkj-correlation)
+of the Stan Functions Reference for details.
+
+
+### Unused parameters {-}
+
+A warning is generated when a parameter is declared but does not have any effect
+on the program. This is determined by checking whether the value of the `target`
+variable depends in any way on each of the parameters.
+
+For example, consider the following program.
+
+```stan
+parameters {
+  real a;
+  real b;
+}
+model {
+  a ~ normal(1, 1);
+}
+```
+
+`a` participates in the density function but `b` does not.
+
+Pedantic mode produces the following warning.
+
+```
+Warning:
+  The parameter b was declared but was not used in the density calculation.
+```
+
+
+### Large or small constants in a distribution {-}
+
+When numbers with magnitude less than 0.1 or greater than 10 are used as
+arguments to a distribution, it indicates that some parameter is not scaled to
+unit value, so a warning is thrown. See
+[the efficiency tuning section](https://mc-stan.org/docs/stan-users-guide/efficiency-tuning.html#standardizing-predictors-and-outputs)
+of the Stan User's guide for a discussion of scaling parameters.
+
+For example, consider the following program.
+
+```stan
+parameters {
+  real x;
+  real y;
+}
+model {
+  x ~ normal(-100, 100);
+  y ~ normal(0, 1);
+}
+```
+
+The constants `-100` and `100` suggest that `x` is not unit scaled.
+
+Pedantic mode produces the following warning.
+
+```
+Warning at 'constants-warn.stan', line 6, column 14 to column 17:
+  Argument -100 suggests there may be parameters that are not unit scale;
+  consider rescaling with a multiplier (see manual section 22.12).
+Warning at 'constants-warn.stan', line 6, column 19 to column 22:
+  Argument 100 suggests there may be parameters that are not unit scale;
+  consider rescaling with a multiplier (see manual section 22.12).
+```
+
+
+### Control flow depends on a parameter {-}
+
+Control flow statements, such as `if`, `for` and `while` should not depend on
+parameters or functions of parameters to determine their branching conditions.
+This is likely to introduce a discontinuity into the density function. Pedantic
+mode generates a warning when any branching condition may depend on a parameter
+value.
+
+For example, consider the following program.
+
+```stan
+parameters {
+  real a;
+}
+model {
+  // x depends on parameter a
+  real x = a * a;
+
+  int m;
+
+  // the if-then-else depends on x which depends on a
+  if(x > 0) {
+    //now m depends on x which depends on a
+    m = 1;
+  } else {
+    m = 2;
+  }
+
+  // for loop depends on m -> x -> a
+  for (i in 0:m) {
+    a ~ normal(i, 1);
+  }
+}
+```
+
+The `if` and `for` statements are control flow that depend (indirectly) on the value of the parameter `m`.
+
+Pedantic mode produces the following warning.
+
+```
+Warning at 'param-dep-cf-warn.stan', line 11, column 2 to line 16, column 3:
+  A control flow statement depends on parameter(s): a.
+Warning at 'param-dep-cf-warn.stan', line 19, column 2 to line 21, column 3:
+  A control flow statement depends on parameter(s): a.
+```
+
+
+### Parameters with multiple tildes {-}
+
+A warning is generated when a parameter is found on the left-hand side of more than one ~ statements (or an equivalent `target +=` conditional density statement). This pattern is not inherently an issue, but it is unusual and may indicate a mistake.
+
+Pedantic mode only searches for repeated statements, it will not for example generate a warning when a ~ statement is executed repeatedly inside of a loop.
+
+For example, consider the following program.
+
+```stan
+data {
+  real x;
+}
+parameters {
+  real a;
+  real b;
+}
+model {
+  a ~ normal(0, 1);
+  a ~ normal(x, 1);
+
+  b ~ normal(1, 1);
+}
+```
+
+Pedantic mode produces the following warning.
+
+```
+Warning at 'multi-tildes.stan', line 9, column 2 to column 19:
+  The parameter a is on the left-hand side of more than one tildes
+  statement.
+```
+
+
+### Parameters with zero or multiple priors {-}
+
+A warning is generated when a parameter appears to have greater than or less than one prior distribution factor.
+
+This analysis depends on a [*factor graph*](https://en.wikipedia.org/wiki/Factor_graph) representation of a Stan program. A factor F that depends on a parameter P is called a *prior factor for P* if there is no path in the factor graph from F to any data variable except through P.
+
+One limitation of this approach is that the compiler cannot distinguish between *modeled* `data` variables and other convenient uses of `data` variables such as data sizes or hyperparameters. This warning assumes that all data variables (except for `int` variables) are modeled data, which may cause extra warnings.
+
+For example, consider the following program.
+
+```stan
+data {
+  real x;
+}
+parameters {
+  real a;
+  real b;
+  real c;
+  real d;
+}
+model
+{
+  a ~ normal(0, 1); // this is a prior
+  x ~ normal(a, 1); // this is not a prior, since data is involved
+
+  b ~ normal(x, 1); // this is also not a prior, since data is involved
+
+  // this is not a prior for c, since data is involved through b
+  // but it is a prior for b, since the data is only involved through b
+  c ~ normal(b, 1);
+
+  //these are multiple priors:
+  d ~ normal(0, 1);
+  1 ~ normal(d, 1);
+}
+```
+
+One prior is found for `a` and for `b`, while `c` only has a factor that touches a `data` variable and `d` has multiple priors.
+
+Pedantic mode produces the following warning.
+
+```
+Warning:
+  The parameter c has no priors.
+Warning:
+  The parameter d has 2 priors.
+```
+
+
+### Variables used before assignment {-}
+
+A warning is generated when any variable is used before it has been assigned a value.
+
+For example, consider the following program.
+
+```stan
+transformed data {
+  real x;
+  if (1 > 2) {
+    x = 1;
+  } else {
+    print("oops");
+  }
+  print(x);
+}
+```
+
+Since `x` is only assigned in one of the branches of the `if` statement, it might get to `print(x)` without having been assigned to.
+
+Pedantic mode produces the following warning.
+
+```
+Warning at 'uninit-warn.stan', line 7, column 8 to column 9:
+  The variable x may not have been assigned a value before its use.
+```
+
+
+### Strict or nonsensical parameter bounds {-}
+
+Except when there are logical or physical constraints, it is very unusual for you to be sure that a parameter will fall inside a specified range. A warning is generated for all parameters declared with the bounds `<lower=.., upper=..>` except for `<lower=0, upper=1>` or `<lower=-1, upper=1>`.
+
+In addition, a warning is generated when a parameter bound is found to have `lower >= upper`.
+
+For example, consider the following program.
+
+```stan
+parameters {
+  real<lower=0, upper=1> a;
+  real<lower=-1, upper=1> b;
+  real<lower=-2, upper=1012> c;
+}
+model {
+  c ~ normal(b, a);
+}
+```
+
+Pedantic mode produces the following warning.
+
+```
+Warning:
+  Your Stan program has a parameter c with a lower and upper bound in its
+  declaration. These hard constraints are not recommended, for two reasons:
+  (a) Except when there are logical or physical constraints, it is very
+  unusual for you to be sure that a parameter will fall inside a specified
+  range, and (b) The infinite gradient induced by a hard constraint can cause
+  difficulties for Stan's sampling algorithm. As a consequence, we recommend
+  soft constraints rather than hard constraints; for example, instead of
+  constraining an elasticity parameter to fall between 0, and 1, leave it
+  unconstrained and give it a normal(0.5, 0.5) prior distribution.
+```
+
+### Nonlinear transformations {-}
+
+When a parameter is transformed in a non-linear fashion, an adjustment must be
+applied to account for distortion caused by the transform. This is discussed in
+depth in the [Changes of variables](reparameterization.qmd) section.
+
+This portion of pedantic mode tries to detect instances where such an adjustment
+would be necessary and remind the user.
+
+For example, consider the following program.
+
+```stan
+parameters {
+  real y;
+}
+model {
+  log(y) ~ normal(0,1);
+}
+
+```
+
+Pedantic mode produces the following warning.
+
+```
+Warning:
+    Left-hand side of distribution statement (~) may contain a non-linear
+    transform of a parameter or local variable. If it does, you need
+    to include a target += statement with the log absolute determinant
+    of the Jacobian of the transform. You could also consider defining
+    a transformed parameter and using jacobian += in the transformed
+    parameters block.
+```
+
+### Pedantic mode limitations {-}
+
+
+* Constant values are sometimes uncomputable
+
+  Pedantic mode attempts to evaluate expressions down to literal values so that
+  they can be used to generate warnings. For example, in the code `normal(x, 1 -
+  2)`, the expression `1 - 2` will be evaluated to `-1`, which is not a valid
+  variance argument so a warning is generated. However, this strategy is
+  limited; it is often impossible to fully evaluate expressions in finite time.
+
+* Container types
+
+  Currently, indexed variables are not handled intelligently, so they are
+  treated as monolithic variables. Each analysis treats indexed variables
+  conservatively (erring toward generating fewer warnings).
+
+* Data variables
+
+  The declaration information for `data` variables is currently not considered,
+  so using `data` as incompatible arguments to distributions may not generate
+  the appropriate warnings.
+
+* Control flow dependent on parameters in nested functions
+
+  If a parameter is passed as an argument to a user-defined function within
+  another user-defined function, and then some control flow depends on that
+  argument, the appropriate warning will not be thrown.
+
+
+## Automatic updating and formatting of Stan programs {#stanc-pretty-printing}
+
+In addition to compiling Stan programs, stanc3 features several [flags](#stanc-args)
+which can be used to format Stan programs and update them to the most recent
+Stan syntax by removing any
+[deprecation features](https://mc-stan.org/docs/reference-manual/deprecations.html)
+which can be automatically replaced.
+
+These flags work for both `.stan` model files and `.stanfunctions` function
+files. They can be combined with `--o` to redirect the formatted output to a new
+file.
+
+### Automatic formatting {-}
+
+Invoking `stanc --auto-format <model_file>` will print a version of your model
+which has been re-formatted. The goal is to have this automatic formatting stay
+as close as possible to the [Stan Program Style Guide](style-guide.qmd). This means spacing,
+indentation, and line length are all regularized. _Some_ deprecated features,
+like the use of `#` for line comments, are replaced, but the goal is mainly to
+preserve the program while formatting it.
+
+By default, this will try to split lines at or before column 78. This number can
+be changed using `--max-line-length`.
+
+### Canonicalizing {-}
+
+In addition to automatic formatting, stanc can also "canonicalize" programs by
+updating deprecated syntax, removing unnecessary parenthesis, and adding braces
+around bodies of `if` statements and `for` and `while` loops.
+
+This can be done by using `stanc --auto-format --canonicalize=...` where `...`
+is a comma-separated list of options. Currently these options are:
+
+- `deprecations`
+
+  Removes deprecated syntax such as replacing deprecated functions with their drop-in
+  replacements.
+
+- `parentheses`
+
+  Removes unnecessary extra parentheses, such as converting `y = ((x-1))` to
+  `y = x - 1`
+
+- `braces`
+
+  Places braces around all blocks. For example, the following statement
+
+  ```stan
+  if (cond)
+    //result
+  ```
+  will be formatted as
+
+  ```stan
+  if (cond) {
+    //result
+  }
+  ```
+  and similarly for both kinds of loops containing a single statement.
+
+- `includes`
+
+  This will pretty-print code from other files included with `#include` as part
+  of the program. This was the default behavior prior to Stan 2.29. When not
+  enabled, the pretty-printer output will include the same `#include` directives
+  as the input program.
+
+Invoking `stanc --print-canonical <model_file>` is synonymous with running
+`stanc --auto-format --canonicalize=deprecations,braces,parentheses,includes`
+
+### Known issues {-}
+
+The formatting and canonicalizing features of stanc3 are still under
+development. The following are some known issues one should be aware of before
+using either:
+
+* Oddly placed comments
+
+  If your Stan program features comments in unexpected places, such as inside an
+  expression, they may be moved in the process of formatting. Moved comments are
+  prefixed with the string `^^^:` to indicate they originally appeared higher in
+  the program.
+
+  We hope to improve this functionality in future versions. For now, this can
+  usually be avoided by manually moving the comment outside of an expression,
+  either by placing it on its own line or following a separator such as a comma
+  or keyword.
+
+* Failure to recreate strange `#include` structure
+
+  Printing _without_ include inlining (`--canonicalize=includes`) can fail when
+  includes were used in atypical locations, such as in the middle of statements.
+  We recommend either printing with inlining enabled or reconsidering the use of
+  includes in this way.
+
+## Optimization
+
+The stanc3 compiler can optimize the code of Stan model during compilation. The
+optimized model code behaves the same as unoptimized code, but it may be faster,
+more memory efficient, or more numerically stable.
+
+This section introduces the available optimization options and describes their
+effect.
+
+To print out a representation of the optimized Stan program, use the stanc3
+command-line flag `--debug-optimized-mir-pretty`. To print an analogous
+representation of the Stan program prior to optimization, use the flag
+`--debug-transformed-mir-pretty`.
+
+### Optimization levels {-}
+
+To turn optimizations on, the user specifies the desired optimization *level*.
+The level specifies the set of optimizations to use. The chosen optimizations
+are used in a specific order, with some of them applied repeatedly.
+
+Optimization levels are specified by the numbers 0 and 1 and the 'experimental'
+tag:
+
+-   **O0** No optimizations are applied.
+-   **O1** Optimizations that are simple, do not dramatically change the
+    program, and are unlikely to noticeably slow down compile times are applied.
+-   **Oexperimental** All optimizations are applied. Some of these are not
+    thorougly tested and may not always improve a programs performance.
+
+O0 is the default setting.
+
+The levels include these optimizations:
+
+-   **O0** includes no optimizations.
+-   **O1** includes:
+    -   [Dead code elimination](#dead-code-elimination)
+    -   [Copy propagation](#copy-propagation)
+    -   [Constant propagation](#constant-propagation)
+    -   [Partial evaluation](#partial-evaluation)
+    -   [Function inlining](#function-inlining)
+    -   [Matrix memory layout optimization](#memory-patterns)
+-   **Oexperimental** includes optimizations specified by **O1** and also:
+    -   [Automatic-differentiation level optimization](#automatic-differentiation-level-optimization)
+    -   [One step loop unrolling](#one-step-loop-unrolling)
+    -   [Expression propagation](#expression-propagation)
+    -   [Lazy code motion](#lazy-code-motion)
+    -   [Static loop unrolling](#static-loop-unrolling)
+
+In addition, **Oexperimental** will apply more repetitions of the optimizations,
+which may increase compile times.
+
+### **O1** Optimizations {-}
+
+#### Dead code elimination {-}
+
+Dead code is code that does not affect the behavior of the program. Code is not
+dead if it affects `target`, the value of any outside-observable variable like
+transformed parameters or generated quantities, or side effects such as print
+statements. Removing dead code can speed up a program by avoiding unnecessary
+computations.
+
+Example Stan program:
+
+```stan
+model {
+  int i;
+  i = 5;
+  for (j in 1:10);
+  if (0) {
+    print("Dead code");
+  } else {
+    print("Hi!");
+  }
+}
+```
+
+Compiler representation of program **before dead code elimination** (simplified
+from the output of `--debug-transformed-mir-pretty`):
+
+```
+log_prob {
+  int i = 5;
+  for(j in 1:10) {
+    ;
+  }
+  if(0) {
+    FnPrint__("Dead code");
+  } else {
+    FnPrint__("Hi!");
+  }
+}
+```
+
+Compiler representation of program **after dead code elimination** (simplified
+from the output of `--debug-optimized-mir-pretty`):
+
+```
+log_prob {
+  int i;
+  FnPrint__("Hi!");
+}
+```
+
+#### Constant propagation {-}
+
+Constant propagation replaces uses of a variable which is known to have a
+constant value `C` with that constant `C`. This removes the overhead of looking
+up the variable, and also makes many other optimizations possible (such as
+static loop unrolling and partial evaluation).
+
+Example Stan program:
+
+```stan
+transformed data {
+  int n = 100;
+  int a[n];
+  for (i in 1:n) {
+    a[i] = i;
+  }
+}
+```
+
+Compiler representation of program **before constant propagation** (simplified
+from the output of `--debug-transformed-mir-pretty`):
+
+```
+prepare_data {
+  data int n = 100;
+  data array[int, n] a;
+  for(i in 1:n) {
+    a[i] = i;
+  }
+}
+```
+
+Compiler representation of program **after constant propagation** (simplified
+from the output of `--debug-optimized-mir-pretty`):
+
+```
+prepare_data {
+  data int n = 100;
+  data array[int, 100] a;
+  for(i in 1:100) {
+    a[i] = i;
+  }
+}
+```
+
+#### Copy propagation {-}
+
+Copy propagation is similar to [expression propagation](#expression-propagation),
+but only propagates variables rather than arbitrary expressions. This can reduce
+the complexity of the code for other optimizations such as expression propagation.
+
+Example Stan program:
+
+```stan
+model {
+  int i = 1;
+  int j = i;
+  int k = i + j;
+}
+```
+
+Compiler representation of program **before copy propagation** (simplified from
+the output of `--debug-transformed-mir-pretty`):
+
+```
+log_prob {
+    int i = 1;
+    int j = i;
+    int k = (i + j);
+}
+```
+
+Compiler representation of program **after copy propagation** (simplified from
+the output of `--debug-optimized-mir-pretty`):
+
+```
+log_prob {
+  int i = 1;
+  int j = i;
+  int k = (i + i);
+}
+```
+
+#### Partial evaluation {-}
+
+Partial evaluation searches for expressions that we can replace with a faster,
+simpler, more memory efficient, or more numerically stable expression with the
+same meaning.
+
+Example Stan program:
+
+```stan
+model {
+  real a = 1 + 1;
+  real b = log(1 - a);
+  real c = a + b * 5;
+}
+```
+
+Compiler representation of program **before partial evaluation** (simplified
+from the output of `--debug-transformed-mir-pretty`):
+
+```
+log_prob {
+  real a = (1 + 1);
+  real b = log((1 - a));
+  real c = (a + (b * 5));
+}
+```
+
+Compiler representation of program **after partial evaluation** (simplified from
+the output of `--debug-optimized-mir-pretty`):
+
+```
+log_prob {
+  real a = 2;
+  real b = log1m(a);
+  real c = fma(b, 5, a);
+}
+```
+
+
+#### Function inlining {-}
+
+Function inlining replaces each function call to each user-defined function `f`
+with the body of `f`. It does this by copying the function body to the call site
+and doing appropriately renaming the argument variables. This optimization can
+speed up a program by avoiding the overhead of a function call and providing
+more opportunities for further optimizations (such as partial evaluation).
+
+Example Stan program:
+
+```stan
+functions {
+  int incr(int x) {
+    int y = 1;
+    return x + y;
+  }
+}
+transformed data {
+  int a = 2;
+  int b = incr(a);
+}
+```
+
+Compiler representation of program **before function inlining** (simplified from
+the output of `--debug-transformed-mir-pretty`):
+
+```
+functions {
+  int incr(int x) {
+    int y = 1;
+    return (x + y);
+  }
+}
+
+prepare_data {
+  data int a = 2;
+  data int b = incr(a);
+}
+```
+
+Compiler representation of program **after function inlining** (simplified from
+the output of `--debug-optimized-mir-pretty`):
+
+```
+prepare_data {
+  data int a;
+  a = 2;
+  data int b;
+  data int inline_sym1__;
+  data int inline_sym3__;
+  inline_sym3__ = 0;
+  for(inline_sym4__ in 1:1) {
+    int inline_sym2__;
+    inline_sym2__ = 1;
+    inline_sym3__ = 1;
+    inline_sym1__ = (a + inline_sym2__);
+    break;
+  }
+  b = inline_sym1__;
+}
+```
+
+In this code, the `for` loop and `break` is used to simulate the behavior of a
+`return` statement. The value to be returned is held in `inline_sym1__`. The
+flag variable `inline_sym3__` indicates whether a return has occurred and is
+necessary to handle `return` statements nested inside loops within the function
+body.
+
+#### Matrix memory layout optimization { - #memory-patterns}
+
+Matrices and vector variables which require automatic-differentiation (AD) in Stan
+can be represented in two different forms.
+
+The first (and default) representation is the "Array of Structs" (AoS) or "Matrix of vars" (matvar)
+layout. A "var" is the term used in the Stan implementation of autodiff for a single real. It is represented as a
+structure containing it's value and its adjoint.
+The AoS representation constructs matrices and vectors by simply using those structures as the elements of the matrix
+internally. This is flexible and very general, but many operations want to deal with the values or the adjoints as blocks,
+requiring expensive memory access patterns.
+
+The second representation is the "Struct of Arrays" (SoA) or "Var of matrices" (varmat) layout.
+Rather than a matrix containing tiny structures of one value and one adjoint each, this representation
+uses a single structure which contains separately a matrix of values and a matrix of adjoints. Some operations,
+like iterating over elements or assigning to specific indices, become more expensive, but many matrix operations
+like multiplications become much faster in this representation.
+
+*More general reading on AoS vs SoA can be found on [Wikipedia](https://en.wikipedia.org/wiki/AoS_and_SoA)*
+
+
+This optimization pass attempts to identify which matrix or vector variables in the Stan
+program are candidates for using the SoA representation. The conditions change over time,
+but broadly speaking:
+
+- Any Stan Math Library functions the matrix is passed to must be able to support it.
+- The matrix should not be accessed/assigned elementwise in a loop.
+
+The debug flag `--debug-mem-patterns` will list each variable and whether it is
+using the AoS representation or the SoA representation.
+
+### **0experimental** Optimizations {-}
+
+#### Automatic-differentiation level optimization {-}
+
+Stan variables can have two auto-differentiation (AD) *levels*: AD or non-AD. AD
+variables carry gradient information with them, which allows Stan to calculate
+the log-density gradient, but they also have more overhead than non-AD
+variables. It is therefore inefficient for a variable to be AD unnecessarily.
+AD-level optimization sets every variable to be a floating point type unless its
+gradient is necessary.
+
+Example Stan program:
+
+```stan
+data {
+  real y;
+}
+model {
+  real x = y + 1;
+}
+```
+
+Compiler representation of program **before AD-level optimization** (simplified
+from the output of `--debug-transformed-mir-pretty`):
+
+```
+input_vars {
+  real y;
+}
+
+log_prob {
+  real x = (y + 1);
+}
+```
+
+Compiler representation of program **after AD-level optimization** (simplified
+from the output of `--debug-optimized-mir-pretty`):
+
+```
+input_vars {
+  real y;
+}
+
+log_prob {
+  data real x = (y + 1);
+}
+```
+
+#### One step loop unrolling {-}
+
+One step loop unrolling is similar to [static loop unrolling](#static-loop-unrolling).
+However, this optimization only 'unrolls' the first loop iteration, and can
+therefore work even when the total number of iterations is not predictable. This
+can speed up a program by providing more opportunities for further optimizations
+such as partial evaluation and lazy code motion.
+
+Example Stan program:
+
+```stan
+data {
+  int n;
+}
+transformed data {
+  int x = 0;
+  for (i in 1:n) {
+    x += i;
+  }
+}
+```
+
+Compiler representation of program **before one step static loop unrolling**
+(simplified from the output of `--debug-transformed-mir-pretty`):
+
+```
+prepare_data {
+  data int n = FnReadData__("n")[1];
+  data int x = 0;
+  for(i in 1:n) {
+    x = (x + i);
+  }
+}
+```
+
+Compiler representation of program **after one step static loop unrolling**
+(simplified from the output of `--debug-optimized-mir-pretty`):
+
+```
+prepare_data {
+  data int n = FnReadData__("n")[1];
+  int x = 0;
+  if((n >= 1)) {
+    x = (x + 1);
+    for(i in (1 + 1):n) {
+      x = (x + i);
+    }
+  }
+}
+```
+
+#### Expression propagation {-}
+
+Constant propagation replaces the uses of a variable which
+is known to have a constant value `E` with that constant `E`. This often results
+in recalculating the expression, but provides more opportunities for further
+optimizations such as partial evaluation. Expression propagation is always
+followed by [lazy code motion](#lazy-code-motion) to avoid unnecessarily recomputing
+expressions.
+
+Example Stan program:
+
+```stan
+data {
+  int m;
+}
+transformed data {
+  int n = m+1;
+  int a[n];
+  for (i in 1:n-1) {
+    a[i] = i;
+  }
+}
+```
+
+Compiler representation of program **before expression propagation** (simplified
+from the output of `--debug-transformed-mir-pretty`):
+
+```
+prepare_data {
+  data int m = FnReadData__("m")[1];
+  data int n = (m + 1);
+  data array[int, n] a;
+  for(i in 1:(n - 1)) {
+    a[i] = i;
+  }
+}
+```
+
+Compiler representation of program **after expression propagation** (simplified
+from the output of `--debug-optimized-mir-pretty`):
+
+```
+prepare_data {
+  data int m = FnReadData__("m")[1];
+  data int n = (m + 1);
+  data array[int, (m + 1)] a;
+  for(i in 1:((m + 1) - 1)) {
+    a[i] = i;
+  }
+}
+```
+
+#### Lazy code motion {-}
+
+Lazy code motion rearranges the statements and expressions in a program with the
+goals of:
+
+-   Avoiding computing expressions more than once, and
+-   Computing expressions as late as possible (to minimize the strain on the
+    working memory set).
+
+To accomplish these goals, lazy code motion will perform optimizations such as:
+
+-   Moving a repeatedly calculated expression to its own variable (also referred
+    to as *common-subexpression elimination*)
+-   Moving an expression outside of a loop if it does not need to be in the loop
+    (also referred to as *loop-invariant code motion*)
+
+Lazy code motion can make some programs significantly more efficient by avoiding
+redundant or early computations.
+
+As currently implemented in the compiler, it may move items between blocks
+in a way that actually increases overall computation. Improving this is an ongoing project.
+
+Example Stan program:
+
+```stan
+model {
+  real x;
+  real y;
+  real z;
+
+  for (i in 1:10) {
+    x = sqrt(10);
+    y = sqrt(i);
+  }
+  z = sqrt(10);
+}
+```
+
+Compiler representation of program before lazy code motion (simplified from the
+output of `--debug-transformed-mir-pretty`):
+
+```
+log_prob {
+  real x;
+  real y;
+  real z;
+  for(i in 1:10) {
+    x = sqrt(10);
+    y = sqrt(i);
+  }
+  z = sqrt(10);
+}
+```
+
+Compiler representation of program after lazy code motion (simplified from the
+output of `--debug-optimized-mir-pretty`):
+
+```
+log_prob {
+  data real lcm_sym4__;
+  data real lcm_sym3__;
+  real x;
+  real y;
+  lcm_sym4__ = sqrt(10);
+  real z;
+  for(i in 1:10) {
+    x = lcm_sym4__;
+    y = sqrt(i);
+  }
+  z = lcm_sym4__;
+}
+```
+
+#### Static loop unrolling {-}
+
+Static loop unrolling takes a loop with a predictable number of iterations
+`X` and replaces it by writing out the loop body `X` times. The loop index in
+each repeat is replaced with the appropriate constant. This optimization can
+speed up a program by avoiding the overhead of a loop and providing more
+opportunities for further optimizations (such as partial evaluation).
+
+Example Stan program:
+
+```stan
+transformed data {
+  int x = 0;
+  for (i in 1:4) {
+    x += i;
+  }
+}
+```
+
+Compiler representation of program **before static loop unrolling** (simplified
+from the output of `--debug-transformed-mir-pretty`):
+
+```
+prepare_data {
+  data int x = 0;
+  for(i in 1:4) {
+    x = (x + i);
+  }
+}
+```
+
+Compiler representation of program **after static loop unrolling** (simplified
+from the output of `--debug-optimized-mir-pretty`):
+
+```
+prepare_data {
+  data int x;
+  x = 0;
+  x = (x + 1);
+  x = (x + 2);
+  x = (x + 3);
+  x = (x + 4);
+}
+```

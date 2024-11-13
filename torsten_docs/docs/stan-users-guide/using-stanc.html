@@ -1,0 +1,1988 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.53">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Using the Stan Compiler</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../stan-users-guide/style-guide.html" rel="next">
+<link href="../stan-users-guide/bootstrap.html" rel="prev">
+<link href="../img/logo_tm.png" rel="icon" type="image/png">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 200,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../theming/quarto_styles.css">
+</head>
+
+<body class="nav-sidebar floating nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../img/logo_tm.png" alt="Stan logo" class="navbar-logo">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Overview</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../stan-users-guide/index.html" aria-current="page"> 
+<span class="menu-text">Stan Users Guide</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../reference-manual/index.html"> 
+<span class="menu-text">Reference Manual</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../functions-reference/index.html"> 
+<span class="menu-text">Functions Reference</span></a>
+  </li>  
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-interfaces" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Interfaces</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-interfaces">    
+        <li>
+    <a class="dropdown-item" href="../cmdstan-guide/index.html">
+ <span class="dropdown-text">CmdStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/cmdstanpy">
+ <span class="dropdown-text">CmdStanPy</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/cmdstanr">
+ <span class="dropdown-text">CmdStanR</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/users/interfaces/pystan.html">
+ <span class="dropdown-text">PyStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/rstan">
+ <span class="dropdown-text">RStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="http://stanjulia.github.io/Stan.jl/stable/INTRO/">
+ <span class="dropdown-text">Stan.jl</span></a>
+  </li>  
+    </ul>
+  </li>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-other-packages" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Other Packages</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-other-packages">    
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/bayesplot/">
+ <span class="dropdown-text">bayesplot</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://roualdes.github.io/bridgestan/latest/">
+ <span class="dropdown-text">BridgeStan</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://paul-buerkner.github.io/brms/">
+ <span class="dropdown-text">brms</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/loo/">
+ <span class="dropdown-text">loo</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/posterior">
+ <span class="dropdown-text">posterior</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/projpred">
+ <span class="dropdown-text">projpred</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/rstanarm">
+ <span class="dropdown-text">rstanarm</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/rstantools">
+ <span class="dropdown-text">rstantools</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="https://mc-stan.org/shinystan">
+ <span class="dropdown-text">shinystan</span></a>
+  </li>  
+    </ul>
+  </li>
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools tools-wide">
+    <a href="https://github.com/stan-dev" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+    <a href="https://discourse.mc-stan.org" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-chat-text-fill"></i></a>
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+  <a href="" class="quarto-reader-toggle quarto-navigation-tool px-1" onclick="window.quartoToggleReader(); return false;" title="Toggle reader mode">
+  <div class="quarto-reader-toggle-btn">
+  <i class="bi"></i>
+  </div>
+</a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../stan-users-guide/using-stanc.html">Appendices</a></li><li class="breadcrumb-item"><a href="../stan-users-guide/using-stanc.html">Using the Stan Compiler</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stan User’s Guide</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Version 2.35</span></span>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Example Models</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Regression Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/time-series.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Time-Series Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/missing-data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Missing Data and Partially Known Parameters</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/truncation-censoring.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Truncated or Censored Data</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/finite-mixtures.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Finite Mixtures</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/measurement-error.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Measurement Error and Meta-Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/latent-discrete.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Latent Discrete Parameters</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/sparse-ragged.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Sparse and Ragged Data Structures</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/clustering.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Clustering Models</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/gaussian-processes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Gaussian Processes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/hyperspherical-models.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Directions, Rotations, and Hyperspheres</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/algebraic-equations.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Solving Algebraic Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/odes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Ordinary Differential Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/one-dimensional-integrals.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Computing One Dimensional Integrals</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/complex-numbers.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Complex Numbers</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/dae.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Differential-Algebraic Equations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/survival.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Survival Models</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Programming Techniques</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/floating-point.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Floating Point Arithmetic</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/matrices-arrays.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Matrices, Vectors, Arrays, and Tuples</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/multi-indexing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Multiple Indexing and Range Indexing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/user-functions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">User-Defined Functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/custom-probability.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Custom Probability Functions</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/proportionality-constants.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Proportionality Constants</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/problematic-posteriors.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Problematic Posteriors</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/reparameterization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reparameterization and Change of Variables</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/efficiency-tuning.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Efficiency Tuning</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/parallelization.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Parallelization</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true">
+ <span class="menu-text">Posterior Inference &amp; Model Checking</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-4" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-4" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/posterior-prediction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Posterior Predictive Sampling</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/simulation-based-calibration.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulation-Based Calibration</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/posterior-predictive-checks.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Posterior and Prior Predictive Checks</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/cross-validation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Held-Out Evaluation and Cross-Validation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/poststratification.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Poststratification</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/decision-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/bootstrap.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">The Bootstrap and Bagging</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true">
+ <span class="menu-text">Appendices</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-5" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-5" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/using-stanc.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Using the Stan Compiler</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/style-guide.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Stan Program Style Guide</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../stan-users-guide/for-bugs-users.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Transitioning from BUGS</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#using-the-stan-compiler" id="toc-using-the-stan-compiler" class="nav-link active" data-scroll-target="#using-the-stan-compiler">Using the Stan Compiler</a>
+  <ul class="collapse">
+  <li><a href="#stanc-args" id="toc-stanc-args" class="nav-link" data-scroll-target="#stanc-args">Command-line options for stanc3</a></li>
+  <li><a href="#understanding-stanc3-errors-and-warnings" id="toc-understanding-stanc3-errors-and-warnings" class="nav-link" data-scroll-target="#understanding-stanc3-errors-and-warnings">Understanding stanc3 errors and warnings</a>
+  <ul class="collapse">
+  <li><a href="#warnings" id="toc-warnings" class="nav-link" data-scroll-target="#warnings">Warnings</a></li>
+  <li><a href="#errors" id="toc-errors" class="nav-link" data-scroll-target="#errors">Errors</a></li>
+  </ul></li>
+  <li><a href="#pedantic-mode" id="toc-pedantic-mode" class="nav-link" data-scroll-target="#pedantic-mode">Pedantic mode</a>
+  <ul class="collapse">
+  <li><a href="#distribution-argument-and-variate-constraint-issues" id="toc-distribution-argument-and-variate-constraint-issues" class="nav-link" data-scroll-target="#distribution-argument-and-variate-constraint-issues">Distribution argument and variate constraint issues</a></li>
+  <li><a href="#special-case-distribution-issues" id="toc-special-case-distribution-issues" class="nav-link" data-scroll-target="#special-case-distribution-issues">Special-case distribution issues</a></li>
+  <li><a href="#unused-parameters" id="toc-unused-parameters" class="nav-link" data-scroll-target="#unused-parameters">Unused parameters</a></li>
+  <li><a href="#large-or-small-constants-in-a-distribution" id="toc-large-or-small-constants-in-a-distribution" class="nav-link" data-scroll-target="#large-or-small-constants-in-a-distribution">Large or small constants in a distribution</a></li>
+  <li><a href="#control-flow-depends-on-a-parameter" id="toc-control-flow-depends-on-a-parameter" class="nav-link" data-scroll-target="#control-flow-depends-on-a-parameter">Control flow depends on a parameter</a></li>
+  <li><a href="#parameters-with-multiple-tildes" id="toc-parameters-with-multiple-tildes" class="nav-link" data-scroll-target="#parameters-with-multiple-tildes">Parameters with multiple tildes</a></li>
+  <li><a href="#parameters-with-zero-or-multiple-priors" id="toc-parameters-with-zero-or-multiple-priors" class="nav-link" data-scroll-target="#parameters-with-zero-or-multiple-priors">Parameters with zero or multiple priors</a></li>
+  <li><a href="#variables-used-before-assignment" id="toc-variables-used-before-assignment" class="nav-link" data-scroll-target="#variables-used-before-assignment">Variables used before assignment</a></li>
+  <li><a href="#strict-or-nonsensical-parameter-bounds" id="toc-strict-or-nonsensical-parameter-bounds" class="nav-link" data-scroll-target="#strict-or-nonsensical-parameter-bounds">Strict or nonsensical parameter bounds</a></li>
+  <li><a href="#nonlinear-transformations" id="toc-nonlinear-transformations" class="nav-link" data-scroll-target="#nonlinear-transformations">Nonlinear transformations</a></li>
+  <li><a href="#pedantic-mode-limitations" id="toc-pedantic-mode-limitations" class="nav-link" data-scroll-target="#pedantic-mode-limitations">Pedantic mode limitations</a></li>
+  </ul></li>
+  <li><a href="#stanc-pretty-printing" id="toc-stanc-pretty-printing" class="nav-link" data-scroll-target="#stanc-pretty-printing">Automatic updating and formatting of Stan programs</a>
+  <ul class="collapse">
+  <li><a href="#automatic-formatting" id="toc-automatic-formatting" class="nav-link" data-scroll-target="#automatic-formatting">Automatic formatting</a></li>
+  <li><a href="#canonicalizing" id="toc-canonicalizing" class="nav-link" data-scroll-target="#canonicalizing">Canonicalizing</a></li>
+  <li><a href="#known-issues" id="toc-known-issues" class="nav-link" data-scroll-target="#known-issues">Known issues</a></li>
+  </ul></li>
+  <li><a href="#optimization" id="toc-optimization" class="nav-link" data-scroll-target="#optimization">Optimization</a>
+  <ul class="collapse">
+  <li><a href="#optimization-levels" id="toc-optimization-levels" class="nav-link" data-scroll-target="#optimization-levels">Optimization levels</a></li>
+  <li><a href="#o1-optimizations" id="toc-o1-optimizations" class="nav-link" data-scroll-target="#o1-optimizations"><strong>O1</strong> Optimizations</a></li>
+  <li><a href="#experimental-optimizations" id="toc-experimental-optimizations" class="nav-link" data-scroll-target="#experimental-optimizations"><strong>0experimental</strong> Optimizations</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/stan-dev/docs/edit/master/src/stan-users-guide/using-stanc.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/stan-dev/docs/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+
+
+
+<section id="using-the-stan-compiler" class="level1">
+<h1>Using the Stan Compiler</h1>
+<p>Stan is used in most of our <a href="https://mc-stan.org/users/interfaces/">interfaces</a> through the Stan compiler <code>stanc</code>. Since version 2.22, the Stan compiler has been implemented in OCaml and is referred to as <a href="https://github.com/stan-dev/stanc3">stanc3</a>. The binary name is still simply <code>stanc</code>, so this document uses both stanc and stanc3 interchangeably.</p>
+<section id="stanc-args" class="level2">
+<h2 class="anchored" data-anchor-id="stanc-args">Command-line options for stanc3</h2>
+<p>The stanc3 compiler has the following command-line syntax:</p>
+<pre><code>&gt; stanc (options) &lt;model_file&gt;</code></pre>
+<p>where <code>&lt;model_file&gt;</code> is a path to either a Stan model file ending in suffix <code>.stan</code> <em>or</em> a Stan functions file which ends in <code>.stanfunctions</code>.</p>
+<p>The stanc3 options are:</p>
+<ul>
+<li><p><code>--help</code> - Displays the complete list of stanc3 options, then exits.</p></li>
+<li><p><code>--version</code> - Display stanc version number</p></li>
+<li><p><code>--info</code> - Print information about the model, such as the type information for variables and the list of used distributions.</p></li>
+<li><p><code>--name=&lt;model_name&gt;</code> - Specify the name of the class used for the implementation of the Stan model in the generated C++ code.</p></li>
+<li><p><code>--o=&lt;file_name&gt;</code> - Specify a path to an output file for generated C++ code (default = <model_name>.hpp) or auto-formatting output (default: no file/print to stdout)</model_name></p></li>
+<li><p><code>--allow-undefined</code> - Do not throw a parser error if there is a function in the Stan program that is declared but not defined in the functions block.</p></li>
+<li><p><code>--include_paths=&lt;dir1,...dirN&gt;</code> - Takes a comma-separated list of directories that may contain a file in an <code>#include</code> directive.</p></li>
+<li><p><code>--use-opencl</code> - If set, will use additional Stan OpenCL features enabled in the Stan-to-C++ compiler.</p></li>
+<li><p><code>--auto-format</code> - Pretty prints the program to the console. See <a href="#stanc-pretty-printing">more on auto formatting</a>.</p></li>
+<li><p><code>--canonicalize</code> - Make changes to the program before pretty-printing by specifying options in a comma separated list. Options are ‘deprecations’, ‘parentheses’, ‘braces’, ‘includes’.</p></li>
+<li><p><code>--max-line-length=&lt;number&gt;</code> - Set the column number at which formatting with <code>--auto-format</code> attempts to split lines. The default value is 78, which results in most lines being shorter than 80 characters.</p></li>
+<li><p><code>--print-canonical</code> - Synonymous with <code>--auto-format --canonicalize=[all   options]</code>.</p></li>
+<li><p><code>--print-cpp</code> - If set, output the generated C++ Stan model class to stdout.</p></li>
+<li><p><code>--standalone-functions</code> - If set, only generate the code for the functions defined in the file. This is the default behavior for <code>.stanfunctions</code> files.</p></li>
+<li><p><code>--O0</code> (Default) Do not apply optimizations to the Stan code.</p></li>
+<li><p><code>--O1</code> Apply level 1 compiler <a href="#optimization">optimizations</a> (only basic optimizations).</p></li>
+<li><p><code>--Oexperimental</code> <strong>WARNING:</strong> <em>This is currently an experimental feature whose components are not thoroughly tested and may not improve a programs performance!</em> Allow the compiler to apply all <a href="#optimization">optimizations</a> to the Stan code.</p></li>
+<li><p><code>--O</code> <strong>WARNING:</strong> <em>This is currently an experimental feature whose components are not thoroughly tested and may not improve a programs performance!</em> Same as <code>--Oexperimental</code>. Allow the compiler to apply all <a href="#optimization">optimizations</a> to the Stan code.</p></li>
+<li><p><code>--warn-uninitialized</code> - Emit warnings about uninitialized variables to stderr. Currently an experimental feature.</p></li>
+<li><p><code>--warn-pedantic</code> - Emit warnings in <a href="#pedantic-mode">Pedantic mode</a> which warns of potential issues in the meaning of your program.</p></li>
+</ul>
+<p>The compiler also provides a number of debug options which are primarily of interest to stanc3 developers; use the <code>--help</code> option to see the full set.</p>
+</section>
+<section id="understanding-stanc3-errors-and-warnings" class="level2">
+<h2 class="anchored" data-anchor-id="understanding-stanc3-errors-and-warnings">Understanding stanc3 errors and warnings</h2>
+<p>During model compilation, stanc can produce a variety of errors (issues that prevent the model from being compiled) and warnings (non-fatal issues that should still be considered).</p>
+<section id="warnings" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="warnings">Warnings</h3>
+<p>Even without the optional <code>--warn-pedantic</code> and <code>--warn-uninitialized</code> <a href="#stanc-args">command line flags</a>, both of which enable additional warnings, stanc can still produce warnings about your program. In particular, warnings will be produced in two situations</p>
+<ol type="1">
+<li><p>A completely blank Stan program will produce the following warning message</p>
+<pre><code>Warning: Empty file 'empty.stan' detected;
+    this is a valid stan model but likely unintended!</code></pre></li>
+<li><p>The use of any <a href="https://mc-stan.org/docs/reference-manual/deprecations.html">deprecated features</a> will lead to warnings which will look as follows</p>
+<pre><code>Warning in 'deprecated.stan', line 2, column 0: Comments beginning with # are
+ deprecated and this syntax will be removed in Stan 2.32.0. Use // to
+ begin line comments; this can be done automatically using stanc
+ --auto-format</code></pre>
+<p>A single Stan program can produce many warnings during compilation.</p></li>
+</ol>
+</section>
+<section id="errors" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="errors">Errors</h3>
+<p>Errors differ from warnings in their severity and format. In particular, errors are <em>fatal</em> and stop compilation, so at most one error is displayed per run of stanc.</p>
+<p>There are five kinds of errors emitted by stanc3</p>
+<ol type="1">
+<li><p>File errors occur when the file passed to stanc is either missing or cannot be opened (i.e.&nbsp;has permissions issues). They look like</p>
+<pre><code>Error: file 'notfound.stan' not found or cannot be opened</code></pre></li>
+<li><p>Syntactic errors occur whenever a program violates the Stan language’s <a href="https://mc-stan.org/docs/reference-manual/syntax.html">syntax</a> requirements. There are three kinds of errors within syntax errors; “lexing” errors mean that the input was unable to be read properly on the character level, “include” errors which occur when the <code>#include</code> directive fails, and “parsing” errors which result when the structure of the program is incorrect.</p>
+<ul>
+<li><p>The lexing errors occur due to the use of invalid characters in a program. For example, a lexing error due to the use of <code>$</code> in a variable name will look like the following.</p>
+<pre><code>Syntax error in 'char.stan', line 2, column 6, lexing error:
+-------------------------------------------------
+  1:  data {
+  2:     int $ome_variable;
+             ^
+  3:  }
+-------------------------------------------------
+Invalid character found.</code></pre></li>
+<li><p>When an include directive is used, it can lead to errors if the included file is not found, or if a file includes itself (including a recursive loop of includes, such as A -&gt; B -&gt; A).</p>
+<pre><code>Syntax error in './incl.stan', line 1, column 0, included from
+'./incl.stan', line 1, column 0, included from
+'incl.stan', line 1, column 0, include error:
+-------------------------------------------------
+  1:  #include &lt;incl.stan&gt;
+      ^
+-------------------------------------------------
+File incl.stan recursively included itself.</code></pre></li>
+<li><p>It is much more common to see parsing errors, which tend to have more in-depth explanations of the error found. For example, if a user forgets to put a size on a type like vector, as in the following, this raises a parsing (structural) error in the compiler.</p>
+<pre><code>Syntax error in vec.stan', line 3, column 10 to column 11, parsing error:
+-------------------------------------------------
+  1:  data {
+  2:     int&lt;lower=0&gt; N;
+  3:     vector x;
+                ^
+  4:  }
+-------------------------------------------------
+"[" expression "]" expected for vector size.</code></pre></li>
+</ul></li>
+<li><p>Semantic errors (also known as type errors) occur when a program is structured correctly but features an error in the <a href="https://mc-stan.org/docs/reference-manual/syntax.html#extra-grammatical-constraints">type rules</a> imposed by the language. An example of this is assigning a real value to a variable defined as an integer.</p>
+<pre><code>Semantic error in 'type.stan', line 2, column 3 to column 15:
+-------------------------------------------------
+  1:  transformed data {
+  2:     int x = 1.5;
+         ^
+  3:  }
+-------------------------------------------------
+Ill-typed arguments supplied to assignment operator =: lhs has
+type int and rhs has type real</code></pre></li>
+<li><p>The compiler will raise an error for use of any <a href="https://mc-stan.org/docs/reference-manual/removals.html">removed features</a> for at least one version following their removal. The deprecation warnings mentioned above eventually turn into this kind of error to prompt the user to update their model. After the version of removal, these errors will be converted to one of the other types listed here, depending on the feature.</p></li>
+<li><p>Finally, the compiler can raise an internal error. These are caused by bugs in the compiler, <strong>not</strong> your model, and we would appreciate it if you report them on the <a href="https://github.com/stan-dev/stanc3/issues">stanc3 repo</a> with the error message provided. These errors usually say something like “This should never happen,” and we apologize if they do.</p></li>
+</ol>
+</section>
+</section>
+<section id="pedantic-mode" class="level2">
+<h2 class="anchored" data-anchor-id="pedantic-mode">Pedantic mode</h2>
+<p>Pedantic mode is a compilation option built into Stanc3 that warns you about potential issues in your Stan program.</p>
+<p>For example, consider the following program.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> N;</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">array</span>[N] <span class="dt">real</span> x;</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> sigma;</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> mu;</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  x ~ normal(mu, sigma);</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>When pedantic mode is turned on, the compiler will produce the following warnings.</p>
+<pre><code>Warning:
+  The parameter sigma has no priors.
+Warning at 'ped-mode-ex1.stan', line 10, column 14 to column 16:
+  The variable mu may not have been assigned a value before its use.
+Warning at 'ped-mode-ex1.stan', line 10, column 18 to column 23:
+  A normal distribution is given parameter sigma as a scale parameter
+  (argument 2), but sigma was not constrained to be strictly positive.</code></pre>
+<p>Here are the kinds of issues that pedantic mode will find (which are described in more detail in following sections):</p>
+<ul>
+<li><em>Distribution usages issues.</em> Distribution arguments don’t match the distribution specification, or some specific distribution is used in an inadvisable way.</li>
+<li><em>Unused parameter.</em> A parameter is defined but doesn’t contribute to target.</li>
+<li><em>Large or small constant in a distribution.</em> Very large or very small constants are used as distribution arguments.</li>
+<li><em>Control flow depends on a parameter.</em> Branching control flow (like if/else) depends on a parameter value .</li>
+<li><em>Parameter has multiple tildes.</em> A parameter is on the left-hand side of multiple tildes.</li>
+<li><em>Parameter has zero or multiple priors.</em> A parameter has zero or more than one prior distribution.</li>
+<li><em>Variable is used before assignment.</em> A variable is used before being assigned a value.</li>
+<li><em>Strict or nonsensical parameter bounds.</em> A parameter is given questionable bounds.</li>
+<li><em>Nonlinear transformations.</em> When the left-hand side of a tilde statement (or first argument of a log probability function) contains a nonlinear transform which may require a Jacobian change of variables adjustment.</li>
+</ul>
+<p>Some important limitations of pedantic mode are listed at the end of this chapter.</p>
+<section id="distribution-argument-and-variate-constraint-issues" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="distribution-argument-and-variate-constraint-issues">Distribution argument and variate constraint issues</h3>
+<p>When an argument to a built-in distribution certainly does not match that distribution’s specification in the <a href="https://mc-stan.org/docs/functions-reference/index.html">Stan Functions Reference</a>, a warning is thrown. This primarily checks if any distribution argument’s bounds at declaration, compile-time value, or subtype at declaration (e.g.&nbsp;<code>simplex</code>) is incompatible with the domain of the distribution. x</p>
+<p>For example, consider the following program.</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> unb_p;</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>&gt; pos_p;</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span> ~ poisson(unb_p);</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span> ~ poisson(pos_p);</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The parameter of <code>poisson</code> should be strictly positive, but <code>unb_p</code> is not constrained to be positive.</p>
+<p>Pedantic mode produces the following warning.</p>
+<pre><code>Warning at 'ex-dist-args.stan', line 6, column 14 to column 19:
+  A poisson distribution is given parameter unb_p as a rate parameter
+  (argument 1), but unb_p was not constrained to be strictly positive.</code></pre>
+</section>
+<section id="special-case-distribution-issues" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="special-case-distribution-issues">Special-case distribution issues</h3>
+<p>Pedantic mode checks for some specific uses of distributions that may indicate a statistical mistake:</p>
+<section id="uniform-distributions" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="uniform-distributions">Uniform distributions</h4>
+<p>Any use of uniform distribution generates a warning, except when the variate parameter’s declared <code>upper</code> and <code>lower</code> bounds exactly match the uniform distribution bounds. In general, assigning a parameter a uniform distribution can create non-differentiable boundary conditions and is not recommended.</p>
+<p>For example, consider the following program.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> a;</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=<span class="dv">1</span>&gt; b;</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  a ~ uniform(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>  b ~ uniform(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>a</code> is assigned a uniform distribution that doesn’t match its constraints.</p>
+<p>Pedantic mode produces the following warning.</p>
+<pre><code>Warning at 'uniform-warn.stan', line 6, column 2 to column 20:
+  Parameter a is given a uniform distribution. The uniform distribution is
+  not recommended, for two reasons: (a) Except when there are logical or
+  physical constraints, it is very unusual for you to be sure that a
+  parameter will fall inside a specified range, and (b) The infinite gradient
+  induced by a uniform density can cause difficulties for Stan's sampling
+  algorithm. As a consequence, we recommend soft constraints rather than hard
+  constraints; for example, instead of giving an elasticity parameter a
+  uniform(0, 1) distribution, try normal(0.5, 0.5).</code></pre>
+</section>
+<section id="inverse--gamma-distributions" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="inverse--gamma-distributions">(Inverse-) Gamma distributions</h4>
+<p>Gamma distributions are sometimes used as an attempt to assign an improper prior to a parameter. Pedantic mode gives a warning when the Gamma arguments indicate that this may be the case.</p>
+</section>
+<section id="lkj_corr-distribution" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="lkj_corr-distribution">lkj_corr distribution</h4>
+<p>Any use of the <code>lkj_corr</code> distribution generates a warning that suggests using the Cholesky variant instead. See <a href="https://mc-stan.org/docs/functions-reference/correlation_matrix_distributions.html#lkj-correlation">the LKJ correlation distribution section</a> of the Stan Functions Reference for details.</p>
+</section>
+</section>
+<section id="unused-parameters" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="unused-parameters">Unused parameters</h3>
+<p>A warning is generated when a parameter is declared but does not have any effect on the program. This is determined by checking whether the value of the <code>target</code> variable depends in any way on each of the parameters.</p>
+<p>For example, consider the following program.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> a;</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> b;</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>  a ~ normal(<span class="dv">1</span>, <span class="dv">1</span>);</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p><code>a</code> participates in the density function but <code>b</code> does not.</p>
+<p>Pedantic mode produces the following warning.</p>
+<pre><code>Warning:
+  The parameter b was declared but was not used in the density calculation.</code></pre>
+</section>
+<section id="large-or-small-constants-in-a-distribution" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="large-or-small-constants-in-a-distribution">Large or small constants in a distribution</h3>
+<p>When numbers with magnitude less than 0.1 or greater than 10 are used as arguments to a distribution, it indicates that some parameter is not scaled to unit value, so a warning is thrown. See <a href="https://mc-stan.org/docs/stan-users-guide/efficiency-tuning.html#standardizing-predictors-and-outputs">the efficiency tuning section</a> of the Stan User’s guide for a discussion of scaling parameters.</p>
+<p>For example, consider the following program.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> x;</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> y;</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>  x ~ normal(-<span class="dv">100</span>, <span class="dv">100</span>);</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>  y ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The constants <code>-100</code> and <code>100</code> suggest that <code>x</code> is not unit scaled.</p>
+<p>Pedantic mode produces the following warning.</p>
+<pre><code>Warning at 'constants-warn.stan', line 6, column 14 to column 17:
+  Argument -100 suggests there may be parameters that are not unit scale;
+  consider rescaling with a multiplier (see manual section 22.12).
+Warning at 'constants-warn.stan', line 6, column 19 to column 22:
+  Argument 100 suggests there may be parameters that are not unit scale;
+  consider rescaling with a multiplier (see manual section 22.12).</code></pre>
+</section>
+<section id="control-flow-depends-on-a-parameter" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="control-flow-depends-on-a-parameter">Control flow depends on a parameter</h3>
+<p>Control flow statements, such as <code>if</code>, <code>for</code> and <code>while</code> should not depend on parameters or functions of parameters to determine their branching conditions. This is likely to introduce a discontinuity into the density function. Pedantic mode generates a warning when any branching condition may depend on a parameter value.</p>
+<p>For example, consider the following program.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> a;</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="co">// x depends on parameter a</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> x = a * a;</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> m;</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>  <span class="co">// the if-then-else depends on x which depends on a</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(x &gt; <span class="dv">0</span>) {</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    <span class="co">//now m depends on x which depends on a</span></span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    m = <span class="dv">1</span>;</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    m = <span class="dv">2</span>;</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>  <span class="co">// for loop depends on m -&gt; x -&gt; a</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">0</span>:m) {</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>    a ~ normal(i, <span class="dv">1</span>);</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>The <code>if</code> and <code>for</code> statements are control flow that depend (indirectly) on the value of the parameter <code>m</code>.</p>
+<p>Pedantic mode produces the following warning.</p>
+<pre><code>Warning at 'param-dep-cf-warn.stan', line 11, column 2 to line 16, column 3:
+  A control flow statement depends on parameter(s): a.
+Warning at 'param-dep-cf-warn.stan', line 19, column 2 to line 21, column 3:
+  A control flow statement depends on parameter(s): a.</code></pre>
+</section>
+<section id="parameters-with-multiple-tildes" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="parameters-with-multiple-tildes">Parameters with multiple tildes</h3>
+<p>A warning is generated when a parameter is found on the left-hand side of more than one ~ statements (or an equivalent <code>target +=</code> conditional density statement). This pattern is not inherently an issue, but it is unusual and may indicate a mistake.</p>
+<p>Pedantic mode only searches for repeated statements, it will not for example generate a warning when a ~ statement is executed repeatedly inside of a loop.</p>
+<p>For example, consider the following program.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> x;</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> a;</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> b;</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>  a ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a>  a ~ normal(x, <span class="dv">1</span>);</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a>  b ~ normal(<span class="dv">1</span>, <span class="dv">1</span>);</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Pedantic mode produces the following warning.</p>
+<pre><code>Warning at 'multi-tildes.stan', line 9, column 2 to column 19:
+  The parameter a is on the left-hand side of more than one tildes
+  statement.</code></pre>
+</section>
+<section id="parameters-with-zero-or-multiple-priors" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="parameters-with-zero-or-multiple-priors">Parameters with zero or multiple priors</h3>
+<p>A warning is generated when a parameter appears to have greater than or less than one prior distribution factor.</p>
+<p>This analysis depends on a <a href="https://en.wikipedia.org/wiki/Factor_graph"><em>factor graph</em></a> representation of a Stan program. A factor F that depends on a parameter P is called a <em>prior factor for P</em> if there is no path in the factor graph from F to any data variable except through P.</p>
+<p>One limitation of this approach is that the compiler cannot distinguish between <em>modeled</em> <code>data</code> variables and other convenient uses of <code>data</code> variables such as data sizes or hyperparameters. This warning assumes that all data variables (except for <code>int</code> variables) are modeled data, which may cause extra warnings.</p>
+<p>For example, consider the following program.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> x;</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> a;</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> b;</span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> c;</span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> d;</span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a>  a ~ normal(<span class="dv">0</span>, <span class="dv">1</span>); <span class="co">// this is a prior</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a>  x ~ normal(a, <span class="dv">1</span>); <span class="co">// this is not a prior, since data is involved</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>  b ~ normal(x, <span class="dv">1</span>); <span class="co">// this is also not a prior, since data is involved</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>  <span class="co">// this is not a prior for c, since data is involved through b</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>  <span class="co">// but it is a prior for b, since the data is only involved through b</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>  c ~ normal(b, <span class="dv">1</span>);</span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>  <span class="co">//these are multiple priors:</span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>  d ~ normal(<span class="dv">0</span>, <span class="dv">1</span>);</span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>  <span class="dv">1</span> ~ normal(d, <span class="dv">1</span>);</span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>One prior is found for <code>a</code> and for <code>b</code>, while <code>c</code> only has a factor that touches a <code>data</code> variable and <code>d</code> has multiple priors.</p>
+<p>Pedantic mode produces the following warning.</p>
+<pre><code>Warning:
+  The parameter c has no priors.
+Warning:
+  The parameter d has 2 priors.</code></pre>
+</section>
+<section id="variables-used-before-assignment" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="variables-used-before-assignment">Variables used before assignment</h3>
+<p>A warning is generated when any variable is used before it has been assigned a value.</p>
+<p>For example, consider the following program.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed data</span> {</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> x;</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="dv">1</span> &gt; <span class="dv">2</span>) {</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>    x = <span class="dv">1</span>;</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">print</span>(<span class="st">"oops"</span>);</span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="kw">print</span>(x);</span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Since <code>x</code> is only assigned in one of the branches of the <code>if</code> statement, it might get to <code>print(x)</code> without having been assigned to.</p>
+<p>Pedantic mode produces the following warning.</p>
+<pre><code>Warning at 'uninit-warn.stan', line 7, column 8 to column 9:
+  The variable x may not have been assigned a value before its use.</code></pre>
+</section>
+<section id="strict-or-nonsensical-parameter-bounds" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="strict-or-nonsensical-parameter-bounds">Strict or nonsensical parameter bounds</h3>
+<p>Except when there are logical or physical constraints, it is very unusual for you to be sure that a parameter will fall inside a specified range. A warning is generated for all parameters declared with the bounds <code>&lt;lower=.., upper=..&gt;</code> except for <code>&lt;lower=0, upper=1&gt;</code> or <code>&lt;lower=-1, upper=1&gt;</code>.</p>
+<p>In addition, a warning is generated when a parameter bound is found to have <code>lower &gt;= upper</code>.</p>
+<p>For example, consider the following program.</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=<span class="dv">0</span>, <span class="kw">upper</span>=<span class="dv">1</span>&gt; a;</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=-<span class="dv">1</span>, <span class="kw">upper</span>=<span class="dv">1</span>&gt; b;</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span>&lt;<span class="kw">lower</span>=-<span class="dv">2</span>, <span class="kw">upper</span>=<span class="dv">1012</span>&gt; c;</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>  c ~ normal(b, a);</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Pedantic mode produces the following warning.</p>
+<pre><code>Warning:
+  Your Stan program has a parameter c with a lower and upper bound in its
+  declaration. These hard constraints are not recommended, for two reasons:
+  (a) Except when there are logical or physical constraints, it is very
+  unusual for you to be sure that a parameter will fall inside a specified
+  range, and (b) The infinite gradient induced by a hard constraint can cause
+  difficulties for Stan's sampling algorithm. As a consequence, we recommend
+  soft constraints rather than hard constraints; for example, instead of
+  constraining an elasticity parameter to fall between 0, and 1, leave it
+  unconstrained and give it a normal(0.5, 0.5) prior distribution.</code></pre>
+</section>
+<section id="nonlinear-transformations" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="nonlinear-transformations">Nonlinear transformations</h3>
+<p>When a parameter is transformed in a non-linear fashion, an adjustment must be applied to account for distortion caused by the transform. This is discussed in depth in the <a href="../stan-users-guide/reparameterization.html">Changes of variables</a> section.</p>
+<p>This portion of pedantic mode tries to detect instances where such an adjustment would be necessary and remind the user.</p>
+<p>For example, consider the following program.</p>
+<div class="sourceCode" id="cb29"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="kw">parameters</span> {</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> y;</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a>  log(y) ~ normal(<span class="dv">0</span>,<span class="dv">1</span>);</span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Pedantic mode produces the following warning.</p>
+<pre><code>Warning:
+    Left-hand side of distribution statement (~) may contain a non-linear
+    transform of a parameter or local variable. If it does, you need
+    to include a target += statement with the log absolute determinant
+    of the Jacobian of the transform.</code></pre>
+</section>
+<section id="pedantic-mode-limitations" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="pedantic-mode-limitations">Pedantic mode limitations</h3>
+<ul>
+<li><p>Constant values are sometimes uncomputable</p>
+<p>Pedantic mode attempts to evaluate expressions down to literal values so that they can be used to generate warnings. For example, in the code <code>normal(x, 1 - 2)</code>, the expression <code>1 - 2</code> will be evaluated to <code>-1</code>, which is not a valid variance argument so a warning is generated. However, this strategy is limited; it is often impossible to fully evaluate expressions in finite time.</p></li>
+<li><p>Container types</p>
+<p>Currently, indexed variables are not handled intelligently, so they are treated as monolithic variables. Each analysis treats indexed variables conservatively (erring toward generating fewer warnings).</p></li>
+<li><p>Data variables</p>
+<p>The declaration information for <code>data</code> variables is currently not considered, so using <code>data</code> as incompatible arguments to distributions may not generate the appropriate warnings.</p></li>
+<li><p>Control flow dependent on parameters in nested functions</p>
+<p>If a parameter is passed as an argument to a user-defined function within another user-defined function, and then some control flow depends on that argument, the appropriate warning will not be thrown.</p></li>
+</ul>
+</section>
+</section>
+<section id="stanc-pretty-printing" class="level2">
+<h2 class="anchored" data-anchor-id="stanc-pretty-printing">Automatic updating and formatting of Stan programs</h2>
+<p>In addition to compiling Stan programs, stanc3 features several <a href="#stanc-args">flags</a> which can be used to format Stan programs and update them to the most recent Stan syntax by removing any <a href="https://mc-stan.org/docs/reference-manual/deprecations.html">deprecation features</a> which can be automatically replaced.</p>
+<p>These flags work for both <code>.stan</code> model files and <code>.stanfunctions</code> function files. They can be combined with <code>--o</code> to redirect the formatted output to a new file.</p>
+<section id="automatic-formatting" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="automatic-formatting">Automatic formatting</h3>
+<p>Invoking <code>stanc --auto-format &lt;model_file&gt;</code> will print a version of your model which has been re-formatted. The goal is to have this automatic formatting stay as close as possible to the <a href="../stan-users-guide/style-guide.html">Stan Program Style Guide</a>. This means spacing, indentation, and line length are all regularized. <em>Some</em> deprecated features, like the use of <code>#</code> for line comments, are replaced, but the goal is mainly to preserve the program while formatting it.</p>
+<p>By default, this will try to split lines at or before column 78. This number can be changed using <code>--max-line-length</code>.</p>
+</section>
+<section id="canonicalizing" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="canonicalizing">Canonicalizing</h3>
+<p>In addition to automatic formatting, stanc can also “canonicalize” programs by updating deprecated syntax, removing unnecessary parenthesis, and adding braces around bodies of <code>if</code> statements and <code>for</code> and <code>while</code> loops.</p>
+<p>This can be done by using <code>stanc --auto-format --canonicalize=...</code> where <code>...</code> is a comma-separated list of options. Currently these options are:</p>
+<ul>
+<li><p><code>deprecations</code></p>
+<p>Removes deprecated syntax such as replacing deprecated functions with their drop-in replacements.</p></li>
+<li><p><code>parentheses</code></p>
+<p>Removes unnecessary extra parentheses, such as converting <code>y = ((x-1))</code> to <code>y = x - 1</code></p></li>
+<li><p><code>braces</code></p>
+<p>Places braces around all blocks. For example, the following statement</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (cond)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">//result</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>will be formatted as</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (cond) {</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="co">//result</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>and similarly for both kinds of loops containing a single statement.</p></li>
+<li><p><code>includes</code></p>
+<p>This will pretty-print code from other files included with <code>#include</code> as part of the program. This was the default behavior prior to Stan 2.29. When not enabled, the pretty-printer output will include the same <code>#include</code> directives as the input program.</p></li>
+</ul>
+<p>Invoking <code>stanc --print-canonical &lt;model_file&gt;</code> is synonymous with running <code>stanc --auto-format --canonicalize=deprecations,braces,parentheses,includes</code></p>
+</section>
+<section id="known-issues" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="known-issues">Known issues</h3>
+<p>The formatting and canonicalizing features of stanc3 are still under development. The following are some known issues one should be aware of before using either:</p>
+<ul>
+<li><p>Oddly placed comments</p>
+<p>If your Stan program features comments in unexpected places, such as inside an expression, they may be moved in the process of formatting. Moved comments are prefixed with the string <code>^^^:</code> to indicate they originally appeared higher in the program.</p>
+<p>We hope to improve this functionality in future versions. For now, this can usually be avoided by manually moving the comment outside of an expression, either by placing it on its own line or following a separator such as a comma or keyword.</p></li>
+<li><p>Failure to recreate strange <code>#include</code> structure</p>
+<p>Printing <em>without</em> include inlining (<code>--canonicalize=includes</code>) can fail when includes were used in atypical locations, such as in the middle of statements. We recommend either printing with inlining enabled or reconsidering the use of includes in this way.</p></li>
+</ul>
+</section>
+</section>
+<section id="optimization" class="level2">
+<h2 class="anchored" data-anchor-id="optimization">Optimization</h2>
+<p>The stanc3 compiler can optimize the code of Stan model during compilation. The optimized model code behaves the same as unoptimized code, but it may be faster, more memory efficient, or more numerically stable.</p>
+<p>This section introduces the available optimization options and describes their effect.</p>
+<p>To print out a representation of the optimized Stan program, use the stanc3 command-line flag <code>--debug-optimized-mir-pretty</code>. To print an analogous representation of the Stan program prior to optimization, use the flag <code>--debug-transformed-mir-pretty</code>.</p>
+<section id="optimization-levels" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="optimization-levels">Optimization levels</h3>
+<p>To turn optimizations on, the user specifies the desired optimization <em>level</em>. The level specifies the set of optimizations to use. The chosen optimizations are used in a specific order, with some of them applied repeatedly.</p>
+<p>Optimization levels are specified by the numbers 0 and 1 and the ‘experimental’ tag:</p>
+<ul>
+<li><strong>O0</strong> No optimizations are applied.</li>
+<li><strong>O1</strong> Optimizations that are simple, do not dramatically change the program, and are unlikely to noticeably slow down compile times are applied.</li>
+<li><strong>Oexperimental</strong> All optimizations are applied. Some of these are not thorougly tested and may not always improve a programs performance.</li>
+</ul>
+<p>O0 is the default setting.</p>
+<p>The levels include these optimizations:</p>
+<ul>
+<li><strong>O0</strong> includes no optimizations.</li>
+<li><strong>O1</strong> includes:
+<ul>
+<li><a href="#dead-code-elimination">Dead code elimination</a></li>
+<li><a href="#copy-propagation">Copy propagation</a></li>
+<li><a href="#constant-propagation">Constant propagation</a></li>
+<li><a href="#partial-evaluation">Partial evaluation</a></li>
+<li><a href="#function-inlining">Function inlining</a></li>
+<li><a href="#memory-patterns">Matrix memory layout optimization</a></li>
+</ul></li>
+<li><strong>Oexperimental</strong> includes optimizations specified by <strong>O1</strong> and also:
+<ul>
+<li><a href="#automatic-differentiation-level-optimization">Automatic-differentiation level optimization</a></li>
+<li><a href="#one-step-loop-unrolling">One step loop unrolling</a></li>
+<li><a href="#expression-propagation">Expression propagation</a></li>
+<li><a href="#lazy-code-motion">Lazy code motion</a></li>
+<li><a href="#static-loop-unrolling">Static loop unrolling</a></li>
+</ul></li>
+</ul>
+<p>In addition, <strong>Oexperimental</strong> will apply more repetitions of the optimizations, which may increase compile times.</p>
+</section>
+<section id="o1-optimizations" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="o1-optimizations"><strong>O1</strong> Optimizations</h3>
+<section id="dead-code-elimination" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="dead-code-elimination">Dead code elimination</h4>
+<p>Dead code is code that does not affect the behavior of the program. Code is not dead if it affects <code>target</code>, the value of any outside-observable variable like transformed parameters or generated quantities, or side effects such as print statements. Removing dead code can speed up a program by avoiding unnecessary computations.</p>
+<p>Example Stan program:</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> i;</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  i = <span class="dv">5</span>;</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span>:<span class="dv">10</span>);</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="dv">0</span>) {</span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">print</span>(<span class="st">"Dead code"</span>);</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">print</span>(<span class="st">"Hi!"</span>);</span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Compiler representation of program <strong>before dead code elimination</strong> (simplified from the output of <code>--debug-transformed-mir-pretty</code>):</p>
+<pre><code>log_prob {
+  int i = 5;
+  for(j in 1:10) {
+    ;
+  }
+  if(0) {
+    FnPrint__("Dead code");
+  } else {
+    FnPrint__("Hi!");
+  }
+}</code></pre>
+<p>Compiler representation of program <strong>after dead code elimination</strong> (simplified from the output of <code>--debug-optimized-mir-pretty</code>):</p>
+<pre><code>log_prob {
+  int i;
+  FnPrint__("Hi!");
+}</code></pre>
+</section>
+<section id="constant-propagation" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="constant-propagation">Constant propagation</h4>
+<p>Constant propagation replaces uses of a variable which is known to have a constant value <code>C</code> with that constant <code>C</code>. This removes the overhead of looking up the variable, and also makes many other optimizations possible (such as static loop unrolling and partial evaluation).</p>
+<p>Example Stan program:</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed data</span> {</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> n = <span class="dv">100</span>;</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> a[n];</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span>:n) {</span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a>    a[i] = i;</span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Compiler representation of program <strong>before constant propagation</strong> (simplified from the output of <code>--debug-transformed-mir-pretty</code>):</p>
+<pre><code>prepare_data {
+  data int n = 100;
+  data array[int, n] a;
+  for(i in 1:n) {
+    a[i] = i;
+  }
+}</code></pre>
+<p>Compiler representation of program <strong>after constant propagation</strong> (simplified from the output of <code>--debug-optimized-mir-pretty</code>):</p>
+<pre><code>prepare_data {
+  data int n = 100;
+  data array[int, 100] a;
+  for(i in 1:100) {
+    a[i] = i;
+  }
+}</code></pre>
+</section>
+<section id="copy-propagation" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="copy-propagation">Copy propagation</h4>
+<p>Copy propagation is similar to <a href="#expression-propagation">expression propagation</a>, but only propagates variables rather than arbitrary expressions. This can reduce the complexity of the code for other optimizations such as expression propagation.</p>
+<p>Example Stan program:</p>
+<div class="sourceCode" id="cb39"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> i = <span class="dv">1</span>;</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> j = i;</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> k = i + j;</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Compiler representation of program <strong>before copy propagation</strong> (simplified from the output of <code>--debug-transformed-mir-pretty</code>):</p>
+<pre><code>log_prob {
+    int i = 1;
+    int j = i;
+    int k = (i + j);
+}</code></pre>
+<p>Compiler representation of program <strong>after copy propagation</strong> (simplified from the output of <code>--debug-optimized-mir-pretty</code>):</p>
+<pre><code>log_prob {
+  int i = 1;
+  int j = i;
+  int k = (i + i);
+}</code></pre>
+</section>
+<section id="partial-evaluation" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="partial-evaluation">Partial evaluation</h4>
+<p>Partial evaluation searches for expressions that we can replace with a faster, simpler, more memory efficient, or more numerically stable expression with the same meaning.</p>
+<p>Example Stan program:</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> a = <span class="dv">1</span> + <span class="dv">1</span>;</span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> b = log(<span class="dv">1</span> - a);</span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> c = a + b * <span class="dv">5</span>;</span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Compiler representation of program <strong>before partial evaluation</strong> (simplified from the output of <code>--debug-transformed-mir-pretty</code>):</p>
+<pre><code>log_prob {
+  real a = (1 + 1);
+  real b = log((1 - a));
+  real c = (a + (b * 5));
+}</code></pre>
+<p>Compiler representation of program <strong>after partial evaluation</strong> (simplified from the output of <code>--debug-optimized-mir-pretty</code>):</p>
+<pre><code>log_prob {
+  real a = 2;
+  real b = log1m(a);
+  real c = fma(b, 5, a);
+}</code></pre>
+</section>
+<section id="function-inlining" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="function-inlining">Function inlining</h4>
+<p>Function inlining replaces each function call to each user-defined function <code>f</code> with the body of <code>f</code>. It does this by copying the function body to the call site and doing appropriately renaming the argument variables. This optimization can speed up a program by avoiding the overhead of a function call and providing more opportunities for further optimizations (such as partial evaluation).</p>
+<p>Example Stan program:</p>
+<div class="sourceCode" id="cb45"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="kw">functions</span> {</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> incr(<span class="dt">int</span> x) {</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> y = <span class="dv">1</span>;</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> x + y;</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed data</span> {</span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> a = <span class="dv">2</span>;</span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> b = incr(a);</span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Compiler representation of program <strong>before function inlining</strong> (simplified from the output of <code>--debug-transformed-mir-pretty</code>):</p>
+<pre><code>functions {
+  int incr(int x) {
+    int y = 1;
+    return (x + y);
+  }
+}
+
+prepare_data {
+  data int a = 2;
+  data int b = incr(a);
+}</code></pre>
+<p>Compiler representation of program <strong>after function inlining</strong> (simplified from the output of <code>--debug-optimized-mir-pretty</code>):</p>
+<pre><code>prepare_data {
+  data int a;
+  a = 2;
+  data int b;
+  data int inline_sym1__;
+  data int inline_sym3__;
+  inline_sym3__ = 0;
+  for(inline_sym4__ in 1:1) {
+    int inline_sym2__;
+    inline_sym2__ = 1;
+    inline_sym3__ = 1;
+    inline_sym1__ = (a + inline_sym2__);
+    break;
+  }
+  b = inline_sym1__;
+}</code></pre>
+<p>In this code, the <code>for</code> loop and <code>break</code> is used to simulate the behavior of a <code>return</code> statement. The value to be returned is held in <code>inline_sym1__</code>. The flag variable <code>inline_sym3__</code> indicates whether a return has occurred and is necessary to handle <code>return</code> statements nested inside loops within the function body.</p>
+</section>
+<section id="memory-patterns" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="memory-patterns">Matrix memory layout optimization</h4>
+<p>Matrices and vector variables which require automatic-differentiation (AD) in Stan can be represented in two different forms.</p>
+<p>The first (and default) representation is the “Array of Structs” (AoS) or “Matrix of vars” (matvar) layout. A “var” is the term used in the Stan implementation of autodiff for a single real. It is represented as a structure containing it’s value and its adjoint. The AoS representation constructs matrices and vectors by simply using those structures as the elements of the matrix internally. This is flexible and very general, but many operations want to deal with the values or the adjoints as blocks, requiring expensive memory access patterns.</p>
+<p>The second representation is the “Struct of Arrays” (SoA) or “Var of matrices” (varmat) layout. Rather than a matrix containing tiny structures of one value and one adjoint each, this representation uses a single structure which contains separately a matrix of values and a matrix of adjoints. Some operations, like iterating over elements or assigning to specific indices, become more expensive, but many matrix operations like multiplications become much faster in this representation.</p>
+<p><em>More general reading on AoS vs SoA can be found on <a href="https://en.wikipedia.org/wiki/AoS_and_SoA">Wikipedia</a></em></p>
+<p>This optimization pass attempts to identify which matrix or vector variables in the Stan program are candidates for using the SoA representation. The conditions change over time, but broadly speaking:</p>
+<ul>
+<li>Any Stan Math Library functions the matrix is passed to must be able to support it.</li>
+<li>The matrix should not be accessed/assigned elementwise in a loop.</li>
+</ul>
+<p>The debug flag <code>--debug-mem-patterns</code> will list each variable and whether it is using the AoS representation or the SoA representation.</p>
+</section>
+</section>
+<section id="experimental-optimizations" class="level3 unnumbered">
+<h3 class="unnumbered anchored" data-anchor-id="experimental-optimizations"><strong>0experimental</strong> Optimizations</h3>
+<section id="automatic-differentiation-level-optimization" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="automatic-differentiation-level-optimization">Automatic-differentiation level optimization</h4>
+<p>Stan variables can have two auto-differentiation (AD) <em>levels</em>: AD or non-AD. AD variables carry gradient information with them, which allows Stan to calculate the log-density gradient, but they also have more overhead than non-AD variables. It is therefore inefficient for a variable to be AD unnecessarily. AD-level optimization sets every variable to be a floating point type unless its gradient is necessary.</p>
+<p>Example Stan program:</p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> y;</span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb48-4"><a href="#cb48-4" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb48-5"><a href="#cb48-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> x = y + <span class="dv">1</span>;</span>
+<span id="cb48-6"><a href="#cb48-6" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Compiler representation of program <strong>before AD-level optimization</strong> (simplified from the output of <code>--debug-transformed-mir-pretty</code>):</p>
+<pre><code>input_vars {
+  real y;
+}
+
+log_prob {
+  real x = (y + 1);
+}</code></pre>
+<p>Compiler representation of program <strong>after AD-level optimization</strong> (simplified from the output of <code>--debug-optimized-mir-pretty</code>):</p>
+<pre><code>input_vars {
+  real y;
+}
+
+log_prob {
+  data real x = (y + 1);
+}</code></pre>
+</section>
+<section id="one-step-loop-unrolling" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="one-step-loop-unrolling">One step loop unrolling</h4>
+<p>One step loop unrolling is similar to <a href="#static-loop-unrolling">static loop unrolling</a>. However, this optimization only ‘unrolls’ the first loop iteration, and can therefore work even when the total number of iterations is not predictable. This can speed up a program by providing more opportunities for further optimizations such as partial evaluation and lazy code motion.</p>
+<p>Example Stan program:</p>
+<div class="sourceCode" id="cb51"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> n;</span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed data</span> {</span>
+<span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> x = <span class="dv">0</span>;</span>
+<span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span>:n) {</span>
+<span id="cb51-7"><a href="#cb51-7" aria-hidden="true" tabindex="-1"></a>    x += i;</span>
+<span id="cb51-8"><a href="#cb51-8" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb51-9"><a href="#cb51-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Compiler representation of program <strong>before one step static loop unrolling</strong> (simplified from the output of <code>--debug-transformed-mir-pretty</code>):</p>
+<pre><code>prepare_data {
+  data int n = FnReadData__("n")[1];
+  data int x = 0;
+  for(i in 1:n) {
+    x = (x + i);
+  }
+}</code></pre>
+<p>Compiler representation of program <strong>after one step static loop unrolling</strong> (simplified from the output of <code>--debug-optimized-mir-pretty</code>):</p>
+<pre><code>prepare_data {
+  data int n = FnReadData__("n")[1];
+  int x = 0;
+  if((n &gt;= 1)) {
+    x = (x + 1);
+    for(i in (1 + 1):n) {
+      x = (x + i);
+    }
+  }
+}</code></pre>
+</section>
+<section id="expression-propagation" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="expression-propagation">Expression propagation</h4>
+<p>Constant propagation replaces the uses of a variable which is known to have a constant value <code>E</code> with that constant <code>E</code>. This often results in recalculating the expression, but provides more opportunities for further optimizations such as partial evaluation. Expression propagation is always followed by <a href="#lazy-code-motion">lazy code motion</a> to avoid unnecessarily recomputing expressions.</p>
+<p>Example Stan program:</p>
+<div class="sourceCode" id="cb54"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb54-1"><a href="#cb54-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> {</span>
+<span id="cb54-2"><a href="#cb54-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> m;</span>
+<span id="cb54-3"><a href="#cb54-3" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb54-4"><a href="#cb54-4" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed data</span> {</span>
+<span id="cb54-5"><a href="#cb54-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> n = m+<span class="dv">1</span>;</span>
+<span id="cb54-6"><a href="#cb54-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> a[n];</span>
+<span id="cb54-7"><a href="#cb54-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span>:n<span class="dv">-1</span>) {</span>
+<span id="cb54-8"><a href="#cb54-8" aria-hidden="true" tabindex="-1"></a>    a[i] = i;</span>
+<span id="cb54-9"><a href="#cb54-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb54-10"><a href="#cb54-10" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Compiler representation of program <strong>before expression propagation</strong> (simplified from the output of <code>--debug-transformed-mir-pretty</code>):</p>
+<pre><code>prepare_data {
+  data int m = FnReadData__("m")[1];
+  data int n = (m + 1);
+  data array[int, n] a;
+  for(i in 1:(n - 1)) {
+    a[i] = i;
+  }
+}</code></pre>
+<p>Compiler representation of program <strong>after expression propagation</strong> (simplified from the output of <code>--debug-optimized-mir-pretty</code>):</p>
+<pre><code>prepare_data {
+  data int m = FnReadData__("m")[1];
+  data int n = (m + 1);
+  data array[int, (m + 1)] a;
+  for(i in 1:((m + 1) - 1)) {
+    a[i] = i;
+  }
+}</code></pre>
+</section>
+<section id="lazy-code-motion" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="lazy-code-motion">Lazy code motion</h4>
+<p>Lazy code motion rearranges the statements and expressions in a program with the goals of:</p>
+<ul>
+<li>Avoiding computing expressions more than once, and</li>
+<li>Computing expressions as late as possible (to minimize the strain on the working memory set).</li>
+</ul>
+<p>To accomplish these goals, lazy code motion will perform optimizations such as:</p>
+<ul>
+<li>Moving a repeatedly calculated expression to its own variable (also referred to as <em>common-subexpression elimination</em>)</li>
+<li>Moving an expression outside of a loop if it does not need to be in the loop (also referred to as <em>loop-invariant code motion</em>)</li>
+</ul>
+<p>Lazy code motion can make some programs significantly more efficient by avoiding redundant or early computations.</p>
+<p>As currently implemented in the compiler, it may move items between blocks in a way that actually increases overall computation. Improving this is an ongoing project.</p>
+<p>Example Stan program:</p>
+<div class="sourceCode" id="cb57"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a><span class="kw">model</span> {</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> x;</span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> y;</span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">real</span> z;</span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-6"><a href="#cb57-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span>:<span class="dv">10</span>) {</span>
+<span id="cb57-7"><a href="#cb57-7" aria-hidden="true" tabindex="-1"></a>    x = sqrt(<span class="dv">10</span>);</span>
+<span id="cb57-8"><a href="#cb57-8" aria-hidden="true" tabindex="-1"></a>    y = sqrt(i);</span>
+<span id="cb57-9"><a href="#cb57-9" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb57-10"><a href="#cb57-10" aria-hidden="true" tabindex="-1"></a>  z = sqrt(<span class="dv">10</span>);</span>
+<span id="cb57-11"><a href="#cb57-11" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Compiler representation of program before lazy code motion (simplified from the output of <code>--debug-transformed-mir-pretty</code>):</p>
+<pre><code>log_prob {
+  real x;
+  real y;
+  real z;
+  for(i in 1:10) {
+    x = sqrt(10);
+    y = sqrt(i);
+  }
+  z = sqrt(10);
+}</code></pre>
+<p>Compiler representation of program after lazy code motion (simplified from the output of <code>--debug-optimized-mir-pretty</code>):</p>
+<pre><code>log_prob {
+  data real lcm_sym4__;
+  data real lcm_sym3__;
+  real x;
+  real y;
+  lcm_sym4__ = sqrt(10);
+  real z;
+  for(i in 1:10) {
+    x = lcm_sym4__;
+    y = sqrt(i);
+  }
+  z = lcm_sym4__;
+}</code></pre>
+</section>
+<section id="static-loop-unrolling" class="level4 unnumbered">
+<h4 class="unnumbered anchored" data-anchor-id="static-loop-unrolling">Static loop unrolling</h4>
+<p>Static loop unrolling takes a loop with a predictable number of iterations <code>X</code> and replaces it by writing out the loop body <code>X</code> times. The loop index in each repeat is replaced with the appropriate constant. This optimization can speed up a program by avoiding the overhead of a loop and providing more opportunities for further optimizations (such as partial evaluation).</p>
+<p>Example Stan program:</p>
+<div class="sourceCode" id="cb60"><pre class="sourceCode stan code-with-copy"><code class="sourceCode stan"><span id="cb60-1"><a href="#cb60-1" aria-hidden="true" tabindex="-1"></a><span class="kw">transformed data</span> {</span>
+<span id="cb60-2"><a href="#cb60-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> x = <span class="dv">0</span>;</span>
+<span id="cb60-3"><a href="#cb60-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span>:<span class="dv">4</span>) {</span>
+<span id="cb60-4"><a href="#cb60-4" aria-hidden="true" tabindex="-1"></a>    x += i;</span>
+<span id="cb60-5"><a href="#cb60-5" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb60-6"><a href="#cb60-6" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Compiler representation of program <strong>before static loop unrolling</strong> (simplified from the output of <code>--debug-transformed-mir-pretty</code>):</p>
+<pre><code>prepare_data {
+  data int x = 0;
+  for(i in 1:4) {
+    x = (x + i);
+  }
+}</code></pre>
+<p>Compiler representation of program <strong>after static loop unrolling</strong> (simplified from the output of <code>--debug-optimized-mir-pretty</code>):</p>
+<pre><code>prepare_data {
+  data int x;
+  x = 0;
+  x = (x + 1);
+  x = (x + 2);
+  x = (x + 3);
+  x = (x + 4);
+}</code></pre>
+
+
+</section>
+</section>
+</section>
+</section>
+
+<a onclick="window.scrollTo(0, 0); return false;" role="button" id="quarto-back-to-top"><i class="bi bi-arrow-up"></i> Back to top</a></main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+    const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+    const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+    let newTheme = '';
+    if(darkModeDefault) {
+      newTheme = isAlternate ? baseTheme : alternateTheme;
+    } else {
+      newTheme = isAlternate ? alternateTheme : baseTheme;
+    }
+    const changeGiscusTheme = () => {
+      // From: https://github.com/giscus/giscus/issues/336
+      const sendMessage = (message) => {
+        const iframe = document.querySelector('iframe.giscus-frame');
+        if (!iframe) return;
+        iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+      }
+      sendMessage({
+        setConfig: {
+          theme: newTheme
+        }
+      });
+    }
+    const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+    if (isGiscussLoaded) {
+      changeGiscusTheme();
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  const darkModeDefault = false;
+  let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+    toggleGiscusIfUsed(toAlternate, darkModeDefault);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../stan-users-guide/bootstrap.html" class="pagination-link" aria-label="The Bootstrap and Bagging">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text">The Bootstrap and Bagging</span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="../stan-users-guide/style-guide.html" class="pagination-link" aria-label="Stan Program Style Guide">
+        <span class="nav-page-text">Stan Program Style Guide</span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+<footer class="footer"><div class="nav-footer"><div class="nav-footer-center"><div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/stan-dev/docs/edit/master/src/stan-users-guide/using-stanc.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/stan-dev/docs/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div></div></footer></body></html>

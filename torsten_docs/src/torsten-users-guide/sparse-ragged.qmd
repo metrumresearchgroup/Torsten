@@ -1,0 +1,178 @@
+---
+pagetitle: Sparse and Ragged Data Structures
+---
+
+# Sparse and Ragged Data Structures  {#sparse-ragged.chapter}
+
+Stan does not directly support either sparse or ragged data
+structures, though both can be accommodated with some programming
+effort.  The [sparse matrices chapter](https://mc-stan.org/docs/functions-reference/sparse_matrix_operations.html)
+introduces a special-purpose sparse matrix times dense vector
+multiplication, which should be used where applicable; this chapter
+covers more general data structures.
+
+## Sparse data structures
+
+Coding sparse data structures is as easy as moving from a matrix-like
+data structure to a database-like data structure.  For example,
+consider the coding of sparse data for the IRT models discussed in the
+[item-response model section](regression.qmd#item-response-models.section).
+There are $J$ students and $K$ questions, and if every student answers every
+question, then it is practical to declare the data as a $J \times K$
+array of answers.
+
+```stan
+data {
+  int<lower=1> J;
+  int<lower=1> K;
+  array[J, K] int<lower=0, upper=1> y;
+  // ...
+model {
+  for (j in 1:J) {
+    for (k in 1:K) {
+      y[j, k] ~ bernoulli_logit(delta[k] * (alpha[j] - beta[k]));
+    }
+  }
+  // ...
+}
+```
+
+When not every student is given every question, the dense array coding
+will no longer work, because Stan does not support undefined values.
+
+
+The following missing data example shows an example with $J=3$ and $K=4$,
+with missing responses shown as NA, as in R.
+
+\begin{equation*}
+y
+=
+\left[
+\begin{array}{cccc}
+0 & 1 & \mbox{NA} & 1
+\\
+0 & \mbox{NA} & \mbox{NA} & 1
+\\
+\mbox{NA} & 0 & \mbox{NA} & \mbox{NA}
+\end{array}
+\right]
+\end{equation*}
+
+There is no support within Stan for R's NA values, so this data structure cannot be used
+directly. Instead, it must be converted to a "long form" as in a database,
+with columns indicating the indices along with the value.
+With columns $jj$ and $kk$ used for the indexes
+(following @GelmanHill:2007), the 2-D array $y$ is recoded as a table.
+The number of rows in the table equals the number of defined
+array elements, here $y_{1,1} = 0$, $y_{1,2} = 1$, up to $y_{3,2} = 1$.
+As the array becomes larger and sparser, the long form becomes
+the more economical encoding.
+
+
+|*jj* | *kk* |*y* |
+|:----|:-----|:---|
+|1    | 1    | 0  |
+|1    | 2    | 1  |
+|1    | 4    | 1  |
+|2    | 1    | 0  |
+|2    | 4    | 1  |
+|3    | 2    | 0  |
+
+Letting $N$ be the number of $y$ that are defined, here $N=6$,
+the data and model can be formulated as follows.
+
+```stan
+data {
+  // ...
+  int<lower=1> N;
+  array[N] int<lower=1, upper=J> jj;
+  array[N] int<lower=1, upper=K> kk;
+  array[N] int<lower=0, upper=1> y;
+  // ...
+}
+model {
+  for (n in 1:N) {
+    y[n] ~ bernoulli_logit(delta[kk[n]]
+                           * (alpha[jj[n]] - beta[kk[n]]));
+  }
+  // ...
+}
+```
+
+In the situation where there are no missing values, the two model
+formulations produce exactly the same log posterior density.
+
+
+## Ragged data structures {#ragged-data-structs.section}
+
+Ragged arrays are arrays that are not rectangular, but have different
+sized entries.  This kind of structure crops up when there are
+different numbers of observations per entry.
+
+A general approach to dealing with ragged structure is to move to a
+full database-like data structure as discussed in the previous
+section.  A more compact approach is possible with some indexing into
+a linear array.
+
+For example, consider a data structure for three groups, each of which
+has a different number of observations.
+
+
+:::: {layout-ncol=2}
+
+::: {#first-column}
+$y_1 =  \left[1.3 \ \ 2.4 \ \ 0.9\right]\\$
+$y_2 = \left[-1.8 \ \ -0.1\right]\\$
+$y_3 = \left[12.9 \ \ 18.7 \ \ 42.9 \ \ 4.7\right]$
+:::
+
+::: {#second-column}
+$z = [1.3 \ \ 2.4 \ \ 0.9 \ \ -1.8 \ \ -0.1 \ \ 12.9 \ \ 18.7 \ \ 42.9 \ \ 4.7]\\$
+$s  =  \{ 3 \ \ 2 \ \ 4 \}$
+:::
+
+::::
+
+On the left is the definition of a ragged data structure $y$ with three rows of
+different sizes ($y_1$ is size 3, $y_2$ size 2, and $y_3$ size 4).  On the right
+is an example of how to code the data in Stan, using a single vector $z$ to hold
+all the values and a separate array of integers $s$ to hold the group row sizes.
+In this example, $y_1 = z_{1:3}$, $y_2 = z_{4:5}$, and $y_3 = z_{6:9}$.
+
+Suppose the model is a  simple varying intercept model, which,
+using vectorized notation, would yield a log-likelihood
+\begin{equation*}
+\sum_{n=1}^3 \log \textsf{normal}(y_n \mid \mu_n, \sigma).
+\end{equation*}
+There's no direct way to encode this in Stan.
+
+A full database type structure could be used, as in the sparse
+example, but this is inefficient, wasting space for unnecessary
+indices and not allowing vector-based density operations.  A better
+way to code this data is as a single list of values, with a separate
+data structure indicating the sizes of each subarray.  This is
+indicated on the right of the example. This coding uses a
+single array for the values and a separate array for the sizes of each
+row.
+
+The model can then be coded up using slicing operations as follows.
+
+```stan
+data {
+  int<lower=0> N;   // # observations
+  int<lower=0> K;   // # of groups
+  vector[N] y;      // observations
+  array[K] int s;   // group sizes
+  // ...
+}
+model {
+  int pos;
+  pos = 1;
+  for (k in 1:K) {
+    segment(y, pos, s[k]) ~ normal(mu[k], sigma);
+    pos = pos + s[k];
+  }
+```
+
+This coding allows for efficient vectorization, which is worth the
+copy cost entailed by the `segment()` vector slicing operation.

@@ -1,0 +1,57 @@
+---
+pagetitle: Installation
+---
+
+# Installation
+
+Currently Torsten is based on a forked version of Stan and hosted on [GitHub](https://github.com/metrumresearchgroup/Torsten).
+The latest v0.91.0 is compatible with Stan v2.33.1. Torsten can be accessed from
+command line for `cmdstan` interface and [`cmdstanr`](https://mc-stan.org/cmdstanr/) for R interface. It requires
+a modern C++11 compiler as well as a `Make` utility. See [`cmdstanr user guide`](https://mc-stan.org/cmdstanr/) for details of installation and
+required toolchain.
+
+## Command line interface
+The command line interface `cmdstan` is available along with Torsten
+and can be found at `Torsten/cmdstan` in the project. Details of
+installing `cmdstan` can be found in the [`cmdstan` user guide](https://mc-stan.org/docs/cmdstan-guide/).
+
+After installation, one can use the following command to build a Torsten model `model_name` at `model_path`.
+
+```sh
+cd Torsten/cmdstan
+make model_path/model_name # linux/macOS
+mingw32-make model_path/model_name # windows
+```
+
+## R interface
+After installing [`cmdstanr`](https://mc-stan.org/cmdstanr/), use the following command to set path
+```r
+cmdstanr::set_cmdstan_path("Torsten/cmdstan")
+```
+Then one can follow `cmdstanr` user's guide to compile
+and run Torsten models.
+
+## MPI support
+Torsten's MPI support is of a different flavour than
+`reduce_sum` in Stan. MPI parallelisation for Torsten require an MPI library
+such as
+
+* https://www.mpich.org/downloads/
+
+* https://www.open-mpi.org/software/ompi/
+
+Torsen's implementation is tested on
+both `MPICH` and `OpenMPI`.
+
+One can enable MPI-supported population/group solvers on both
+interfaces ^[Since `TORSTEN_MPI` and `STAN_MPI` flags
+conflict on processes management, they cannot be used in a
+same model. ..
+
+MPI support is only available through `cmdstan` interface. To enable it,
+add/edit `cmdstan/make/local` file with a line `TORSTEN_MPI=1`. One
+may also need to specify the path to the MPI library, such as
+```sh
+CXXFLAGS += -isystem /usr/local/include
+CXXFLAGS += -isystem /usr/local/mpich3/include # For Metworx platform
+```

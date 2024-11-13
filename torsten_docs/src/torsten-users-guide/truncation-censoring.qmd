@@ -1,0 +1,260 @@
+---
+pagetitle: Truncated or Censored Data
+---
+
+# Truncated or Censored Data
+
+
+Data in which measurements have been truncated or censored can be
+coded in Stan following their respective probability models.
+
+## Truncated distributions {#truncation.section}
+
+Truncation in Stan is restricted to univariate distributions for which
+the corresponding log cumulative distribution function (CDF) and log
+complementary cumulative distribution (CCDF) functions are available.
+See the reference manual section on truncated distributions for more
+information on truncated distributions, CDFs, and CCDFs.
+
+## Truncated data {#truncated-data.section}
+
+Truncated data are data for which measurements are only reported if
+they fall above a lower bound, below an upper bound, or between a
+lower and upper bound.
+
+Truncated data may be modeled in Stan using truncated distributions.
+For example, suppose the truncated data are $y_n$ with an upper
+truncation point of $U = 300$ so that $y_n < 300$.  In Stan, this
+data can be modeled as following a truncated normal distribution for
+the observations as follows.
+
+```stan
+data {
+  int<lower=0> N;
+  real U;
+  array[N] real<upper=U> y;
+}
+parameters {
+  real mu;
+  real<lower=0> sigma;
+}
+model {
+  y ~ normal(mu, sigma) T[ , U];
+}
+```
+
+The model declares an upper bound `U` as data and constrains
+the data for `y` to respect the constraint;  this will be checked
+when the data are loaded into the model before sampling begins.
+
+This model implicitly uses an improper flat prior on the scale and
+location parameters; these could be given priors in the model using
+distribution statements.
+
+### Constraints and out-of-bounds returns {-}
+
+If the sampled variate in a truncated distribution lies outside of
+the truncation range, the probability is zero, so the log probability
+will evaluate to $-\infty$.  For instance, if variate `y` is
+sampled with the statement.
+
+```stan
+y ~ normal(mu, sigma) T[L, U];
+```
+
+then if any value inside `y` is less than the value of `L`
+or greater than the value of `U`, the distribution statement produces
+a zero-probability estimate.  For user-defined truncation, this
+zeroing outside of truncation bounds must be handled explicitly.
+
+To avoid variables straying outside of truncation bounds, appropriate
+constraints are required.  For example, if `y` is a parameter in
+the above model, the declaration should constrain it to fall between
+the values of `L` and `U`.
+
+```stan
+parameters {
+  array[N] real<lower=L, upper=U> y;
+  // ...
+}
+```
+
+If in the above model, `L` or `U` is a parameter and
+`y` is data, then `L` and `U` must be appropriately
+constrained so that all data are in range and the value of `L` is
+less than that of `U` (if they are equal, the parameter range
+collapses to a single point and the Hamiltonian dynamics used by
+the sampler break down).  The following declarations ensure the bounds
+are well behaved.
+
+```stan
+parameters {
+  real<upper=min(y)> L;           // L < y[n]
+  real<lower=fmax(L, max(y))> U;  // L < U; y[n] < U
+```
+
+For pairs of real numbers, the function `fmax` is used
+rather than `max`.
+
+
+
+
+
+
+
+### Unknown truncation points {-}
+
+If the truncation points are unknown, they may be estimated as
+parameters.  This can be done with a slight rearrangement of the
+variable declarations from the model in the previous section with
+known truncation points.
+
+```stan
+data {
+  int<lower=1> N;
+  array[N] real y;
+}
+parameters {
+  real<upper=min(y)> L;
+  real<lower=max(y)> U;
+  real mu;
+  real<lower=0> sigma;
+}
+model {
+  L ~ // ...
+  U ~ // ...
+  y ~ normal(mu, sigma) T[L, U];
+}
+```
+
+Here there is a lower truncation point `L` which is declared to
+be less than or equal to the minimum value of `y`.  The upper
+truncation point `U` is declared to be larger than the maximum
+value of `y`.  This declaration, although dependent on the data,
+only enforces the constraint that the data fall within the truncation
+bounds.  With `N` declared as type `int<lower=1>`, there must be
+at least one data point.  The constraint that `L` is less than
+`U` is enforced indirectly, based on the non-empty data.
+
+The ellipses where the priors for the bounds `L` and `U`
+should go should be filled in with a an informative prior in
+order for this model to not concentrate `L` strongly around
+`min(y)` and `U` strongly around `max(y)`.
+
+
+## Censored data {#censored.section}
+
+Censoring hides values from points that are too large, too small, or
+both.  Unlike with truncated data, the number of data points that were
+censored is known.  The textbook example is the household scale which
+does not report values above 300 pounds.
+
+### Estimating censored values {-}
+
+One way to model censored data is to treat the censored data as
+missing data that is constrained to fall in the censored range of
+values.  Since Stan does not allow unknown values in its arrays or
+matrices, the censored values must be represented explicitly, as in the
+following right-censored case.
+
+```stan
+data {
+  int<lower=0> N_obs;
+  int<lower=0> N_cens;
+  array[N_obs] real y_obs;
+  real<lower=max(y_obs)> U;
+}
+parameters {
+  array[N_cens] real<lower=U> y_cens;
+  real mu;
+  real<lower=0> sigma;
+}
+model {
+  y_obs ~ normal(mu, sigma);
+  y_cens ~ normal(mu, sigma);
+}
+```
+
+Because the censored data array `y_cens` is declared to be a parameter, it
+will be sampled along with the location and scale parameters `mu`
+and `sigma`.  Because the censored data array `y_cens` is
+declared to have values of type `real<lower=U>`, all imputed values
+for censored data will be greater than `U`.  The imputed censored
+data affects the location and scale parameters through the last
+distribution statement in the model.
+
+### Integrating out censored values {-}
+
+Although it is wrong to ignore the censored values in estimating
+location and scale, it is not necessary to impute values.  Instead,
+the values can be integrated out.  Each censored data point has a
+probability of
+\begin{align*}
+\Pr[y_{\mathrm{cens},m} > U]
+  &= \int_U^{\infty} \textsf{normal}\left(y_{\mathrm{cens},m} \mid \mu,\sigma \right) \,\textsf{d}y_{\mathrm{cens},m} \\
+  &= 1 - \Phi\left(\frac{U - \mu}{\sigma}\right),
+\end{align*}
+
+where $\Phi()$ is the standard normal cumulative distribution function. 
+This probability is equivalent to the likelihood contribution of knowing
+that $y_{\mathrm{cens},m}>U$.
+With $M$ censored observations, the likelihood on the log scale
+is
+\begin{align*}
+\log \prod_{m=1}^M \Pr[y_{\mathrm{cens},m} > U]
+  &= \log \left( 1 - \Phi\left(\left(\frac{U - \mu}{\sigma}\right)\right)^{M}\right) \\
+  &= M \times \texttt{normal}\mathtt{\_}\texttt{lccdf}\left(U \mid \mu, \sigma \right),
+\end{align*}
+
+where `normal_lccdf` is the log of complementary CDF
+(Stan provides `<distr>_lccdf` for each distribution
+implemented in Stan). 
+
+The following right-censored model assumes
+that the censoring point is known, so it is declared as data.
+
+```stan
+data {
+  int<lower=0> N_obs;
+  int<lower=0> N_cens;
+  array[N_obs] real y_obs;
+  real<lower=max(y_obs)> U;
+}
+parameters {
+  real mu;
+  real<lower=0> sigma;
+}
+model {
+  y_obs ~ normal(mu, sigma);
+  target += N_cens * normal_lccdf(U | mu, sigma);
+}
+```
+
+For the observed values in `y_obs`, the normal model is
+used without truncation.  The likelihood contribution from the
+integrated out censored values can not be coded with distribution
+statement, and the log probability is directly incremented using the
+calculated log cumulative normal probability of the censored observations.
+
+For the left-censored data the CDF (`normal_lcdf`) has to be
+used instead of complementary CDF.  If the censoring point variable
+(`L`) is unknown, its declaration should be moved from the data
+to the parameters block.
+
+```stan
+data {
+  int<lower=0> N_obs;
+  int<lower=0> N_cens;
+  array[N_obs] real y_obs;
+}
+parameters {
+  real<upper=min(y_obs)> L;
+  real mu;
+  real<lower=0> sigma;
+}
+model {
+  L ~ normal(mu, sigma);
+  y_obs ~ normal(mu, sigma);
+  target += N_cens * normal_lcdf(L | mu, sigma);
+}
+```
