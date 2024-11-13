@@ -1,0 +1,37 @@
+---
+pagetitle: Events specification
+---
+
+# Events specification
+
+Torsten functions that solve compartment models use arguments in NM-TRAN format for events
+specification.
+
+|Argument Name | Definition | Stan data type |
+|--------------|------------|----------------|
+|`time`	| event time					| `array[] real`|
+|`amt`	| dosing amount					| `array[] real`|
+|`rate`	| infusion rate					| `array[] real`|
+|`ii`	| interdose interval			| `array[] real`|
+|`evid`	| event ID						| `array[] int` |
+|`cmt`	| event compartment				| `array[] int` |
+|`addl`	| additionial identical doses	| `array[] int` |
+|`ss`	| steady-state dosing flag		| `array[] int` |
+: NM-TRAN compatible event specification arguments. All arrays should have the same length corresponding to the number of events.
+
+All the `array` arguments above can be Stan parameters.
+Torsten functions support optional arguments and overloaded
+signatures. In the rest of the document, optional arguments are indicated by surrounding square bracket `[]`.
+Table below shows three commonly used PMX model arguments that support
+overloading.
+
+|Argument | Definition | Stan data type | Optional |
+|---------|------------|----------------|----------|
+|`theta` | model parameters			| `array[] real` or `array[,] real` | N |
+|`biovar`| bioavailability fraction	| `array[] real` or `array[,] real` | Y (default to 1.0)|
+|`tlag`  | lag time					| `array[] real` or `array[,] real` | Y (default to 0.0)|
+: PMX model parameter overloadings. One can use 1d array `array[]
+  real` to indicate variables shared by all events, or 2d array
+  `array[,] real` so that the i'th row of the array describes the
+  model arguments for for event i, and the number of the rows in the
+  2d array equals to the length of `time`.

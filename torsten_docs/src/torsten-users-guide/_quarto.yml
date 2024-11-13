@@ -38,7 +38,7 @@ book:
     - installation.qmd
     - part: "Function references"
       chapters:
-        - missing-data.qmd
+        - events.qmd
         - truncation-censoring.qmd
         - finite-mixtures.qmd
         - measurement-error.qmd
