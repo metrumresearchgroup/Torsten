@@ -10,7 +10,7 @@
 
 # Description
 
-Parameter inference for the two-compartment solved using numerical integrator `pmx_integrate_ode_group_bdf`.
+Parameter inference for the two-compartment solved using numerical integrator `pmx_solve_group_bdf`.
 
 
 <a id="org4656f45"></a>
