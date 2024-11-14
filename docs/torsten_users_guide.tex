@@ -1082,10 +1082,10 @@ calculating the integral of a univariate function. The integrand function \(f\) 
 \label{sec:org5f1a4b1}
 \index{linear interpolation}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-real linear_interpolation(real xout, array[] real x, array[] real y)
+real pmx_ln_interpolate(real xout, array[] real x, array[] real y)
 \end{minted}
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-array[] real linear_interpolation(array[] real xout, array[] real x, array[] real y)
+array[] real pmx_ln_interpolate(array[] real xout, array[] real x, array[] real y)
 \end{minted}
 Torsten also provides function \texttt{linear\_interpolation} for piecewise linear interpolation over a
 set of x, y pairs. It returns the values of a piecewise linear
@@ -1872,7 +1872,7 @@ transformed parameters{
   for(i in 2:(nx-1))
     x[i] = x[i-1] + xSimplex[i-1] * (xmax - xmin);
 
-  yHat = linear_interpolation(xObs, x, y);
+  yHat = pmx_ln_interpolate(xObs, x, y);
 }
 
 model{
@@ -1885,7 +1885,7 @@ generated quantities{
   real yHatPred[nPred];
   real yPred[nPred];
 
-  yHatPred = linear_interpolation(xPred, x, y);
+  yHatPred = pmx_ln_interpolate(xPred, x, y);
   for(i in 1:nPred)
     yPred[i] = normal_rng(yHatPred[i], sigma);
 }
