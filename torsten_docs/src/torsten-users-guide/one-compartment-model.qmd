@@ -1,0 +1,53 @@
+---
+pagetitle: One-compartment model
+---
+
+# One-compartment model
+
+Function `pmx_solve_onecpt` solves a one-compartment PK
+model.
+
+![one- and two-compartment models](../img/cptModels.png){width=150 .lightbox}
+
+
+The model obtains the mass \((y_1, y_2)\) in each compartment
+by solving the ordinary differential equations(ODEs)
+\begin{align}\label{eq:onecpt}
+  y_1' &= -k_a y_1, \\
+  y_2' &= k_a y_1 - \left(\frac{CL}{V_2} + \frac{Q}{V_2}\right) y_2.
+\end{align}
+The plasma concentrations of parent drug in the central compartment
+can then be calculated as \(c=y_2/V_2\).
+
+<!-- \begin{figure}[htbp] -->
+<!-- \centering -->
+<!-- \includegraphics[width=1.5in]{./graphics/cptModels.png} -->
+<!-- \caption{\label{one_two_cpt_models}One and two compartment models with first order absorption implemented in Torsten.} -->
+<!-- \end{figure} -->
+
+<!-- \subsection{Usage} -->
+<!-- \label{sec:orgf3012f2} -->
+<!-- \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan} -->
+<!-- matrix = pmx_solve_onecpt(time, amt, rate, ii, evid, cmt, addl, ss, theta [, biovar, tlag ] ) -->
+<!-- \end{minted} -->
+
+<!-- \subsection{Arguments} -->
+<!-- \label{sec:org10352e3} -->
+<!-- See Tables in Section \ref{sec:org02ca7f5}. -->
+<!-- \subsection{Return value} -->
+<!-- \label{sec:org649e9bd} -->
+<!-- An \texttt{ncmt}-by-\texttt{nt} matrix, where \texttt{nt} is the number of time steps and \texttt{ncmt=2} is the number of compartments. -->
+<!-- \subsection{Note} -->
+<!-- \label{sec:org83e8503} -->
+<!-- \begin{itemize} -->
+<!-- \item ODE Parameters \texttt{theta} should consist of \(CL\), \(V_2\), \(k_a\), in that order. -->
+<!-- \item \texttt{biovar} and \texttt{tlag} are optional, so that the following are allowed: -->
+<!-- \end{itemize} -->
+<!-- \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan} -->
+<!-- pmx_solve_onecpt(..., theta); -->
+<!-- pmx_solve_onecpt(..., theta, biovar); -->
+<!-- pmx_solve_onecpt(..., theta, biovar, tlag); -->
+<!-- \end{minted} -->
+<!-- \begin{itemize} -->
+<!-- \item Setting \(k_a = 0\) eliminates the first-order absorption. -->
+<!-- \end{itemize} -->

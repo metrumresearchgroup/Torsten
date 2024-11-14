@@ -39,7 +39,7 @@ book:
     - part: "Function references"
       chapters:
         - events.qmd
-        - truncation-censoring.qmd
+        - one-compartment-model.qmd
         - finite-mixtures.qmd
         - measurement-error.qmd
         - latent-discrete.qmd
