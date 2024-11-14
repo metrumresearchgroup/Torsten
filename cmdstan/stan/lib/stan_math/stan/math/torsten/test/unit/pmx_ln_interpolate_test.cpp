@@ -1,4 +1,4 @@
-#include <stan/math/torsten/linear_interpolation.hpp>
+#include <stan/math/torsten/pmx_ln_interpolate.hpp>
 #include <stan/math/prim.hpp>
 #include <gtest/gtest.h>
 #include <iostream>
@@ -6,8 +6,8 @@
 #include <vector>
 #include <test/unit/util.hpp>
 
-TEST(linear_interpolation, xdbl){
-  using torsten::linear_interpolation;
+TEST(pmx_ln_interpolate, xdbl){
+  using torsten::pmx_ln_interpolate;
   using stan::math::var;
   int nx = 5;
   std::vector<double> x(nx), y(nx);
@@ -19,12 +19,12 @@ TEST(linear_interpolation, xdbl){
   }
 
   double xout = 3.4;
-  double yout = linear_interpolation(xout, x, y);
+  double yout = pmx_ln_interpolate(xout, x, y);
   EXPECT_FLOAT_EQ(yout, k * xout);
 }
 
-TEST(linear_interpolation, in_range_gradient_x_y){
-  using torsten::linear_interpolation;
+TEST(pmx_ln_interpolate, in_range_gradient_x_y){
+  using torsten::pmx_ln_interpolate;
   using stan::math::var;
   using stan::math::value_of;
   int nx = 5;
@@ -38,7 +38,7 @@ TEST(linear_interpolation, in_range_gradient_x_y){
 
   {                             // xout is double
     double xout = 0.4;
-    var yout = linear_interpolation(xout, x, y);
+    var yout = pmx_ln_interpolate(xout, x, y);
     int i = 0;
     var y0 = y.at(i) + (y.at(i+1) - y.at(i)) / (x.at(i+1) - x.at(i)) * (xout - x.at(i));
     EXPECT_FLOAT_EQ(value_of(yout), k * xout);
@@ -63,7 +63,7 @@ TEST(linear_interpolation, in_range_gradient_x_y){
 
   {                             // xout is double
     double xout = 2.4;
-    var yout = linear_interpolation(xout, x, y);
+    var yout = pmx_ln_interpolate(xout, x, y);
     int i = 2;
     var y0 = y.at(i) + (y.at(i+1) - y.at(i)) / (x.at(i+1) - x.at(i)) * (xout - x.at(i));
     EXPECT_FLOAT_EQ(value_of(yout), k * xout);
@@ -88,7 +88,7 @@ TEST(linear_interpolation, in_range_gradient_x_y){
 
   {                             // xout is var
     var xout = 1.4;
-    var yout = linear_interpolation(xout, x, y);
+    var yout = pmx_ln_interpolate(xout, x, y);
     int i = 1;
     var y0 = y.at(i) + (y.at(i+1) - y.at(i)) / (x.at(i+1) - x.at(i)) * (xout - x.at(i));
     EXPECT_FLOAT_EQ(value_of(yout), value_of(k * xout));
@@ -121,8 +121,8 @@ TEST(linear_interpolation, in_range_gradient_x_y){
   }
 }
 
-TEST(linear_interpolation, out_range_gradient_x_y){
-  using torsten::linear_interpolation;
+TEST(pmx_ln_interpolate, out_range_gradient_x_y){
+  using torsten::pmx_ln_interpolate;
   using stan::math::var;
   using stan::math::value_of;
   int nx = 5;
@@ -136,7 +136,7 @@ TEST(linear_interpolation, out_range_gradient_x_y){
 
   {                             // xout is double
     double xout = -1.2;
-    var yout = linear_interpolation(xout, x, y);
+    var yout = pmx_ln_interpolate(xout, x, y);
     int i = 0;
     var y0 = y.front();
     EXPECT_FLOAT_EQ(value_of(yout), value_of(y.front()));
@@ -161,7 +161,7 @@ TEST(linear_interpolation, out_range_gradient_x_y){
 
   {                             // xout is double
     double xout = 7.5;
-    var yout = linear_interpolation(xout, x, y);
+    var yout = pmx_ln_interpolate(xout, x, y);
     int i = 2;
     var y0 = y.back();
     EXPECT_FLOAT_EQ(value_of(yout), value_of(y.back()));
@@ -185,7 +185,7 @@ TEST(linear_interpolation, out_range_gradient_x_y){
   }
 }
 
-TEST(linear_interpolation, linear_example) {
+TEST(pmx_ln_interpolate, linear_example) {
   int nx = 5, nout = 3;
   std::vector<double> x(nx), y(nx), xout(nout), yout;
   double youtTrue;
@@ -199,7 +199,7 @@ TEST(linear_interpolation, linear_example) {
   xout[1] = 2.5;
   xout[2] = 4.5;
 
-  yout = torsten::linear_interpolation(xout, x, y);
+  yout = torsten::pmx_ln_interpolate(xout, x, y);
   for(int i = 0; i < nout; i++){
       if(xout[i] <= x[0]){
 	youtTrue = x[0];
@@ -212,11 +212,11 @@ TEST(linear_interpolation, linear_example) {
   }
 }
 
-TEST(linear_interpolation, xgradient){
+TEST(pmx_ln_interpolate, xgradient){
   using stan::math::var;
   int nx = 5, nout = 3;
   std::vector<double> xdbl(nx), ydbl(nx), xoutdbl(nout), thisGrad(nx);
-  Eigen::MatrixXd trueJac = Eigen::MatrixXd::Zero(3, 5); 
+  Eigen::MatrixXd trueJac = Eigen::MatrixXd::Zero(3, 5);
 
   for(int i = 0; i < nx; i++){
     xdbl[i] = i;
@@ -242,7 +242,7 @@ TEST(linear_interpolation, xgradient){
     for(int k = 0; k < nout; k++){
       xout[k] = xoutdbl[k];
     }
-    yout = torsten::linear_interpolation(xout, x, y);
+    yout = torsten::pmx_ln_interpolate(xout, x, y);
 
     yout[i].grad(x, thisGrad);
 
@@ -252,11 +252,11 @@ TEST(linear_interpolation, xgradient){
   }
 }
 
-TEST(linear_interpolation, ygradient){
+TEST(pmx_ln_interpolate, ygradient){
   using stan::math::var;
   int nx = 5, nout = 3;
   std::vector<double> xdbl(nx), ydbl(nx), xoutdbl(nout), thisGrad(nx);
-  Eigen::MatrixXd trueJac = Eigen::MatrixXd::Zero(3, 5); 
+  Eigen::MatrixXd trueJac = Eigen::MatrixXd::Zero(3, 5);
 
   for(int i = 0; i < nx; i++){
     xdbl[i] = i;
@@ -284,21 +284,21 @@ TEST(linear_interpolation, ygradient){
     for(int k = 0; k < nout; k++){
       xout[k] = xoutdbl[k];
     }
-    yout = torsten::linear_interpolation(xout, x, y);
+    yout = torsten::pmx_ln_interpolate(xout, x, y);
 
     yout[i].grad(y, thisGrad);
-    
+
     for(int j = 0; j < nx; j++){
       EXPECT_EQ(trueJac(i, j), thisGrad[j]);
     }
   }
 }
 
-TEST(linear_interpolation, xoutgradient){
+TEST(pmx_ln_interpolate, xoutgradient){
   using stan::math::var;
   int nx = 5, nout = 3;
   std::vector<double> xdbl(nx), ydbl(nx), xoutdbl(nout), thisGrad(nx);
-  Eigen::MatrixXd trueJac = Eigen::MatrixXd::Zero(3, 3); 
+  Eigen::MatrixXd trueJac = Eigen::MatrixXd::Zero(3, 3);
 
   for(int i = 0; i < nx; i++){
     xdbl[i] = i;
@@ -321,7 +321,7 @@ TEST(linear_interpolation, xoutgradient){
     for(int k = 0; k < nout; k++){
       xout[k] = xoutdbl[k];
     }
-    yout = torsten::linear_interpolation(xout, x, y);
+    yout = torsten::pmx_ln_interpolate(xout, x, y);
 
     yout[i].grad(xout, thisGrad);
 
@@ -331,7 +331,7 @@ TEST(linear_interpolation, xoutgradient){
   }
 }
 
-TEST(linear_interpolation, error_conditions) {
+TEST(pmx_ln_interpolate, error_conditions) {
   using stan::math::var;
   int nx = 5, nout = 3;
   std::vector<double> x(nx), y(nx), xout(nout), yout;
@@ -346,34 +346,34 @@ TEST(linear_interpolation, error_conditions) {
   xout[2] = 4.5;
 
   std::vector<double> xout_bad;
-  EXPECT_THROW_MSG(torsten::linear_interpolation(xout_bad, x, y),
+  EXPECT_THROW_MSG(torsten::pmx_ln_interpolate(xout_bad, x, y),
                    std::invalid_argument,
                    "xout has size 0");
 
   std::vector<double> x_bad;
-  EXPECT_THROW_MSG(torsten::linear_interpolation(xout, x_bad, y),
+  EXPECT_THROW_MSG(torsten::pmx_ln_interpolate(xout, x_bad, y),
                    std::invalid_argument,
                    "x has size 0");
 
   std::vector<double> y_bad;
-  EXPECT_THROW_MSG(torsten::linear_interpolation(xout, x, y_bad),
+  EXPECT_THROW_MSG(torsten::pmx_ln_interpolate(xout, x, y_bad),
                    std::invalid_argument,
                    "y has size 0");
 
   std::vector<double> x3_bad = x;
   x3_bad[2] = 0.0;
-  EXPECT_THROW_MSG(torsten::linear_interpolation(xout, x3_bad, y),
+  EXPECT_THROW_MSG(torsten::pmx_ln_interpolate(xout, x3_bad, y),
                    std::domain_error,
                    "x is not a valid ordered vector");
 
-  std::vector<double> x2_bad(nx - 1);  
+  std::vector<double> x2_bad(nx - 1);
   for(int i = 0; i < (nx - 1); i++) x2_bad[i] = x[i];
-  EXPECT_THROW_MSG(torsten::linear_interpolation(xout, x2_bad, y),
+  EXPECT_THROW_MSG(torsten::pmx_ln_interpolate(xout, x2_bad, y),
                    std::invalid_argument,
                    "size of x (4) and size of y (5) must match in size");
 }
 
-TEST(linear_interpolation, error_conditions_inf) {
+TEST(pmx_ln_interpolate, error_conditions_inf) {
   using stan::math::var;
   std::stringstream expected_is_inf;
   expected_is_inf << "is " << std::numeric_limits<double>::infinity();
@@ -394,37 +394,37 @@ TEST(linear_interpolation, error_conditions_inf) {
 
   std::vector<double> xout_bad = xout;
   xout_bad[0] = inf;
-  EXPECT_THROW_MSG(torsten::linear_interpolation(xout_bad, x, y),
+  EXPECT_THROW_MSG(torsten::pmx_ln_interpolate(xout_bad, x, y),
                    std::domain_error,
                    "xout");
-  EXPECT_THROW_MSG(torsten::linear_interpolation(xout_bad, x, y),
+  EXPECT_THROW_MSG(torsten::pmx_ln_interpolate(xout_bad, x, y),
                    std::domain_error,
                    expected_is_inf.str());
 
   xout_bad = xout;
   xout_bad[0] = -inf;
-  EXPECT_THROW_MSG(torsten::linear_interpolation(xout_bad, x, y),
+  EXPECT_THROW_MSG(torsten::pmx_ln_interpolate(xout_bad, x, y),
                    std::domain_error,
                    "xout");
-  EXPECT_THROW_MSG(torsten::linear_interpolation(xout_bad, x, y),
+  EXPECT_THROW_MSG(torsten::pmx_ln_interpolate(xout_bad, x, y),
                    std::domain_error,
                    expected_is_neg_inf.str());
 
   std::vector<double> x_bad = x;
   x_bad[0] = inf;
-  EXPECT_THROW_MSG(torsten::linear_interpolation(xout, x_bad, y),
+  EXPECT_THROW_MSG(torsten::pmx_ln_interpolate(xout, x_bad, y),
                    std::domain_error,
-                   "x");
-  EXPECT_THROW_MSG(torsten::linear_interpolation(xout, x_bad, y),
+                   "x[1]");
+  EXPECT_THROW_MSG(torsten::pmx_ln_interpolate(xout, x_bad, y),
                    std::domain_error,
                    expected_is_inf.str());
 
   std::vector<double> y_bad = y;
   y_bad[0] = -inf;
-  EXPECT_THROW_MSG(torsten::linear_interpolation(xout, x, y_bad),
+  EXPECT_THROW_MSG(torsten::pmx_ln_interpolate(xout, x, y_bad),
                    std::domain_error,
                    "y");
-  EXPECT_THROW_MSG(torsten::linear_interpolation(xout, x, y_bad),
+  EXPECT_THROW_MSG(torsten::pmx_ln_interpolate(xout, x, y_bad),
                    std::domain_error,
                    expected_is_neg_inf.str());
 }

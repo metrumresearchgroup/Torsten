@@ -1,5 +1,5 @@
-#ifndef STAN_MATH_TORSTEN_LINEAR_INTERPOLATION_HPP
-#define STAN_MATH_TORSTEN_LINEAR_INTERPOLATION_HPP
+#ifndef STAN_MATH_TORSTEN_PMX_LN_INTERPOLATE_HPP
+#define STAN_MATH_TORSTEN_PMX_LN_INTERPOLATE_HPP
 
 #include <stan/math/rev.hpp>
 #include <stan/math/prim.hpp>
@@ -12,7 +12,7 @@
 namespace torsten {
 
   /**
-   * Return the values of a piecewise linear function at specifed values of the 
+   * Return the values of a piecewise linear function at specifed values of the
    * function argument. The function is specified in terms of a set of x y pairs.
    *
    * @tparam T0 Type of value to be interpolated
@@ -26,16 +26,16 @@ namespace torsten {
 
   template <typename T0, typename T1, typename T2>
   typename stan::return_type_t<T0, T1, T2>
-  inline linear_interpolation(const T0& xout,
+  inline pmx_ln_interpolate(const T0& xout,
                               const std::vector<T1>& x,
                               const std::vector<T2>& y) {
-    stan::math::check_finite("linear_interpolation", "xout", xout);
-    stan::math::check_finite("linear_interpolation", "x", x);
-    stan::math::check_finite("linear_interpolation", "y", y);
-    stan::math::check_nonzero_size("linear_interpolation", "x", x);
-    stan::math::check_nonzero_size("linear_interpolation", "y", y);
-    stan::math::check_ordered("linear_interpolation", "x", x);
-    stan::math::check_matching_sizes("linear_interpolation", "x", x, "y", y);
+    stan::math::check_finite("pmx_ln_interpolate", "xout", xout);
+    stan::math::check_finite("pmx_ln_interpolate", "x", x);
+    stan::math::check_finite("pmx_ln_interpolate", "y", y);
+    stan::math::check_nonzero_size("pmx_ln_interpolate", "x", x);
+    stan::math::check_nonzero_size("pmx_ln_interpolate", "y", y);
+    stan::math::check_ordered("pmx_ln_interpolate", "x", x);
+    stan::math::check_matching_sizes("pmx_ln_interpolate", "x", x, "y", y);
 
     typename stan::return_type_t<T0, T1, T2> yout;
     if (xout < x.front()) {
@@ -51,15 +51,15 @@ namespace torsten {
 
   template <typename T0, typename T1, typename T2>
   std::vector<typename stan::return_type_t<T0, T1, T2>>
-  inline linear_interpolation(const std::vector<T0>& xout,
+  inline pmx_ln_interpolate(const std::vector<T0>& xout,
                               const std::vector<T1>& x,
                               const std::vector<T2>& y) {
-    stan::math::check_nonzero_size("linear_interpolation", "xout", xout);
-    stan::math::check_finite("linear_interpolation", "xout", xout);
+    stan::math::check_nonzero_size("pmx_ln_interpolate", "xout", xout);
+    stan::math::check_finite("pmx_ln_interpolate", "xout", xout);
 
     std::vector<typename stan::return_type_t<T0, T1, T2>> yout(xout.size());
     std::transform(xout.begin(), xout.end(), yout.begin(),
-                   [&x, &y](const T0& xi) { return linear_interpolation(xi, x, y); });
+                   [&x, &y](const T0& xi) { return pmx_ln_interpolate(xi, x, y); });
     return yout;
   }
 }

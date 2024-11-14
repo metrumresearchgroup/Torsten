@@ -1,10 +1,10 @@
 functions {
-  real[] ode(real t,
-             real[] y,
-             real[] theta,
-             real[] x,
-             int[] x_int) {
-    real dydt[2];
+  vector ode(real t,
+             vector y,
+             array[] real theta,
+             array[] real x,
+             array[] int x_int) {
+    vector[2] dydt;
     return dydt;
   }
 }
@@ -13,30 +13,30 @@ data {
   int<lower = 1> np;
   int<lower = 1> nt;
   int nTheta;
-  int<lower = 1> cmt[nt];
-  int len[np];
-  int evid[nt];
-  int addl[nt];
-  int ss[nt];
-  real amt[nt];
-  real time[nt];
-  real rate[nt];
-  real ii[nt];
+  array[nt] int<lower = 1> cmt;
+  array[np] int len;
+  array[nt] int evid;
+  array[nt] int addl;
+  array[nt] int ss;
+  array[nt] real amt;
+  array[nt] real time;
+  array[nt] real rate;
+  array[nt] real ii;
 
 int<lower=1> T;
-real y0_d[2];
-real t0;
-real ts[T];
-real theta_d[1];
-real x[0];
-int x_int[0];
+// real y0_d[2];
+// real t0;
+// real ts[T];
+array[1] real theta_d;
+// real x[0];
+// int x_int[0];
 }
 
 transformed data {
   int nCmt = 2;
-  real theta_data[nt, nTheta];
-  real biovar_data[nt, nCmt];
-  real tlag_data[nt, nCmt];
+  array[nt, nTheta] real theta_data;
+  array[nt, nCmt] real biovar_data;
+  array[nt, nCmt] real tlag_data;
   matrix[nCmt, nt * np] x_data;
 
   nCmt = 2;
@@ -51,7 +51,7 @@ transformed data {
   x_data = pmx_solve_group_rk45  (ode, nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] , 1e-8, 1e-8, 1e8);
   x_data = pmx_solve_group_rk45  (ode, nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    , 1e-8, 1e-8, 1e8);
   x_data = pmx_solve_group_rk45  (ode, nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] , 1e-8, 1e-8, 1e8);
-  x_data = pmx_solve_group_rk45  (ode, nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] , 1e-8, 1e-8, 1e8);   
+  x_data = pmx_solve_group_rk45  (ode, nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] , 1e-8, 1e-8, 1e8);
 
   x_data = pmx_solve_group_bdf   (ode, nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    , 1e-8, 1e-8, 1e8);
   x_data = pmx_solve_group_bdf   (ode, nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    , 1e-8, 1e-8, 1e8);
@@ -81,7 +81,7 @@ transformed data {
   x_data = pmx_solve_group_rk45  (ode, nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data[0] );
   x_data = pmx_solve_group_rk45  (ode, nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data    );
   x_data = pmx_solve_group_rk45  (ode, nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data[0] , tlag_data[0] );
-  x_data = pmx_solve_group_rk45  (ode, nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] );   
+  x_data = pmx_solve_group_rk45  (ode, nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data[0] );
 
   x_data = pmx_solve_group_bdf   (ode, nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, theta_data    , biovar_data    , tlag_data    );
   x_data = pmx_solve_group_bdf   (ode, nCmt, len, time, amt, rate, ii, evid, cmt, addl, ss, theta_data[0] , biovar_data    , tlag_data    );
