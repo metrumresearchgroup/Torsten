@@ -1,3 +1,0 @@
-data {
-  real x, reject;
-}
