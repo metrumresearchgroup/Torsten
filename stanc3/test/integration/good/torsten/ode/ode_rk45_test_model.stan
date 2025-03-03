@@ -88,7 +88,6 @@ transformed data {
   zd = pmx_ode_rk45(f_2_arg, vd, rd, rad, id, rd);
   zd = pmx_ode_rk45(f_1_arg, vd, rd, rad, rd);
   zd = pmx_ode_rk45(f_0_arg, vd, rd, rad);
-
   // ODE with control
   zd = pmx_ode_rk45_ctrl(f_12_arg, vd, rd, rad, 1e-6, 1e-6,
                                         100, mad, rvad, vad, iaad, raad, md,
@@ -143,7 +142,6 @@ transformed parameters {
   z = pmx_ode_rk45(f_2_arg, vd, rd, rad, id, rd);
   z = pmx_ode_rk45(f_1_arg, vd, rd, rad, rd);
   z = pmx_ode_rk45(f_0_arg, vd, rd, rad);
-
   z = pmx_ode_rk45(f_12_arg, v, rd, ra, ma, rva, va, iaad, raa, m, rv, v, iad,
                 ra, id, r);
   z = pmx_ode_rk45(f_11_arg, v, rd, ra, rva, va, iaad, raa, m, rv, v, iad, ra,
@@ -159,7 +157,6 @@ transformed parameters {
   z = pmx_ode_rk45(f_2_arg, v, rd, ra, id, r);
   z = pmx_ode_rk45(f_1_arg, v, rd, ra, r);
   z = pmx_ode_rk45(f_0_arg, v, rd, ra);
-
 //   z = pmx_ode_rk45(f_12_arg, v, r, ra, ma, rva, va, iaad, raa, m, rv, v, iad,
 //                 ra, id, r);
 //   z = pmx_ode_rk45(f_11_arg, v, r, ra, rva, va, iaad, raa, m, rv, v, iad, ra,
@@ -175,7 +172,6 @@ transformed parameters {
 //   z = pmx_ode_rk45(f_2_arg, v, r, ra, id, r);
 //   z = pmx_ode_rk45(f_1_arg, v, r, ra, r);
 //   z = pmx_ode_rk45(f_0_arg, v, r, ra);
-
   // ODE with control
   z = pmx_ode_rk45_ctrl(f_12_arg, vd, rd, rad, 1e-6, 1e-6,
                                        100, mad, rvad, vad, iaad, raad, md,
@@ -199,7 +195,6 @@ transformed parameters {
   z = pmx_ode_rk45_ctrl(f_2_arg, vd, rd, rad, 1e-6, 1e-6, 100, id, rd);
   z = pmx_ode_rk45_ctrl(f_1_arg, vd, rd, rad, 1e-6, 1e-6, 100, rd);
   z = pmx_ode_rk45_ctrl(f_0_arg, vd, rd, rad, 1e-6, 1e-6, 100);
-
   z = pmx_ode_rk45_ctrl(f_12_arg, v, rd, ra, 1e-6, 1e-6, 100, ma, rva, va, iaad,
                     raa, m, rv, v, iad, ra, id, r);
   z = pmx_ode_rk45_ctrl(f_11_arg, v, rd, ra, 1e-6, 1e-6, 100, rva, va, iaad, raa,
@@ -241,7 +236,6 @@ model {
   zm = pmx_ode_rk45(f_2_arg, vd, rd, rad, id, rd);
   zm = pmx_ode_rk45(f_1_arg, vd, rd, rad, rd);
   zm = pmx_ode_rk45(f_0_arg, vd, rd, rad);
-
   zm = pmx_ode_rk45(f_12_arg, v, rd, ra, ma, rva, va, iaad, raa, m, rv, v, iad,
                  ra, id, r);
   zm = pmx_ode_rk45(f_11_arg, v, rd, ra, rva, va, iaad, raa, m, rv, v, iad, ra,
@@ -257,8 +251,6 @@ model {
   zm = pmx_ode_rk45(f_2_arg, v, rd, ra, id, r);
   zm = pmx_ode_rk45(f_1_arg, v, rd, ra, r);
   zm = pmx_ode_rk45(f_0_arg, v, rd, ra);
-
-
 //   zm = pmx_ode_rk45(f_12_arg, v, r, ra, ma, rva, va, iaad, raa, m, rv, v, iad,
 //                  ra, id, r);
 //   zm = pmx_ode_rk45(f_11_arg, v, r, ra, rva, va, iaad, raa, m, rv, v, iad, ra,
@@ -274,7 +266,6 @@ model {
 //   zm = pmx_ode_rk45(f_2_arg, v, r, ra, id, r);
 //   zm = pmx_ode_rk45(f_1_arg, v, r, ra, r);
 //   zm = pmx_ode_rk45(f_0_arg, v, r, ra);
-
   // ODE with control
   zm = pmx_ode_rk45_ctrl(f_12_arg, vd, rd, rad, 1e-6, 1e-6,
                                         100, mad, rvad, vad, iaad, raad, md,
@@ -298,7 +289,6 @@ model {
   zm = pmx_ode_rk45_ctrl(f_2_arg, vd, rd, rad, 1e-6, 1e-6, 100, id, rd);
   zm = pmx_ode_rk45_ctrl(f_1_arg, vd, rd, rad, 1e-6, 1e-6, 100, rd);
   zm = pmx_ode_rk45_ctrl(f_0_arg, vd, rd, rad, 1e-6, 1e-6, 100);
-
   zm = pmx_ode_rk45_ctrl(f_12_arg, v, rd, ra, 1e-6, 1e-6, 100, ma, rva, va, iaad,
                      raa, m, rv, v, iad, ra, id, r);
   zm = pmx_ode_rk45_ctrl(f_11_arg, v, rd, ra, 1e-6, 1e-6, 100, rva, va, iaad, raa,
@@ -319,7 +309,6 @@ model {
   zm = pmx_ode_rk45_ctrl(f_2_arg, v, rd, ra, 1e-6, 1e-6, 100, id, r);
   zm = pmx_ode_rk45_ctrl(f_1_arg, v, rd, ra, 1e-6, 1e-6, 100, r);
   zm = pmx_ode_rk45_ctrl(f_0_arg, v, rd, ra, 1e-6, 1e-6, 100);
-
   r ~ normal(0, 1);
 }
 generated quantities {
@@ -342,7 +331,6 @@ generated quantities {
   zg = pmx_ode_rk45(f_2_arg, vd, rd, rad, id, rd);
   zg = pmx_ode_rk45(f_1_arg, vd, rd, rad, rd);
   zg = pmx_ode_rk45(f_0_arg, vd, rd, rad);
-
   zg = pmx_ode_rk45(f_12_arg, v, rd, ra, ma, rva, va, iaad, raa, m, rv, v, iad,
                  ra, id, r);
   zg = pmx_ode_rk45(f_11_arg, v, rd, ra, rva, va, iaad, raa, m, rv, v, iad, ra,
@@ -358,7 +346,6 @@ generated quantities {
   zg = pmx_ode_rk45(f_2_arg, v, rd, ra, id, r);
   zg = pmx_ode_rk45(f_1_arg, v, rd, ra, r);
   zg = pmx_ode_rk45(f_0_arg, v, rd, ra);
-
   // zg = pmx_ode_rk45(f_12_arg, v, r, ra, ma, rva, va, iaad, raa, m, rv, v, iad,
   //                ra, id, r);
   // zg = pmx_ode_rk45(f_11_arg, v, r, ra, rva, va, iaad, raa, m, rv, v, iad, ra,
@@ -374,7 +361,6 @@ generated quantities {
   // zg = pmx_ode_rk45(f_2_arg, v, r, ra, id, r);
   // zg = pmx_ode_rk45(f_1_arg, v, r, ra, r);
   // zg = pmx_ode_rk45(f_0_arg, v, r, ra);
-
   // ODE with control
   zg = pmx_ode_rk45_ctrl(f_12_arg, vd, rd, rad, 1e-6, 1e-6,
                                         100, mad, rvad, vad, iaad, raad, md,
@@ -398,7 +384,6 @@ generated quantities {
   zg = pmx_ode_rk45_ctrl(f_2_arg, vd, rd, rad, 1e-6, 1e-6, 100, id, rd);
   zg = pmx_ode_rk45_ctrl(f_1_arg, vd, rd, rad, 1e-6, 1e-6, 100, rd);
   zg = pmx_ode_rk45_ctrl(f_0_arg, vd, rd, rad, 1e-6, 1e-6, 100);
-
   zg = pmx_ode_rk45_ctrl(f_12_arg, v, rd, ra, 1e-6, 1e-6, 100, ma, rva, va, iaad,
                      raa, m, rv, v, iad, ra, id, r);
   zg = pmx_ode_rk45_ctrl(f_11_arg, v, rd, ra, 1e-6, 1e-6, 100, rva, va, iaad, raa,
@@ -420,3 +405,4 @@ generated quantities {
   zg = pmx_ode_rk45_ctrl(f_1_arg, v, rd, ra, 1e-6, 1e-6, 100, r);
   zg = pmx_ode_rk45_ctrl(f_0_arg, v, rd, ra, 1e-6, 1e-6, 100);
 }
+
