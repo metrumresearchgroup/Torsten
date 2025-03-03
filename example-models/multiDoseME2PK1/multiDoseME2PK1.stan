@@ -2,18 +2,18 @@ data{
   int<lower = 1> nSubjects;
   int<lower = 1> nt;
   int<lower = 1> nObs;
-  int<lower = 1> iObs[nObs];
-  real<lower = 0> amt[nt];
-  real<lower = 0> rate[nt];
-  real<lower = 0> ii[nt];
-  int<lower = 1> cmt[nt];
-  int<lower = 0> evid[nt];
-  int<lower = 0> addl[nt];
-  int<lower = 0> ss[nt];
-  int<lower = 1> start[nSubjects];
-  int<lower = 1> end[nSubjects];
-  real<lower = 0> weight[nSubjects];
-  real<lower = 0> time[nt];
+  array[nObs] int<lower = 1> iObs;
+  array[nt] real<lower = 0> amt;
+  array[nt] real<lower = 0> rate;
+  array[nt] real<lower = 0> ii;
+  array[nt] int<lower = 1> cmt;
+  array[nt] int<lower = 0> evid;
+  array[nt] int<lower = 0> addl;
+  array[nt] int<lower = 0> ss;
+  array[nSubjects] int<lower = 1> start;
+  array[nSubjects] int<lower = 1> end;
+  array[nSubjects] real<lower = 0> weight;
+  array[nt] real<lower = 0> time;
   vector<lower = 0>[nObs] cObs;
 }
 
@@ -35,21 +35,21 @@ parameters{
   corr_matrix[nRandom] rho;
   vector<lower = 0>[nRandom] omega;
   real<lower = 0> sigma;
-  vector[nRandom] logtheta[nSubjects];
+  array[nSubjects] vector[nRandom] logtheta;
 }
 
 transformed parameters{
   vector<lower = 0>[nRandom] thetaHat;
   cov_matrix[nRandom] Omega;
-  real<lower = 0> CL[nSubjects];
-  real<lower = 0> Q[nSubjects];
-  real<lower = 0> V1[nSubjects];
-  real<lower = 0> V2[nSubjects];
-  real<lower = 0> ka[nSubjects];
+  array[nSubjects] real<lower = 0> CL;
+  array[nSubjects] real<lower = 0> Q ;
+  array[nSubjects] real<lower = 0> V1;
+  array[nSubjects] real<lower = 0> V2;
+  array[nSubjects] real<lower = 0> ka;
   vector<lower = 0>[nt] cHat;
   vector<lower = 0>[nObs] cHatObs;
   matrix<lower = 0>[3, nt] x;
-  real parms[nSubjects,11];
+  array[nSubjects,11] real parms;
 
   thetaHat[1] = CLHat;
   thetaHat[2] = QHat;
@@ -65,7 +65,7 @@ transformed parameters{
     V1[j] = exp(logtheta[j, 3]) * weight[j] / 70;
     V2[j] = exp(logtheta[j, 4]) * weight[j] / 70;
     ka[j] = exp(logtheta[j, 5]);
-    
+
     parms[j, 1] = CL[j];
     parms[j, 2] = Q[j];
     parms[j, 3] = V1[j];
@@ -87,7 +87,7 @@ transformed parameters{
                                             addl[start[j]:end[j]],
                                             ss[start[j]:end[j]],
                                             parms[j]);
-                                           
+
     for(i in start[j]:end[j])
       cHat[i] = x[2, i] / V1[j];
   }
@@ -103,7 +103,7 @@ model{
     V2Hat ~ normal(0, 1000);
     kaHat ~ normal(0, 5);
     omega ~ cauchy(0, 2);
-    rho ~ lkj_corr(1); 
+    rho ~ lkj_corr(1);
     sigma ~ cauchy(0, 5);
 
     //// Inter-individual variability
@@ -113,17 +113,17 @@ model{
 }
 
 generated quantities{
-  vector[nRandom] logthetaPred[nSubjects];
+  array[nSubjects] vector[nRandom] logthetaPred;
   vector<lower = 0>[nt] cHatPred;
-  real cObsCond[nt];
-  real cObsPred[nt];
-  real<lower = 0> CLPred[nSubjects];
-  real<lower = 0> QPred[nSubjects];
-  real<lower = 0> V1Pred[nSubjects];
-  real<lower = 0> V2Pred[nSubjects];
-  real<lower = 0> kaPred[nSubjects];
+  array[nt] real cObsCond;
+  array[nt] real cObsPred;
+  array[nSubjects] real<lower = 0> CLPred;
+  array[nSubjects] real<lower = 0> QPred ;
+  array[nSubjects] real<lower = 0> V1Pred;
+  array[nSubjects] real<lower = 0> V2Pred;
+  array[nSubjects] real<lower = 0> kaPred;
   matrix[3, nt] xPred;
-  real parmsPred[nSubjects,11];
+  array[nSubjects,11] real parmsPred;
 
   for(j in 1:nSubjects){
     logthetaPred[j] = multi_normal_rng(log(thetaHat), Omega);

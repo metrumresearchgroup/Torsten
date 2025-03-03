@@ -1,3 +1,16 @@
+// Use Torsten's pmx_solver_group_rk45 to solver each subj
+//
+// Build:
+// At Torsten/cmdstan path, run
+//
+// make -j5 ../example-models/neutropeniaPopulation/neutropenia_group
+//
+// Run:
+// At project path (Torsten/example-models/neutropeniaPopulation), run
+//
+// ./neutropenia_group sample data file=neutropenia2.data.json init=neutropenia2.init1.json
+//
+
 functions{
   vector twoCptNeutModelODE(real t, vector x, array[] real parms,
                             array[] real rdummy, array[] int idummy){
@@ -129,7 +142,7 @@ transformed parameters{
   matrix[8, nt] x;
   array[nId, 9] real<lower = 0> parms;
 
-  theta = (rep_matrix(thetaHat, nId) .* 
+  theta = (rep_matrix(thetaHat, nId) .*
 	   exp(diag_pre_multiply(omega, L * etaStd)))';
 
   for(j in 1:nId){
@@ -202,7 +215,7 @@ generated quantities {
   matrix[nRandom, nId] etaStdPred;
 
   rho = L * L';
-  for(j in 1:nId) 
+  for(j in 1:nId)
     for(i in 1:nRandom)
       etaStdPred[i, j] = normal_rng(0, 1);
 
