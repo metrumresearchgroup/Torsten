@@ -4,7 +4,7 @@
               \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
 \newcommand\mrgproject{}
 \newcommand\mrgtitle{Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan}
-\newcommand\mrgsubtitle{\large{User's Guide} \linebreak (Torsten Version 0.91.0, Stan version 2.33.1)}
+\newcommand\mrgsubtitle{\large{User's Guide} \linebreak (Torsten Version 0.91.1, Stan version 2.33.1)}
 \include{mrgtitlepage}
 \usepackage{imakeidx}
 \makeindex
@@ -76,6 +76,34 @@
 \item \href{mailto:yz@yizh.org}{Yi Zhang} , \href{https://www.c-path.org/}{Critical Path Institute}
 \item \href{mailto:cmargossian@flatironinstitute.org}{Charles Margossian} , Flatiron Institute
 \end{itemize}
+
+\vspace{1in}
+
+One may use the following to cite Torsten.
+\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{r}
+@misc{Torsten,
+  author = {Torsten Development Team},
+  title = {Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan (v0.91.1)},
+  year  = {2025},
+  url   = {https://github.com/metrumresearchgroup/Torsten},
+}
+\end{minted}
+
+\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{r}
+@article{https://doi.org/10.1002/psp4.12812,
+author = {Margossian, Charles C. and Zhang, Yi and Gillespie, William R.},
+title = {Flexible and efficient Bayesian pharmacometrics modeling using Stan and Torsten, Part I},
+journal = {CPT: Pharmacometrics \& Systems Pharmacology},
+volume = {11},
+number = {9},
+pages = {1151-1169},
+doi = {https://doi.org/10.1002/psp4.12812},
+url = {https://ascpt.onlinelibrary.wiley.com/doi/abs/10.1002/psp4.12812},
+eprint = {https://ascpt.onlinelibrary.wiley.com/doi/pdf/10.1002/psp4.12812},
+year = {2022}
+}
+\end{minted}
+
 \chapter*{Acknowledgements}
 \label{sec:orgab46cef}
 \section*{Institutions}
@@ -179,12 +207,14 @@ parameter (in a dosing compartment) evaluated at \(t_{\text{lag}} = 0\).
 \chapter{Changelog}
 \label{sec:org6ee814c}
 \begin{itemize}
-  \item Version 0.91.1 \textit{<2024-12-01 Sun>}
+  \item Version 0.91.1 \textit{<2025-02-28 Fri>}
 \begin{itemize}
 \item Changed
 \begin{itemize}
 \item More model examples fixes.
 \item Remove ODE group integrator functions.
+\item Remove univariate integral function.
+\item Rename linear interpolation function.
 \item Improve documentation.
 \end{itemize}
 \end{itemize}
@@ -1061,23 +1091,6 @@ spurious and error-prone computation. See
 
 \end{itemize}
 
-\section{Univariate integral}
-\label{sec:org5024381}
-\index{univariate integral}
-\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-real univariate_integral_rk45(f, t0, t1, theta, x_r, x_i)
-\end{minted}
-\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-real univariate_integral_bdf(f, t0, t1, theta, x_r, x_i)
-\end{minted}
-Based on the ODE solver capability in Stan, Torsten provides functions
-calculating the integral of a univariate function. The integrand function \(f\) must follow the signature
-\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-  real f(real t, array[] real theta, array[] real x_r, array[] int x_i) {
-    /* ... */
-}
-\end{minted}
-
 \section{Piecewise linear interpolation}
 \label{sec:org5f1a4b1}
 \index{linear interpolation}
@@ -1741,101 +1754,6 @@ processes participating ODE solution. For example, with
 \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}{np=8} for a population of 8,
 \mintinline[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{sh}{nproc=4} indicates solving 8 subjects' ODEs in
 parallel, with each process solving 2 subjects.
-
-\section{Lotka-Volterra group model}
-\label{sec:org1326763}
-Using \texttt{pmx\_integrate\_ode\_group\_rk45}, the following example fits
-a Lotka-Volterra group model, based on \href{https://mc-stan.org/users/documentation/case-studies/lotka-volterra-predator-prey.html}{Stan's case study}.
-
-\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-functions {
-  array[] real dz_dt(real t,       // time
-               array[] real z,     // system state {prey, predator}
-               array[] real theta, // parameters
-               array[] real x_r,   // unused data
-               array[] int x_i) {
-    real u = z[1];
-    real v = z[2];
-
-    real alpha = theta[1];
-    real beta = theta[2];
-    real gamma = theta[3];
-    real delta = theta[4];
-
-    real du_dt = (alpha - beta * v) * u;
-    real dv_dt = (-gamma + delta * u) * v;
-    return { du_dt, dv_dt };
-  }
-}
-data {
-  int<lower = 0> N_subj;      // number of subjects
-  int<lower = 0> N;           // number of measurement times
-  real ts_0[N];                 // measurement times > 0
-  real y0_0[2];     // initial measured populations
-  real<lower = 0> y_0[N, 2];    // measured populations
-}
-transformed data {
-  int len[N_subj] = rep_array(N, N_subj);
-  real y0[N_subj, 2] = rep_array(y0_0, N_subj);
-  real y[N_subj, N, 2] = rep_array(y_0, N_subj);
-  real ts[N_subj * N];
-  for (i in 1:N_subj) {
-    ts[((i-1)*N + 1) : (i*N)] = ts_0;
-  }
-}
-
-parameters {
-  real<lower = 0> theta[N_subj, 4];   // { alpha, beta, gamma, delta }
-  real<lower = 0> z_init[N_subj, 2];  // initial population
-  real<lower = 0> sigma[N_subj, 2];   // measurement errors
-}
-transformed parameters {
-  matrix[2, N_subj * N] z;
-  z = pmx_integrate_ode_group_rk45(dz_dt, z_init, 0, len, ts, theta, rep_array(rep_array(0.0, 0), N_subj), rep_array(rep_array(0, 0),N_subj));
-}
-model {
-  for (isub in 1:N_subj) {
-    theta[isub, {1, 3}] ~ normal(1, 0.5);
-    theta[isub, {2, 4}] ~ normal(0.05, 0.05);
-    sigma[isub] ~ lognormal(-1, 1);
-    z_init[isub] ~ lognormal(10, 1);
-    for (k in 1:2) {
-      y0[isub, k] ~ lognormal(log(z_init[isub, k]), sigma[isub, k]);
-      y[isub, , k] ~ lognormal(log(z[k, ((isub-1)*N + 1):(isub*N)]), sigma[isub, k]);
-    }
-  }
-\end{minted}
-
-\section{Univariate integral of a quadratic function}
-\label{sec:org9e19954}
-integral of a quadratic function.
-This example shows how to use \texttt{univariate\_integral\_rk45} to calculate the
-integral of a quadratic function.
-\begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{stan}
-functions {
-  real fun_ord2(real t, array[] real theta, array[] real x_r, array[] int x_i) {
-    real a = 2.3;
-    real b = 2.0;
-    real c = 1.5;
-    real res;
-    res = a + b * t + c * t * t;
-    return res;
-  }
-}
-data {
-  real t0;
-  real t1;
-  real dtheta[2];
-  real x_r[0];
-  int x_i[0];
-}
-transformed data {
-  real univar_integral;
-  univar_integral = univariate_integral_rk45(func, t0, t1, dtheta,
-                          x_r, x_i);
-}
-/* ... */
-\end{minted}
 
 \section{Linear intepolation}
 \label{sec:orgb89dc56}

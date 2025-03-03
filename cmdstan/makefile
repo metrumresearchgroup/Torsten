@@ -152,7 +152,7 @@ include make/tests
 include make/command
 
 CMDSTAN_VERSION := 2.33.1
-TORSTEN_VERSION := 0.91.0
+TORSTEN_VERSION := 0.91.1
 
 ifeq ($(OS),Windows_NT)
 HELP_MAKE=mingw32-make

@@ -27,6 +27,9 @@ transformed parameters{
   for(i in 2:(nx-1))
     x[i] = x[i-1] + xSimplex[i-1] * (xmax - xmin);
 
+  for(i in 1:nObs) {
+    yHat[i] = pmx_ln_interpolate(xObs[i], x, y);
+  }
   yHat = pmx_ln_interpolate(xObs, x, y);
 }
 
