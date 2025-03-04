@@ -8,7 +8,7 @@
 // Run:
 // At project path (Torsten/example-models/neutropeniaPopulation), run
 //
-// ./neutropenia_loop sample data file=neutropenia2.data.json init=neutropenia2.init1.json
+// ./neutropenia_loop sample data file=neutropenia2.data.json init=neutropenia_loop.init.json
 //
 
 functions{
@@ -181,7 +181,7 @@ transformed parameters{
     parms[8] = gamma;
     parms[9] = thetaM[i, 7]; // alpha
 
-    x[start[i]:end[i]] = pmx_solve_rk45(twoCptNeutModelODE, nCmt,
+    x[, start[i]:end[i]] = pmx_solve_rk45(twoCptNeutModelODE, nCmt,
                                         time[start[i]:end[i]],
                                         amt[start[i]:end[i]],
                                         rate[start[i]:end[i]],
