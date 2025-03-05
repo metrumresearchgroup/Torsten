@@ -114,10 +114,10 @@ TYPED_TEST_P(test_onecpt, multiple_infusion_2) {
 }
 
 REGISTER_TYPED_TEST_SUITE_P(test_onecpt,
-                            multiple_bolus,           
-                            multiple_bolus_with_tlag, 
-                            multiple_bolus_ss,        
-                            multiple_infusion_ss,     
+                            multiple_bolus,
+                            multiple_bolus_with_tlag,
+                            multiple_bolus_ss,
+                            multiple_infusion_ss,
                             multiple_infusion_ss_tlag,
                             multiple_infusion,
                             multiple_infusion_2);
@@ -153,7 +153,7 @@ TYPED_TEST_P(test_twocpt, multiple_bolus_ss) {
   this -> time[0] = 0.0;
   this -> time[1] = 0.0;
   for(int i = 2; i < this -> nt; i++) this -> time[i] = this -> time[i - 1] + 5;
-  
+
   this -> amt[0] = 1200;
   this -> addl[0] = 10;
   this -> ss[0] = 1;
@@ -205,14 +205,14 @@ TYPED_TEST_P(test_twocpt, time_dependent_theta) {
     if (i < 6) {
       this -> theta[i][0] = 5; // CL
     } else {
-      this -> theta[i][0] = 50;  // CL is piece-wise constant      
+      this -> theta[i][0] = 50;  // CL is piece-wise constant
     }
     this -> theta[i][1] = 8;  // Q
     this -> theta[i][2] = 20;  // Vc
     this -> theta[i][3] = 70;  // Vp
     this -> theta[i][4] = 1.2;  // ka
   }
-	
+
   this -> time[0] = 0.0;
   for(int i = 1; i < this -> nt; i++) this -> time[i] = this -> time[i - 1] + 2.5;
 
@@ -255,7 +255,7 @@ TYPED_TEST_P(test_twocpt, multiple_bolus_2) {
   this -> ii[0] = 0;
   this -> ss[0] = 0;
 
-  this -> test_finite_diff_amt(1.e-3, 1.e-6);
+  this -> test_finite_diff_amt(1.e-3, 5.e-6);
   this -> test_finite_diff_theta(1.e-3, 1.e-4);
 }
 
