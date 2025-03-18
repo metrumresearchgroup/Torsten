@@ -54,19 +54,12 @@ jobs:
       shell: bash
       run: |
         make -j2 build
-    - name: Build Torsten example hpp
-      working-directory: ./cmdstan
-      shell: bash
-      run: |
-        ./bin/stanc ../example-models/pk2cpt/pk2cpt.stan
-        rm ../example-models/pk2cpt/pk2cpt.hpp
-        rm ./bin/stanc
-    - name: Build Torsten example model pk2cpt
+    - name: Build example model pk2cpt
       working-directory: ./cmdstan
       shell: bash
       run: |
         make -j2 ../example-models/pk2cpt/pk2cpt
-    - name: Run Torsten example model pk2cpt
+    - name: Run example model pk2cpt
       working-directory: ./example-models/pk2cpt
       shell: bash
       run: |
