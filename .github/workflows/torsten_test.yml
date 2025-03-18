@@ -49,6 +49,11 @@ jobs:
     - name: Add Torsten to PATH
       shell: bash
       run: echo "./cmdstan/stan/lib/stan_math/stan/math/torsten" >> $GITHUB_PATH
+    - name: Build Torsten
+      working-directory: ./cmdstan
+      shell: bash
+      run: |
+        make -j2 build
     - name: Build Torsten example model pk2cpt
       working-directory: ./cmdstan
       shell: bash
