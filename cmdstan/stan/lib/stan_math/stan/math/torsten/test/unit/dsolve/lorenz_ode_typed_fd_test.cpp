@@ -10,13 +10,13 @@
  * Use same solver functor type for both w & w/o tolerance control
  */
 template <typename solve_type, typename... Ts>
-using ode_test_tuple = std::tuple<solve_type, solve_type, Ts...>;
+using pmx_ode_test_tuple = std::tuple<solve_type, solve_type, Ts...>;
 
 /**
  * Outer product of test types
  */
 using lorenz_test_types = boost::mp11::mp_product<
-    ode_test_tuple,
+    pmx_ode_test_tuple,
     ::testing::Types<pmx_ode_adams_functor, pmx_ode_bdf_functor, pmx_ode_ckrk_functor,
                      pmx_ode_rk45_functor>>;
 
@@ -39,4 +39,4 @@ TYPED_TEST_P(lorenz_test, param_and_data_finite_diff) {
   }
 }
 REGISTER_TYPED_TEST_SUITE_P(lorenz_test, param_and_data_finite_diff);
-INSTANTIATE_TYPED_TEST_SUITE_P(StanOde, lorenz_test, lorenz_test_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(TorstenODE, lorenz_test, lorenz_test_types);

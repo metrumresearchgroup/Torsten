@@ -17,18 +17,18 @@ namespace torsten {
 /**
  * Computes the predicted amounts in each compartment at each event
  * for a general compartment model, defined by a system of ordinary
- * differential equations. Uses the torsten::pmx_integrate_ode_adams 
- * function. 
+ * differential equations. Uses the torsten::pmx_ode_adams
+ * function.
  *
  * @tparam Ts types of parameters, see <code>pmx_solve_ode</code> for
  *         details. The last type of <code>Ts...</code> is
  *         <code>ostream*</code> as required by stan
  * @tparam F type of ODE system function.
- * @param[in] f functor for base ordinary differential equation that defines 
+ * @param[in] f functor for base ordinary differential equation that defines
  *            compartment model.
  * @param[in] nCmt number of compartments in model
- * @return a matrix with predicted amount in each compartment 
- *         at each event. 
+ * @return a matrix with predicted amount in each compartment
+ *         at each event.
  *
  */
   template <typename F, typename... Ts>

@@ -53,17 +53,6 @@ let pmx_integrate_ode_tol =
 
 let pmx_algebra_sol_tol = pmx_integrate_ode_tol
 
-let pmx_integrate_ode_group_arg =
-  [ (UnsizedType.AutoDiffable, UnsizedType.UArray (UnsizedType.UArray UReal))
-    (* y0 *); (UnsizedType.AutoDiffable, UReal) (* t0 *)
-  ; (DataOnly, UnsizedType.UArray UInt) (* len *)
-  ; (UnsizedType.AutoDiffable, UnsizedType.UArray UReal) (* ts *)
-  ; (UnsizedType.AutoDiffable, UnsizedType.UArray (UnsizedType.UArray UReal))
-    (* theta *)
-  ; (DataOnly, UnsizedType.UArray (UnsizedType.UArray UReal)) (* x_r *)
-  ; (DataOnly, UnsizedType.UArray (UnsizedType.UArray UInt)) ]
-(* x_i *)
-
 let rec pmx_ode_group add_func name args_list =
   match args_list with
   | [] -> ()
@@ -239,16 +228,6 @@ let pmx_solve_coupled_args =
 (* torsten functions *)
 let add_torsten_qualified add_func =
   let sol_names =
-    List.map
-      ~f:(fun sol -> "pmx_integrate_ode_group_" ^ sol)
-      ["adams"; "bdf"; "rk45"] in
-  List.iter
-    ~f:(fun sol ->
-      pmx_ode_group add_func sol
-        [ pmx_integrate_ode_group_arg @ pmx_integrate_ode_tol
-        ; pmx_integrate_ode_group_arg ] )
-    sol_names ;
-  let sol_names =
     List.map ~f:(fun sol -> "pmx_solve_" ^ sol) ["adams"; "bdf"; "rk45"] in
   List.iter ~f:(fun sol -> pmx_solve add_func sol pmx_solve_args) sol_names ;
   let sol_names =
@@ -320,14 +299,14 @@ let add_torsten_qualified add_func =
 
   (* linear interpolation *)
   add_func
-    ( "pmx_linear_interpolation"
+    ( "pmx_ln_interpolate"
     , ReturnType UReal
     , [ (AutoDiffable, UReal) (* x_out *); (AutoDiffable, UArray UReal) (* x *)
       ; (AutoDiffable, UArray UReal) ]
     , Mem_pattern.AoS ) ;
   (* y *)
   add_func
-    ( "pmx_linear_interpolation"
+    ( "pmx_ln_interpolate"
     , ReturnType (UArray UReal)
     , [ (AutoDiffable, UArray UReal) (* x_out *)
       ; (AutoDiffable, UArray UReal) (* x *); (AutoDiffable, UArray UReal) ]

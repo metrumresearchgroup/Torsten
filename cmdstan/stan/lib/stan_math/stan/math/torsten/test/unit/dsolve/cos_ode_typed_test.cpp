@@ -10,13 +10,13 @@
  * Use same solver functor type for both w & w/o tolerance control
  */
 template <typename solve_type, typename... Ts>
-using ode_test_tuple = std::tuple<solve_type, solve_type, Ts...>;
+using pmx_ode_test_tuple = std::tuple<solve_type, solve_type, Ts...>;
 
 /**
  * Outer product of test types
  */
 using cos_arg_test_types = boost::mp11::mp_product<
-    ode_test_tuple,
+    pmx_ode_test_tuple,
     ::testing::Types<pmx_ode_adams_functor, pmx_ode_bdf_functor, pmx_ode_ckrk_functor,
                      pmx_ode_rk45_functor> >;
 
@@ -94,4 +94,4 @@ TYPED_TEST_P(cos_arg_test, tol_grad) {
 REGISTER_TYPED_TEST_SUITE_P(cos_arg_test, y0_error, t0_error, ts_error,
                             one_arg_error, two_arg_error, rhs_wrong_size_error,
                             error_name, tol_error, value, grad, tol_grad);
-INSTANTIATE_TYPED_TEST_SUITE_P(TorstenOde, cos_arg_test, cos_arg_test_types);
+INSTANTIATE_TYPED_TEST_SUITE_P(TorstenODE, cos_arg_test, cos_arg_test_types);

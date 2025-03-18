@@ -1,5 +1,6 @@
 CXXFLAGS += -DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS -DBOOST_MPL_LIMIT_LIST_SIZE=30
 -include $(MATH)make/torsten_setup.mk
+-include $(STAN)make/torsten.mk
 
 ifdef MPI_ADAPTED_WARMUP
 

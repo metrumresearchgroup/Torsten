@@ -11,7 +11,6 @@ using stan::math::var;
 using stan::math::to_var;
 using torsten::PMXOneCptModel;
 using stan::math::integrate_ode_bdf;
-using torsten::pmx_integrate_ode_bdf;
 using torsten::PMXOneCptODE;
 using torsten::PKODEModel;
 using torsten::PMXOdeFunctorRateAdaptor;
@@ -117,7 +116,7 @@ TEST_F(TorstenOneCptModelTest, infusion_theta_grad) {
   y0[1] = 50;
 
   double dt = 2.5;
-  
+
   auto f1 = [&](const std::vector<double>& pars) {
     using model_t = PMXOneCptModel<double>;
     model_t model(pars[0], pars[1], pars[2]);
@@ -156,7 +155,7 @@ TEST_F(TorstenOneCptModelTest, ss_bolus_amt_grad) {
   model_t model(CL, V2, ka);
 
   double ii = 12.0;
-  
+
   int cmt = 0;
   auto f1 = [&](const std::vector<double>& amt_vec) {
     return model.solve(t0, amt_vec[0], rate[cmt-1], ii, cmt);
@@ -192,7 +191,7 @@ TEST_F(TorstenOneCptModelTest, ss_infusion_rate_grad) {
 
   double amt = 1800;
   double ii = 12.0;
-  
+
   int cmt = 0;
   auto f1 = [&](const std::vector<double>& rate_vec) {
     return model.solve(t0, amt, rate_vec[0], ii, cmt);
@@ -231,7 +230,7 @@ TEST_F(TorstenOneCptModelTest, ss_bolus_grad_vs_long_run_sd) {
 
   int cmt = 0;
   double ii = 12.0;
-  
+
   auto f1 = [&](const std::vector<double>& amt_vec) {
     double t = t0;
     Eigen::Matrix<double, -1, 1> y = y0;
@@ -267,7 +266,7 @@ TEST_F(TorstenOneCptModelTest, ss_infusion_grad_vs_long_run_sd) {
   int cmt = 0;
   double ii = 6.0;
   double amt = 1000;
-  
+
   auto f1 = [&](std::vector<var>& rate_vec) {
     var t = t0;
     Eigen::Matrix<var, -1, 1> y = y0;
@@ -325,7 +324,7 @@ TEST_F(TorstenOneCptModelTest, ss_infusion_by_long_run_sd_vs_bdf_result) {
   int cmt = 0;
   const double ii = 11.9;
   const double amt = 1000;
-  
+
   auto f1 = [&](std::vector<double>& rate_vec) {
     double t = t0;
     Eigen::Matrix<double, -1, 1> y = y0;
@@ -363,7 +362,7 @@ TEST_F(TorstenOneCptModelTest, ss_infusion_by_long_run_sd_vs_bdf_result) {
     }
     return y;
   };
-  
+
   std::vector<double> rate_vec(2, 0.0);
 
   {
@@ -392,7 +391,7 @@ TEST_F(TorstenOneCptModelTest, ss_infusion_grad_by_long_run_sd_vs_bdf_result) {
   int cmt = 0;
   const double ii = 11.9;
   const double amt = 1000;
-  
+
   auto f1 = [&](std::vector<var>& rate_vec) {
     var t = t0;
     Eigen::Matrix<var, -1, 1> y = y0;
@@ -430,7 +429,7 @@ TEST_F(TorstenOneCptModelTest, ss_infusion_grad_by_long_run_sd_vs_bdf_result) {
     }
     return y;
   };
-  
+
   std::vector<var> rate_vec(2, 0.0);
 
   {
@@ -460,7 +459,7 @@ TEST_F(TorstenOneCptModelTest, ss_bolus_grad_by_long_run_sd_vs_bdf_result) {
 
   int cmt = 0;
   const double ii = 11.9;
-  
+
   auto f1 = [&](std::vector<var>& amt_vec) {
     double t = t0;
     Eigen::Matrix<var, -1, 1> y = y0;
@@ -498,7 +497,7 @@ TEST_F(TorstenOneCptModelTest, ss_bolus_grad_by_long_run_sd_vs_bdf_result) {
     y(cmt - 1) -= amt_vec[0];
     return y;
   };
-  
+
   std::vector<var> amt_vec{300.0};
 
   {
@@ -536,7 +535,7 @@ TEST_F(TorstenOneCptModelTest, ss_bolus) {
   double amt = 1800;
   int cmt = 1;
   double ii = 12.0;
-  
+
   auto y1 = model.solve(t0, amt, rate_var[cmt - 1], ii, cmt);
   EXPECT_FLOAT_EQ(y1(0).val(), 1.00330322392E-3);
   EXPECT_FLOAT_EQ(y1(1).val(), 2.07672937446E+0);
@@ -588,7 +587,7 @@ TEST_F(TorstenOneCptModelTest, ss_multi_truncated_infusion) {
   double amt = 1800;
   int cmt = 1;
   double ii = 12.0;
-  
+
   auto y1 = model.solve(t0, amt, rate_var[cmt - 1], ii, cmt);
   EXPECT_FLOAT_EQ(y1(0).val(), 0.00312961339574);
   EXPECT_FLOAT_EQ(y1(1).val(), 3.61310672484);
@@ -642,7 +641,7 @@ TEST_F(TorstenOneCptModelTest, ss_const_infusion) {
   double amt = 1800;
   int cmt = 1;
   double ii = 0.0;
-  
+
   auto y1 = model.solve(t0, amt, rate_var[cmt - 1], ii, cmt);
   EXPECT_FLOAT_EQ(y1(0).val(), 916.666666667);
   EXPECT_FLOAT_EQ(y1(1).val(), 1760);

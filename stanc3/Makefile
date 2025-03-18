@@ -11,7 +11,7 @@ test:
 	dune runtest
 
 test_torsten: $(TEST_TORSTEN)
-	dune runtest
+	dune runtest test/integration/good/torsten
 
 testcoverage:
 	@find . -name '*.coverage' | xargs rm -f

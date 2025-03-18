@@ -27,5 +27,5 @@ using forced_harm_osc_ts_test_types = boost::mp11::mp_product<
 TYPED_TEST_SUITE_P(forced_harm_osc_ts_test);
 TYPED_TEST_P(forced_harm_osc_ts_test, ts_ad) { this->test_ts_ad(); }
 REGISTER_TYPED_TEST_SUITE_P(forced_harm_osc_ts_test, ts_ad);
-INSTANTIATE_TYPED_TEST_SUITE_P(StanOde, forced_harm_osc_ts_test,
+INSTANTIATE_TYPED_TEST_SUITE_P(TorstenODE, forced_harm_osc_ts_test,
                                forced_harm_osc_ts_test_types);

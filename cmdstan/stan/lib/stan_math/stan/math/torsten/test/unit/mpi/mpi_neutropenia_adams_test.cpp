@@ -4,7 +4,6 @@
 #include <stan/math/rev/core.hpp>
 #include <test/unit/math/rev/fun/util.hpp>
 #include <stan/math/torsten/dsolve/pmx_cvodes_integrator.hpp>
-#include <stan/math/torsten/dsolve/pmx_integrate_ode_adams.hpp>
 #include <stan/math/torsten/dsolve/pmx_integrate_ode_group_adams.hpp>
 #include <stan/math/torsten/mpi.hpp>
 #include <stan/math/torsten/test/unit/pmx_ode_test_fixture.hpp>
@@ -29,9 +28,8 @@
 TORSTEN_MPI_SESSION_INIT;
 
 TEST_F(TorstenOdeTest_neutropenia, fwd_sensitivity_theta_adams_mpi) {
-  
+
   using torsten::pmx_integrate_ode_group_adams;
-  using torsten::pmx_integrate_ode_adams;
   using stan::math::var;
   using std::vector;
 
@@ -45,7 +43,7 @@ TEST_F(TorstenOdeTest_neutropenia, fwd_sensitivity_theta_adams_mpi) {
   vector<double> ts_m;
   ts_m.reserve(np * ts0.size());
   for (int i = 0; i < np; ++i) ts_m.insert(ts_m.end(), ts0.begin(), ts0.end());
-  
+
   vector<vector<double> > y0_m (np, y0);
   vector<vector<var> > theta_var_m (np, theta_var);
   vector<vector<double> > x_r_m (np, x_r);

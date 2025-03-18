@@ -1,6 +1,7 @@
 #include <stan/math/rev.hpp>
 #include <gtest/gtest.h>
 #include <stan/math/torsten/dsolve/pmx_integrate_ode_rk45.hpp>
+#include <stan/math/torsten/dsolve/pmx_integrate_ode_adams.hpp>
 #include <stan/math/torsten/dsolve/pmx_integrate_ode_group_rk45.hpp>
 #include <stan/math.hpp>
 #include <stan/math/rev/core.hpp>

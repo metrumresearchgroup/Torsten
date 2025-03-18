@@ -10,13 +10,13 @@
  * Use same solver functor type for both w & w/o tolerance control
  */
 template <typename solve_type, typename... Ts>
-using ode_test_tuple = std::tuple<solve_type, solve_type, Ts...>;
+using pmx_ode_test_tuple = std::tuple<solve_type, solve_type, Ts...>;
 
 /**
  * Outer product of test types
  */
 using harmonic_oscillator_test_types = boost::mp11::mp_product<
-    ode_test_tuple,
+    pmx_ode_test_tuple,
     ::testing::Types<pmx_ode_adams_functor, pmx_ode_bdf_functor, pmx_ode_ckrk_functor,
                      pmx_ode_rk45_functor>,
     ::testing::Types<double, stan::math::var_value<double>>,  // t
@@ -35,7 +35,7 @@ TYPED_TEST_P(harmonic_oscillator_test, value) {
 }
 REGISTER_TYPED_TEST_SUITE_P(harmonic_oscillator_test, no_error,
                             error_conditions, value);
-INSTANTIATE_TYPED_TEST_SUITE_P(StanOde, harmonic_oscillator_test,
+INSTANTIATE_TYPED_TEST_SUITE_P(TorstenODE, harmonic_oscillator_test,
                                harmonic_oscillator_test_types);
 
 TYPED_TEST_SUITE_P(harmonic_oscillator_data_test);
@@ -49,11 +49,11 @@ TYPED_TEST_P(harmonic_oscillator_data_test, value) {
 }
 REGISTER_TYPED_TEST_SUITE_P(harmonic_oscillator_data_test, bad_param_and_data,
                             value);
-INSTANTIATE_TYPED_TEST_SUITE_P(StanOde, harmonic_oscillator_data_test,
+INSTANTIATE_TYPED_TEST_SUITE_P(TorstenODE, harmonic_oscillator_data_test,
                                harmonic_oscillator_test_types);
 
 using harmonic_oscillator_integrate_ode_test_types = boost::mp11::mp_product<
-    ode_test_tuple,
+    pmx_ode_test_tuple,
     ::testing::Types<integrate_ode_rk45_functor, integrate_ode_bdf_functor,
                      integrate_ode_adams_functor>,
     ::testing::Types<double, stan::math::var_value<double>>,  // t
@@ -66,5 +66,5 @@ TYPED_TEST_P(harmonic_oscillator_bad_ode_test, bad_ode_error) {
   this->test_bad_ode();
 }
 REGISTER_TYPED_TEST_SUITE_P(harmonic_oscillator_bad_ode_test, bad_ode_error);
-INSTANTIATE_TYPED_TEST_SUITE_P(StanOde, harmonic_oscillator_bad_ode_test,
+INSTANTIATE_TYPED_TEST_SUITE_P(TorstenODE, harmonic_oscillator_bad_ode_test,
                                harmonic_oscillator_integrate_ode_test_types);

@@ -10,7 +10,6 @@ using torsten::PMXLinODEModel;
 using torsten::PMXLinODE;
 using torsten::PMXOdeFunctorRateAdaptor;
 using stan::math::integrate_ode_bdf;
-using torsten::pmx_integrate_ode_bdf;
 using Eigen::Matrix;
 using Eigen::Dynamic;
 using stan::math::matrix_exp;
@@ -33,7 +32,7 @@ TEST_F(TorstenTwoCptModelTest, linode_dbl) {
 
   torsten::PKRec<double> y1(y0), y2(y0);
   model1.solve(y1, t0, ts[0], rate);
-  model2.solve(y2, t0, ts[0], rate);  
+  model2.solve(y2, t0, ts[0], rate);
 }
 
 TEST_F(TorstenTwoCptModelTest, linode_rate_var) {
@@ -79,7 +78,7 @@ TEST_F(TorstenTwoCptModelTest, linode_solver) {
   y0[2] = 800;
   ts[0] = 10.0;
   ts.resize(1);
-  Eigen::Matrix<var,-1,-1> theta{to_var(linode_par)};  
+  Eigen::Matrix<var,-1,-1> theta{to_var(linode_par)};
   std::vector<stan::math::var> rate_var{to_var(rate)};
   using model_t = PMXLinODEModel<var>;
   model_t model(theta, y0.size());
@@ -95,9 +94,9 @@ TEST_F(TorstenTwoCptModelTest, linode_solver) {
 
   std::vector<double> g1, g2;
   for (int i = 0; i < y0.size(); ++i) {
-    stan::math::set_zero_all_adjoints();    
+    stan::math::set_zero_all_adjoints();
     y1[0][i].grad(theta_vec, g1);
-    stan::math::set_zero_all_adjoints();    
+    stan::math::set_zero_all_adjoints();
     y2(i).grad(theta_vec, g2);
     for (size_t j = 0; j < theta.size(); ++j) {
       EXPECT_NEAR(g1[j], g2[j], 1.E-5);
@@ -105,9 +104,9 @@ TEST_F(TorstenTwoCptModelTest, linode_solver) {
   }
 
   for (int i = 0; i < y0.size(); ++i) {
-    stan::math::set_zero_all_adjoints();    
+    stan::math::set_zero_all_adjoints();
     y1[0][i].grad(rate_var, g1);
-    stan::math::set_zero_all_adjoints();    
+    stan::math::set_zero_all_adjoints();
     y2(i).grad(rate_var, g2);
     for (size_t j = 0; j < rate.size(); ++j) {
       EXPECT_NEAR(g1[j], g2[j], 1.E-5);
@@ -136,9 +135,9 @@ TEST_F(TorstenTwoCptModelTest, linode_solver_zero_rate) {
 
   std::vector<double> g1, g2;
   for (int i = 0; i < y0.size(); ++i) {
-    stan::math::set_zero_all_adjoints();    
+    stan::math::set_zero_all_adjoints();
     y1[0][i].grad(theta_vec, g1);
-    stan::math::set_zero_all_adjoints();    
+    stan::math::set_zero_all_adjoints();
     y2(i).grad(theta_vec, g2);
     for (size_t j = 0; j < theta.size(); ++j) {
       EXPECT_NEAR(g1[j], g2[j], 1.E-6);

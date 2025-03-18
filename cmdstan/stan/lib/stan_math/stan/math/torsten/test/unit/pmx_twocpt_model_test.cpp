@@ -1,7 +1,6 @@
 #include <stan/math.hpp>
 #include <stan/math/rev/core.hpp>
 #include <stan/math/torsten/dsolve/pmx_ode_integrator.hpp>
-#include <stan/math/torsten/dsolve/pmx_integrate_ode_bdf.hpp>
 #include <stan/math/torsten/dsolve/pmx_ode_bdf.hpp>
 #include <test/unit/math/rev/fun/util.hpp>
 #include <stan/math/torsten/test/unit/pmx_cpt_model_test_fixture.hpp>
@@ -13,7 +12,6 @@ using stan::math::to_var;
 using stan::math::vector_v;
 using stan::math::matrix_v;
 using torsten::PMXTwoCptModel;
-using torsten::pmx_integrate_ode_bdf;
 using stan::math::integrate_ode_bdf;
 using torsten::PMXTwoCptODE;
 using torsten::PMXOdeFunctorRateAdaptor;
@@ -968,8 +966,6 @@ TEST_F(TorstenTwoCptModelTest, ss_solver_const_infusion) {
   using stan::math::var;
   using stan::math::to_var;
   using torsten::PMXTwoCptModel;
-  using torsten::pmx_integrate_ode_bdf;
-  using stan::math::integrate_ode_bdf;
   using torsten::PMXTwoCptODE;
 
   rate[0] = 1200;

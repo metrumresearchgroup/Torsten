@@ -9,7 +9,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <stan/math/torsten/univariate_integral.hpp>
 
 namespace torsten{
 
