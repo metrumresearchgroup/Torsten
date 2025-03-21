@@ -26,7 +26,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, macos-13]
 
     steps:
     - uses: n1hility/cancel-previous-runs@v3
@@ -49,12 +49,17 @@ jobs:
     - name: Add Torsten to PATH
       shell: bash
       run: echo "./cmdstan/stan/lib/stan_math/stan/math/torsten" >> $GITHUB_PATH
-    - name: Build Torsten example model pk2cpt
+    - name: Build Torsten
+      working-directory: ./cmdstan
+      shell: bash
+      run: |
+        make -j2 build
+    - name: Build example model pk2cpt
       working-directory: ./cmdstan
       shell: bash
       run: |
         make -j2 ../example-models/pk2cpt/pk2cpt
-    - name: Run Torsten example model pk2cpt
+    - name: Run example model pk2cpt
       working-directory: ./example-models/pk2cpt
       shell: bash
       run: |

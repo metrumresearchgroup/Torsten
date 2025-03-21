@@ -1,12 +1,12 @@
 name: traffic
 
 on:
-  schedule: 
+  schedule:
     # runs once a week on sunday
     - cron: "55 23 * * 0"
     # manually
   workflow_dispatch:
-    
+
 jobs:
   # This workflow contains a single job called "traffic"
   traffic:
@@ -16,16 +16,16 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         ref: "traffic"
-    
+
     # Calculates traffic and clones and stores in CSV file
-    - name: GitHub traffic 
-      uses: sangonzal/repository-traffic-action@v0.1.4
+    - name: GitHub traffic
+      uses: sangonzal/repository-traffic-action@v.0.1.6
       env:
-        TRAFFIC_ACTION_TOKEN: ${{ secrets.TRAFFIC_ACTION_TOKEN }} 
-     
+        TRAFFIC_ACTION_TOKEN: ${{ secrets.TRAFFIC_ACTION_TOKEN }}
+
     # Commits files to repository
     - name: Commit changes
       uses: EndBug/add-and-commit@v4
@@ -33,4 +33,4 @@ jobs:
         author_name: Yi Zhang
         message: "GitHub traffic"
         add: "./traffic/*"
-        ref: "traffic"  # commits to branch "traffic" 
+        ref: "traffic"  # commits to branch "traffic"
