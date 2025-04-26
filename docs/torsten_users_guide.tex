@@ -4,7 +4,7 @@
               \newcommand\subtitle[1]{\newcommand\mrgsubtitle{#1}}
 \newcommand\mrgproject{}
 \newcommand\mrgtitle{Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan}
-\newcommand\mrgsubtitle{\large{User's Guide} \linebreak (Torsten Version 0.91.1, Stan version 2.33.1)}
+\newcommand\mrgsubtitle{\large{User's Guide} \linebreak (Torsten Version 0.91.2, Stan version 2.33.1)}
 \include{mrgtitlepage}
 \usepackage{imakeidx}
 \makeindex
@@ -83,7 +83,7 @@ One may use the following to cite Torsten.
 \begin{minted}[breaklines=true,fontsize=\footnotesize,breakanywhere=true]{r}
 @misc{Torsten,
   author = {Torsten Development Team},
-  title = {Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan (v0.91.1)},
+  title = {Torsten: A Pharmacokinetic/Pharmacodynamic Model Library for Stan (v0.91.2)},
   year  = {2025},
   url   = {https://github.com/metrumresearchgroup/Torsten},
 }
@@ -207,6 +207,10 @@ parameter (in a dosing compartment) evaluated at \(t_{\text{lag}} = 0\).
 \chapter{Changelog}
 \label{sec:org6ee814c}
 \begin{itemize}
+  \item Version 0.91.2 \textit{<2025-04-26 Sat>}
+\begin{itemize}
+\item Fix template compilation failure for recent clang versions.
+\end{itemize}
   \item Version 0.91.1 \textit{<2025-02-28 Fri>}
 \begin{itemize}
 \item Changed
