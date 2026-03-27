@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+# run from stan_math with qsub -pe orte num_of_slots script_name.qsub
+#
+#$ -V
+#$ -cwd
+#$ -j y
+#$ -S /bin/bash
+
+./ttpn2_pmx_solve sample num_warmup=500 num_samples=500 random seed=3315137131 data file=ttpn2.data.R init=ttpn2.init.R output file=pmx_sample.csv
