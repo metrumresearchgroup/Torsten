@@ -1,0 +1,3 @@
+[submodule "stan/math/torsten"]
+	path = stan/math/torsten
+	url = https://github.com/metrumresearchgroup/torsten_math.git
