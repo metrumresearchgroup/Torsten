@@ -1,5 +1,0 @@
-ifdef MPI_ADAPTED_WARMUP
-  CXXFLAGS += -DSTAN_LANG_MPI -DMPI_ADAPTED_WARMUP
-  CC=mpicxx
-  CXX=mpicxx
-endif

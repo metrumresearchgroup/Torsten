@@ -1,1 +1,0 @@
-data { simplex[T ~ normal(0,1)] x;}
