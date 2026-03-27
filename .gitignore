@@ -1,0 +1,23 @@
+# Ignore all
+# *
+
+# Unignore all dirs
+!*/
+
+# ignore all temp tilder files
+*.*~
+
+# ignore test binaries
+*_test
+
+### Above combination will ignore all files without extension ###
+
+# specific types to ignore
+*.d
+*.o
+*.cpp~
+*.hpp~
+*.xml
+
+# specific folders to ignore
+*.dSYM/
