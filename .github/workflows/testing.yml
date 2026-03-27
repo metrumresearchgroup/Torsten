@@ -1,0 +1,48 @@
+name: Testing
+
+env:
+  clangppVersion: '6.0'
+
+on:
+  pull_request:
+    branches: [ develop, master ]
+  push:
+    branches: [ develop, master ]
+    paths-ignore:
+      - 'licenses/**'
+      - 'LICENSE.md'
+      - 'README.md'
+      - 'RELEASE-NOTES.txt'
+  workflow_dispatch:
+
+jobs:
+  run-tests:
+    name: run stan tests
+    runs-on: ubuntu-24.04
+    container: stanorg/ci:gpu
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v3
+        with:
+          submodules:  true
+      - name: Run tests
+        run: |
+          echo "CXX=clang++-${{ env.clangppVersion }}" >> make/local
+          echo "O=0" >> make/local
+          python runTests.py -j 2 src/test/unit
+
+  run-fvar-var-tests:
+    name: run stan fvar-var model tests
+    runs-on: ubuntu-24.04
+    container: stanorg/ci:gpu
+    steps:
+      - name: Check out source code
+        uses: actions/checkout@v3
+        with:
+          submodules:  true
+      - name: Run tests
+        run: |
+          echo "CXX=clang++-${{ env.clangppVersion }}" >> make/local
+          echo "CXXFLAGS+=-DSTAN_MODEL_FVAR_VAR" >> make/local
+          echo "O=0" >> make/local
+          python runTests.py -j 2 src/test/unit/model/
