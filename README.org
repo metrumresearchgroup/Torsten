@@ -1,10 +1,10 @@
 #+TITLE: Torsten: library of C++ functions that support applications of Stan in Pharmacometrics
 #+AUTHOR: Metrum Research Group
-#+DATE: <2021-06-28 Mon>
-#+EMAIL: mailto:billg@metrumrg.com mailto:yiz@metrumrg.com
+#+DATE: <2026-03-28 Sat>
+#+EMAIL: mailto:yz@yizh.org
 #+OPTIONS: title:t, toc:nil, num:nil
 
 [[https://raw.githubusercontent.com/metrumresearchgroup/Torsten/hugo_doc/docs/hugo/static/images/torsten-white-stan-cropped.png]]
 
 Torsten is a collection of Stan functions to facilitate analysis of
-pharmacometric data. See [[https://github.com/metrumresearchgroup/Torsten/blob/master/docs/torsten_users_guide.pdf][the user guide]] for more details.
+pharmacometric data. See [[https://github.com/metrumresearchgroup/Torsten/blob/master/docs/torsten_users_guide.pdf][the user guide]] for details.
