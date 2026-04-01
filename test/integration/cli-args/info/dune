@@ -1,0 +1,20 @@
+(rule
+ (targets info.output)
+ (deps
+  (package stanc)
+  info.stan
+  included.stan
+  includes/recursive.stan
+  includes/another_include.stan)
+ (action
+  (with-stdout-to
+   %{targets}
+   (run
+    %{project_root}/test/integration/run_bin_on_args.exe
+    "%{bin:stanc} --include-paths=.,includes --info "
+    info.stan))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff info.expected info.output)))
