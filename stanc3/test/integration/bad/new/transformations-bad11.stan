@@ -1,1 +1,0 @@
-data { vector<upper = + 0.0 while> x;}

@@ -1,1 +1,0 @@
-data { vector[1]^}

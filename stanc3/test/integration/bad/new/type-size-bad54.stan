@@ -1,1 +1,0 @@
-model { matrix[T~normal(0,1),1] x;}

@@ -1,3 +1,0 @@
-model {
-  array real x;
-}
