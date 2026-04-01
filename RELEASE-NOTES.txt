@@ -1,0 +1,86 @@
+CMDSTAN RELEASE NOTES
+======================================================================
+
+v2.38.0 (13 January 2026)
+======================================================================
+
+ - Removed `STAN_CPP_OPTIMS` from the `model info` command. It was never set to the correct value. (#1332)
+ 
+v2.37.0 (2 September 2025)
+======================================================================
+
+ - Changed the default value of sig_figs to 8. This should reduce errors when using the output of CmdStan as further input to Stan programs. (#1308)
+ - Updated the behavior of filename arguments when requesting multiple chains. In addition to the existing behavior, users can now pass a comma-separated list of filenames to specify the output files for each chain. This allows for more flexibility in naming output files when running multiple chains. (#1312, #1318)
+ - Added more information when encountering a system error like an unwriteable file or a full disk. (#1316)
+ - Improved dependency discovery when running CmdStan's test suite. (#1314)
+ - Removed the mips64el build of CmdStan. (#1319)
+ - Re-added ESS/s to stansummary. (#1320)
+ - Fixed an issue with the diagnose command using the wrong number of iterations when calculating percentages. (#1321)
+
+v2.36.0 (10 December 2024)
+======================================================================
+
+ - No longer force fix_param when model has no parameters. (#1288)
+ - Updated stansummary to use split, rank-normalized Rhat and ESS. (#1301)
+ - Fixed stansummary crashing if it is run on a csv file without any `__` columns (#1283)
+ - Fixed stansummary not rebuilding when a dependent file changes (#1283)
+ - Removed support for adding makefile variables in `~/.config/stan/make.local`. Use the `make/local` file in the CmdStan directory instead. (#1282, #1284)
+ - Windows: Don't try to copy tbb.dll if TBB_TARGETS is undefined. (#1285)
+
+v2.35.0 (3 June 2024)
+======================================================================
+
+ - Exposes new arguments for `laplace`:
+	`calculate_lp` is a boolean subarg of `laplace` which controls whether or not log_prob is called for each approximate draw. Default is true (existing behavior).
+	The `diagnostic_file` argument of `output` now exposes information from the mode, namely the gradient and Hessian.
+	(#1246)
+ - CmdStan will now halt if a filesystem error prevents writing to one of the output files. (#1249)
+ - The `generate_quantities` method now supports the `num_chains` arguments to perform downstream analysis in parallel. (#1256)
+ - `log_prob` now prevents the same CSV from being read and written to at the same time. (#1259)
+ - Boolean arguments to cmdstan accept `true` and `false` in addition to 1 and 0. (#1260)
+ - `mingw32-make` is no longer necessary on Windows, the standard `make` program is sufficient. (#1262)
+ - Improved the logic around the `USER_HEADER` variable to give an informative error when it is misspecified. (#1264)
+ - `make clean` deletes more files, hopefully making it so `make clean-all` needs to be run far less often. (#1267)
+ - Fixed an issue preventing the precompiled header from being used with GCC. (#1268)
+ - Allow `num_warmup=0` to be paired with `adapt engaged=0` when the algorithm is the `fixed_param` sampler. (#1277)
+
+v2.34.1 (23 January 2024)
+======================================================================
+
+- Fixed an indexing error which could lead to crashes (#1239)
+- Fixed an issue where output was swallowed by the `log_prob` method if an error occurred (#1235)
+- Fixed an issue where floating point arguments would be echoed back to the user with insufficient precision (#1243)
+
+v2.34.0 (16 January 2024)
+======================================================================
+
+- Add option `adaptation save_metric=1` to save adapted metric in separate JSON file with elements "stepsize", "metric_type" and "inv_metric" (#1203, #1229)
+- New argument under `output save_cmdstan_config`. If set to `1`, creates `output_config.json` which contains the argument tree and extra information (equivalent to the CSV file header) (#1204)
+- Adds `psis_resample` and `calculate_lp` as options for Pathfinder (#1234)
+- Removed usages of boost::lexical_cast (#1205)
+- Resolved various compiler warnings (#1206)
+- Fixed a linking issue when building `stansummary` (#1209)
+- Fixed an issue where the default values of some arguments were not printed in sufficient precision (#1215)
+- Improved the error users see if they are missing the stan or stan_math submodules (#1217)
+- Improved the dependency detection in the build system (#1219)
+- Added a warning when more PSIS draws are requested than total number of draws from single-pathfinders (#1221)
+- Disallowed pathfinder when the model has no parameters. (#1221)
+- Fixed a typo in `make help-dev`. (#1225)
+- Fixed several edge cases and unexpected behaviors in the way output filenames were generated for multi-chain sampling and multi-path Pathfinder (#1228)
+- Added a `version.hpp` header (#1231)
+
+v2.33.1 (13 September 2023)
+======================================================================
+
+- Update stanc3 binaries to v2.33.1
+
+v2.33.0 (5 September 2023)
+======================================================================
+
+- Exposed `pathfinder` algorithm. (#1155)
+- Added `CXX_MAJOR` and `CXX_MINOR` to the name of the precompiled header file when it is enabled. The goal is to prevent the annoying errors from clang updates etc. (#1171)
+- Removed use of `boost::lexical_cast` wherever possible. (#1172)
+- Fixes various typos in output messages and comments. (#1174)
+- Enabled the `num_chains` argument on all HMC variants other than the `static` engine. (#1176)
+- Fixed a bug where the `num_chains` argument was not properly using multiple init files (#1191)
+- A warning is now shown when users provide "R dump" formatted inputs to CmdStan, letting them know that this format is essentially unsupported and new features like Tuples are not being added to it. (#1177, #1183)

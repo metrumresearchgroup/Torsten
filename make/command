@@ -1,0 +1,19 @@
+src/cmdstan/stansummary.d: DEPTARGETS = -MT bin/cmdstan/stansummary.o
+# don't build anything during a `make clean`
+ifneq ($(MAKECMDGOALS),)
+ifeq ($(filter clean%,$(MAKECMDGOALS)),)
+-include src/cmdstan/stansummary.d
+endif
+endif
+
+bin/cmdstan/%.o : src/cmdstan/%.cpp
+	@mkdir -p $(dir $@)
+	$(COMPILE.cpp) -fvisibility=hidden $< $(OUTPUT_OPTION)
+
+.PRECIOUS: bin/print$(EXE) bin/stansummary$(EXE) bin/diagnose$(EXE)
+bin/print$(EXE) bin/stansummary$(EXE) bin/diagnose$(EXE) : CPPFLAGS_MPI =
+bin/print$(EXE) bin/stansummary$(EXE) bin/diagnose$(EXE) : LDFLAGS_MPI =
+bin/print$(EXE) bin/stansummary$(EXE) bin/diagnose$(EXE) : LDLIBS_MPI =
+bin/print$(EXE) bin/stansummary$(EXE) bin/diagnose$(EXE) : bin/%$(EXE) : bin/cmdstan/%.o $(TBB_TARGETS)
+	@mkdir -p $(dir $@)
+	$(LINK.cpp) $^ $(LDLIBS) $(OUTPUT_OPTION)
