@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+# run from stan_math with qsub -pe orte num_of_slots script_name.qsub
+#
+#$ -V
+#$ -cwd
+#$ -j y
+#$ -S /bin/bash
+
+mpiexec test/unit/math/torsten/mpi/pk_integrate_perf_test
