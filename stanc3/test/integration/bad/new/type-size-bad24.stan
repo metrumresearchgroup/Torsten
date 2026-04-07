@@ -1,1 +1,0 @@
-data { ordered[0.0 while] x;}

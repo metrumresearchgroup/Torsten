@@ -1,4 +1,0 @@
-transformed parameters {
-
-}
-mdel {}

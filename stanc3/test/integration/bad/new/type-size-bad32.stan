@@ -1,1 +1,0 @@
-data { array[] real T;}

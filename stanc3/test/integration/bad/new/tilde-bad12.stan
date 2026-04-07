@@ -1,1 +1,0 @@
-model { 1.0 ~ normal while

@@ -1,3 +1,0 @@
-model {
-  tuple() y = ();
-}
