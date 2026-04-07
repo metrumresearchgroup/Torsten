@@ -1,0 +1,116 @@
+name: Torsten Math tests
+
+on:
+  pull_request:
+    branches: [ torsten-develop, torsten-master ]
+  push:
+    branches: [ torsten-develop, torsten-master, torsten-workflow ]
+    paths-ignore:
+      - 'doygen/**'
+      - 'hooks/**'
+      - 'licenses/**'
+      - 'LICENSE.md'
+      - 'README.md'
+      - 'RELEASE-NOTES.txt'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'The branch to build'
+        required: true
+        default: 'torsten-develop'
+
+jobs:
+  nix:
+    name: ubuntu/macos tests
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-13]
+
+    steps:
+    - uses: n1hility/cancel-previous-runs@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+      if: "!startsWith(github.ref, 'refs/tags/') && github.ref != 'refs/heads/torsten-master' && github.ref != 'refs/heads/torsten-develop'"
+
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    - name: Print g++ & make version and path
+      shell: bash
+      run: |
+        g++ --version
+        make --version
+    - name: Build Math libs
+      shell: bash
+      run: make -j2 -f make/standalone math-libs
+    - name: Add TBB to PATH
+      shell: bash
+      run: echo "./lib/tbb" >> $GITHUB_PATH
+    - name: Add Torsten to PATH
+      shell: bash
+      run: echo "./stan/math/torsten" >> $GITHUB_PATH
+    - name: Run Torsten unit test
+      shell: bash
+      run: |
+        python runTests.py -j2 stan/math/torsten/test/unit
+
+    - name: Upload gtest_output xml
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: gtest_outputs_xml
+        path: 'stan/math/torsten/**/*_test.xml'
+
+  win:
+    name: windows tests
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+    - uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: 4.1.3
+
+    - name: Set path for Rtools40
+      if: runner.os == 'Windows'
+      run: echo "C:/rtools40/usr/bin;C:/rtools40/mingw64/bin" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+    - name: Install mingw32-make and check toolchain path
+      if: runner.os == 'Windows'
+      run: |
+        pacman -Syu mingw-w64-x86_64-make --noconfirm
+        g++ --version
+        Get-Command g++ | Select-Object -ExpandProperty Definition
+        mingw32-make --version
+        Get-Command mingw32-make | Select-Object -ExpandProperty Definition
+      shell: powershell
+
+    - name: Build Math libs
+      shell: powershell
+      run: |
+        Add-Content make\local "O=1`n"
+        mingw32-make -f make/standalone math-libs -j2
+    - name: Add TBB to PATH
+      shell: powershell
+      run: echo "D:/a/math/math/lib/tbb" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+    - name: Add Torsten to PATH
+      shell: powershell
+      run: echo "D:/a/math/math/stan/math/torsten" | Out-File -Append -FilePath $env:GITHUB_PATH -Encoding utf8
+    - name: Run Torsten unit test
+      shell: powershell
+      run: python runTests.py -j2 stan/math/torsten/test/unit -f stan/math/torsten/test/unit
+    - name: Upload gtest_output xml
+      uses: actions/upload-artifact@v4
+      if: failure()
+      with:
+        name: gtest_outputs_xml
+        path: 'stan/math/torsten/**/*_test.xml'
