@@ -1,0 +1,41 @@
+TTPN model from Hands-on session 4 of the advanced Stan by
+Bill Gillespie
+* Build
+** Edit/Add =cmdstan/make/local=
+#+BEGIN_SRC sh
+  TORSTEN_MPI = 1                                         # flag on torsten's MPI solvers
+  CXXFLAGS += -isystem /usr/local/include                 # path to MPI library's headers
+#+END_SRC
+** Build in =cmdstan=
+#+BEGIN_SRC sh
+  make ../example-models/ttpn2/ttpn2_group
+#+END_SRC
+* Run
+#+BEGIN_SRC sh
+mpiexec -n 2 ttpn2_group sample num_warmup=500 num_samples=500 data file=ttpn2.data.R init=ttpn2.init.R
+#+END_SRC
+
+* Results
+Two binaries are built and used to run: 
+- sequential run using Torsten's =rk45= solver
+  =pmx_solve_rk45= by looping through the population.
+- MPI run using Torsten's group solver
+  =pmx_solve_group_rk45= (with 1, 2,
+  4, 8, 16, 32, 64 processes, respectively). Note that with
+  64 processes the number of processes is greater than the
+  number of subjects(60).
+
+The wall time of sequential runs and MPI runs(in seconds)
+#+caption: Wall time(s)
+| run                   | wall time(s) | Speedup |
+|-----------------------+--------------+---------|
+| sequential pmx(v0.86) |         1251 |   1.000 |
+| MPI pmx (n_proc=1)    |         1419 |   0.882 |
+| MPI pmx (n_proc=2)    |          862 |   1.451 |
+| MPI pmx (n_proc=4)    |          501 |   2.497 |
+| MPI pmx (n_proc=8)    |          411 |   3.044 |
+| MPI pmx (n_proc=16)   |          289 |   4.329 |
+| MPI pmx (n_proc=32)   |          263 |   4.757 |
+| MPI pmx (n_proc=64)   |          230 |   5.439 |
+#+TBLFM: $3=@2$2/$2;%0.3f::
+
