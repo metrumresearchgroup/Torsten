@@ -1,3 +1,4 @@
+  $ ../../../../../install/default/bin/stanc --auto-format pmx_ln_interp.stan
 data {
   int nObs;
   array[nObs] real xObs;
@@ -34,6 +35,8 @@ model {
   
 }
 
+[exit 0]
+  $ ../../../../../install/default/bin/stanc --auto-format pmx_solve_group.stan
 functions {
   vector ode(real t, vector y, array[] real theta, array[] real x,
              array[] int x_int) {
@@ -236,6 +239,8 @@ model {
   y_p ~ normal(0, 1);
 }
 
+[exit 0]
+  $ ../../../../../install/default/bin/stanc --auto-format pmx_solve_linode.stan
 data {
   // General data items
   int<lower=1> nID;
@@ -449,6 +454,8 @@ generated quantities {
   }
 }
 
+[exit 0]
+  $ ../../../../../install/default/bin/stanc --auto-format pmx_solve_ode.stan
 functions {
   vector ode_rhs(real t, vector x, array[] real parms, array[] real x_r,
                  array[] int x_i) {
@@ -624,6 +631,8 @@ model {
   // ignore
 }
 
+[exit 0]
+  $ ../../../../../install/default/bin/stanc --auto-format pmx_solve_onecpt.stan
 data {
   int<lower=1> nt; // number of events
   int<lower=1> nObs; // number of observation
@@ -658,6 +667,8 @@ model {
   // omit
 }
 
+[exit 0]
+  $ ../../../../../install/default/bin/stanc --auto-format pmx_solve_onecpt_effcpt.stan
 data {
   int<lower=1> nt; // number of events
   int<lower=1> nObs; // number of observation
@@ -695,6 +706,8 @@ model {
   // omit
 }
 
+[exit 0]
+  $ ../../../../../install/default/bin/stanc --auto-format pmx_solve_twocpt.stan
 data {
   int<lower=1> nt; // number of events
   int<lower=1> nObs; // number of observation
@@ -733,6 +746,8 @@ model {
   // omit
 }
 
+[exit 0]
+  $ ../../../../../install/default/bin/stanc --auto-format pmx_solve_twocpt_effcpt.stan
 data {
   int<lower=1> nt; // number of events
   int<lower=1> nObs; // number of observation
@@ -774,6 +789,8 @@ model {
   // omit
 }
 
+[exit 0]
+  $ ../../../../../install/default/bin/stanc --auto-format pmx_solve_twocpt_ode.stan
 functions {
   vector FK_ODE(real t, vector y, vector y_pk, array[] real theta,
                 array[] real rdummy, array[] int idummy) {
@@ -899,4 +916,4 @@ model {
   
 }
 
-
+[exit 0]
