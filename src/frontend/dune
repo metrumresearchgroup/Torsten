@@ -1,0 +1,84 @@
+(library
+ (name frontend)
+ (public_name stanc.frontend)
+ (libraries
+  std
+  menhirLib
+  yojson
+  fmt
+  middle
+  stan_math_signatures
+  grace
+  grace.ansi_renderer
+  grace.json_conv)
+ (instrumentation
+  (backend bisect_ppx))
+ (modules :standard \ parser_messages_add_type parser_strip_redundant_state)
+ (inline_tests)
+ (preprocess
+  (pps
+   ppx_compare
+   ppx_sexp_conv
+   ppx_expect_nobase
+   ppx_deriving.fold
+   ppx_deriving.show
+   ppx_deriving.map)))
+
+(ocamllex lexer)
+
+(menhir
+ (modules parser)
+ (flags :standard --table --strict --require-aliases))
+
+(executable
+ (name parser_messages_add_type)
+ (modules parser_messages_add_type)
+ (libraries str))
+
+(executable
+ (name parser_strip_redundant_state)
+ (modules parser_strip_redundant_state)
+ (libraries str std))
+
+(rule
+ (with-stdout-to
+  parser_new.messages
+  (run menhir --list-errors %{dep:parser.mly})))
+
+(rule
+ (progn
+  (pipe-stdout
+   (run
+    menhir
+    %{dep:parser.mly}
+    --merge-errors
+    %{dep:parser_new.messages}
+    --merge-errors
+    %{dep:parser.messages})
+   (with-stdout-to
+    parser_updated_trimmed.messages
+    (run ./parser_strip_redundant_state.exe)))
+  (diff? %{dep:parser.messages} parser_updated_trimmed.messages)
+  (with-stdout-to
+   parsing_errors.ml
+   (pipe-stdout
+    (run
+     menhir
+     --explain
+     --strict
+     --unused-tokens
+     %{dep:parser.mly}
+     --compile-errors
+     parser.messages)
+    (run ./parser_messages_add_type.exe)))))
+
+(rule
+ (alias runtest)
+ (action
+  (run
+   menhir
+   parser.mly
+   --compare-errors
+   %{dep:parser_new.messages}
+   --compare-errors
+   %{dep:parser.messages})))

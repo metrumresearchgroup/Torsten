@@ -1,0 +1,4 @@
+(include cpp.dune)
+
+(cram
+ (deps mother.stan))

@@ -1,0 +1,1352 @@
+open Std
+open Middle
+open Grace.Diagnostic
+
+(* The following categories (type, identifier, expression, statement) are fairly
+   loose, the main idea is to keep similar errors close to each other and still
+   be semi-organized *)
+
+(* location helpers, set by to_grace to avoid needing to pass them to every
+   single internal function *)
+let printed_filename_ref : string option ref = ref None
+let code_ref : string option ref = ref None
+let loc_ref : Location_span.t ref = ref Location_span.empty
+
+(* grace helpers *)
+
+let range_of_loc_span loc =
+  let printed_filename = !printed_filename_ref in
+  let code = !code_ref in
+  Diagnostic.range_of_loc_span ?printed_filename ?code loc
+
+let make_error ?labels ?notes ?(summary : Message.t option) primary =
+  let printed_filename = !printed_filename_ref in
+  let code = !code_ref in
+  Diagnostic.make ?printed_filename ?code ?labels ?notes ?summary !loc_ref
+    Severity.Error primary
+
+let context loc message =
+  let printed_filename = !printed_filename_ref in
+  let code = !code_ref in
+  Diagnostic.context ?printed_filename ?code loc message
+
+let optional f loc = match loc with Some loc -> f loc | None -> []
+let function_defined loc = context loc "Function defined here."
+let callback_defined loc = context loc "Callback defined here."
+
+let variable_declared ?block loc =
+  match block with
+  | None -> context loc "Variable was declared here."
+  | Some block ->
+      context loc "Variable was declared in %a here."
+        (Fmt.of_to_string Block.block_name)
+        block
+
+let functions_considered errors =
+  List.concat_map errors ~f:(fun (_, _, loc) -> optional function_defined loc)
+
+let previous_declaration prev = context prev "Previous declaration here."
+
+(* formatting helpers *)
+
+let ellipsis ppf = Fmt.styled `Faint Fmt.string ppf "..."
+let expected_style = SignatureMismatch.expected_style
+let actual_style = SignatureMismatch.actual_style
+let arguments = SignatureMismatch.arguments
+let quoted = SignatureMismatch.quoted
+
+let found_type ppf =
+  Fmt.pf ppf "@ Instead found type %a." (actual_style UnsizedType.pp)
+
+let rec expected_types : UnsizedType.t Nonempty_list.t Fmt.t =
+  let ust = expected_style UnsizedType.pp in
+  fun ppf l ->
+    match l with
+    | [t] -> ust ppf t
+    | [t1; t2] -> Fmt.pf ppf "%a or %a" ust t1 ust t2
+    | [t1; t2; t3] -> Fmt.pf ppf "%a,@ %a,@ or %a" ust t1 ust t2 ust t3
+    | t1 :: t2 :: ts -> Fmt.pf ppf "%a,@ %a" ust t1 expected_types (t2 :: ts)
+
+let suggestions s =
+  match s with
+  | None -> ([], [])
+  | Some (s, locs) ->
+      let notes =
+        if List.exists ~f:Option.is_none locs then
+          [Message.createf "Did you mean %a?" quoted s]
+        else [] in
+      let labels =
+        List.concat_map locs ~f:(fun opt_loc ->
+            match opt_loc with
+            | None -> []
+            | Some loc -> context loc "Did you mean %a, declared here?" quoted s)
+      in
+      (notes, labels)
+
+module TypeError = struct
+  type t =
+    | IncorrectReturnType of UnsizedType.t * UnsizedType.t
+    | MismatchedArrayTypes of UnsizedType.t * UnsizedType.t
+    | InvalidRowVectorTypes of UnsizedType.t
+    | InvalidMatrixTypes of UnsizedType.t
+    | IntExpected of string * UnsizedType.t
+    | IntOrRealExpected of string * UnsizedType.t
+    | TupleExpected of string * UnsizedType.t
+    | TypeExpected of string * UnsizedType.t * UnsizedType.t
+    | IntIntArrayOrRangeExpected of UnsizedType.t
+    | IntOrRealContainerExpected of UnsizedType.t
+    | ArrayVectorRowVectorMatrixExpected of UnsizedType.t
+    | IllTypedReduceSumNotArray of UnsizedType.t
+    | IllTypedReduceSumSlice of UnsizedType.t
+    | IllTypedReduceSum of
+        string
+        * UnsizedType.t list
+        * UnsizedType.argumentlist
+        * SignatureMismatch.function_mismatch
+        * Location_span.t option
+    | IllTypedVariadic of
+        string
+        * UnsizedType.t list
+        * UnsizedType.argumentlist
+        * SignatureMismatch.function_mismatch
+        * UnsizedType.t
+        * Location_span.t option
+    | IllTypedForwardedFunctionSignature of
+        string * string * SignatureMismatch.details * Location_span.t option
+    | IllTypedForwardedFunctionApp of
+        string
+        * string
+        * string list
+        * SignatureMismatch.details
+        * Location_span.t option
+    | IllTypedLaplaceHelperArgs of
+        string * UnsizedType.argumentlist * SignatureMismatch.details
+    | IllTypedLaplaceMarginal of string * bool * UnsizedType.argumentlist
+    | LaplaceCompatibilityIssue of string * Location_span.t
+    | IlltypedLaplaceTooMany of string * int
+    | IlltypedLaplaceHessianBlockSize of
+        string * (UnsizedType.autodifftype * UnsizedType.t) option
+    | IlltypedLaplaceTolArgs of string * SignatureMismatch.function_mismatch
+    | IlltypedLaplaceLatentSolveArgs of string
+    | AmbiguousFunctionPromotion of
+        string
+        * UnsizedType.t list option
+        * (UnsizedType.returntype
+          * UnsizedType.argumentlist
+          * Location_span.t option)
+          list
+    | ReturningFnExpectedNonReturningFound of string * Location_span.t option
+    | ReturningFnExpectedNonFnFound of string * Location_span.t option
+    | ReturningFnExpectedUndeclaredDistSuffixFound of string * string
+    | ReturningFnExpectedWrongDistSuffixFound of
+        string * string * Location_span.t option list
+    | NonReturningFnExpectedReturningFound of string * Location_span.t option
+    | NonReturningFnExpectedNonFnFound of string * Location_span.t
+    | FunOverloadRtOnly of
+        string
+        * UnsizedType.returntype
+        * UnsizedType.returntype
+        * Location_span.t option
+    | FunDeclRedefined of string * UnsizedType.t * Location_span.t
+    | StanMathFuncRedefined of string * UnsizedType.t
+    | FunDeclExists of string * Location_span.t
+    | FunExternDefined of string * Location_span.t
+    | FunDeclNoDefn of string
+    | NonRealProbFunDef of UnsizedType.returntype
+    | ProbDensityNonRealVariate of UnsizedType.t option
+    | ProbMassNonIntVariate of UnsizedType.t option
+    | IncompatibleReturnType of Ast.incomplete
+    | IllTypedFunctionApp of
+        string
+        * UnsizedType.t list
+        * (SignatureMismatch.signature_error list * bool)
+        * Location_span.t list
+
+  let laplace_tolerance_arg_name n =
+    match n with
+    | 1 -> "first element of the control parameter tuple (initial guess)"
+    | 2 -> "second element of the control parameter tuple (tolerance)"
+    | 3 -> "third element of the control parameter tuple (max_num_steps)"
+    | 4 -> "fourth element of the control parameter tuple (solver)"
+    | 5 ->
+        "fifth element of the control parameter tuple (max_steps_line_search)"
+    | 6 -> "sixth element of the control parameter tuple (allow_fallthrough)"
+    | n ->
+        Fmt.str "%a element of the control parameter tuple" (Fmt.ordinal ()) n
+
+  let generic_laplace_usage note (name, supplied) =
+    let req = Stan_math_signatures.laplace_helper_param_types name in
+    let is_helper = not @@ List.is_empty req in
+    let pp_lik_args ppf =
+      if is_helper then Fmt.(list ~sep:comma UnsizedType.pp_fun_arg) ppf req
+      else Fmt.pf ppf "(vector, T_l%t) => real,@ tuple(T_l%t)" ellipsis ellipsis
+    in
+    let pp_laplace_tols ppf =
+      if String.includes ~affix:"_tol" name then
+        Fmt.pf ppf ", %a"
+          Fmt.(list ~sep:comma UnsizedType.pp_fun_arg)
+          Stan_math_signatures.laplace_tolerance_argument_types in
+    let pp_supplied_tys ppf =
+      if List.is_empty supplied then Fmt.nop ppf ()
+      else
+        Fmt.pf ppf "@ However, we received the types:@ @[<hov 2>(%a)@]"
+          Fmt.(list ~sep:comma UnsizedType.pp_fun_arg)
+          supplied in
+    make_error
+      ~summary:
+        (Message.createf "Ill-typed arguments supplied to %a." quoted name)
+      ~notes:[note]
+      "@[<v>The valid signature of this function is@ @[<hov 2>%s(%t,@ data \
+       int,@ (T_k%t) => matrix,@ tuple(T_k%t)%t)@]%t@]"
+      name pp_lik_args ellipsis ellipsis pp_laplace_tols pp_supplied_tys
+
+  let to_grace = function
+    | IncorrectReturnType (t1, t2) ->
+        make_error
+          ~summary:(Message.create "Invalid return statement.")
+          "Function is declared to return %a, but this statement returns %a \
+           instead."
+          expected_types [t1]
+          (actual_style UnsizedType.pp)
+          t2
+    | MismatchedArrayTypes (t1, t2) ->
+        make_error
+          ~summary:(Message.create "Inconsistent types in array expression.")
+          "Array expression must have entries of consistent type.@ Expected \
+           @[<h>%a@] but found @[<h>%a@]."
+          expected_types [t1]
+          (actual_style UnsizedType.pp)
+          t2
+    | InvalidRowVectorTypes ty ->
+        make_error "Row vector expression must have all %a entries.%a"
+          expected_types [UInt; UReal; UComplex] found_type ty
+    | InvalidMatrixTypes ty ->
+        make_error "Matrix expression must have all %a entries.%a"
+          expected_types
+          [URowVector; UComplexRowVector]
+          found_type ty
+    | IntExpected (name, ut) ->
+        make_error "%s must be of type %a.%a" name expected_types [UInt]
+          found_type ut
+    | IntOrRealExpected (name, ut) ->
+        make_error "%s must be of type %a.%a" name expected_types [UInt; UReal]
+          found_type ut
+    | TupleExpected (name, ut) ->
+        make_error "%s must be a %a.%a" name
+          (expected_style Fmt.string)
+          "tuple" found_type ut
+    | TypeExpected (name, (UInt | UReal | UComplex), ut) ->
+        make_error "%s must be a %a.%a" name
+          (expected_style Fmt.string)
+          "scalar" found_type ut
+    | TypeExpected (name, et, ut) ->
+        make_error "%s must be a %a or of type %a.%a" name
+          (expected_style Fmt.string)
+          "scalar" expected_types [et] found_type ut
+    | IntOrRealContainerExpected ut ->
+        make_error "A (container of) %a was expected.%a" expected_types
+          [UReal; UInt] found_type ut
+    | IntIntArrayOrRangeExpected ut ->
+        make_error "Index must be of type %a or must be a range (int:int).%a"
+          expected_types [UInt; UArray UInt] found_type ut
+    | ArrayVectorRowVectorMatrixExpected ut ->
+        make_error "Foreach-loop must be over %a, %a.%a"
+          (expected_style Fmt.string)
+          "array" expected_types
+          [UVector; URowVector; UMatrix]
+          found_type ut
+    | IllTypedReduceSumNotArray ty ->
+        make_error "The second argument to reduce_sum must be an array.%a"
+          found_type ty
+    | IllTypedReduceSumSlice ty ->
+        make_error "The inner type in reduce_sum array must be %a.%a"
+          expected_types
+          (Stan_math_signatures.reduce_sum_slice_types
+         |> Nonempty_list.of_list_exn)
+          found_type ty
+    | IllTypedReduceSum (name, arg_tys, expected_args, error, callback_location)
+      ->
+        let ~summary, ~notes =
+          SignatureMismatch.to_grace
+            ( name
+            , arg_tys
+            , ([((ReturnType UReal, expected_args, None), error)], false) )
+        in
+        make_error ~summary
+          ~labels:(optional callback_defined callback_location)
+          ~notes "Function called here."
+    | IllTypedVariadic
+        (name, arg_tys, args, error, return_type, callback_location) ->
+        let ~summary, ~notes =
+          SignatureMismatch.to_grace
+            ( name
+            , arg_tys
+            , ( [((UnsizedType.ReturnType return_type, args, None), error)]
+              , false ) ) in
+        make_error ~summary
+          ~labels:(optional callback_defined callback_location)
+          ~notes "Function called here."
+    | IllTypedFunctionApp (name, arg_tys, errors, callbacks) ->
+        let signatures = List.map ~f:fst (fst errors) in
+        let ~summary, ~notes =
+          SignatureMismatch.to_grace (name, arg_tys, errors) in
+        make_error ~summary
+          ~labels:
+            (functions_considered signatures
+            @ List.concat_map ~f:callback_defined callbacks)
+          ~notes "Function called here."
+    | IllTypedForwardedFunctionApp
+        (caller, name, skipped, details, callback_location) ->
+        make_error
+          ~summary:
+            (Message.createf "Ill-typed arguments forwarded to %a in %a." quoted
+               name quoted caller)
+          ~labels:(optional callback_defined callback_location)
+          ~notes:
+            [ (fun ppf ->
+                (SignatureMismatch.pp_mismatch_details ~skipped) ppf details) ]
+          "Cannot call %a@ with arguments forwarded from@ call to %a" quoted
+          name quoted caller
+    | IllTypedForwardedFunctionSignature
+        (caller, name, details, callback_location) ->
+        make_error
+          ~summary:
+            (Message.createf
+               "Invalid signature for forwarded function %a in %a." quoted name
+               quoted caller)
+          ~labels:(optional callback_defined callback_location)
+          ~notes:
+            [ (fun ppf ->
+                (SignatureMismatch.pp_mismatch_details ~skipped:[]) ppf details)
+            ]
+          "Function %a does not have a valid signature for use in %a" quoted
+          name quoted caller
+    | IllTypedLaplaceHelperArgs (name, expected, details) ->
+        make_error
+          ~summary:
+            (Message.createf "Ill-typed arguments supplied to %a." quoted name)
+          ~notes:
+            [ Message.createf
+                "@[<v>Expected the arguments to start with:@ @[(%a)@] %a@]"
+                (SignatureMismatch.pp_mismatch_details ~skipped:[])
+                details
+                Fmt.(list ~sep:comma (expected_style UnsizedType.pp_fun_arg))
+                expected ]
+          "Ill-typed arguments supplied to function %a@ for the likelihood"
+          quoted name
+    | IllTypedLaplaceMarginal (name, true, supplied) ->
+        let info =
+          Message.createf
+            "We were unable to start more in-depth checking.@ Please ensure \
+             you@ are passing enough@ arguments and that the first@ argument \
+             is@ a function." in
+        generic_laplace_usage info (name, supplied)
+    | IllTypedLaplaceMarginal (name, false, supplied) ->
+        let req = Stan_math_signatures.laplace_helper_param_types name in
+        let is_helper = not @@ List.is_empty req in
+        let info =
+          let n = (if is_helper then List.length req else 2) + 1 in
+          Message.createf
+            "Typechecking failed after checking the first %d arguments.@ \
+             Please ensure you are passing enough arguments and that the %a is \
+             a function."
+            n (Fmt.ordinal ()) (n + 1) in
+        generic_laplace_usage info (name, supplied)
+    | LaplaceCompatibilityIssue (banned_function, call_loc) ->
+        make_error
+          ~summary:
+            (Message.create
+               "Incompatible function used in embedded Laplace approximation.")
+          ~labels:
+            (context call_loc "Call to incompatible function occurs here.")
+          "This likelihood function calls the function %a,@ which does not \
+           currently support higher-order derivatives and@ cannot be used in \
+           an embedded Laplace approximation."
+          quoted banned_function
+    | IlltypedLaplaceTooMany (name, n_args) ->
+        make_error
+          ~summary:
+            (Message.createf "Ill-typed arguments supplied to %a." quoted name)
+          "Received %d extra %a at the end of the call to %a.@ %s" n_args
+          arguments n_args quoted name
+          (if String.includes ~affix:"_tol" name then
+             "Only a single tuple of control parameters is expected."
+           else if n_args = 1 then "Did you mean to call the _tol version?"
+           else "Did you mean to call the _tol version with a tuple of these?")
+    | IlltypedLaplaceHessianBlockSize (name, None) ->
+        let info =
+          Message.createf
+            "@[<hov>Missing the hessian block size (data-only %a) and \
+             remaining arguments.@]"
+            (expected_style UnsizedType.pp)
+            UInt in
+        generic_laplace_usage info (name, [])
+    | IlltypedLaplaceHessianBlockSize (name, Some (DataOnly, ty)) ->
+        make_error
+          "@[<hov>The hessian block size argument to %a must be a data-only \
+           %a.%a@]"
+          quoted name
+          (expected_style UnsizedType.pp)
+          UInt found_type ty
+    | IlltypedLaplaceHessianBlockSize (name, Some (_, ty)) ->
+        make_error
+          "@[<hov>The hessian block size argument to %a must be a data-only \
+           %a.%a@ %a@]"
+          quoted name
+          (expected_style UnsizedType.pp)
+          UInt found_type ty SignatureMismatch.data_only_msg ()
+    | IlltypedLaplaceTolArgs (name, ArgNumMismatch (_, 0)) ->
+        make_error
+          ~summary:
+            (Message.createf "Ill-typed arguments supplied to %a." quoted name)
+          "@[<v>Missing control parameter tuple at the end of the call to %a.@ \
+           Expected a tuple of %a arguments for the control parameters.@]"
+          quoted name (expected_style Fmt.int)
+          (List.length Stan_math_signatures.laplace_tolerance_argument_types)
+    | IlltypedLaplaceTolArgs (name, ArgNumMismatch (_, found)) ->
+        make_error
+          ~summary:
+            (Message.createf "Ill-typed arguments supplied to %a." quoted name)
+          "@[<v>Received a tuple of %a control %a at the end of the call to \
+           %a.@ Expected tuple of %a arguments for the control parameters \
+           instead.@]"
+          (actual_style Fmt.int) found arguments found quoted name
+          (expected_style Fmt.int)
+          (List.length Stan_math_signatures.laplace_tolerance_argument_types)
+    | IlltypedLaplaceTolArgs (name, ArgError (n, DataOnlyError)) ->
+        make_error
+          ~summary:
+            (Message.createf "Ill-typed arguments supplied to %a." quoted name)
+          ~notes:[(fun ppf -> SignatureMismatch.data_only_msg ppf ())]
+          "@[<hov>The control parameters to %a@ must all be data-only,@ but \
+           the %s here is not.@]"
+          quoted name
+          (laplace_tolerance_arg_name n)
+    | IlltypedLaplaceTolArgs
+        (name, ArgError (n, TypeMismatch (expected, found, _))) ->
+        make_error "@[<hov>The %s to %a@ must be@ %a.%a@]"
+          (laplace_tolerance_arg_name n)
+          quoted name expected_types [expected] found_type found
+    | IlltypedLaplaceLatentSolveArgs name ->
+        make_error
+          ~summary:
+            (Message.createf "Ill-typed arguments supplied to %a." quoted name)
+          ~notes:[(fun ppf -> SignatureMismatch.data_only_msg ppf ())]
+          "@[<hov>All arguments to %a must be a data-only@ if used outside the \
+           generated quantities@ block.]"
+          quoted name
+    | AmbiguousFunctionPromotion (name, arg_tys, signatures) ->
+        let pp_sig ppf (rt, args, _) =
+          Fmt.pf ppf "@[<hov>(@[<hov>%a@]) => %a@]"
+            Fmt.(list ~sep:comma UnsizedType.pp_fun_arg)
+            args UnsizedType.pp_returntype rt in
+        make_error
+          ~labels:(functions_considered signatures)
+          ~notes:
+            [ Message.createf
+                "Overloaded functions must not have multiple equally valid \
+                 promotion paths.@ %a function has several:@ @[<v>%a@]"
+                (Fmt.option ~none:(Fmt.any "This") (fun ppf tys ->
+                     Fmt.pf ppf "For args @[(%a)@], this"
+                       (Fmt.list ~sep:Fmt.comma UnsizedType.pp)
+                       tys))
+                arg_tys
+                (Fmt.list ~sep:Fmt.cut pp_sig)
+                signatures
+            ; Message.createf
+                "Consider defining a new signature for the exact@ types needed \
+                 or@ re-thinking@ existing definitions." ]
+          "No unique minimum promotion found for function %a." quoted name
+    | ReturningFnExpectedNonReturningFound (fn_name, prev_decl) ->
+        make_error
+          ~labels:(optional function_defined prev_decl)
+          "A returning function was expected but a non-returning function %a \
+           was supplied."
+          quoted fn_name
+    | NonReturningFnExpectedReturningFound (fn_name, prev_decl) ->
+        make_error
+          ~labels:(optional function_defined prev_decl)
+          "A non-returning function was expected but a returning function %a \
+           was supplied."
+          quoted fn_name
+    | ReturningFnExpectedNonFnFound (fn_name, prev_decl) ->
+        make_error
+          ~labels:(optional variable_declared prev_decl)
+          "A returning function was expected but a non-function value %a was \
+           supplied."
+          quoted fn_name
+    | NonReturningFnExpectedNonFnFound (fn_name, prev_decl) ->
+        make_error
+          ~labels:(variable_declared prev_decl)
+          "A non-returning function was expected but a non-function value %a \
+           was supplied."
+          quoted fn_name
+    | ReturningFnExpectedUndeclaredDistSuffixFound (prefix, suffix) ->
+        make_error "Function %a is not implemented for distribution %a." quoted
+          (prefix ^ "_" ^ suffix)
+          quoted prefix
+    | ReturningFnExpectedWrongDistSuffixFound (prefix, suffix, sugs) ->
+        let newsuffix =
+          match suffix with
+          | "lpdf" -> "lpmf"
+          | "lupdf" -> "lupmf"
+          | "lpmf" -> "lpdf"
+          | "lupmf" -> "lupdf"
+          | _ ->
+              Common.ICE.internal_errorf "Bad suffix: %s" [suffix]
+              [@coverage off] in
+        let notes, labels =
+          suggestions (Some (prefix ^ "_" ^ newsuffix, sugs)) in
+        make_error ~labels ~notes
+          "Function %a is not implemented for distribution %a" quoted
+          (prefix ^ "_" ^ suffix)
+          quoted prefix
+    | FunOverloadRtOnly (name, _, rt', prev_decl) ->
+        make_error
+          ~labels:(optional previous_declaration prev_decl)
+          ~notes:
+            [ Message.createf "Previously used return type %a."
+                (actual_style UnsizedType.pp_returntype)
+                rt' ]
+          "Function %a cannot be overloaded by return type only." quoted name
+    | FunDeclRedefined (name, ut, prev_decl) ->
+        make_error
+          ~labels:(previous_declaration prev_decl)
+          "Function %a has already been declared for signature %a" quoted name
+          UnsizedType.pp ut
+    | StanMathFuncRedefined (name, ut) ->
+        make_error
+          "Function %a is already declared in the Stan Math library with \
+           signature %a"
+          quoted name UnsizedType.pp ut
+    | FunDeclExists (name, prev_decl) ->
+        make_error
+          ~labels:(previous_declaration prev_decl)
+          "Function %a has already been declared. A definition is expected."
+          quoted name
+    | FunExternDefined (name, annotation_loc) ->
+        make_error
+          ~labels:(context annotation_loc "Annotation supplied here")
+          "Cannot provide a body for function %a marked with '%a'." quoted name
+          Fmt.(styled `Bold string)
+          "@extern"
+    | FunDeclNoDefn name ->
+        let notes =
+          [ Message.createf
+              "If this function will be supplied elsewhere after compilation,@ \
+               (e.g., it is being manually implemented in C++)@ it must be \
+               marked with '%a' ."
+              Fmt.(styled `Bold string)
+              "@extern" ] in
+        make_error ~notes
+          "Function %a is declared without specifying a definition." quoted name
+    | NonRealProbFunDef Void ->
+        make_error
+          "%a return type required for probability functions ending in _lpdf, \
+           _lupdf, _lpmf, _lupmf, _cdf, _lcdf, or _lccdf.@ Instead found a %a \
+           function."
+          (expected_style UnsizedType.pp)
+          UReal
+          (actual_style UnsizedType.pp_returntype)
+          Void
+    | NonRealProbFunDef (ReturnType t) ->
+        make_error
+          "%a return type required for probability functions ending in _lpdf, \
+           _lupdf, _lpmf, _lupmf, _cdf, _lcdf, or _lccdf.%a"
+          (expected_style UnsizedType.pp)
+          UReal found_type t
+    | ProbDensityNonRealVariate ut ->
+        make_error
+          "Probability density functions require %a variates (first \
+           argument).%a"
+          (expected_style UnsizedType.pp)
+          UReal
+          Fmt.(option found_type)
+          ut
+    | ProbMassNonIntVariate ut ->
+        make_error
+          "Probability mass functions require %a variates (first argument).%a"
+          (expected_style UnsizedType.pp)
+          UInt
+          Fmt.(option found_type)
+          ut
+    | IncompatibleReturnType info ->
+        let labels =
+          match info with
+          | Next -> []
+          | EmptyRange loc -> context loc "The range may be empty"
+          | EmptyContainer loc -> context loc "The container may be empty"
+          | LoopBreaks locs ->
+              List.concat_map locs ~f:(fun l ->
+                  context l "The loop may end here") in
+        make_error ~labels
+          "Function bodies must contain a return statement of correct type in \
+           every branch."
+end
+
+module IdentifierError = struct
+  type t =
+    | IsKeyword of string
+    | IsModelName of string
+    | IsStanMathName of string
+    | InUse of string * Location_span.t
+    | NotInScope of string * (string * Location_span.t option list) option
+    | ReturningFnExpectedUndeclaredIdentFound of
+        string * (string * Location_span.t option list) option
+    | NonReturningFnExpectedUndeclaredIdentFound of
+        string * (string * Location_span.t option list) option
+    | UnnormalizedSuffix of string
+    | DuplicateArgNames of Ast.identifier
+
+  let to_grace = function
+    | IsStanMathName name ->
+        make_error
+          "Identifier %a clashes with a non-overloadable Stan Math library \
+           function."
+          quoted name
+    | InUse (name, previous) ->
+        make_error
+          ~labels:(previous_declaration previous)
+          "Identifier %a is already in use." quoted name
+    | IsModelName name ->
+        make_error "Identifier %a clashes with model name." quoted name
+    | IsKeyword name ->
+        make_error "Identifier %a clashes with reserved keyword." quoted name
+    | NotInScope (name, sug) ->
+        let notes, labels = suggestions sug in
+        make_error ~notes ~labels "Identifier %a not in scope." quoted name
+    | ReturningFnExpectedUndeclaredIdentFound (fn_name, sug) ->
+        let notes, labels = suggestions sug in
+        make_error ~notes ~labels
+          "A returning function was expected but an undeclared identifier %a \
+           was supplied."
+          quoted fn_name
+    | NonReturningFnExpectedUndeclaredIdentFound (fn_name, sug) ->
+        let notes, labels = suggestions sug in
+        make_error ~notes ~labels
+          "A non-returning function was expected but an undeclared identifier \
+           %a was supplied."
+          quoted fn_name
+    | UnnormalizedSuffix name ->
+        make_error
+          "Identifier %a has a _lupdf/_lupmf suffix, which is only allowed for \
+           functions."
+          quoted name
+    | DuplicateArgNames id ->
+        make_error
+          ~summary:
+            (Message.create
+               "All function arguments must have distinct identifiers.")
+          ~labels:(previous_declaration id.id_loc)
+          "Argument %a is duplicated." quoted id.name
+end
+
+module ExpressionError = struct
+  type t =
+    | InvalidSizeDeclRng
+    | InvalidRngFunction
+    | InvalidUnnormalizedFunction of string
+    | InvalidUnnormalizedUDF of string
+    | ConditionalNotationNotAllowed
+    | ConditioningRequired
+    | NotPrintable
+    | EmptyArray
+    | EmptyTuple
+    | IntTooLarge
+    | TupleIndexInvalidIndex of int * int
+    | TupleIndexNotTuple of UnsizedType.t
+    | NotIndexable of UnsizedType.t * int
+    | IllTypedTernaryIf of UnsizedType.t * UnsizedType.t * UnsizedType.t
+    | IllTypedBinaryOperator of Operator.t * UnsizedType.t * UnsizedType.t
+    | IllTypedPrefixOperator of Operator.t * UnsizedType.t
+    | IllTypedPostfixOperator of Operator.t * UnsizedType.t
+
+  let to_grace = function
+    | InvalidSizeDeclRng ->
+        make_error
+          "Random number generators are not allowed in top level size \
+           declarations."
+    | InvalidRngFunction ->
+        make_error
+          ~summary:(Message.create "Invalid call to random number generator.")
+          "%a" Fmt.text
+          "Random number generators are only allowed in transformed data \
+           block, generated quantities block or user-defined functions with \
+           names ending in _rng."
+    | InvalidUnnormalizedFunction name ->
+        make_error
+          ~summary:
+            (Message.create "Invalid call to unnormalized probability function.")
+          "Unnormalized probability functions such as %a can@ only be used in \
+           the model block or in user-defined functions with names@ ending in \
+           _lpdf or _lpmf.@ Did you mean %a?"
+          quoted name quoted
+          (Utils.normalized_name name)
+    | InvalidUnnormalizedUDF fname ->
+        make_error
+          ~summary:(Message.create "Invalid user-defined function name.")
+          ~notes:
+            [ Message.createf
+                "Function names should end with _lpdf/_lpmf not _lupdf/_lupmf."
+            ]
+          "%a is an invalid user-defined function name.@ User-defined \
+           probability mass and density functions must@ be defined as \
+           normalized."
+          quoted fname
+    | ConditionalNotationNotAllowed ->
+        make_error
+          ~summary:(Message.create "Invalid conditioning in function.")
+          "Only functions with names ending in _lpdf,@ _lupdf,@ _lpmf,@ \
+           _lupmf,@ _cdf,@ _lcdf,@ _lccdf can make use of@ conditional \
+           notation (%a)."
+          quoted "|"
+    | ConditioningRequired ->
+        make_error
+          ~summary:(Message.create "Conditioning required for function.")
+          "Probability functions with suffixes _lpdf,@ _lupdf,@ _lpmf,@ \
+           _lupmf,@ _cdf,@ _lcdf,@ and _lccdf,@ require a vertical bar@ (%a) \
+           between@ the first@ two arguments."
+          quoted "|"
+    | NotPrintable -> make_error "Functions cannot be printed."
+    | EmptyArray ->
+        make_error "Array expressions must contain at least one element."
+    | EmptyTuple ->
+        make_error "Tuple expressions must contain at least one element."
+    | IntTooLarge ->
+        make_error "Integer literal cannot be larger than %a."
+          (expected_style Fmt.string)
+          "2_147_483_647"
+    | TupleIndexInvalidIndex (ix_max, ix) ->
+        make_error
+          ~summary:(Message.create "Invalid tuple index.")
+          "Tried to access index %a for a tuple of length %a.@ Only indices \
+           between %a and %a are valid."
+          (actual_style Fmt.int) ix (expected_style Fmt.int) ix_max
+          (expected_style Fmt.int) 1 (expected_style Fmt.int) ix_max
+    | TupleIndexNotTuple ut ->
+        make_error
+          ~summary:(Message.create "Tried to index a non-tuple type.")
+          "Expression has type %a."
+          (actual_style UnsizedType.pp)
+          ut
+    | NotIndexable (ut, _) when UnsizedType.is_scalar_type ut ->
+        make_error "Tried to index a scalar type. Expression has type %a."
+          (actual_style UnsizedType.pp)
+          ut
+    | NotIndexable (ut, nidcs) ->
+        make_error
+          "Too many indices. Expression only has %a dimensions, but received \
+           %a indices."
+          (expected_style Fmt.int)
+          (UnsizedType.count_dims ut)
+          (actual_style Fmt.int) nidcs
+    | IllTypedTernaryIf (UInt, ut, _) when UnsizedType.is_fun_type ut ->
+        make_error "Ternary expression cannot have a function type: %a"
+          (actual_style UnsizedType.pp)
+          ut
+    | IllTypedTernaryIf (UInt, ut2, ut3) ->
+        make_error
+          ~summary:(Message.create "Type mismatch in ternary expression.")
+          "Expression when true is:@;\
+           <1 2>@[<h>%a@];@ Expression when false is:@;\
+           <1 2>@[<h>%a@]"
+          (actual_style UnsizedType.pp)
+          ut2
+          (actual_style UnsizedType.pp)
+          ut3
+    | IllTypedTernaryIf (ut1, _, _) ->
+        make_error "Condition in ternary expression must be type %a.%a"
+          (expected_style UnsizedType.pp)
+          UInt found_type ut1
+    | IllTypedBinaryOperator (op, lt, rt) ->
+        let sigs = Stan_math_signatures.operator_to_stan_math_signatures op in
+        make_error
+          ~summary:
+            (Message.createf
+               "Ill-typed arguments supplied to infix operator %a." Operator.pp
+               op)
+          ~notes:
+            [ Message.createf
+                "@[<v 2>Available signatures for %a:@ %a@]@ @[<h>Instead \
+                 supplied arguments of incompatible type: %a, %a.@]"
+                Operator.pp op
+                (Fmt.list ~sep:Fmt.cut (expected_style UnsizedType.pp_math_sig))
+                sigs
+                (actual_style UnsizedType.pp)
+                lt
+                (actual_style UnsizedType.pp)
+                rt ]
+          "Operator used here."
+    | IllTypedPrefixOperator (op, ut) ->
+        let sigs = Stan_math_signatures.operator_to_stan_math_signatures op in
+        make_error
+          ~summary:
+            (Message.createf
+               "Ill-typed arguments supplied to prefix operator %a." Operator.pp
+               op)
+          ~notes:
+            [ Message.createf
+                "@[<v 2>Available signatures for %a:@ %a@]@ @[<h>Instead \
+                 supplied argument of incompatible type: %a.@]"
+                Operator.pp op
+                (Fmt.list ~sep:Fmt.cut (expected_style UnsizedType.pp_math_sig))
+                sigs
+                (actual_style UnsizedType.pp)
+                ut ]
+          "Operator used here."
+    | IllTypedPostfixOperator (op, ut) ->
+        let sigs = Stan_math_signatures.operator_to_stan_math_signatures op in
+        make_error
+          ~summary:
+            (Message.createf
+               "Ill-typed arguments supplied to postfix operator %a."
+               Operator.pp op)
+          ~notes:
+            [ Message.createf
+                "@[<v 2>Available signatures for %a:@ %a@]@ @[<h>Instead \
+                 supplied argument of incompatible type: %a.@]"
+                Operator.pp op
+                (Fmt.list ~sep:Fmt.cut (expected_style UnsizedType.pp_math_sig))
+                sigs
+                (actual_style UnsizedType.pp)
+                ut ]
+          "Operator used here."
+end
+
+module StatementError = struct
+  type t =
+    | CannotAssignToReadOnly of string * Location_span.t option
+    | CannotAssignToGlobal of string * Block.t * Location_span.t option
+    | CannotAssignFunction of string * UnsizedType.t
+    | LValueMultiIndexing
+    | LValueTupleUnpackDuplicates of
+        Ast.untyped_lval Nonempty_list.t Nonempty_list.t
+    | LValueTupleReadAndWrite of Ast.identifier Nonempty_list.t Nonempty_list.t
+    | InvalidTildePDForPMF
+    | InvalidTildeCDForCCDF of string
+    | InvalidTildeNoSuchDistribution of string * bool
+    | TargetPlusEqualsOutsideModelOrLogProb
+    | JacobianPlusEqualsNotAllowed
+    | InvalidTruncationCDForCCDF of UnsizedType.argumentlist
+    | BreakOutsideLoop
+    | ContinueOutsideLoop
+    | ExpressionReturnOutsideReturningFn
+    | VoidReturnOutsideNonReturningFn
+    | NonDataVariableSizeDecl of Block.t * Location_span.t
+    | NonIntBounds
+    | ComplexTransform
+    | IntegerParameter of bool
+    | IllTypedAssignment of
+        Operator.t * Ast.typed_expr_meta * Ast.typed_expr_meta
+
+  let to_grace = function
+    | CannotAssignToReadOnly (name, prev_decl) ->
+        make_error
+          ~labels:(optional previous_declaration prev_decl)
+          ~summary:(Message.create "Cannot assign to read-only variable.")
+          "%a was previously used as a function argument or loop identifier."
+          quoted name
+    | CannotAssignToGlobal (name, MathLibrary, _) ->
+        make_error
+          ~summary:(Message.create "Cannot assign to global variable.")
+          "%a was declared in the Stan Math library and cannot be assigned to."
+          quoted name
+    | CannotAssignToGlobal (name, block, prev_decl) ->
+        make_error
+          ~labels:(optional (variable_declared ~block) prev_decl)
+          ~summary:(Message.create "Cannot assign to global variable.")
+          "%a was declared in a previous block and cannot be assigned to."
+          quoted name
+    | CannotAssignFunction (name, ut) ->
+        make_error
+          ~summary:(Message.create "Cannot assign a function to a variable.")
+          "Function type (%a) cannot be assigned to variable %a."
+          (actual_style UnsizedType.pp)
+          ut quoted name
+    | LValueMultiIndexing ->
+        make_error
+          "Left hand side of an assignment cannot have nested multi-indexing."
+    | LValueTupleUnpackDuplicates ((duplicate :: previous) :: rest) ->
+        let pp_lvalue =
+          let open Fmt in
+          let rec pp ppf (l : Ast.untyped_lval) =
+            match l.lval with
+            | LVariable id -> string ppf id.name
+            | LIndexed (l, _) -> pf ppf "%a[%t]" pp l ellipsis
+            | LTupleProjection (l, ix) -> pf ppf "%a.%n" pp l ix in
+          styled (`Fg `Green) (quote pp) in
+        let previous_assignments l =
+          List.concat_map l ~f:(fun (lv : Ast.untyped_lval) ->
+              context lv.lmeta.loc "Previous assignment to @[%a@] here."
+                pp_lvalue lv) in
+        let labels =
+          previous_assignments previous
+          (* handle if there were multiple bad assignments in the same
+             statement *)
+          @ List.concat_map rest
+              ~f:(fun (l : Ast.untyped_lval Nonempty_list.t) ->
+                let (duplicate :: rest) = l in
+                let range, included = range_of_loc_span duplicate.lmeta.loc in
+                Diagnostic.unstyle
+                  (Label.primaryf ~range
+                     "Cannot make multiple assignments to @[%a@] in one \
+                      assignment statement."
+                     pp_lvalue duplicate)
+                :: included
+                @ previous_assignments rest) in
+        make_error ~labels
+          ~summary:(Message.create "Ill-typed assignment statement.")
+          "Cannot make multiple assignments to @[%a@] in one assignment \
+           statement."
+          pp_lvalue duplicate
+    | LValueTupleReadAndWrite ((read :: assignments) :: rest) ->
+        let assign_context ids =
+          List.concat_map ids ~f:(fun (id : Ast.identifier) ->
+              context id.id_loc "Assigning to @[%a@] here." quoted id.name)
+        in
+        let labels =
+          assign_context assignments
+          (* handle if there were multiple bad assignments in the same
+             statement *)
+          @ List.concat_map rest ~f:(fun (l : Ast.identifier Nonempty_list.t) ->
+              let (read :: assignments) = l in
+              let range, included = range_of_loc_span read.id_loc in
+              Diagnostic.unstyle
+                (Label.primaryf ~range
+                   "The variable @[%a@] cannot be read from at the same time \
+                    as it is being assigned to."
+                   quoted read.name)
+              :: included
+              @ assign_context assignments) in
+        make_error ~labels
+          ~summary:(Message.create "Ill-typed assignment statement.")
+          "The variable @[%a@] cannot be read from at the same time as it is \
+           being assigned to."
+          quoted read.name
+    | TargetPlusEqualsOutsideModelOrLogProb ->
+        make_error
+          "Target can only be accessed in the model block or in functions \
+           ending with _lp."
+    | JacobianPlusEqualsNotAllowed ->
+        make_error
+          "The jacobian adjustment can only be applied in the transformed \
+           parameters block or in functions ending with _jacobian"
+    | InvalidTildePDForPMF ->
+        make_error
+          ~notes:
+            [ Message.createf "For example, %a should become %a." quoted
+                "y ~ normal_lpdf(0, 1)" quoted "y ~ normal(0, 1)" ]
+          "~ statement should refer to a distribution without its \
+           \"_lpdf/_lupdf\" or \"_lpmf/_lupmf\" suffix."
+    | InvalidTildeCDForCCDF name ->
+        let name =
+          match String.chop_suffix name ~suffix:"_cdf" with
+          | Some n -> n ^ "_lcdf"
+          | None -> (
+              match String.chop_suffix name ~suffix:"_ccdf" with
+              | Some n -> n ^ "_lccdf"
+              | None -> name) in
+        make_error
+          ~notes:[Message.createf "Use target += %s(%t) instead." name ellipsis]
+          "CDF and CCDF functions may not be used with distribution notation \
+           (~)."
+    | InvalidTildeNoSuchDistribution (name, true) ->
+        make_error
+          ~summary:(Message.createf "Ill-typed %a-statement." quoted "~")
+          "No function %a or %a was found when looking for distribution %a."
+          quoted (name ^ "_lpmf") quoted (name ^ "_lpdf") quoted name
+    | InvalidTildeNoSuchDistribution (name, false) ->
+        make_error
+          ~summary:(Message.createf "Ill-typed %a-statement." quoted "~")
+          "No function %a was found when looking for distribution %a." quoted
+          (name ^ "_lpdf") quoted name
+    | InvalidTruncationCDForCCDF args ->
+        make_error
+          ~notes:
+            [ Message.createf
+                "Truncation is only defined if distribution has _lcdf and \
+                 _lccdf functions implemented with appropriate signature.\n\
+                 No matching signature for arguments: @[(%a)@]"
+                Fmt.(list ~sep:comma (actual_style UnsizedType.pp_fun_arg))
+                args ]
+          "Unable to truncate distribution with given arguments."
+    | BreakOutsideLoop ->
+        make_error "Break statements may only be used in loops."
+    | ContinueOutsideLoop ->
+        make_error "Continue statements may only be used in loops."
+    | ExpressionReturnOutsideReturningFn ->
+        make_error
+          "Expression return statements may only be used inside non-%a \
+           definitions."
+          (actual_style Fmt.string) "void"
+    | VoidReturnOutsideNonReturningFn ->
+        make_error
+          "Empty return statements may only be used inside %a function \
+           definitions."
+          (expected_style Fmt.string)
+          "void"
+    | NonDataVariableSizeDecl (block, prev_decl) ->
+        make_error
+          ~labels:(variable_declared ~block prev_decl)
+          "Top level variable sizes must be variables from the (transformed) \
+           data block or functions thereof."
+    | NonIntBounds ->
+        make_error "Bounds of integer variable must be of type %a.%a"
+          (expected_style UnsizedType.pp)
+          UInt found_type UReal
+    | ComplexTransform ->
+        make_error "Complex types do not support transformations."
+    | IntegerParameter false -> make_error "Parameters cannot be integers."
+    | IntegerParameter true ->
+        make_error "Transformed parameters cannot be integers."
+    | IllTypedAssignment (Operator.Equals, lt, rt) ->
+        make_error
+          ~summary:(Message.create "Ill-typed assignment statement.")
+          ~labels:
+            (context lt.loc "Left hand side has type %a."
+               (expected_style UnsizedType.pp)
+               lt.type_)
+          "Expected the right hand side to have a type matching the \
+           destination.%a"
+          found_type rt.type_
+    | IllTypedAssignment (op, lt, rt) ->
+        let pp_expected_types ppf signatures =
+          match Nonempty_list.of_list signatures with
+          | None ->
+              Fmt.pf ppf
+                "There are no valid right hand side types for the given left \
+                 hand side."
+          | Some args ->
+              Fmt.pf ppf
+                "For the given left hand side, expected the right hand side to \
+                 have type@ %a.%a"
+                expected_types args found_type rt.type_ in
+        let sigs =
+          SignatureMismatch.list_valid_assignmentoperator_rhs lt.type_ op in
+        make_error
+          ~summary:(Message.create "Ill-typed compound assignment statement.")
+          ~labels:
+            (context lt.loc "Left hand side has type %a."
+               (expected_style UnsizedType.pp)
+               lt.type_)
+          ~notes:[(fun ppf -> pp_expected_types ppf sigs)]
+          "Ill-typed assignment operator %a=." Operator.pp op
+end
+
+type err =
+  | TypeError of TypeError.t
+  | IdentifierError of IdentifierError.t
+  | ExpressionError of ExpressionError.t
+  | StatementError of StatementError.t
+
+type t = Location_span.t * err
+
+let to_grace ?printed_filename ?code (loc, err) =
+  printed_filename_ref := printed_filename;
+  code_ref := code;
+  loc_ref := loc;
+  match err with
+  | TypeError err -> TypeError.to_grace err
+  | IdentifierError err -> IdentifierError.to_grace err
+  | ExpressionError err -> ExpressionError.to_grace err
+  | StatementError err -> StatementError.to_grace err
+
+(* -- Constructors ---------------------------------------------------------- *)
+
+let invalid_return loc t1 t2 =
+  (loc, TypeError (TypeError.IncorrectReturnType (t1, t2)))
+
+let mismatched_array_types loc t1 t2 =
+  (loc, TypeError (TypeError.MismatchedArrayTypes (t1, t2)))
+
+let invalid_row_vector_types loc ty =
+  (loc, TypeError (TypeError.InvalidRowVectorTypes ty))
+
+let invalid_matrix_types loc ty =
+  (loc, TypeError (TypeError.InvalidMatrixTypes ty))
+
+let int_expected loc name ut =
+  (loc, TypeError (TypeError.IntExpected (name, ut)))
+
+let int_or_real_expected loc name ut =
+  (loc, TypeError (TypeError.IntOrRealExpected (name, ut)))
+
+let tuple_expected loc name ut =
+  (loc, TypeError (TypeError.TupleExpected (name, ut)))
+
+let scalar_or_type_expected loc name et ut =
+  (loc, TypeError (TypeError.TypeExpected (name, et, ut)))
+
+let int_intarray_or_range_expected loc ut =
+  (loc, TypeError (TypeError.IntIntArrayOrRangeExpected ut))
+
+let int_or_real_container_expected loc ut =
+  (loc, TypeError (TypeError.IntOrRealContainerExpected ut))
+
+let array_vector_rowvector_matrix_expected loc ut =
+  (loc, TypeError (TypeError.ArrayVectorRowVectorMatrixExpected ut))
+
+let illtyped_assignment loc assignop lt rt =
+  (loc, StatementError (StatementError.IllTypedAssignment (assignop, lt, rt)))
+
+let illtyped_ternary_if loc predt lt rt =
+  (loc, ExpressionError (ExpressionError.IllTypedTernaryIf (predt, lt, rt)))
+
+let returning_fn_expected_nonreturning_found loc name decl_loc =
+  ( loc
+  , TypeError (TypeError.ReturningFnExpectedNonReturningFound (name, decl_loc))
+  )
+
+let illtyped_reduce_sum_not_array loc ty =
+  (loc, TypeError (TypeError.IllTypedReduceSumNotArray ty))
+
+let illtyped_reduce_sum_slice loc ty =
+  (loc, TypeError (TypeError.IllTypedReduceSumSlice ty))
+
+let illtyped_reduce_sum loc name arg_tys args error callback_loc =
+  ( loc
+  , TypeError
+      (TypeError.IllTypedReduceSum (name, arg_tys, args, error, callback_loc))
+  )
+
+let illtyped_variadic loc name arg_tys args fn_rt error callback_loc =
+  ( loc
+  , TypeError
+      (TypeError.IllTypedVariadic
+         (name, arg_tys, args, error, fn_rt, callback_loc)) )
+
+let forwarded_function_application_error loc caller name required_args details
+    callback_loc =
+  ( loc
+  , TypeError
+      (TypeError.IllTypedForwardedFunctionApp
+         (caller, name, required_args, details, callback_loc)) )
+
+let forwarded_function_signature_error loc caller name details callback_loc =
+  ( loc
+  , TypeError
+      (TypeError.IllTypedForwardedFunctionSignature
+         (caller, name, details, callback_loc)) )
+
+let illtyped_laplace_helper_args loc name lik_args details =
+  ( loc
+  , TypeError (TypeError.IllTypedLaplaceHelperArgs (name, lik_args, details)) )
+
+let illtyped_laplace_generic loc name early supplied =
+  (loc, TypeError (TypeError.IllTypedLaplaceMarginal (name, early, supplied)))
+
+let laplace_compatibility loc banned_function use_location =
+  ( loc
+  , TypeError
+      (TypeError.LaplaceCompatibilityIssue (banned_function, use_location)) )
+
+let illtyped_laplace_extra_args loc name args =
+  (loc, TypeError (TypeError.IlltypedLaplaceTooMany (name, args)))
+
+let illtyped_laplace_hessian_block_size_arg loc name arg_ty =
+  (loc, TypeError (TypeError.IlltypedLaplaceHessianBlockSize (name, arg_ty)))
+
+let illtyped_laplace_tolerance_args loc name mismatch =
+  (loc, TypeError (TypeError.IlltypedLaplaceTolArgs (name, mismatch)))
+
+let illtyped_laplace_latent_solve_args loc name =
+  (loc, TypeError (TypeError.IlltypedLaplaceLatentSolveArgs name))
+
+let ambiguous_function_promotion loc name arg_tys signatures =
+  ( loc
+  , TypeError (TypeError.AmbiguousFunctionPromotion (name, arg_tys, signatures))
+  )
+
+let returning_fn_expected_nonfn_found loc name decl_loc =
+  (loc, TypeError (TypeError.ReturningFnExpectedNonFnFound (name, decl_loc)))
+
+let returning_fn_expected_undeclaredident_found loc name sug =
+  ( loc
+  , IdentifierError
+      (IdentifierError.ReturningFnExpectedUndeclaredIdentFound (name, sug)) )
+
+let returning_fn_expected_undeclared_dist_suffix_found loc (prefix, suffix) =
+  ( loc
+  , TypeError
+      (TypeError.ReturningFnExpectedUndeclaredDistSuffixFound (prefix, suffix))
+  )
+
+let returning_fn_expected_wrong_dist_suffix_found loc (prefix, suffix, sugs) =
+  ( loc
+  , TypeError
+      (TypeError.ReturningFnExpectedWrongDistSuffixFound (prefix, suffix, sugs))
+  )
+
+let nonreturning_fn_expected_returning_found loc name decl_loc =
+  ( loc
+  , TypeError (TypeError.NonReturningFnExpectedReturningFound (name, decl_loc))
+  )
+
+let nonreturning_fn_expected_nonfn_found loc name decl_loc =
+  (loc, TypeError (TypeError.NonReturningFnExpectedNonFnFound (name, decl_loc)))
+
+let nonreturning_fn_expected_undeclaredident_found loc name sug =
+  ( loc
+  , IdentifierError
+      (IdentifierError.NonReturningFnExpectedUndeclaredIdentFound (name, sug))
+  )
+
+let illtyped_fn_app loc name errors arg_tys callbacks =
+  ( loc
+  , TypeError (TypeError.IllTypedFunctionApp (name, arg_tys, errors, callbacks))
+  )
+
+let illtyped_binary_op loc op lt rt =
+  (loc, ExpressionError (ExpressionError.IllTypedBinaryOperator (op, lt, rt)))
+
+let illtyped_prefix_op loc op ut =
+  (loc, ExpressionError (ExpressionError.IllTypedPrefixOperator (op, ut)))
+
+let illtyped_postfix_op loc op ut =
+  (loc, ExpressionError (ExpressionError.IllTypedPostfixOperator (op, ut)))
+
+let not_indexable loc ut nidcs =
+  (loc, ExpressionError (ExpressionError.NotIndexable (ut, nidcs)))
+
+let tuple_index_invalid_index loc ix_max ix =
+  (loc, ExpressionError (ExpressionError.TupleIndexInvalidIndex (ix_max, ix)))
+
+let tuple_index_not_tuple loc ut =
+  (loc, ExpressionError (ExpressionError.TupleIndexNotTuple ut))
+
+let ident_is_keyword loc name =
+  (loc, IdentifierError (IdentifierError.IsKeyword name))
+
+let ident_is_model_name loc name =
+  (loc, IdentifierError (IdentifierError.IsModelName name))
+
+let ident_is_stanmath_name loc name =
+  (loc, IdentifierError (IdentifierError.IsStanMathName name))
+
+let ident_in_use loc name decl_loc =
+  (loc, IdentifierError (IdentifierError.InUse (name, decl_loc)))
+
+let ident_not_in_scope loc name sug =
+  (loc, IdentifierError (IdentifierError.NotInScope (name, sug)))
+
+let ident_has_unnormalized_suffix loc name =
+  (loc, IdentifierError (IdentifierError.UnnormalizedSuffix name))
+
+let invalid_decl_rng_fn loc =
+  (loc, ExpressionError ExpressionError.InvalidSizeDeclRng)
+
+let invalid_rng_fn loc =
+  (loc, ExpressionError ExpressionError.InvalidRngFunction)
+
+let invalid_unnormalized_fn loc name =
+  (loc, ExpressionError (ExpressionError.InvalidUnnormalizedFunction name))
+
+let udf_is_unnormalized_fn loc name =
+  (loc, ExpressionError (ExpressionError.InvalidUnnormalizedUDF name))
+
+let conditional_notation_not_allowed loc =
+  (loc, ExpressionError ExpressionError.ConditionalNotationNotAllowed)
+
+let conditioning_required loc =
+  (loc, ExpressionError ExpressionError.ConditioningRequired)
+
+let not_printable loc = (loc, ExpressionError ExpressionError.NotPrintable)
+let empty_array loc = (loc, ExpressionError ExpressionError.EmptyArray)
+let empty_tuple loc = (loc, ExpressionError ExpressionError.EmptyTuple)
+let bad_int_literal loc = (loc, ExpressionError ExpressionError.IntTooLarge)
+
+let cannot_assign_to_read_only loc name decl_loc =
+  (loc, StatementError (StatementError.CannotAssignToReadOnly (name, decl_loc)))
+
+let cannot_assign_to_global loc name block decl_loc =
+  ( loc
+  , StatementError (StatementError.CannotAssignToGlobal (name, block, decl_loc))
+  )
+
+let cannot_assign_function loc name ut =
+  (loc, StatementError (StatementError.CannotAssignFunction (name, ut)))
+
+let cannot_assign_to_multiindex loc =
+  (loc, StatementError StatementError.LValueMultiIndexing)
+
+let cannot_assign_duplicate_unpacking loc names =
+  (loc, StatementError (StatementError.LValueTupleUnpackDuplicates names))
+
+let cannot_access_assigning_var loc names =
+  (loc, StatementError (StatementError.LValueTupleReadAndWrite names))
+
+let invalid_tilde_pdf_or_pmf loc =
+  (loc, StatementError StatementError.InvalidTildePDForPMF)
+
+let invalid_tilde_cdf_or_ccdf loc name =
+  (loc, StatementError (StatementError.InvalidTildeCDForCCDF name))
+
+let invalid_tilde_no_such_dist loc name is_int =
+  ( loc
+  , StatementError
+      (StatementError.InvalidTildeNoSuchDistribution (name, is_int)) )
+
+let target_plusequals_outside_model_or_logprob loc =
+  (loc, StatementError StatementError.TargetPlusEqualsOutsideModelOrLogProb)
+
+let jacobian_plusequals_not_allowed loc =
+  (loc, StatementError StatementError.JacobianPlusEqualsNotAllowed)
+
+let invalid_truncation_cdf_or_ccdf loc args =
+  (loc, StatementError (StatementError.InvalidTruncationCDForCCDF args))
+
+let break_outside_loop loc =
+  (loc, StatementError StatementError.BreakOutsideLoop)
+
+let continue_outside_loop loc =
+  (loc, StatementError StatementError.ContinueOutsideLoop)
+
+let expression_return_outside_returning_fn loc =
+  (loc, StatementError StatementError.ExpressionReturnOutsideReturningFn)
+
+let void_outside_nonreturning_fn loc =
+  (loc, StatementError StatementError.VoidReturnOutsideNonReturningFn)
+
+let non_data_variable_size_decl loc block other_decl_loc =
+  ( loc
+  , StatementError
+      (StatementError.NonDataVariableSizeDecl (block, other_decl_loc)) )
+
+let non_int_bounds loc = (loc, StatementError StatementError.NonIntBounds)
+let complex_transform loc = (loc, StatementError StatementError.ComplexTransform)
+
+let no_int_params loc transformed =
+  (loc, StatementError (StatementError.IntegerParameter transformed))
+
+let fn_overload_rt_only loc name rt1 rt2 overload_loc =
+  (loc, TypeError (TypeError.FunOverloadRtOnly (name, rt1, rt2, overload_loc)))
+
+let fn_decl_redefined loc name ut original_loc =
+  (loc, TypeError (TypeError.FunDeclRedefined (name, ut, original_loc)))
+
+let stan_math_fn_redefined loc name ut =
+  (loc, TypeError (TypeError.StanMathFuncRedefined (name, ut)))
+
+let fn_decl_exists loc name original_loc =
+  (loc, TypeError (TypeError.FunDeclExists (name, original_loc)))
+
+let fn_extern_defined loc name annotation_loc =
+  (loc, TypeError (TypeError.FunExternDefined (name, annotation_loc)))
+
+let fn_decl_without_def loc name =
+  (loc, TypeError (TypeError.FunDeclNoDefn name))
+
+let non_real_prob_fn_def loc rt =
+  (loc, TypeError (TypeError.NonRealProbFunDef rt))
+
+let prob_density_non_real_variate loc ut_opt =
+  (loc, TypeError (TypeError.ProbDensityNonRealVariate ut_opt))
+
+let prob_mass_non_int_variate loc ut_opt =
+  (loc, TypeError (TypeError.ProbMassNonIntVariate ut_opt))
+
+let duplicate_arg_names loc id =
+  (loc, IdentifierError (IdentifierError.DuplicateArgNames id))
+
+let incompatible_return_types loc inc =
+  (loc, TypeError (TypeError.IncompatibleReturnType inc))

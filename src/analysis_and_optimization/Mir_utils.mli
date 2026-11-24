@@ -1,0 +1,191 @@
+open Std
+open Middle
+open Dataflow_types
+
+val expr_any : (ExprSet.elt -> bool) -> ExprSet.elt -> bool
+val idx_any : (ExprSet.elt -> bool) -> ExprSet.elt Index.t -> bool
+val cannot_duplicate_expr : ?preserve_stability:bool -> ExprSet.elt -> bool
+val cannot_remove_expr : ExprSet.elt -> bool
+val var_declarations : ('a, 'b) Stmt.t -> string Set.Poly.t
+val num_expr_value : Expr.Typed.t -> (float * string) option
+
+type bound_values =
+  { lower: [`None | `Nonlit | `Lit of float]
+  ; upper: [`None | `Nonlit | `Lit of float] }
+
+val trans_bounds_values : Expr.Typed.t Transformation.t -> bound_values
+val chop_dist_name : string -> string Option.t
+val top_var_declarations : Stmt.Located.t -> string Set.Poly.t
+val function_names : Program.Typed.t -> string Set.Poly.t
+
+val data_set :
+     ?exclude_transformed:bool
+  -> ?exclude_ints:bool
+  -> Program.Typed.t
+  -> string Set.Poly.t
+
+val parameter_set :
+     ?include_transformed:bool
+  -> Program.Typed.t
+  -> (string * Expr.Typed.t Transformation.t * Location_span.t) Set.Poly.t
+
+val parameter_names_set :
+  ?include_transformed:bool -> Program.Typed.t -> string Set.Poly.t
+
+val fold_expr :
+  take_expr:('c -> Expr.Typed.t -> 'c) -> init:'c -> Expr.Typed.t -> 'c
+
+val fold_stmts :
+     take_expr:('c -> Expr.Typed.t -> 'c)
+  -> take_stmt:('c -> Stmt.Located.t -> 'c)
+  -> init:'c
+  -> Stmt.Located.t List.t
+  -> 'c
+
+val map_rec_expr :
+     (Expr.Typed.t Expr.Pattern.t -> Expr.Typed.t Expr.Pattern.t)
+  -> Expr.Typed.t
+  -> Expr.Typed.t
+
+val map_rec_expr_state :
+     ('s -> Expr.Typed.t Expr.Pattern.t -> Expr.Typed.t Expr.Pattern.t * 's)
+  -> 's
+  -> Expr.Typed.t
+  -> Expr.Typed.t * 's
+
+val map_rec_stmt_loc :
+     (   (Expr.Typed.t, Stmt.Located.t) Stmt.Pattern.t
+      -> (Expr.Typed.t, Stmt.Located.t) Stmt.Pattern.t)
+  -> Stmt.Located.t
+  -> Stmt.Located.t
+
+val top_down_map_rec_stmt_loc :
+     (   (Expr.Typed.t, Stmt.Located.t) Stmt.Pattern.t
+      -> (Expr.Typed.t, Stmt.Located.t) Stmt.Pattern.t)
+  -> Stmt.Located.t
+  -> Stmt.Located.t
+
+val map_rec_state_stmt_loc :
+     (   's
+      -> (Expr.Typed.t, Stmt.Located.t) Stmt.Pattern.t
+      -> (Expr.Typed.t, Stmt.Located.t) Stmt.Pattern.t * 's)
+  -> 's
+  -> Stmt.Located.t
+  -> Stmt.Located.t * 's
+
+val map_rec_stmt_loc_num :
+     Stmt.Located.Non_recursive.t LabelMap.t
+  -> (   int
+      -> (Expr.Typed.t, Stmt.Located.t) Stmt.Pattern.t
+      -> (Expr.Typed.t, Stmt.Located.t) Stmt.Pattern.t)
+  -> Stmt.Located.Non_recursive.t
+  -> Stmt.Located.t
+
+val stmt_loc_of_stmt_loc_num :
+     Stmt.Located.Non_recursive.t LabelMap.t
+  -> Stmt.Located.Non_recursive.t
+  -> Stmt.Located.t
+
+val statement_stmt_loc_of_statement_stmt_loc_num :
+     Stmt.Located.Non_recursive.t LabelMap.t
+  -> (Expr.Typed.t, int) Stmt.Pattern.t
+  -> (Expr.Typed.t, Stmt.Located.t) Stmt.Pattern.t
+
+val unnumbered_prog_of_numbered_prog :
+     Stmt.Located.Non_recursive.t LabelMap.t
+  -> ('a -> 'b)
+  -> (Stmt.Located.Non_recursive.t, 'a, 'c) Program.t
+  -> (Stmt.Located.t, 'b, 'c) Program.t
+
+val fwd_traverse_statement :
+     ('e, 'a) Stmt.Pattern.t
+  -> init:'f
+  -> f:('f -> 'a -> 'f * 'c)
+  -> 'f * ('e, 'c) Stmt.Pattern.t
+(** A traversal that simultaneously accumulates a state (type 'f) and replaces
+    the substatement values from ('a to 'c). Traversal is done in-order but
+    ignores branching, e.g., and if's then block is followed by the else block
+    rather than branching. *)
+
+val vexpr_of_expr_exn : Expr.Typed.t -> vexpr
+(** Take a LHS expression from a general expression, throwing an exception if it
+    can't be a LHS expression. *)
+
+val expr_var_set : Expr.Typed.t -> (vexpr * Expr.Typed.Meta.t) Set.Poly.t
+(** The set of variables in an expression, including inside an index. For use in
+    RHS sets, not LHS assignment sets, except in a target term. *)
+
+val index_var_set :
+  Expr.Typed.t Index.t -> (vexpr * Expr.Typed.Meta.t) Set.Poly.t
+(** The set of variables in an index. For use in RHS sets, not LHS assignment
+    sets, except in a target term *)
+
+val expr_var_names_set : Expr.Typed.t -> string Set.Poly.t
+(** Return the names of the variables in an expression. *)
+
+val stmt_rhs : (Expr.Typed.t, 's) Stmt.Pattern.t -> Expr.Typed.t Set.Poly.t
+(** The set of variables that can affect the value or behavior of the
+    expression, i.e. rhs. Using Set.Poly instead of ExprSet so that 'e can be
+    polymorphic, it usually doesn't matter if there's duplication. *)
+
+val stmt_rhs_var_set :
+  (Expr.Typed.t, 's) Stmt.Pattern.t -> (vexpr * Expr.Typed.Meta.t) Set.Poly.t
+(** The set of variables in an expression, including inside an index. For use in
+    RHS sets, not LHS assignment sets, except in a target term. *)
+
+val stmt_rhs_names_set : ('a Expr.t, 'b) Stmt.Pattern.t -> vexpr Set.Poly.t
+(** The set of variable names in an expression, including inside an index. For
+    use in RHS sets, not LHS assignment sets, except in a target term. *)
+
+val stmt_referenced_names_set : ('a, 'b) Stmt.t -> string Set.Poly.t
+(** The set of variable names referenced in the statement. This includes things
+    the left hand side of an assignment, but excludes newly declared decls
+    unless they are separately used later. *)
+
+val expr_assigned_var : Expr.Typed.t -> vexpr
+(** The variable being assigned to when the expression is the LHS *)
+
+val summation_terms : Expr.Typed.t -> Expr.Typed.t list
+(** The list of terms in expression separated by a + *)
+
+val subst_expr : Expr.Typed.t String.Map.t -> Expr.Typed.t -> Expr.Typed.t
+(** Substitute variables in an expression according to the provided Map. *)
+
+val subst_stmt_base :
+     Expr.Typed.t String.Map.t
+  -> (Expr.Typed.t, 'a) Stmt.Pattern.t
+  -> (Expr.Typed.t, 'a) Stmt.Pattern.t
+(** Substitute variables occurring at the top level in statements according to
+    the provided Map. *)
+
+val subst_stmt : Expr.Typed.t String.Map.t -> Stmt.Located.t -> Stmt.Located.t
+(** Substitute variables occurring anywhere in a statement according to the
+    provided Map. *)
+
+val name_subst_stmt : string String.Map.t -> Stmt.Located.t -> Stmt.Located.t
+(** Substitute subexpressions occurring anywhere in a statement according to the
+    provided Map. *)
+
+val expr_subst_expr : Expr.Typed.t ExprMap.t -> Expr.Typed.t -> Expr.Typed.t
+(** Substitute subexpressions in an expression according to the provided Map,
+    trying to match on larger subexpressions before smaller ones. *)
+
+val expr_subst_stmt_base :
+     Expr.Typed.t ExprMap.t
+  -> (Expr.Typed.t, 'a) Stmt.Pattern.t
+  -> (Expr.Typed.t, 'a) Stmt.Pattern.t
+(** Substitute subexpressions occurring at the top level in statements according
+    to the provided Map. *)
+
+val expr_depth : Expr.Typed.t -> int
+(** Calculate how deeply nested an expression is. *)
+
+val update_expr_ad_levels :
+  ?keep_promotions:bool -> string Set.Poly.t -> Expr.Typed.t -> Expr.Typed.t
+(** Recompute all AD-levels in the metadata of an expression from the bottom up,
+    making the variables in the first argument autodiffable *)
+
+val cleanup_empty_stmts : ('e, 's) Stmt.t list -> ('e, 's) Stmt.t list
+
+val unsafe_unsized_to_sized_type :
+  Expr.Typed.t Type.t -> Expr.Typed.t SizedType.t

@@ -1,0 +1,164 @@
+(** Preprocessor for handling include directives *)
+
+open Std
+open Lexing
+open Debugging
+
+let comments = Queue.create ()
+let add_comment c = Queue.push c comments
+let get_comments () = Queue.to_seq comments |> List.of_seq
+let include_stack = Stack.create ()
+let included_files : string list ref = ref []
+let size () = Stack.length include_stack
+
+let locations_map : (string * Middle.Location.t option) Dynarray.t =
+  Dynarray.create ()
+
+let new_file_start_position buf filename included_from =
+  (* Lexing.position does not have a field to store `included_from` so we store
+     it in a global array and put its index in `pos_fname`.
+
+     Prefixing the key with NUL allows us to do a little optimization: when
+     `included_from` is None we don't need to access the array and can store the
+     filename directly in `pos_fname`. Filenames never begin with NUL so
+     `location_of_position` only needs to check the first character to know
+     whether to do a lookup. *)
+  let pos =
+    if Option.is_none included_from then
+      {Lexing.pos_fname= filename; pos_lnum= 1; pos_bol= 0; pos_cnum= 0}
+    else
+      let encode i =
+        let buf = Bytes.create 5 in
+        Bytes.set buf 0 Char.Ascii.min;
+        Bytes.set_int32_ne buf 1 (Int32.of_int i);
+        Bytes.to_string buf in
+      let key = encode (Dynarray.length locations_map) in
+      Dynarray.add_last locations_map (filename, included_from);
+      {Lexing.pos_fname= key; pos_lnum= 1; pos_bol= 0; pos_cnum= 0} in
+  buf.lex_start_p <- pos;
+  buf.lex_curr_p <- pos
+
+let location_of_position {Lexing.pos_fname; pos_lnum; pos_cnum; pos_bol} =
+  let filename, included_from =
+    if Char.equal (String.get pos_fname 0) Char.Ascii.min then
+      let decode s = Int32.to_int (Bytes.get_int32_ne (Bytes.of_string s) 1) in
+      Dynarray.get locations_map (decode pos_fname)
+    else (pos_fname, None) in
+  { Middle.Location.line_num= pos_lnum
+  ; col_num= pos_cnum - pos_bol
+  ; byte_num= pos_cnum
+  ; filename
+  ; included_from }
+
+let location_span_of_positions (start_pos, end_pos) : Middle.Location_span.t =
+  let begin_loc =
+    lexer_logger "start locating:";
+    lexer_pos_logger start_pos;
+    location_of_position start_pos in
+  let end_loc =
+    lexer_logger "end locating:";
+    lexer_pos_logger end_pos;
+    location_of_position end_pos in
+  {begin_loc; end_loc}
+
+let init buf filename =
+  Dynarray.clear locations_map;
+  Queue.clear comments;
+  included_files := [];
+  Stack.clear include_stack;
+  Stack.push buf include_stack;
+  new_file_start_position buf filename None
+
+let current_buffer () =
+  let buf = Stack.top include_stack in
+  buf
+
+let current_location () =
+  let buf = current_buffer () in
+  location_span_of_positions (Lexing.lexeme_start_p buf, Lexing.lexeme_end_p buf)
+
+let pop_buffer () = Stack.pop include_stack
+
+let restore_prior_lexbuf () =
+  ignore (pop_buffer ());
+  let old_lexbuf = current_buffer () in
+  lexer_logger "Switching to older lexbuf";
+  lexer_pos_logger old_lexbuf.lex_curr_p;
+  old_lexbuf
+
+let include_error ?note msg =
+  Syntax_error.include_error ?note msg (current_location ())
+
+let find_include_fs lookup_paths fname =
+  let rec loop paths =
+    match paths with
+    | [] ->
+        let note =
+          if List.is_empty lookup_paths then
+            Fmt.str "@[No include paths were provided to the compiler.@]"
+          else
+            Fmt.(str "@[Current include paths: %a@]" (list ~sep:comma string))
+              lookup_paths in
+        let message = Fmt.str "Could not find include file '%s'." fname in
+        include_error ~note message
+    | path :: rest_of_paths -> (
+        try
+          let full_path = path ^ "/" ^ fname in
+          let ic = In_channel.open_bin full_path in
+          let lexbuf = Lexing.from_channel ic in
+          Gc.finalise (fun _ -> In_channel.close_noerr ic) lexbuf;
+          (lexbuf, full_path)
+        with _ -> loop rest_of_paths) in
+  loop lookup_paths
+
+let find_include_inmemory map fname =
+  match String.Map.find_opt fname map with
+  | None ->
+      let note =
+        if String.Map.is_empty map then
+          Fmt.str
+            "@[stanc was not given information about any files to include.@]"
+        else
+          let keys = String.Map.to_list map |> List.map ~f:fst in
+          Fmt.(
+            str "@[stanc was given information about the following files: %a@]"
+              (list ~sep:comma string))
+            keys in
+      let message = Fmt.str "Could not find include file '%s'." fname in
+      include_error ~note message
+  | Some s -> (Lexing.from_string s, fname)
+
+let find_include fname =
+  match !Include_files.include_provider with
+  | FileSystemPaths lookup_paths -> find_include_fs lookup_paths fname
+  | InMemory map -> find_include_inmemory map fname
+
+let try_get_new_lexbuf fname =
+  let new_lexbuf =
+    let buf, file = find_include fname in
+    let buf =
+      if
+        Common.Files.is_stanfunctions file && List.mem ~set:!included_files file
+      then (
+        lexer_logger ("ignoring duplicated include  " ^ file);
+        Lexing.from_string "")
+      else (
+        lexer_logger ("opened " ^ file);
+        included_files := file :: !included_files;
+        buf) in
+    new_file_start_position buf file
+      (Some (location_of_position (Stack.top include_stack).lex_start_p));
+    buf in
+  let dup_exists {Middle.Location.filename; included_from; _} =
+    let is_dup = String.equal filename in
+    let rec go = function
+      | None -> false
+      | Some {Middle.Location.filename; included_from; _} ->
+          if is_dup filename then true else go included_from in
+    go included_from in
+  if dup_exists (location_of_position new_lexbuf.lex_start_p) then
+    include_error (Fmt.str "File '%s' recursively included itself." fname);
+  Stack.push new_lexbuf include_stack;
+  new_lexbuf
+
+let included_files () = List.rev !included_files

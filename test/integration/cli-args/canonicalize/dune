@@ -1,0 +1,65 @@
+(subdir
+ dunes
+ (rule
+  (deps
+   (sandbox patch_back_source_tree)
+   (glob_files ../expected_canonical/*)
+   (:stanfiles
+    (glob_files ../*.stan*)))
+  (action
+   (with-stdout-to
+    canonical.dune
+    (run
+     %{project_root}/test/integration/gen_expected_rules.exe
+     preserve
+     "--print-canonical"
+     %{stanfiles}))))
+ (rule
+  (deps
+   (sandbox patch_back_source_tree)
+   (glob_files ../expected_deprecations/*)
+   (:stanfiles
+    (glob_files ../*.stan*)))
+  (action
+   (with-stdout-to
+    deprecations.dune
+    (run
+     %{project_root}/test/integration/gen_expected_rules.exe
+     preserve
+     "--auto-format --canonicalize deprecations"
+     %{stanfiles}))))
+ (rule
+  (deps
+   (sandbox patch_back_source_tree)
+   (glob_files ../expected_everything_but/*)
+   (:stanfiles
+    (glob_files ../*.stan*)))
+  (action
+   (with-stdout-to
+    everything-but.dune
+    (run
+     %{project_root}/test/integration/gen_expected_rules.exe
+     preserve
+     "--auto-format --canonicalize braces,parentheses"
+     %{stanfiles}))))
+ (rule
+  (deps
+   (sandbox patch_back_source_tree)
+   (glob_files ../expected_stripped/*)
+   (:stanfiles
+    (glob_files ../*.stan*)))
+  (action
+   (with-stdout-to
+    stripped.dune
+    (run
+     %{project_root}/test/integration/gen_expected_rules.exe
+     preserve
+     "--auto-format --canonicalize strip-comments,braces,parentheses,deprecations"
+     %{stanfiles})))))
+
+(subdir
+ run
+ (dynamic_include ../dunes/canonical.dune)
+ (dynamic_include ../dunes/deprecations.dune)
+ (dynamic_include ../dunes/everything-but.dune)
+ (dynamic_include ../dunes/stripped.dune))

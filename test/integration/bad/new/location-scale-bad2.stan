@@ -1,0 +1,1 @@
+data { vector<offset = T, multiplier = T,> x;}

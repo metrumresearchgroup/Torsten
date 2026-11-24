@@ -1,0 +1,50 @@
+(subdir
+ dunes
+ (rule
+  (deps
+   (sandbox patch_back_source_tree)
+   (glob_files ../expected_O0/*)
+   (:stanfiles
+    (glob_files ../*.stan)))
+  (action
+   (with-stdout-to
+    O0.dune
+    (run
+     %{project_root}/test/integration/gen_expected_rules.exe
+     cpp
+     "--print-cpp --O0"
+     %{stanfiles}))))
+ (rule
+  (deps
+   (sandbox patch_back_source_tree)
+   (glob_files ../expected_O1/*)
+   (:stanfiles
+    (glob_files ../*.stan)))
+  (action
+   (with-stdout-to
+    O1.dune
+    (run
+     %{project_root}/test/integration/gen_expected_rules.exe
+     cpp
+     "--print-cpp --O1"
+     %{stanfiles}))))
+ (rule
+  (deps
+   (sandbox patch_back_source_tree)
+   (glob_files ../expected_experimental/*)
+   (:stanfiles
+    (glob_files ../*.stan)))
+  (action
+   (with-stdout-to
+    Oexperimental.dune
+    (run
+     %{project_root}/test/integration/gen_expected_rules.exe
+     cpp
+     "--print-cpp --Oexperimental"
+     %{stanfiles})))))
+
+(subdir
+ run
+ (dynamic_include ../dunes/O0.dune)
+ (dynamic_include ../dunes/O1.dune)
+ (dynamic_include ../dunes/Oexperimental.dune))

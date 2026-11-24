@@ -1,0 +1,97 @@
+(subdir
+ dunes
+ (rule
+  (deps
+   (sandbox patch_back_source_tree)
+   (glob_files ../expected_pretty/*)
+   (glob_files data/*.stan)
+   (glob_files functions/*.stan)
+   (glob_files gqs/*.stan)
+   (glob_files model/*.stan)
+   (glob_files parameters/*.stan)
+   (glob_files pre/*.stan)
+   (glob_files tdata/*.stan)
+   (glob_files tparameters/*.stan)
+   (:stanfiles
+    (glob_files ../*.stan)))
+  (action
+   (with-stdout-to
+    pretty.dune
+    (run
+     %{project_root}/test/integration/gen_expected_rules.exe
+     preserve
+     "--include-paths=.. --auto-format --allow-undefined"
+     %{stanfiles}))))
+ (rule
+  (deps
+   (sandbox patch_back_source_tree)
+   (glob_files ../expected_inlined/*)
+   (glob_files data/*.stan)
+   (glob_files functions/*.stan)
+   (glob_files gqs/*.stan)
+   (glob_files model/*.stan)
+   (glob_files parameters/*.stan)
+   (glob_files pre/*.stan)
+   (glob_files tdata/*.stan)
+   (glob_files tparameters/*.stan)
+   (:stanfiles
+    (glob_files ../*.stan)))
+  (action
+   (with-stdout-to
+    inlined.dune
+    (run
+     %{project_root}/test/integration/gen_expected_rules.exe
+     preserve
+     "--include-paths=.. --auto-format --allow-undefined --canonicalize=includes"
+     %{stanfiles}))))
+ (rule
+  (deps
+   (sandbox patch_back_source_tree)
+   (glob_files ../expected_stripped/*)
+   (glob_files data/*.stan)
+   (glob_files functions/*.stan)
+   (glob_files gqs/*.stan)
+   (glob_files model/*.stan)
+   (glob_files parameters/*.stan)
+   (glob_files pre/*.stan)
+   (glob_files tdata/*.stan)
+   (glob_files tparameters/*.stan)
+   (:stanfiles
+    (glob_files ../*.stan)))
+  (action
+   (with-stdout-to
+    stripped.dune
+    (run
+     %{project_root}/test/integration/gen_expected_rules.exe
+     preserve
+     "--include-paths=.. --auto-format --allow-undefined --canonicalize=strip-comments"
+     %{stanfiles}))))
+ (rule
+  (deps
+   (sandbox patch_back_source_tree)
+   (glob_files ../expected_stripped_inlined/*)
+   (glob_files data/*.stan)
+   (glob_files functions/*.stan)
+   (glob_files gqs/*.stan)
+   (glob_files model/*.stan)
+   (glob_files parameters/*.stan)
+   (glob_files pre/*.stan)
+   (glob_files tdata/*.stan)
+   (glob_files tparameters/*.stan)
+   (:stanfiles
+    (glob_files ../*.stan)))
+  (action
+   (with-stdout-to
+    stripped_inlined.dune
+    (run
+     %{project_root}/test/integration/gen_expected_rules.exe
+     preserve
+     "--include-paths=.. --auto-format --allow-undefined --canonicalize=strip-comments,includes"
+     %{stanfiles})))))
+
+(subdir
+ run
+ (dynamic_include ../dunes/pretty.dune)
+ (dynamic_include ../dunes/inlined.dune)
+ (dynamic_include ../dunes/stripped.dune)
+ (dynamic_include ../dunes/stripped_inlined.dune))

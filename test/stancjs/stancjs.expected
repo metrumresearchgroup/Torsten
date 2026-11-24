@@ -1,0 +1,496 @@
+$ node allow-undefined.js
+error: Function "foo" is declared without specifying a definition.
+    ┌─ string:3:9
+  2 │  functions {
+  3 │      int foo(real a);
+    │          ^^^ Function "foo" is declared without specifying a definition.
+  4 │  }
+    = If this function will be supplied elsewhere after compilation,
+      (e.g., it is being manually implemented in C++)
+      it must be marked with '@extern' .
+
+$ node auto-format.js
+parameters {
+  real y;
+}
+transformed parameters {
+  print("this line is much, much, much ", "too long", " to print on one line");
+}
+model {
+  y ~ std_normal();
+}
+
+parameters {
+  real y;
+}
+transformed parameters {
+  print("this line is much, much, much ",
+        "too long",
+        " to print on one line");
+}
+model {
+  y ~ std_normal();
+}
+
+$ node bad_inputs.js
+Failed to convert stanc.js argument 'code'!
+It had type 'object' instead of 'string'.
+Failed to convert stanc.js argument 'name'!
+It had type 'number' instead of 'string'.
+Failed to convert stanc.js argument 'flags'!
+Array.isArray returned false for value of type 'number'.
+Failed to convert stanc.js argument 'flags'!
+Array.isArray returned false for value of type 'object'.
+Failed to convert stanc.js argument 'flags'!
+Array.isArray returned false for value of type 'string'.
+Failed to convert stanc.js argument 'flags[1]'!
+It had type 'number' instead of 'string'.
+$ node basic.js
+error: Identifier "z" not in scope.
+    ┌─ string:6:5
+  5 │  model {
+  6 │      z ~ std_normal();
+    │      ^ Identifier "z" not in scope.
+  7 │  }
+
+With ANSI color output:
+[1m[91merror[0;1m[0m[1m[91m[0;1m[0m: [1mIdentifier [32m"z"[0;1m not in scope.[0m
+    [0m[2m┌─[0m[0m string:6:5
+[33m  5[0m [0m[2m│[0m[0m  model {
+[33m  6[0m [0m[2m│[0m[0m      [31mz[0m ~ std_normal();
+    [0m[2m│[0m[0m      [31m^[0m [31m[0mIdentifier [32m"z"[0m not in scope.[0;31m[0m
+[33m  7[0m [0m[2m│[0m[0m  }
+
+$ node canonical.js
+functions {
+  int foo(int x) {
+    return x;
+  }
+}
+parameters {
+  real y;
+}
+model {
+  y ~ normal(0, 1);
+}
+
+functions {
+  int foo(int x) {
+    return x;
+  }
+}
+parameters {
+  real y;
+}
+model {
+  y ~ normal(((((((((0)))))))), 1);
+}
+
+functions {
+  int foo(int x);
+  
+  int foo(int x) {
+    return x;
+  }
+}
+parameters {
+  real y;
+}
+model {
+  y ~ normal(0, 1);
+}
+
+$ node check.js
+{
+  "errors": [],
+  "warnings": [
+    {
+      "severity": "warning",
+      "message": "The variable x may not have been assigned a value before its first use.",
+      "notes": [],
+      "labels": [
+        {
+          "range": {
+            "source": "string",
+            "start": {
+              "line": 7,
+              "column": 19
+            },
+            "end": {
+              "line": 7,
+              "column": 20
+            }
+          },
+          "priority": "primary",
+          "message": "The variable x may not have been assigned a value before its first use."
+        }
+      ]
+    }
+  ]
+}
+{
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Identifier \"z\" not in scope.",
+      "notes": [],
+      "labels": [
+        {
+          "range": {
+            "source": "string",
+            "start": {
+              "line": 6,
+              "column": 5
+            },
+            "end": {
+              "line": 6,
+              "column": 6
+            }
+          },
+          "priority": "primary",
+          "message": "Identifier \"z\" not in scope."
+        }
+      ]
+    }
+  ],
+  "warnings": []
+}
+Error expected:
+Failed to convert stanc.js argument 'name'!
+It had type 'object' instead of 'string'.
+$ node data-generation.js
+dim(x) = (3, 4)
+dim(y) = (5, 2, 4)
+dim(z) = (3, 4)
+dim(w) = (3)
+dim(p) = (4, 3)
+
+$ node debug.js
+
+$ node filename.js
+error: Identifier "z" not in scope.
+    ┌─ good_filename:6:5
+  5 │  model {
+  6 │      z ~ std_normal();
+    │      ^ Identifier "z" not in scope.
+  7 │  }
+
+error: Identifier "z" not in scope.
+    ┌─ string:6:5
+  5 │  model {
+  6 │      z ~ std_normal();
+    │      ^ Identifier "z" not in scope.
+  7 │  }
+
+$ node format.js
+parameters {
+  real y;
+}
+transformed parameters {
+  print("this line is much, much, much ", "too long", " to print on one line");
+}
+model {
+  y ~ std_normal();
+}
+
+parameters {
+  real y;
+}
+transformed parameters {
+  print("this line is much, much, much ",
+        "too long",
+        " to print on one line");
+}
+model {
+  y ~ std_normal();
+}
+
+$ node functions-only.js
+real my_log1p_exp(real x) {
+  return log1p_exp(x);
+}
+
+real array_fun(array[] real a) {
+  return sum(a);
+}
+
+real int_array_fun(array[] int a) {
+  return sum(a);
+}
+
+vector my_vector_mul_by_5(vector x) {
+  vector[num_elements(x)] result = x * 5.0;
+  return result;
+}
+
+int int_only_multiplication(int a, int b) {
+  return a * b;
+}
+
+real test_lgamma(real x) {
+  return lgamma(x);
+}
+
+// test special functions
+void test_lp(real a) {
+  a ~ normal(0, 1);
+}
+
+real test_rng(real a) {
+  return normal_rng(a, 1);
+}
+
+real test_lpdf(real a, real b) {
+  return normal_lpdf(a | b, 1);
+}
+real my_log1p_exp(real x) {
+  return log1p_exp(x);
+}
+
+real array_fun(array[] real a) {
+  return sum(a);
+}
+
+real int_array_fun(array[] int a) {
+  return sum(a);
+}
+
+vector my_vector_mul_by_5(vector x) {
+  vector[num_elements(x)] result = x * 5.0;
+  return result;
+}
+
+int int_only_multiplication(int a, int b) {
+  return a * b;
+}
+
+real test_lgamma(real x) {
+  return lgamma(x);
+}
+
+// test special functions
+void test_lp(real a) {
+  a ~ normal(0, 1);
+}
+
+real test_rng(real a) {
+  return normal_rng(a, 1);
+}
+
+real test_lpdf(real a, real b) {
+  return normal_lpdf(a | b, 1);
+}
+$ node good_after_bad.js
+error: Syntax error: Ill-formed program.
+    ┌─ string:8:1
+  7 │  }
+  8 │  model {
+    │  ^^^^^ here.
+  9 │      y ~ std_normal();
+    = Expected "generated quantities {" or end of file after end of model block.
+
+$ node includes.js
+error: Could not find include file 'foo.stan'.
+
+    ┌─ string:2:1
+  2 │  #include <foo.stan>
+    │  ^^^^^^^^^^^^^^^^^^^ here.
+    = stanc was not given information about any files to include.
+
+error: Could not find include file 'foo.stan'.
+
+    ┌─ string:2:1
+  2 │  #include <foo.stan>
+    │  ^^^^^^^^^^^^^^^^^^^ here.
+    = stanc was given information about the following files: bar.stan
+
+error: Could not find include file 'foo.stan'.
+
+    ┌─ string:2:1
+  2 │  #include <foo.stan>
+    │  ^^^^^^^^^^^^^^^^^^^ here.
+    = stanc was given information about the following files: ./foo.stan
+
+functions {
+  int foo(real a) {
+    return 1;
+  }
+}
+data {
+  int a;
+}
+
+{
+  "inputs": { "a": { "type": "int", "dimensions": 0 } },
+  "parameters": {},
+  "transformed parameters": {},
+  "generated quantities": {},
+  "functions": [],
+  "distributions": [],
+  "included_files": [ "foo.stan" ]
+}
+{
+  "info": {
+    "inputs": {
+      "a": {
+        "type": "int",
+        "dimensions": 0
+      }
+    },
+    "parameters": {},
+    "transformed parameters": {},
+    "generated quantities": {},
+    "functions": [],
+    "distributions": [],
+    "included_files": [
+      "foo.stan"
+    ]
+  },
+  "errors": [],
+  "warnings": []
+}
+model {
+  
+}
+
+model {
+  
+}
+
+model {
+  
+}
+
+warning: stanc.js failed to parse included file mapping:
+  Failed to convert stanc.js argument 'includes["baz"]'!
+It had type 'number' instead of 'string'.
+
+{
+  "inputs": { "a": { "type": "int", "dimensions": 0 } },
+  "parameters": {},
+  "transformed parameters": {},
+  "generated quantities": {},
+  "functions": [],
+  "distributions": [],
+  "included_files": [ "foo.stan" ]
+}
+warning: stanc.js failed to parse included file mapping:
+  Failed to convert stanc.js argument 'includes["foo.stan"]'!
+It had type 'object' instead of 'string'.
+
+warning: stanc.js failed to parse included file mapping:
+  Failed to convert stanc.js argument 'includes'!
+It had type 'number' instead of 'object'.
+
+error: File 'include/b.stan' recursively included itself.
+
+    ┌─ include/a.stan:2:1
+  1 │  // comment here
+  2 │  #include <include/b.stan>
+    │  ^^^^^^^^^^^^^^^^^^^^^^^^^
+    │  │                        
+    │  here.
+    │  file 'include/b.stan' included here
+    ┌─ include/b.stan:1:1
+  1 │  #include <include/a.stan>
+    │  -------- file 'include/a.stan' included here
+  2 │   // comment here
+
+$ node info.js
+{
+  "inputs": {
+    "a": { "type": "int", "dimensions": 0 },
+    "b": { "type": "real", "dimensions": 0 },
+    "c": { "type": "real", "dimensions": 1 },
+    "d": { "type": "real", "dimensions": 1 },
+    "e": { "type": "real", "dimensions": 2 },
+    "f": { "type": "int", "dimensions": 1 },
+    "g": { "type": "real", "dimensions": 1 },
+    "h": { "type": "real", "dimensions": 2 },
+    "i": { "type": "real", "dimensions": 3 },
+    "j": { "type": "int", "dimensions": 3 }
+  },
+  "parameters": {
+    "l": { "type": "real", "dimensions": 1 },
+    "m": { "type": "real", "dimensions": 1 },
+    "n": { "type": "real", "dimensions": 1 },
+    "o": { "type": "real", "dimensions": 1 },
+    "p": { "type": "real", "dimensions": 2 },
+    "q": { "type": "real", "dimensions": 2 },
+    "r": { "type": "real", "dimensions": 2 },
+    "s": { "type": "real", "dimensions": 2 },
+    "y": { "type": "real", "dimensions": 0 }
+  },
+  "transformed parameters": {},
+  "generated quantities": {},
+  "functions": [],
+  "distributions": [],
+  "included_files": []
+}
+$ node math_sigs.js
+
+$ node model_name.js
+
+$ node optimization.js
+error: Function "foo" is declared without specifying a definition.
+    ┌─ string:3:9
+  2 │  functions {
+  3 │      int foo(real a);
+    │          ^^^ Function "foo" is declared without specifying a definition.
+  4 │  }
+    = If this function will be supplied elsewhere after compilation,
+      (e.g., it is being manually implemented in C++)
+      it must be marked with '@extern' .
+
+"stancflags = --use-opencl --allow-undefined"
+$ node pedantic.js
+string:4:2: warning: The parameter k was declared but was not used in the density calculation.
+
+string:7:18: warning: Argument 10000 suggests there may be parameters that are not unit scale;
+  consider rescaling with a multiplier, see:
+  https://mc-stan.org/docs/stan-users-guide/efficiency-tuning.html#standardizing-predictors
+
+string:4:10: warning: The variable tt may not have been assigned a value before its first use.
+
+$ node removed.js
+error: Syntax error: Ill-formed declaration.
+    ┌─ string:3:9
+  2 │  parameters {
+  3 │   real y[10];
+    │          ^^ here.
+  4 │  }
+    = ";" expected after variable declaration.
+        It looks like you are trying to use the old array syntax.
+        Please use the new syntax:
+        array[10] real y;
+
+error: Syntax error: Ill-formed declaration.
+    ┌─ string:3:9
+  2 │  parameters {
+  3 │   real y[10];
+    │          ^^ here.
+  4 │  }
+    = ";" expected after variable declaration.
+        It looks like you are trying to use the old array syntax.
+        Please use the new syntax:
+        array[10] real y;
+
+undefined
+$ node standalone-functions.js
+
+$ node version.js
+%%NAME%%3 %%VERSION%%
+%%NAME%%3 %%VERSION%%
+%%NAME%%3 %%VERSION%%
+%%NAME%%3 %%VERSION%%
+$ node warnings.js
+warning: Found integer division. The value will be rounded towards zero.
+    ┌─ string:10:12
+  9 │      int x, w;
+ 10 │     int z = x / w;
+    │             ^^^^^ If rounding is not desired you can write the division as
+    │                   x * 1.0 / w
+ 11 │  }
+    = If rounding is intended please use the integer division operator
+      %%/%%.
+

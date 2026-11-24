@@ -1,0 +1,165 @@
+(** The signatures of the Stan Math library, which are used for type checking *)
+
+open Std
+open Middle
+
+(** The [Generated_signatures] module is produced by the [Generate.ml]
+    executable in this folder.
+
+    {b This is an optimization}, one can proceed as-if the hashtables here were
+    built at runtime by the code in that module (i.e., by [include Generate]) *)
+
+include Generated_signatures
+
+let is_stan_math_function_name name =
+  let name = Utils.stdlib_distribution_name name in
+  Hashtbl.mem (Lazy.force stan_math_signatures) name
+
+let lookup_stan_math_function name =
+  Hashtbl.find_multi (Lazy.force stan_math_signatures) name
+
+let signatures_alist =
+  Lazy.map stan_math_signatures ~f:(Fun.compose List.of_seq Hashtbl.to_seq)
+
+let is_stan_math_variadic_function_name =
+  Hashtbl.mem stan_math_variadic_signatures
+
+let lookup_stan_math_variadic_function =
+  Hashtbl.find_opt stan_math_variadic_signatures
+
+let operator_to_stan_math_fns op =
+  match op with
+  | Operator.Plus -> ["add"]
+  | PPlus -> ["plus"]
+  | Minus -> ["subtract"]
+  | PMinus -> ["minus"]
+  | Times -> ["multiply"]
+  | Divide -> ["divide"; "mdivide_right"]
+  | Modulo -> ["modulus"]
+  | IntDivide -> ["divide"]
+  | LDivide -> ["mdivide_left"]
+  | EltTimes -> ["elt_multiply"]
+  | EltDivide -> ["elt_divide"]
+  | Pow -> ["pow"]
+  | EltPow -> ["pow"]
+  | Or -> ["logical_or"]
+  | And -> ["logical_and"]
+  | Equals -> ["logical_eq"]
+  | NEquals -> ["logical_neq"]
+  | Less -> ["logical_lt"]
+  | Leq -> ["logical_lte"]
+  | Greater -> ["logical_gt"]
+  | Geq -> ["logical_gte"]
+  | PNot -> ["logical_negation"]
+  | Transpose -> ["transpose"]
+
+let get_sigs name =
+  let name = Utils.stdlib_distribution_name name in
+  Hashtbl.find_multi (Lazy.force stan_math_signatures) name
+  |> List.sort ~cmp:UnsizedType.compare_signature
+
+let operator_to_stan_math_signatures op =
+  let int_only_operator_type =
+    UnsizedType.
+      ( [(AutoDiffable, UInt); (AutoDiffable, UInt)]
+      , ReturnType UInt
+      , Fun_kind.FnPlain
+      , Mem_pattern.AoS ) in
+  match op with
+  | Operator.IntDivide | And | Or -> [int_only_operator_type]
+  | _ -> operator_to_stan_math_fns op |> List.concat_map ~f:get_sigs
+
+let pretty_print_all_math_sigs ppf () =
+  let open Fmt in
+  Format.pp_set_margin ppf 180;
+  let pp_sig ppf (name, (args, rt, _, _)) =
+    pf ppf "%s(@[<h>%a@]) => %a" name
+      (list ~sep:comma UnsizedType.pp)
+      (List.map ~f:snd args) UnsizedType.pp_returntype rt in
+  let pp_sigs_for_name ppf name =
+    (list ~sep:cut pp_sig) ppf
+      (List.map ~f:(fun t -> (name, t)) (get_sigs name)) in
+  pf ppf "@[<v>%a@]"
+    (list ~sep:cut pp_sigs_for_name)
+    (List.sort ~cmp:String.compare
+       (List.of_seq (Hashtbl.to_seq_keys (Lazy.force stan_math_signatures))))
+
+let pretty_print_all_math_distributions ppf () =
+  let open Fmt in
+  let pp_dist ppf (name, kinds) =
+    pf ppf "@[%s: %a@]" name (list ~sep:comma Fmt.string) kinds in
+  pf ppf "@[<v>%a@]" (list ~sep:cut pp_dist) distributions
+
+(* variadics *)
+
+let reduce_sum_slice_types =
+  UnsizedType.[UReal; UInt; UMatrix; UVector; URowVector]
+
+let is_reduce_sum_fn f =
+  String.equal f "reduce_sum" || String.equal f "reduce_sum_static"
+
+let embedded_laplace_functions =
+  [ (* general fns *) "laplace_marginal"; "laplace_marginal_tol"
+  ; "laplace_latent_rng"; "laplace_latent_tol_rng"; "laplace_latent_solve"
+  ; "laplace_latent_solve_tol"; (* "helpers" *)
+    "laplace_marginal_bernoulli_logit_lpmf"
+  ; "laplace_marginal_tol_bernoulli_logit_lpmf"
+  ; "laplace_marginal_neg_binomial_2_log_lpmf"
+  ; "laplace_marginal_tol_neg_binomial_2_log_lpmf"
+  ; "laplace_marginal_poisson_log_lpmf"; "laplace_marginal_tol_poisson_log_lpmf"
+  ; (* rngs *) "laplace_latent_bernoulli_logit_rng"
+  ; "laplace_latent_tol_bernoulli_logit_rng"
+  ; "laplace_latent_neg_binomial_2_log_rng"
+  ; "laplace_latent_tol_neg_binomial_2_log_rng"
+  ; "laplace_latent_poisson_log_rng"; "laplace_latent_tol_poisson_log_rng" ]
+  |> String.Set.of_list
+
+let is_embedded_laplace_fn name =
+  String.Set.mem
+    (Utils.stdlib_distribution_name name)
+    embedded_laplace_functions
+
+let laplace_helper_lik_args =
+  [ ( "bernoulli_logit"
+    , [ UnsizedType.(AutoDiffable, UArray UInt); (AutoDiffable, UArray UInt)
+      ; (AutoDiffable, UVector) ] )
+  ; ( "neg_binomial_2_log"
+    , [ (AutoDiffable, UArray UInt); (AutoDiffable, UArray UInt)
+      ; (AutoDiffable, UReal); (AutoDiffable, UVector) ] )
+  ; ( "poisson_log"
+    , [ (AutoDiffable, UArray UInt); (AutoDiffable, UArray UInt)
+      ; (AutoDiffable, UVector) ] ) ]
+  |> String.Map.of_list
+
+let laplace_helper_param_types name =
+  let without_prefix =
+    String.chop_prefix_exn name ~prefix:"laplace_"
+    |> String.chop_prefix_if_exists ~prefix:"marginal_"
+    |> String.chop_prefix_if_exists ~prefix:"latent_"
+    |> String.chop_prefix_if_exists ~prefix:"tol_" in
+  let variant =
+    without_prefix |> Utils.split_distribution_suffix
+    |> Option.value_map ~f:fst ~default:without_prefix in
+  String.Map.find_opt variant laplace_helper_lik_args
+  |> Option.value ~default:[]
+
+let laplace_tolerance_argument_types =
+  UnsizedType.
+    [ (AutoDiffable, UVector) (* theta_0 *); (DataOnly, UReal) (* tolerance *)
+    ; (DataOnly, UInt) (* max_num_steps *); (DataOnly, UInt) (* solver *)
+    ; (DataOnly, UInt) (* max_steps_line_search *)
+    ; (DataOnly, UInt) (* allow_fallthrough *) ]
+
+let is_special_function_name name =
+  is_stan_math_variadic_function_name name
+  || is_reduce_sum_fn name
+  || is_embedded_laplace_fn name
+
+let disallowed_second_order =
+  [ "algebra_solver"; "algebra_solver_newton"; "integrate_1d"; "integrate_ode"
+  ; "integrate_ode_adams"; "integrate_ode_bdf"; "integrate_ode_rk45"; "map_rect"
+  ; "hmm_marginal"; "hmm_hidden_state_prob" ]
+  |> String.Set.of_list
+
+let lacks_higher_order_autodiff name =
+  String.Set.mem name disallowed_second_order || is_special_function_name name

@@ -1,0 +1,205 @@
+name: Build binaries
+
+on:
+  workflow_dispatch: {}
+
+  push:
+    branches:
+      - torsten-develop
+
+env:
+  OCAML_VERSION: 5.5.2
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            sdk: ""
+            profile: static
+            name: ubuntu
+          - os: macos-15-intel
+            sdk: "10.11"
+            profile: release
+            name: macos-x86_64
+          - os: macos-latest
+            sdk: "11.0"
+            profile: release
+            name: macos-arm64
+
+    runs-on: ${{ matrix.os }}
+    name: Build ${{ matrix.name }} stanc
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Download older SDK
+        if: matrix.sdk != ''
+        run: |
+          wget https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX${{matrix.sdk}}.sdk.tar.xz
+          tar -xvf MacOSX${{matrix.sdk}}.sdk.tar.xz
+          sudo mv MacOSX${{matrix.sdk}}.sdk /Library/Developer/CommandLineTools/SDKs
+
+          echo "MACOSX_DEPLOYMENT_TARGET=${{matrix.sdk}}" >> $GITHUB_ENV
+          echo "SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX${{matrix.sdk}}.sdk/" >> $GITHUB_ENV
+
+      - name: Use OCaml ${{ env.OCAML_VERSION }}
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ env.OCAML_VERSION }}
+          dune-cache: ${{ matrix.name != 'macos-x86_64' }}
+
+      - name: install dune
+        run: |
+          opam update
+          opam install -y dune.3.24.0
+        env:
+           SDKROOT: ""
+           MACOSX_DEPLOYMENT_TARGET: ""
+
+      - run: bash -x scripts/install_build_deps.sh
+
+      - name: Build ${{ matrix.name }}
+        run: opam exec -- dune subst; opam exec -- dune build --profile ${{ matrix.profile }}
+
+      - run: mv _build/default/src/stanc/stanc.exe ${{ matrix.name }}-stanc
+
+      - name: Upload ${{ matrix.name }} stanc
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.name }}-stanc
+          path: ${{ matrix.name }}-stanc
+
+  build-universal:
+    needs: build
+    runs-on: macos-latest
+    name: Build MacOS universal stanc
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          merge-multiple: true
+
+      - name: Run lipo
+        run: |
+          ls
+          lipo -create -output macos-stanc macos-*-stanc
+          lipo -archs macos-stanc
+
+      - name: Upload macos-stanc
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-stanc
+          path: macos-stanc
+
+  xbuild-windows:
+    runs-on: ubuntu-latest
+    name: Build Windows stanc (cross-compiler)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Install cross-compiler
+        run: sudo apt-get update; sudo apt-get install -y gcc-mingw-w64-x86-64 gcc-mingw-w64-i686
+
+      - name: Use OCaml ${{ env.OCAML_VERSION }}
+        uses: ocaml/setup-ocaml@v3
+        with:
+          cache-prefix: v1-windows
+          dune-cache: true
+          ocaml-compiler: ocaml-windows64.${{ env.OCAML_VERSION }}
+          # Keep the default repository on the HTTP index (setup-ocaml's own
+          # default): it ships "archive-mirrors: cache", so source downloads
+          # fall back to opam's archive cache. The git URL of opam-repository
+          # carries no mirror and fetches straight from upstream hosts.
+          opam-repositories: |
+            windows: https://github.com/ocaml-cross/opam-cross-windows.git
+            default: https://opam.ocaml.org
+
+      # The opam-cross-windows overlay declares no archive-mirrors of its own,
+      # so the *-windows packages need the mirror configured globally.
+      - name: Enable opam archive mirror
+        run: opam option --global 'archive-mirrors=["https://opam.ocaml.org/cache"]'
+
+      - run: bash -x scripts/install_build_deps_windows.sh
+
+      - name: Build
+        run: |
+          opam exec -- dune subst
+          opam exec -- dune build -x windows
+
+      - run: mv _build/default.windows/src/stanc/stanc.exe windows-stanc
+
+      - name: Upload Windows stanc
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-stanc
+          path: windows-stanc
+
+  build-js:
+    runs-on: ubuntu-latest
+    name: Build stanc.js
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Use OCaml ${{ env.OCAML_VERSION }}
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ env.OCAML_VERSION }}
+          dune-cache: true
+          cache-prefix: v1-js
+
+      - run: bash -x scripts/install_build_deps.sh
+      - run: bash -x scripts/install_js_deps.sh
+
+      - run: opam exec -- dune build --profile release src/stancjs
+
+      - run: mv _build/default/src/stancjs/stancjs.bc.js stanc.js
+
+      - name: Upload stanc.js
+        uses: actions/upload-artifact@v7
+        with:
+          name: stanc.js
+          path: stanc.js
+
+  test-builds:
+    needs: [build, build-universal, xbuild-windows]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            name: ubuntu
+          - os: macos-latest
+            name: macos
+          - os: macos-14
+            name: macos
+          - os: windows-latest
+            name: windows
+
+    runs-on: ${{ matrix.os }}
+
+    name: Test built stanc on ${{ matrix.os }}
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ matrix.name }}-stanc
+
+      - name: Update permissions
+        if: matrix.name != 'windows'
+        run: chmod +x ${{ matrix.name }}-stanc
+
+      - name: Run tests
+        run: |
+          mv ${{ matrix.name }}-stanc stanc.exe
+          ./stanc.exe --help

@@ -1,0 +1,2348 @@
+(** a type/semantic checker for Stan ASTs
+
+    Functions which begin with "check_" return a typed version of their input
+    Functions which begin with "verify_" return unit if a check succeeds, or
+    else throw an TypecheckerException exception. Other functions which begin
+    with "infer"/"calculate" vary. Usually they return a value, but a few do
+    have error conditions.
+
+    All TypecheckerException exceptions are caught by check_program which turns
+    the ast or exception into a Result.t for external usage
+
+    A type environment (Env.t) is used to hold variables and functions,
+    including stan math functions. This is a functional map, meaning it is
+    handled immutably. *)
+
+open Std
+open Middle
+open Ast
+module Env = Environment
+
+(** Internal (private) exception used for errors. *)
+exception TypecheckerException of Semantic_error.t
+
+(* we only allow errors raised by this function *)
+let error e = raise (TypecheckerException e)
+
+(* warnings are built up in a list *)
+let warnings : Warnings.t list ref = ref []
+let add_warning (w : Warnings.t) = warnings := w :: !warnings
+let attach_warnings x = (x, List.rev !warnings)
+let requires_higher_order_autodiff = ref []
+
+let needs_higher_order_autodiff fn =
+  requires_higher_order_autodiff := fn :: !requires_higher_order_autodiff
+
+(* model name - don't love this here *)
+let model_name = ref ""
+
+let classify_annotations : Annotation.annotation_classifier ref =
+  ref (fun _ _ _ -> Error None)
+
+let check_decl_annotations id loc anns target =
+  List.fold_left anns ~init:false ~f:(fun acc (a : Annotation.t) ->
+      match !classify_annotations a.name a.args target with
+      | Ok () -> true
+      | Error None ->
+          add_warning (Warnings.unknown_annotation (a.loc, a.name));
+          acc
+      | Error (Some pp) -> (
+          match target with
+          | Function {has_body= true; _} when a.name = "extern" ->
+              Semantic_error.fn_extern_defined loc id.name a.loc |> error
+          | _ ->
+              add_warning (Warnings.unsupported_annotation (a.loc, pp));
+              acc))
+
+type function_indicator =
+  | NotInFunction
+  | NonReturning of Fun_kind.suffix
+  | Returning of Fun_kind.suffix * UnsizedType.t
+
+(* Record structure holding flags and other markers about context to be used for
+   error reporting. *)
+type context_flags_record =
+  { current_block: Block.t
+  ; in_toplevel_decl: bool
+  ; containing_function: function_indicator
+  ; loop_depth: int }
+
+let in_rng_function cf =
+  match cf.containing_function with
+  | NonReturning FnRng | Returning (FnRng, _) -> true
+  | _ -> false
+
+let in_lp_function cf =
+  match cf.containing_function with
+  | NonReturning FnTarget | Returning (FnTarget, _) -> true
+  | _ -> false
+
+let in_jacobian_function cf =
+  match cf.containing_function with
+  | NonReturning FnJacobian | Returning (FnJacobian, _) -> true
+  | _ -> false
+
+let in_udf_distribution cf =
+  match cf.containing_function with
+  | NonReturning (FnDist (_, _)) | Returning (FnDist (_, _), _) -> true
+  | _ -> false
+
+let context block =
+  { current_block= block
+  ; in_toplevel_decl= false
+  ; containing_function= NotInFunction
+  ; loop_depth= 0 }
+
+let rec calculate_autodifftype cf origin ut =
+  let ut, _ = UnsizedType.unwind_array_type ut in
+  match (origin, ut) with
+  | _, UTuple ts ->
+      UnsizedType.TupleAD (List.map ~f:(calculate_autodifftype cf origin) ts)
+  | Block.(Param | TParam | Model | Functions), _
+    when not (UnsizedType.is_discrete_type ut || cf.current_block = GQuant) ->
+      UnsizedType.AutoDiffable
+  | _, _ -> DataOnly
+
+let arg_type x = (x.emeta.ad_level, x.emeta.type_)
+let get_arg_types = List.map ~f:arg_type
+let type_of_expr_typed ue = ue.emeta.type_
+let has_int_type ue = ue.emeta.type_ = UInt
+let has_int_array_type ue = ue.emeta.type_ = UArray UInt
+
+let rec id_of_lval lv =
+  match lv.lval with
+  | LVariable id -> id
+  | LTupleProjection (lv, _) -> id_of_lval lv
+  | LIndexed (lv, _) -> id_of_lval lv
+
+let name_of_lval lv = (id_of_lval lv).name
+
+let has_int_or_real_type ue =
+  match ue.emeta.type_ with UInt | UReal -> true | _ -> false
+
+(* -- General checks ---------------------------------------------- *)
+let reserved_keywords =
+  (* parser stops most keywords currently in use, but we still have some extra
+     reserved for the future *)
+  [ "generated"; "quantities"; "transformed"; "repeat"; "until"; "then"; "true"
+  ; "false"; "typedef"; "struct"; "var"; "export"; "extern"; "static"; "auto" ]
+
+let verify_identifier id : unit =
+  if id.name = !model_name then
+    Semantic_error.ident_is_model_name id.id_loc id.name |> error;
+  if
+    String.ends_with id.name ~suffix:"__"
+    || List.mem ~set:reserved_keywords id.name
+  then Semantic_error.ident_is_keyword id.id_loc id.name |> error
+
+(** verify that the variable being declared is previous unused. allowed to
+    shadow StanLib *)
+let verify_name_fresh_var loc tenv name =
+  if Utils.is_unnormalized_distribution name then
+    Semantic_error.ident_has_unnormalized_suffix loc name |> error
+  else
+    match
+      List.filter_map (Env.find tenv name) ~f:(function
+        | Env.{kind= `Variable {location; _}; _} -> Some location
+        | _ -> None (* user variables can shadow function names *))
+    with
+    | [] -> ()
+    | prev :: _ -> Semantic_error.ident_in_use loc name prev |> error
+
+(** verify that the variable being declared is previous unused. *)
+let verify_name_fresh_udf loc tenv name =
+  if
+    (* variadic functions aren't overloadable due to their separate
+       typechecking *)
+    Stan_math_signatures.is_special_function_name name
+  then Semantic_error.ident_is_stanmath_name loc name |> error
+  else if Utils.is_unnormalized_distribution name then
+    Semantic_error.udf_is_unnormalized_fn loc name |> error
+  else
+    (* if a variable is already defined with this name - not really possible as
+       all functions are defined before data, but future-proofing is good *)
+    match
+      List.filter_map (Env.find tenv name) ~f:(function
+        | Env.{kind= `Variable {location; _}; _} -> Some location
+        | _ -> None)
+    with
+    | [] -> ()
+    | prev :: _ -> Semantic_error.ident_in_use loc name prev |> error
+
+(** Checks that a variable/function name:
+    - a function/identifier does not have the _lupdf/_lupmf suffix
+    - is not already in use (for now) *)
+let verify_name_fresh tenv id ~is_udf =
+  if is_udf then verify_name_fresh_udf id.id_loc tenv id.name
+  else verify_name_fresh_var id.id_loc tenv id.name
+
+(* -- Expressions ------------------------------------------------- *)
+let check_ternary_if loc pe te fe =
+  let promote expr type_ ad_level =
+    if
+      (not (UnsizedType.equal expr.emeta.type_ type_))
+      || UnsizedType.compare_autodifftype expr.emeta.ad_level ad_level <> 0
+    then
+      { expr= Promotion (expr, (UnsizedType.internal_scalar type_, ad_level))
+      ; emeta= {expr.emeta with type_; ad_level} }
+    else expr in
+  match
+    ( pe.emeta.type_
+    , UnsizedType.common_type (te.emeta.type_, fe.emeta.type_)
+    , expr_ad_lub [pe; te; fe] )
+  with
+  | UInt, Some type_, Some ad_level when not (UnsizedType.is_fun_type type_) ->
+      mk_typed_expression
+        ~expr:
+          (TernaryIf (pe, promote te type_ ad_level, promote fe type_ ad_level))
+        ~ad_level ~type_ ~loc
+  | _, _, _ ->
+      Semantic_error.illtyped_ternary_if loc pe.emeta.type_ te.emeta.type_
+        fe.emeta.type_
+      |> error
+
+let match_to_rt_option = function
+  | SignatureMismatch.UniqueMatch (rt, _, _, _) -> Some rt
+  | _ -> None
+
+let stan_math_return_type name arg_tys =
+  match Stan_math_signatures.lookup_stan_math_variadic_function name with
+  | Some {return_type; _} -> Some (UnsizedType.ReturnType return_type)
+  | None when Stan_math_signatures.is_reduce_sum_fn name ->
+      Some (UnsizedType.ReturnType UReal)
+  | None ->
+      SignatureMismatch.matching_stanlib_function name arg_tys
+      |> match_to_rt_option
+
+let operator_stan_math_return_type op arg_tys =
+  match op with
+  | Operator.(IntDivide | And | Or) -> (
+      match arg_tys with
+      | [(_, UnsizedType.UInt); (_, UInt)] ->
+          Some
+            (UnsizedType.(ReturnType UInt), [Promotion.NoPromotion; NoPromotion])
+      | _ -> None)
+  | _ ->
+      Stan_math_signatures.operator_to_stan_math_fns op
+      |> List.filter_map ~f:(fun name ->
+          SignatureMismatch.matching_stanlib_function name arg_tys |> function
+          | SignatureMismatch.UniqueMatch (rt, _, p, _) -> Some (rt, p)
+          | _ -> None)
+      |> List.hd
+
+let assignmentoperator_stan_math_return_type assop arg_tys =
+  (match assop with
+    | Operator.Divide ->
+        SignatureMismatch.matching_stanlib_function "divide" arg_tys
+        |> match_to_rt_option
+    | Plus | Minus | Times | EltTimes | EltDivide ->
+        operator_stan_math_return_type assop arg_tys |> Option.map ~f:fst
+    | _ -> None)
+  |> Option.bind ~f:(function
+    | UnsizedType.ReturnType rtype
+      when rtype = snd (List.hd_exn arg_tys)
+           && not
+                ((assop = Operator.EltTimes || assop = Operator.EltDivide)
+                && UnsizedType.is_scalar_type rtype) ->
+        Some UnsizedType.Void
+    | _ -> None)
+
+let check_binop loc op le re =
+  let rt = [le; re] |> get_arg_types |> operator_stan_math_return_type op in
+  match (rt, expr_ad_lub [le; re]) with
+  | Some (ReturnType type_, [p1; p2]), Some ad_level ->
+      mk_typed_expression
+        ~expr:(BinOp (Promotion.promote le p1, op, Promotion.promote re p2))
+        ~ad_level ~type_ ~loc
+  | _ ->
+      Semantic_error.illtyped_binary_op loc op le.emeta.type_ re.emeta.type_
+      |> error
+
+let check_prefixop loc op te =
+  let rt = operator_stan_math_return_type op [arg_type te] in
+  match rt with
+  | Some (ReturnType type_, _) ->
+      mk_typed_expression
+        ~expr:(PrefixOp (op, te))
+        ~ad_level:te.emeta.ad_level ~type_ ~loc
+  | _ -> Semantic_error.illtyped_prefix_op loc op te.emeta.type_ |> error
+
+let check_postfixop loc op te =
+  let rt = operator_stan_math_return_type op [arg_type te] in
+  match rt with
+  | Some (ReturnType type_, _) ->
+      mk_typed_expression
+        ~expr:(PostfixOp (te, op))
+        ~ad_level:te.emeta.ad_level ~type_ ~loc
+  | _ -> Semantic_error.illtyped_postfix_op loc op te.emeta.type_ |> error
+
+(** unnormalized _lpdf/_lpmf functions can only be used in _lpdf/_lpmf/_lp udfs
+    or the model block *)
+let verify_unnormalized cf loc id =
+  if
+    Utils.is_unnormalized_distribution id.name
+    && not (in_udf_distribution cf || cf.current_block = Model)
+  then Semantic_error.invalid_unnormalized_fn loc id.name |> error
+
+let check_id cf tenv id =
+  let loc = id.id_loc in
+  let value =
+    match
+      Env.find tenv (Utils.stdlib_distribution_name id.name)
+      |> Nonempty_list.of_list
+    with
+    | Some (value :: _) -> value
+    | None ->
+        Semantic_error.ident_not_in_scope loc id.name
+          (Env.nearest_ident tenv id.name)
+        |> error in
+  verify_unnormalized cf loc id;
+  match value with
+  | {kind= `StanMath; _} ->
+      ( calculate_autodifftype cf MathLibrary UMathLibraryFunction
+      , UnsizedType.UMathLibraryFunction )
+  | { kind=
+        `Variable
+          {origin= (Param | TParam | GQuant) as origin; location= prev; _}
+    ; _ }
+    when cf.in_toplevel_decl ->
+      Semantic_error.non_data_variable_size_decl loc origin prev |> error
+  | {kind= `Variable {origin; _}; type_; _} ->
+      (calculate_autodifftype cf origin type_, type_)
+  | { kind= `UserDefined _ | `UserDeclared _
+    ; type_= UFun (args, rt, FnDist _, mem_pattern) } ->
+      let type_ =
+        UnsizedType.UFun
+          (args, rt, Fun_kind.suffix_from_name id.name, mem_pattern) in
+      (calculate_autodifftype cf Functions type_, type_)
+  | {kind= `UserDefined _ | `UserDeclared _; type_} ->
+      (calculate_autodifftype cf Functions type_, type_)
+
+let check_variable cf loc tenv id =
+  let ad_level, type_ = check_id cf tenv id in
+  mk_typed_expression ~expr:(Variable id) ~ad_level ~type_ ~loc
+
+let get_consistent_types type_ es =
+  let f state e =
+    Result.bind state ~f:(fun ty ->
+        match UnsizedType.common_type (ty, e.emeta.type_) with
+        | Some ty -> Ok ty
+        | None -> Error (ty, e.emeta)) in
+  List.fold_left ~init:(Ok type_) ~f es
+  |> Result.map ~f:(fun ty ->
+      let ad =
+        expr_ad_lub es |> Option.get
+        (* correctness: Result.Ok case only contains tuples of same lengths,
+           expr_ad_lub cannot fail *) in
+      let promotions =
+        List.map (get_arg_types es)
+          ~f:(Promotion.get_type_promotion_exn (ad, ty)) in
+      (ad, ty, promotions))
+
+let check_texpression_is_tuple te name =
+  match (te.emeta.type_, te.emeta.ad_level) with
+  | UTuple ts, TupleAD ads -> List.combine ads ts
+  | _ -> Semantic_error.tuple_expected te.emeta.loc name te.emeta.type_ |> error
+
+let check_array_expr loc es =
+  match es with
+  | [] ->
+      (* NB: This is actually disallowed by parser *)
+      Semantic_error.empty_array loc |> error
+  | {emeta= {type_; _}; _} :: _ -> (
+      match get_consistent_types type_ es with
+      | Error (ty, meta) ->
+          Semantic_error.mismatched_array_types meta.loc ty meta.type_ |> error
+      | Ok (ad_level, type_, promotions) ->
+          let type_ = UnsizedType.UArray type_ in
+          mk_typed_expression
+            ~expr:(ArrayExpr (Promotion.promote_list es promotions))
+            ~ad_level ~type_ ~loc)
+
+let check_rowvector loc es =
+  match es with
+  | {emeta= {type_= UnsizedType.URowVector; _}; _} :: _ -> (
+      match get_consistent_types URowVector es with
+      | Ok (ad_level, typ, promotions) ->
+          mk_typed_expression
+            ~expr:(RowVectorExpr (Promotion.promote_list es promotions))
+            ~ad_level
+            ~type_:(if typ = UComplexRowVector then UComplexMatrix else UMatrix)
+            ~loc
+      | Error (_, meta) ->
+          Semantic_error.invalid_matrix_types meta.loc meta.type_ |> error)
+  | {emeta= {type_= UnsizedType.UComplexRowVector; _}; _} :: _ -> (
+      match get_consistent_types UComplexRowVector es with
+      | Ok (ad_level, _, promotions) ->
+          mk_typed_expression
+            ~expr:(RowVectorExpr (Promotion.promote_list es promotions))
+            ~ad_level ~type_:UComplexMatrix ~loc
+      | Error (_, meta) ->
+          Semantic_error.invalid_matrix_types meta.loc meta.type_ |> error)
+  | _ -> (
+      match get_consistent_types UReal es with
+      | Ok (ad_level, typ, promotions) ->
+          mk_typed_expression
+            ~expr:(RowVectorExpr (Promotion.promote_list es promotions))
+            ~ad_level
+            ~type_:(if typ = UComplex then UComplexRowVector else URowVector)
+            ~loc
+      | Error (_, meta) ->
+          Semantic_error.invalid_row_vector_types meta.loc meta.type_ |> error)
+
+(* index checking *)
+
+let indexing_type idx =
+  match idx with
+  | Single {emeta= {type_= UnsizedType.UInt; _}; _} -> `Single
+  | _ -> `Multi
+
+let is_multiindex i =
+  match indexing_type i with `Single -> false | `Multi -> true
+
+let inferred_unsizedtype_of_indexed ~loc ut indices =
+  let rec aux type_ idcs =
+    let vec, rowvec, scalar =
+      if UnsizedType.is_complex_type type_ then
+        UnsizedType.(UComplexVector, UComplexRowVector, UComplex)
+      else (UVector, URowVector, UReal) in
+    match (type_, idcs) with
+    | _, [] -> type_
+    | UnsizedType.UArray type_, `Single :: tl -> aux type_ tl
+    | UArray type_, `Multi :: tl -> UnsizedType.UArray (aux type_ tl)
+    | (UVector | URowVector | UComplexRowVector | UComplexVector), [`Single]
+     |(UMatrix | UComplexMatrix), [`Single; `Single] ->
+        scalar
+    | ( ( UVector | URowVector | UMatrix | UComplexVector | UComplexMatrix
+        | UComplexRowVector )
+      , [`Multi] )
+     |(UMatrix | UComplexMatrix), [`Multi; `Multi] ->
+        type_
+    | (UMatrix | UComplexMatrix), ([`Single] | [`Single; `Multi]) -> rowvec
+    | (UMatrix | UComplexMatrix), [`Multi; `Single] -> vec
+    | (UMatrix | UComplexMatrix), _ :: _ :: _ :: _
+     |(UVector | URowVector | UComplexRowVector | UComplexVector), _ :: _ :: _
+     |( (UInt | UReal | UComplex | UFun _ | UMathLibraryFunction | UTuple _)
+      , _ :: _ ) ->
+        Semantic_error.not_indexable loc ut (List.length indices) |> error in
+  aux ut (List.map ~f:indexing_type indices)
+
+let inferred_ad_type_of_indexed at ut uindices =
+  UnsizedType.fill_adtype_for_type
+    (* correctness: index expressions only contain int types, so lub_ad_tupe
+       should never be [None]. *)
+    (UnsizedType.lub_ad_type
+       (at
+       :: List.map
+            ~f:(function
+              | All -> UnsizedType.DataOnly
+              | Single ue1 | Upfrom ue1 | Downfrom ue1 -> ue1.emeta.ad_level
+              | Between (ue1, ue2) ->
+                  UnsizedType.lub_ad_type
+                    [ue1.emeta.ad_level; ue2.emeta.ad_level]
+                  |> Option.get)
+            uindices)
+    |> Option.get)
+    ut
+
+(* function checking *)
+
+let verify_conddist_name loc id =
+  if
+    List.exists
+      ~f:(fun x -> String.ends_with id.name ~suffix:x)
+      Utils.conditioning_suffices
+  then ()
+  else Semantic_error.conditional_notation_not_allowed loc |> error
+
+let verify_fn_conditioning loc id =
+  if
+    List.exists
+      ~f:(fun suffix -> String.ends_with id.name ~suffix)
+      Utils.conditioning_suffices
+  then Semantic_error.conditioning_required loc |> error
+
+(** `Target+=` can only be used in model and functions with right suffix (same
+    for tilde etc) *)
+let verify_fn_target_plus_equals cf loc id =
+  if String.ends_with id.name ~suffix:"_lp" then
+    if cf.current_block = TParam then
+      add_warning (Warnings.lp_in_transparam loc)
+    else if in_lp_function cf || cf.current_block = Model then ()
+    else Semantic_error.target_plusequals_outside_model_or_logprob loc |> error
+
+let verify_fn_jacobian_plus_equals cf loc tenv id args =
+  if String.ends_with id.name ~suffix:"_jacobian" then
+    if not (in_jacobian_function cf || cf.current_block = TParam) then
+      Semantic_error.jacobian_plusequals_not_allowed loc |> error
+    else if
+      not
+        (List.exists args ~f:(fun e ->
+             UnsizedType.is_autodifftype e.emeta.ad_level))
+    then
+      let alt =
+        String.chop_suffix_exn ~suffix:"_jacobian" id.name ^ "_constrain" in
+      add_warning
+        (Warnings.jacobian_dataonly loc (Option.some_if (Env.mem tenv alt) alt))
+
+(** Rng functions cannot be used in Tp or Model and only in function defs with
+    the right suffix *)
+let verify_fn_rng cf loc id =
+  if String.ends_with id.name ~suffix:"_rng" then
+    if cf.in_toplevel_decl then Semantic_error.invalid_decl_rng_fn loc |> error
+    else if
+      not
+        (in_rng_function cf || cf.current_block = GQuant
+       || cf.current_block = TData)
+    then Semantic_error.invalid_rng_fn loc |> error
+
+let is_laplace_latent_solve name =
+  Stan_math_signatures.is_embedded_laplace_fn name
+  && String.includes name ~affix:"_solve"
+
+let mk_fun_app ~is_cond_dist ~loc kind name args ~type_ : Ast.typed_expression =
+  let fn =
+    if is_cond_dist then CondDistApp (kind, name, args)
+    else FunApp (kind, name, args) in
+  let ad_type =
+    if UnsizedType.is_discrete_type type_ then UnsizedType.DataOnly
+    else if
+      UnsizedType.any_autodiff (List.map ~f:(fun x -> x.emeta.ad_level) args)
+    then AutoDiffable
+    else DataOnly in
+  mk_typed_expression ~expr:fn ~loc ~type_
+    ~ad_level:(UnsizedType.fill_adtype_for_type ad_type type_)
+
+let get_callback_locations tenv es =
+  let rec loop es acc =
+    match es with
+    | [] -> acc
+    | {emeta= {type_= UFun _ as callback_type; _}; expr= Variable fname} :: es
+      ->
+        let acc =
+          let candidates =
+            Env.find tenv (Utils.stdlib_distribution_name fname.name) in
+          List.filter_map candidates ~f:(function
+            | Env.{kind= `UserDeclared location; type_}
+             |{kind= `UserDefined location; type_}
+              when UnsizedType.equal type_ callback_type ->
+                Some location
+            | _ -> None)
+          @ acc in
+        loop es acc
+    | _ :: es -> loop es acc in
+  loop es []
+
+let check_normal_fn ~is_cond_dist loc tenv id es =
+  match Env.find tenv (Utils.normalized_name id.name) with
+  | {kind= `Variable {location= prev; _}; _} :: _
+  (* variables can sometimes shadow stanlib functions, so we have to check
+     this *)
+    when not
+           (Stan_math_signatures.is_stan_math_function_name
+              (Utils.normalized_name id.name)) ->
+      Semantic_error.returning_fn_expected_nonfn_found loc id.name (Some prev)
+      |> error
+  | [] ->
+      (match Utils.split_distribution_suffix id.name with
+        | Some (prefix, suffix) ->
+            let default_error () =
+              if
+                Option.is_some
+                  (List.assoc_opt prefix Stan_math_signatures.distributions)
+                && List.mem ~set:Utils.cumulative_distribution_suffices_w_rng
+                     suffix
+              then
+                Semantic_error
+                .returning_fn_expected_undeclared_dist_suffix_found loc
+                  (prefix, suffix)
+              else
+                Semantic_error.returning_fn_expected_undeclaredident_found loc
+                  id.name
+                  (Env.nearest_ident tenv id.name) in
+            let suggestions =
+              match suffix with
+              | "lpmf" | "lupmf" -> Env.find tenv (prefix ^ "_lpdf")
+              | "lpdf" | "lupdf" -> Env.find tenv (prefix ^ "_lpmf")
+              | _ -> [] in
+            if not (List.is_empty suggestions) then
+              Semantic_error.returning_fn_expected_wrong_dist_suffix_found loc
+                (prefix, suffix, List.map ~f:Env.location suggestions)
+            else default_error ()
+        | None ->
+            Semantic_error.returning_fn_expected_undeclaredident_found loc
+              id.name
+              (Env.nearest_ident tenv id.name))
+      |> error
+  | _ (* a function *) -> (
+      (* NB: At present, [SignatureMismatch.matching_function] cannot handle
+         overloaded function types. This is not needed until UDFs can be
+         higher-order, as it is special cased for variadic functions *)
+      match
+        SignatureMismatch.matching_function tenv id.name (get_arg_types es)
+      with
+      | UniqueMatch (Void, _, _, prev) ->
+          Semantic_error.returning_fn_expected_nonreturning_found loc id.name
+            prev
+          |> error
+      | UniqueMatch (ReturnType ut, fnk, promotions, _) ->
+          mk_fun_app ~is_cond_dist ~loc
+            (fnk (Fun_kind.suffix_from_name id.name))
+            id
+            (Promotion.promote_list es promotions)
+            ~type_:ut
+      | AmbiguousMatch sigs ->
+          Semantic_error.ambiguous_function_promotion loc id.name
+            (Some (List.map ~f:type_of_expr_typed es))
+            sigs
+          |> error
+      | SignatureErrors (l, b) ->
+          Semantic_error.illtyped_fn_app loc id.name (l, b)
+            (List.map ~f:type_of_expr_typed es)
+            (get_callback_locations tenv es)
+          |> error)
+
+(** Given a constraint function [matches], find any signature which exists
+    Returns the first [Ok] if any exist, or else [Error] *)
+let find_matching_first_order_fn tenv matches fname =
+  let candidates =
+    Utils.stdlib_distribution_name fname.name
+    |> Env.find tenv |> List.map ~f:matches in
+  let ok, errs = List.partition_map candidates ~f:Result.to_either in
+  match SignatureMismatch.unique_minimum_promotion ok with
+  | Ok a -> SignatureMismatch.UniqueMatch a
+  | Error (Some tys) ->
+      AmbiguousMatch
+        (List.filter_map tys ~f:(fun (ty, loc) ->
+             match ty with
+             | UnsizedType.UFun (args, rt, _, _) -> Some (rt, args, loc)
+             | _ -> None))
+  | Error None -> SignatureMismatch.SignatureErrors (List.hd_exn errs)
+
+let make_function_variable cf loc id = function
+  | UnsizedType.UFun (args, rt, FnDist _, mem_pattern) ->
+      let type_ =
+        UnsizedType.UFun
+          (args, rt, Fun_kind.suffix_from_name id.name, mem_pattern) in
+      mk_typed_expression ~expr:(Variable id)
+        ~ad_level:(calculate_autodifftype cf Functions type_)
+        ~type_ ~loc
+  | UnsizedType.UFun _ as type_ ->
+      mk_typed_expression ~expr:(Variable id)
+        ~ad_level:(calculate_autodifftype cf Functions type_)
+        ~type_ ~loc
+  | type_ ->
+      Common.ICE.(
+        internal_errorf "Attempting to create function variable out of %t"
+          [UnsizedType.pp $ type_]) [@coverage off]
+
+(** Check that the functions in the list [requires_higher_order_autodiff] cannot
+    {b transitively} call stan math functions that don't have second derivative
+    support.
+
+    Note that this does not re-do overload resolution, so it implements a
+    correct-but-overly-conservative check. *)
+let verify_second_order_derivative_compatibility (ast : typed_program) =
+  let get_function_bodies fn_name =
+    List.concat_map (Ast.get_stmts ast.functionblock) ~f:(fun s ->
+        match s.stmt with
+        | FunDef {funname= {name; _}; body= {stmt= Block b; _}; _}
+          when String.equal name fn_name ->
+            b
+        | _ -> []) in
+  let rec check_fun (visited : String.Set.t) {name= fn_name; id_loc} =
+    if String.Set.mem fn_name visited then visited
+    else
+      let rec check_expr seen = function
+        | {expr= FunApp (StanLib _, {name; id_loc= call_loc}, _); _}
+          when Stan_math_signatures.lacks_higher_order_autodiff name ->
+            (* note: we could possibly check all the arguments are DataOnly and
+               still allow it, but those seem like mostly useless cases. *)
+            Semantic_error.laplace_compatibility id_loc name call_loc |> error
+        | {expr= FunApp (UserDefined _, name, es); _} ->
+            (* we want the location to be the use-site no matter what *)
+            let seen' = check_fun seen {name with id_loc} in
+            List.fold_left ~f:check_expr ~init:seen' es
+        | {expr= Variable name; emeta= {type_= UFun _; _}} ->
+            check_fun seen {name with id_loc}
+        | e -> Ast.fold_expression check_expr seen e.expr in
+      let check_lval acc l = fold_lval_with check_expr acc l in
+      let rec check_stmt seen s =
+        match s.stmt with
+        | NRFunApp (UserDefined _, name, es) ->
+            let seen' = check_fun seen {name with id_loc} in
+            List.fold_left ~f:check_expr ~init:seen' es
+        | stmt -> Ast.fold_statement check_expr check_stmt check_lval seen stmt
+      in
+      let visited' = String.Set.add fn_name visited in
+      List.fold_left ~f:check_stmt ~init:visited' (get_function_bodies fn_name)
+  in
+  ignore
+    (List.fold_left ~f:check_fun ~init:String.Set.empty
+       !requires_higher_order_autodiff)
+
+(** Currently only used by the laplace functions, this checks that a function in
+    [tenv] called [fname] can be invoked with the arguments from [arg_tupl]. *)
+let check_function_callable_with_tuple cf tenv caller_id fname
+    ?(required_args = []) arg_tupl required_fn_return_type =
+  let arg_types =
+    check_texpression_is_tuple arg_tupl
+      (Printf.sprintf "Forwarded arguments to '%s' in call to '%s'" fname.name
+         caller_id.name) in
+  let required_arg_names, required_arg_types = List.split required_args in
+  let required = required_arg_types @ arg_types in
+  let matches info =
+    let location = Env.location info in
+    match info with
+    | Env.{type_= UnsizedType.UFun (args, return_type, sfx, _) as fn_type; _} ->
+        let open SignatureMismatch in
+        let open Result.Syntax in
+        if return_type <> required_fn_return_type then
+          Error
+            (`FnRequirementsError
+               ( ReturnTypeMismatch (required_fn_return_type, return_type)
+               , location ))
+        else if sfx <> FnPlain then
+          Error (`FnRequirementsError (SuffixMismatch (FnPlain, sfx), location))
+        else
+          let no_prom_args, _ =
+            List.split_n args (List.length required_arg_types) in
+          let* () =
+            (let* () =
+               check_compatible_arguments_no_promotion required_arg_types
+                 no_prom_args in
+             (* checking both ways around as this is the best way to catch
+                DataOnly misspecifications for these arguments *)
+             check_compatible_arguments_no_promotion no_prom_args
+               required_arg_types)
+            |> Result.map_error ~f:(fun x ->
+                `FnRequirementsError (InputMismatch x, location)) in
+          let+ promotions =
+            check_compatible_arguments_mod_conv args required
+            |> Result.map_error ~f:(fun x ->
+                `SuppliedArgsMismatch (InputMismatch x, location)) in
+          ((fn_type, location), promotions)
+    | _ -> Error (`NonFunction location) in
+  match find_matching_first_order_fn tenv matches fname with
+  | SignatureMismatch.UniqueMatch ((ftype, _), promotions) ->
+      let fn = make_function_variable cf fname.id_loc fname ftype in
+      let args =
+        Promotion.promote arg_tupl
+          (Promotion.TuplePromotion
+             (snd @@ List.(split_n promotions (length required_arg_types))))
+      in
+      (fn, args)
+  | AmbiguousMatch ps ->
+      Semantic_error.ambiguous_function_promotion fname.id_loc fname.name None
+        ps
+      |> error
+  | SignatureErrors (`NonFunction prev) ->
+      Semantic_error.returning_fn_expected_nonfn_found fname.id_loc fname.name
+        prev
+      |> error
+  | SignatureErrors (`FnRequirementsError (details, prev)) ->
+      Semantic_error.forwarded_function_signature_error fname.id_loc
+        caller_id.name fname.name details prev
+      |> error
+  | SignatureErrors (`SuppliedArgsMismatch (details, prev)) ->
+      Semantic_error.forwarded_function_application_error arg_tupl.emeta.loc
+        caller_id.name fname.name required_arg_names details prev
+      |> error
+
+let specialize_loc ~loc err (args : Ast.typed_expression list) =
+  let which_arg =
+    match err with
+    | SignatureMismatch.ArgError (i, _) -> i - 1
+    | ArgNumMismatch (expected, found) ->
+        if expected > found then found - 1 else expected in
+  let which_arg = Int.max 0 which_arg in
+  Option.value_map
+    (List.nth_opt args which_arg)
+    ~f:(fun (e : Ast.typed_expression) -> e.emeta.loc)
+    ~default:loc
+
+let verify_laplace_control_args loc id (args : typed_expression list) =
+  match (String.includes ~affix:"_tol" id.name, args) with
+  | false, [] -> ()
+  | true, [arg] -> (
+      let arg_tys =
+        check_texpression_is_tuple arg
+          ("Control arguments for '" ^ id.name ^ "'") in
+      match
+        SignatureMismatch.check_compatible_arguments_mod_conv
+          Stan_math_signatures.laplace_tolerance_argument_types arg_tys
+      with
+      | Ok _ -> ()
+      | Error err ->
+          let loc =
+            specialize_loc ~loc err
+              (match arg.expr with TupleExpr elts -> elts | _ -> []) in
+          Semantic_error.illtyped_laplace_tolerance_args loc id.name err
+          |> error)
+  | true, [] ->
+      Semantic_error.illtyped_laplace_tolerance_args loc id.name
+        (SignatureMismatch.check_compatible_arguments_mod_conv
+           Stan_math_signatures.laplace_tolerance_argument_types []
+        |> Result.get_error)
+      |> error
+  | true, _ :: a :: _ ->
+      Semantic_error.illtyped_laplace_extra_args a.emeta.loc id.name
+        (List.length args - 1)
+      |> error
+  | false, a :: _ ->
+      Semantic_error.illtyped_laplace_extra_args a.emeta.loc id.name
+        (List.length args)
+      |> error
+
+let rec check_fn ~is_cond_dist loc cf tenv id (tes : Ast.typed_expression list)
+    =
+  if Stan_math_signatures.is_stan_math_variadic_function_name id.name then
+    check_variadic ~is_cond_dist loc cf tenv id tes
+  else if Stan_math_signatures.is_reduce_sum_fn id.name then
+    check_reduce_sum ~is_cond_dist loc cf tenv id tes
+  else if Stan_math_signatures.is_embedded_laplace_fn id.name then
+    check_laplace_fn ~is_cond_dist loc cf tenv id tes
+  else check_normal_fn ~is_cond_dist loc tenv id tes
+
+(** Reduce sum is a special case, even compared to the other variadic functions,
+    because it is polymorphic in the type of the first argument. The first,
+    fourth, and fifth arguments must agree, which is too complicated to be
+    captured declaratively. *)
+and check_reduce_sum ~is_cond_dist loc cf tenv id tes =
+  let basic_mismatch () =
+    let mandatory_args =
+      UnsizedType.[(AutoDiffable, UArray UReal); (AutoDiffable, UInt)] in
+    let mandatory_fun_args =
+      UnsizedType.
+        [(AutoDiffable, UArray UReal); (DataOnly, UInt); (DataOnly, UInt)] in
+    SignatureMismatch.check_variadic_args ~allow_lpdf:true mandatory_args
+      mandatory_fun_args None UReal (get_arg_types tes) in
+  let matching remaining_es fn =
+    match fn with
+    | Env.{type_= UnsizedType.UFun (sliced_arg_fun :: _, _, _, _) as ftype; _}
+      ->
+        let mandatory_args = [sliced_arg_fun; (AutoDiffable, UInt)] in
+        let mandatory_fun_args =
+          [sliced_arg_fun; (DataOnly, UInt); (DataOnly, UInt)] in
+        let arg_types =
+          (calculate_autodifftype cf Functions ftype, ftype)
+          :: get_arg_types remaining_es in
+        SignatureMismatch.check_variadic_args ~allow_lpdf:true mandatory_args
+          mandatory_fun_args (Env.location fn) UReal arg_types
+    | _ -> basic_mismatch () in
+  match tes with
+  | {expr= Variable fname; _}
+    :: ({emeta= {type_= slice_type; loc= slice_loc; _}; _} :: _ as remaining_es)
+    -> (
+      let slice_type, n = UnsizedType.unwind_array_type slice_type in
+      if n = 0 then
+        Semantic_error.illtyped_reduce_sum_not_array slice_loc slice_type
+        |> error
+      else if
+        not
+        @@ List.mem ~set:Stan_math_signatures.reduce_sum_slice_types slice_type
+      then
+        Semantic_error.illtyped_reduce_sum_slice slice_loc slice_type |> error;
+      match find_matching_first_order_fn tenv (matching remaining_es) fname with
+      | SignatureMismatch.UniqueMatch ((ftype, _), promotions) ->
+          (* a valid signature exists *)
+          let tes = make_function_variable cf loc fname ftype :: remaining_es in
+          mk_fun_app ~is_cond_dist ~loc (StanLib FnPlain) id
+            (Promotion.promote_list tes promotions)
+            ~type_:UnsizedType.UReal
+      | AmbiguousMatch ps ->
+          Semantic_error.ambiguous_function_promotion loc fname.name None ps
+          |> error
+      | SignatureErrors (expected_args, err, prev) ->
+          let loc = specialize_loc ~loc err tes in
+          Semantic_error.illtyped_reduce_sum loc id.name
+            (List.map ~f:type_of_expr_typed tes)
+            expected_args err prev
+          |> error)
+  | _ ->
+      let expected_args, err, prev = basic_mismatch () |> Result.get_error in
+      let loc = specialize_loc ~loc err tes in
+      Semantic_error.illtyped_reduce_sum loc id.name
+        (List.map ~f:type_of_expr_typed tes)
+        expected_args err prev
+      |> error
+
+(** Laplace functions are also special, in two ways:
+    + The general forms accept two UDF callbacks, not just one
+    + The callback arguments are passed as a tuple, not just as trailing
+      arguments. (this is a requirement of the first point, but worth noting
+      separately). *)
+and check_laplace_fn ~is_cond_dist loc cf tenv id tes =
+  (* generic failure message for if the wrong number of argument is passed,
+     preventing us from pattern matching and doing a better job *)
+  let generic_failure ?(early = false) () =
+    Semantic_error.illtyped_laplace_generic loc id.name early
+      (List.map ~f:arg_type tes)
+    |> error in
+  let lik_args, rest =
+    (* Check the arguments for the likihood: For helpers, this is
+       required_prob_args, otherwise a callback and args *)
+    let required_prob_args =
+      Stan_math_signatures.laplace_helper_param_types id.name in
+    if not @@ List.is_empty required_prob_args then
+      (* helper argument check *)
+      let for_prob, rest = List.split_n tes (List.length required_prob_args) in
+      match
+        SignatureMismatch.check_compatible_arguments_mod_conv required_prob_args
+          (get_arg_types for_prob)
+      with
+      | Ok promotions -> (Promotion.promote_list for_prob promotions, rest)
+      | Error err ->
+          let loc = specialize_loc ~loc err tes in
+          Semantic_error.illtyped_laplace_helper_args loc id.name
+            required_prob_args (SignatureMismatch.InputMismatch err)
+          |> error
+    else
+      (* likelihood callback check *)
+      match tes with
+      | _ :: {emeta= {ad_level; loc; _}; expr} :: _
+        when is_laplace_latent_solve id.name
+             && UnsizedType.is_autodifftype ad_level ->
+          let es = match expr with TupleExpr es -> es | _ -> [] in
+          let loc =
+            List.find_map es ~f:(fun {emeta= {loc; ad_level; _}; _} ->
+                Option.some_if (UnsizedType.is_autodifftype ad_level) loc)
+            |> Option.value ~default:loc in
+          Semantic_error.illtyped_laplace_latent_solve_args loc id.name |> error
+      | {expr= Variable lik_fun; _} :: lik_tupl :: tes ->
+          let lik_fun, lik_tupl =
+            (* adds the function name to the global list that is checked
+               later *)
+            needs_higher_order_autodiff lik_fun;
+            check_function_callable_with_tuple cf tenv id lik_fun lik_tupl
+              ~required_args:
+                [("latent gaussian vector", (AutoDiffable, UVector))]
+              (UnsizedType.ReturnType UReal) in
+          ([lik_fun; lik_tupl], tes)
+      | _ -> generic_failure ~early:true () in
+  (* check hessian block size *)
+  let hbs_arg, rest =
+    let loc =
+      match List.nth_opt lik_args (List.length lik_args - 1) with
+      | Some e -> {e.emeta.loc with begin_loc= e.emeta.loc.end_loc}
+      | None -> loc in
+    match rest with
+    | hbs :: rest ->
+        let hbs_ty = arg_type hbs in
+        if hbs_ty <> UnsizedType.(DataOnly, UInt) then
+          Semantic_error.illtyped_laplace_hessian_block_size_arg hbs.emeta.loc
+            id.name (Some hbs_ty)
+          |> error
+        else (hbs, rest)
+    | _ ->
+        Semantic_error.illtyped_laplace_hessian_block_size_arg loc id.name None
+        |> error in
+  (* Check the remaining arguments: initial guess, covariance, and tolerances *)
+  match rest with
+  | _ :: {emeta= {ad_level; loc; _}; expr} :: _
+    when is_laplace_latent_solve id.name && UnsizedType.is_autodifftype ad_level
+    ->
+      let es = match expr with TupleExpr es -> es | _ -> [] in
+      let loc =
+        List.find_map es ~f:(fun {emeta= {loc; ad_level; _}; _} ->
+            Option.some_if (UnsizedType.is_autodifftype ad_level) loc)
+        |> Option.value ~default:loc in
+      Semantic_error.illtyped_laplace_latent_solve_args loc id.name |> error
+  | {expr= Variable cov_fun; _} :: cov_tupl :: control_args ->
+      let cov_fun_type, cov_tupl =
+        check_function_callable_with_tuple cf tenv id cov_fun cov_tupl
+          (UnsizedType.ReturnType UMatrix) in
+      (* note for future: pred_rng typechecking would need to look at second
+         tuple for the training prediction and test prediction. This would
+         probably require two more calls to
+         [check_function_callable_with_tuple] *)
+      verify_laplace_control_args loc id control_args;
+      let args =
+        lik_args @ (hbs_arg :: cov_fun_type :: cov_tupl :: control_args) in
+      let return_type =
+        if String.ends_with id.name ~suffix:"_rng" then UnsizedType.UVector
+        else if String.includes id.name ~affix:"_solve" then
+          UnsizedType.UTuple [UVector; UMatrix]
+        else UnsizedType.UReal in
+      mk_fun_app ~is_cond_dist ~loc
+        (StanLib (Fun_kind.suffix_from_name id.name))
+        id args ~type_:return_type
+  | _ -> generic_failure ()
+
+and check_variadic ~is_cond_dist loc cf tenv id tes =
+  let UnsizedType.{control_args; required_fn_args; required_fn_rt; return_type}
+      =
+    Stan_math_signatures.lookup_stan_math_variadic_function id.name
+    |> Option.get in
+  let matching remaining_es (Env.{type_= ftype; _} as info) =
+    let arg_types =
+      (calculate_autodifftype cf Functions ftype, ftype)
+      :: get_arg_types remaining_es in
+    SignatureMismatch.check_variadic_args ~allow_lpdf:false control_args
+      required_fn_args (Env.location info) required_fn_rt arg_types in
+  match tes with
+  | {expr= Variable fname; _} :: remaining_es -> (
+      match find_matching_first_order_fn tenv (matching remaining_es) fname with
+      | SignatureMismatch.UniqueMatch ((ftype, _), promotions) ->
+          let tes = make_function_variable cf loc fname ftype :: remaining_es in
+          mk_fun_app ~is_cond_dist ~loc (StanLib FnPlain) id
+            (Promotion.promote_list tes promotions)
+            ~type_:return_type
+      | AmbiguousMatch ps ->
+          Semantic_error.ambiguous_function_promotion loc fname.name None ps
+          |> error
+      | SignatureErrors (expected_args, err, prev) ->
+          let loc = specialize_loc ~loc err tes in
+          Semantic_error.illtyped_variadic loc id.name
+            (List.map ~f:type_of_expr_typed tes)
+            expected_args required_fn_rt err prev
+          |> error)
+  | _ ->
+      let expected_args, err, prev =
+        SignatureMismatch.check_variadic_args ~allow_lpdf:false control_args
+          required_fn_args None required_fn_rt (get_arg_types tes)
+        |> Result.get_error in
+      let loc = specialize_loc ~loc err tes in
+      Semantic_error.illtyped_variadic loc id.name
+        (List.map ~f:type_of_expr_typed tes)
+        expected_args required_fn_rt err prev
+      |> error
+
+and check_funapp loc cf tenv ~is_cond_dist id (es : Ast.typed_expression list) =
+  let name_check =
+    if is_cond_dist then verify_conddist_name else verify_fn_conditioning in
+  let res = check_fn ~is_cond_dist loc cf tenv id es in
+  verify_identifier id;
+  name_check loc id;
+  verify_fn_target_plus_equals cf loc id;
+  verify_fn_jacobian_plus_equals cf loc tenv id es;
+  verify_fn_rng cf loc id;
+  verify_unnormalized cf loc id;
+  res
+
+and check_indexed loc cf tenv e indices =
+  let tindices = List.map ~f:(check_index cf tenv) indices in
+  let te = check_expression cf tenv e in
+  let type_ = inferred_unsizedtype_of_indexed ~loc te.emeta.type_ tindices in
+  let ad_level = inferred_ad_type_of_indexed te.emeta.ad_level type_ tindices in
+  mk_typed_expression ~expr:(Indexed (te, tindices)) ~ad_level ~type_ ~loc
+
+and check_index cf tenv = function
+  | All -> All
+  (* Check that indexes have int (container) type *)
+  | Single e ->
+      let te = check_expression cf tenv e in
+      if has_int_type te || has_int_array_type te then Single te
+      else
+        Semantic_error.int_intarray_or_range_expected te.emeta.loc
+          te.emeta.type_
+        |> error
+  | Upfrom e -> Upfrom (check_expression_of_int_type cf tenv e "Range bound")
+  | Downfrom e ->
+      Downfrom (check_expression_of_int_type cf tenv e "Range bound")
+  | Between (e1, e2) ->
+      let le = check_expression_of_int_type cf tenv e1 "Range bound" in
+      let ue = check_expression_of_int_type cf tenv e2 "Range bound" in
+      Between (le, ue)
+
+and check_expression cf tenv ({emeta; expr} : Ast.untyped_expression) :
+    Ast.typed_expression =
+  let loc = emeta.loc in
+  let ce = check_expression cf tenv in
+  match expr with
+  | TernaryIf (e1, e2, e3) ->
+      let pe = ce e1 in
+      let te = ce e2 in
+      let fe = ce e3 in
+      check_ternary_if loc pe te fe
+  | BinOp (e1, op, e2) ->
+      let le = ce e1 in
+      let re = ce e2 in
+      let binop_type_warnings x y =
+        match (x.emeta.type_, y.emeta.type_, op) with
+        | UInt, UInt, Divide ->
+            let hint ppf =
+              match (x.expr, y.expr) with
+              | IntNumeral x, _ ->
+                  Fmt.pf ppf "%s.0 / %a" x Pretty_printing.pp_typed_expression y
+              | _, Ast.IntNumeral y ->
+                  Fmt.pf ppf "%a / %s.0" Pretty_printing.pp_typed_expression x y
+              | _ ->
+                  Fmt.pf ppf "%a * 1.0 / %a" Pretty_printing.pp_typed_expression
+                    x Pretty_printing.pp_typed_expression y in
+            add_warning (Warnings.int_divide loc hint)
+        | (UArray UMatrix | UMatrix), (UInt | UReal), Pow ->
+            let hint ppf =
+              Fmt.pf ppf "matrix_power(%a, %a)" Pretty_printing.pp_expression e1
+                Pretty_printing.pp_expression e2 in
+            add_warning (Warnings.matrix_power loc hint)
+        | _ when Operator.is_cmp op -> (
+            match le.expr with
+            | BinOp (e1, op2, e2) when Operator.is_cmp op2 ->
+                let pp_e = Pretty_printing.pp_typed_expression in
+                let pp = Operator.pp in
+                let hint1 ppf = Fmt.pf ppf "(%a) %a %a" pp_e le pp op pp_e re in
+                let hint2 ppf =
+                  Fmt.pf ppf "(%a %a %a) && (%a %a %a)" pp_e e1 pp op2 pp_e e2
+                    pp_e e2 pp op pp_e re in
+                add_warning (Warnings.compare_chain loc hint1 hint2)
+            | _ -> ())
+        | _ -> () in
+      binop_type_warnings le re;
+      check_binop loc op le re
+  | PrefixOp (op, e) -> ce e |> check_prefixop loc op
+  | PostfixOp (e, op) -> ce e |> check_postfixop loc op
+  | Variable id ->
+      verify_identifier id;
+      check_variable cf loc tenv id
+  | IntNumeral s -> (
+      match Float.of_string_opt s with
+      | Some i when i < 2_147_483_648.0 ->
+          mk_typed_expression ~expr:(IntNumeral s) ~ad_level:DataOnly
+            ~type_:UInt ~loc
+      | _ -> Semantic_error.bad_int_literal loc |> error)
+  | RealNumeral s ->
+      mk_typed_expression ~expr:(RealNumeral s) ~ad_level:DataOnly ~type_:UReal
+        ~loc
+  | ImagNumeral s ->
+      mk_typed_expression ~expr:(ImagNumeral s) ~ad_level:DataOnly
+        ~type_:UComplex ~loc
+  | GetTarget ->
+      (* Target+= can only be used in model and functions with right suffix
+         (same for tilde etc) *)
+      if
+        not
+          (in_lp_function cf || cf.current_block = Model
+         || cf.current_block = TParam)
+      then
+        Semantic_error.target_plusequals_outside_model_or_logprob loc |> error
+      else
+        mk_typed_expression ~expr:GetTarget
+          ~ad_level:(calculate_autodifftype cf cf.current_block UReal)
+          ~type_:UReal ~loc
+  | ArrayExpr es -> es |> List.map ~f:ce |> check_array_expr loc
+  | RowVectorExpr es -> es |> List.map ~f:ce |> check_rowvector loc
+  | Paren e ->
+      let te = ce e in
+      mk_typed_expression ~expr:(Paren te) ~ad_level:te.emeta.ad_level
+        ~type_:te.emeta.type_ ~loc
+  | Indexed (e, indices) -> check_indexed loc cf tenv e indices
+  | TupleProjection (e, i) -> (
+      let te = ce e in
+      match (te.emeta.type_, te.emeta.ad_level) with
+      | UTuple ts, TupleAD ads -> (
+          match (List.nth_opt ts (i - 1), List.nth_opt ads (i - 1)) with
+          | Some t, Some ad ->
+              mk_typed_expression
+                ~expr:(TupleProjection (te, i))
+                ~ad_level:ad ~type_:t ~loc:emeta.loc
+          | None, None ->
+              Semantic_error.tuple_index_invalid_index emeta.loc
+                (List.length ts) i
+              |> error
+          | _ ->
+              Common.ICE.internal_error
+                "Error in internal representation: tuple types don't match AD"
+              [@coverage off])
+      | UTuple _, ad ->
+          Common.ICE.(
+            internal_errorf
+              "Error in internal representation: tuple doesn't have tupleAD, \
+               had %t"
+              [UnsizedType.pp_autodifftype $ ad]) [@coverage off]
+      | _, _ ->
+          Semantic_error.tuple_index_not_tuple emeta.loc te.emeta.type_ |> error
+      )
+  | TupleExpr es ->
+      let tes = List.map ~f:ce es in
+      if List.is_empty tes then Semantic_error.empty_tuple emeta.loc |> error
+      else
+        mk_typed_expression ~expr:(TupleExpr tes)
+          ~ad_level:(TupleAD (List.map ~f:(fun e -> e.emeta.ad_level) tes))
+          ~type_:(UTuple (List.map ~f:type_of_expr_typed tes))
+          ~loc:emeta.loc
+  | FunApp ((), id, es) ->
+      es |> List.map ~f:ce |> check_funapp loc cf tenv ~is_cond_dist:false id
+  | CondDistApp ((), id, es) ->
+      es |> List.map ~f:ce |> check_funapp loc cf tenv ~is_cond_dist:true id
+  | Promotion _ -> .
+
+and check_expression_of_int_type cf tenv e name =
+  let te = check_expression cf tenv e in
+  if has_int_type te then te
+  else Semantic_error.int_expected te.emeta.loc name te.emeta.type_ |> error
+
+let check_expression_of_int_or_real_type cf tenv e name =
+  let te = check_expression cf tenv e in
+  if has_int_or_real_type te then te
+  else
+    Semantic_error.int_or_real_expected te.emeta.loc name te.emeta.type_
+    |> error
+
+let check_expression_of_scalar_or_type cf tenv t e name =
+  let te = check_expression cf tenv e in
+  if UnsizedType.is_scalar_type te.emeta.type_ || te.emeta.type_ = t then te
+  else
+    Semantic_error.scalar_or_type_expected te.emeta.loc name t te.emeta.type_
+    |> error
+
+(* -- Statements ------------------------------------------------- *)
+(* non returning functions *)
+
+let incomplete = {breaks= []; continues= false; controlflow= Incomplete Next}
+let incomplete_with i = {incomplete with controlflow= Incomplete i}
+let complete c = {breaks= []; continues= false; controlflow= Complete c}
+
+let check_nrfn loc tenv id es =
+  match Env.find tenv id.name with
+  | {kind= `Variable {location; _}; _} :: _
+  (* variables can shadow stanlib functions, so we have to check this *)
+    when not (Stan_math_signatures.is_stan_math_function_name id.name) ->
+      Semantic_error.nonreturning_fn_expected_nonfn_found loc id.name location
+      |> error
+  | [] ->
+      Semantic_error.nonreturning_fn_expected_undeclaredident_found loc id.name
+        (Env.nearest_ident tenv id.name)
+      |> error
+  | _ (* a function *) -> (
+      match
+        SignatureMismatch.matching_function tenv id.name (get_arg_types es)
+      with
+      | UniqueMatch (Void, fnk, promotions, _) ->
+          mk_typed_statement
+            ~stmt:
+              (NRFunApp
+                 ( fnk (Fun_kind.suffix_from_name id.name)
+                 , id
+                 , Promotion.promote_list es promotions ))
+            ~flow_type:incomplete ~loc
+      | UniqueMatch (ReturnType _, _, _, prev) ->
+          Semantic_error.nonreturning_fn_expected_returning_found loc id.name
+            prev
+          |> error
+      | AmbiguousMatch sigs ->
+          Semantic_error.ambiguous_function_promotion loc id.name
+            (Some (List.map ~f:type_of_expr_typed es))
+            sigs
+          |> error
+      | SignatureErrors (l, b) ->
+          Semantic_error.illtyped_fn_app loc id.name (l, b)
+            (List.map ~f:type_of_expr_typed es)
+            (get_callback_locations tenv es)
+          |> error)
+
+let check_nr_fn_app loc cf tenv id es =
+  let tes = List.map ~f:(check_expression cf tenv) es in
+  verify_identifier id;
+  verify_fn_target_plus_equals cf loc id;
+  verify_fn_jacobian_plus_equals cf loc tenv id tes;
+  verify_fn_rng cf loc id;
+  check_nrfn loc tenv id tes
+
+(* target plus-equals / jacobian plus-equals *)
+
+let verify_target_pe_expr_type loc e =
+  if UnsizedType.is_fun_type e.emeta.type_ then
+    Semantic_error.int_or_real_container_expected loc e.emeta.type_ |> error
+
+let verify_target_pe_usage loc cf =
+  if in_lp_function cf || cf.current_block = Model then ()
+  else Semantic_error.target_plusequals_outside_model_or_logprob loc |> error
+
+let check_target_pe loc cf tenv e =
+  let te = check_expression cf tenv e in
+  verify_target_pe_usage loc cf;
+  verify_target_pe_expr_type loc te;
+  mk_typed_statement ~stmt:(TargetPE te) ~flow_type:incomplete ~loc
+
+let verify_jacobian_pe_usage loc cf =
+  if in_jacobian_function cf || cf.current_block = TParam then ()
+  else Semantic_error.jacobian_plusequals_not_allowed loc |> error
+
+let check_jacobian_pe loc cf tenv e =
+  let te = check_expression cf tenv e in
+  verify_jacobian_pe_usage loc cf;
+  verify_target_pe_expr_type loc te;
+  mk_typed_statement ~stmt:(JacobianPE te) ~flow_type:incomplete ~loc
+
+(* assignments *)
+let verify_assignment_read_only loc is_readonly id decl_location =
+  if is_readonly then
+    Semantic_error.cannot_assign_to_read_only loc id.name decl_location |> error
+
+(* Variables from previous blocks are read-only. In particular, data and
+   parameters never assigned to *)
+let verify_assignment_global loc cf block is_global id decl_location =
+  if (not is_global) || block = cf.current_block then ()
+  else
+    Semantic_error.cannot_assign_to_global loc id.name block decl_location
+    |> error
+
+(* Until function types are added to the user language, we disallow assignments
+   to function values *)
+let rec verify_assignment_non_function loc id ut =
+  match ut with
+  | UnsizedType.UFun _ | UMathLibraryFunction ->
+      Semantic_error.cannot_assign_function loc id ut |> error
+  | UTuple ts -> List.iter ~f:(verify_assignment_non_function loc id) ts
+  | _ -> ()
+
+(** We issue a warning if the initial value for a declaration contains any
+    reference to the variable being declared *)
+let warn_self_declare variable rhs_opt =
+  Option.iter rhs_opt ~f:(fun rhs ->
+      let rhs_ids = Ast.extract_ids rhs in
+      match
+        List.find_opt rhs_ids ~f:(fun id -> String.equal id.name variable.name)
+      with
+      | None -> ()
+      | Some r ->
+          add_warning (Warnings.initialize_with_self variable.id_loc r.id_loc))
+
+(** For general assignments, we only warn if we believe the lhs and rhs are
+    exactly the same value *)
+let warn_self_assignment lhs rhs =
+  let rec strip_parens e =
+    match e.expr with Paren e -> strip_parens e | _ -> e in
+  let rhs_opt =
+    rhs |> Ast.untyped_expression_of_typed_expression |> strip_parens
+    |> Ast.lvalue_of_expr_opt in
+  Option.iter rhs_opt ~f:(fun rhs ->
+      let lhs = lhs |> Ast.untyped_lvalue_of_typed_lvalue_pack in
+      let maybe_warn lhs rhs =
+        if Ast.compare_untyped_lval lhs rhs = 0 then
+          add_warning (Warnings.assign_to_self lhs.lmeta.loc rhs.lmeta.loc)
+      in
+      let rec go = function
+        | LValue l, LValue r -> maybe_warn l r
+        | LTuplePack {lvals= l; _}, LTuplePack {lvals= r; _}
+          when List.length l = List.length r ->
+            List.iter2 l r ~f:(fun l r -> go (l, r))
+        | _ -> () in
+      go (lhs, rhs))
+
+let check_assignment_operator loc assop lhs rhs =
+  let rec meta_of_lvalue lv : Ast.typed_expr_meta =
+    match lv with
+    | LValue {lmeta; _} -> lmeta
+    | LTuplePack {lvals; loc} ->
+        let metas = List.map ~f:meta_of_lvalue lvals in
+        { type_= UnsizedType.UTuple (List.map ~f:(fun {type_; _} -> type_) metas)
+        ; ad_level= TupleAD (List.map ~f:(fun {ad_level; _} -> ad_level) metas)
+        ; loc } in
+  let err lhs op (rhs : Ast.typed_expr_meta) =
+    Semantic_error.illtyped_assignment rhs.loc op (meta_of_lvalue lhs) rhs
+    |> error in
+  match assop with
+  | Assign ->
+      warn_self_assignment lhs rhs;
+      let rec typechk lhs (rhs : Ast.typed_expr_meta) =
+        match (lhs, rhs) with
+        | LValue ({lmeta= {type_; ad_level; _}; _} as lval), _ -> (
+            verify_assignment_non_function loc (name_of_lval lval) rhs.type_;
+            match
+              SignatureMismatch.check_of_same_type_mod_conv type_ rhs.type_
+            with
+            | Ok p -> (p, ad_level)
+            | Error _ -> err lhs Equals rhs)
+        | ( LTuplePack {lvals; _}
+          , {type_= UnsizedType.UTuple tps; ad_level= TupleAD ads; loc} ) ->
+            let proms, ad_levels =
+              let rvs =
+                List.map2 ~f:(fun t ad -> {type_= t; ad_level= ad; loc}) tps ads
+              in
+              match List.map2 ~f:typechk lvals rvs with
+              | exception Invalid_argument _ -> err lhs Equals rhs
+              | l -> List.split l in
+            if
+              List.exists
+                ~f:(function Promotion.NoPromotion -> false | _ -> true)
+                proms
+            then (TuplePromotion proms, TupleAD ad_levels)
+            else (NoPromotion, TupleAD ad_levels)
+        | LTuplePack _, _ -> err lhs Equals rhs in
+      let prom, ad_level = typechk lhs rhs.emeta in
+      let rhs =
+        (* Hack: need RHS to properly get promoted to var if needed *)
+        {rhs with emeta= {rhs.emeta with ad_level}} in
+      Promotion.promote rhs prom
+  | OperatorAssign op -> (
+      let args =
+        [(UnsizedType.AutoDiffable, (meta_of_lvalue lhs).type_); arg_type rhs]
+      in
+      let return_type = assignmentoperator_stan_math_return_type op args in
+      match return_type with Some Void -> rhs | _ -> err lhs op rhs.emeta)
+
+let overlapping_lvalues lvals =
+  (* Prevent assigning to multiple indices in the same object at once. In
+     principle it is safe to assign to disjoint indices, but statically checking
+     that is impossible. *)
+  let rec compare_no_indexing lv1 lv2 =
+    match (lv1.lval, lv2.lval) with
+    | LIndexed (l, _), _ -> compare_no_indexing l lv2
+    | _, LIndexed (l, _) -> compare_no_indexing lv1 l
+    | LVariable id1, LVariable id2 -> String.compare id1.name id2.name
+    | LTupleProjection (lv1, idx1), LTupleProjection (lv2, idx2) ->
+        let idx_comp = Int.compare idx1 idx2 in
+        if idx_comp = 0 then compare_no_indexing lv1 lv2 else idx_comp
+    | _, _ ->
+        (* remaining cases are not equal, we don't care *)
+        Ast.compare_untyped_lval lv1 lv2 in
+  let lvals =
+    (* useful for error messaging to put the final assignment first *)
+    List.rev lvals in
+  let dupes = List.find_all_dups lvals ~cmp:compare_no_indexing in
+  List.filter_map dupes ~f:(fun l ->
+      List.filter ~f:(fun o -> compare_no_indexing l o = 0) lvals
+      |> Nonempty_list.of_list)
+  |> Nonempty_list.of_list
+
+let rec flatten_lvalue_pack lv =
+  match lv with
+  | LTuplePack {lvals; _} -> List.concat_map ~f:flatten_lvalue_pack lvals
+  | LValue lv -> [lv]
+
+let lvalues_written_to lv =
+  let rec add_tuple_idxs lv : typed_lval list =
+    (* If we're assigning an entire tuple, we also need to prevent assigning to
+       any slot in this statement. *)
+    let type_, idxes = UnsizedType.unwind_array_type lv.lmeta.type_ in
+    match (lv.lval, type_) with
+    | _, UTuple ts when idxes = 0 ->
+        List.concat_mapi ts ~f:(fun i ty ->
+            add_tuple_idxs
+              { lval= LTupleProjection (lv, i + 1)
+              ; lmeta= {lv.lmeta with type_= ty} })
+    | _, UTuple ts ->
+        List.concat_mapi ts ~f:(fun i ty ->
+            add_tuple_idxs
+              { lval=
+                  LTupleProjection
+                    ( {lval= LIndexed (lv, []); lmeta= {lv.lmeta with type_}}
+                    , i + 1 )
+              ; lmeta= {lv.lmeta with type_= ty} })
+    | _ -> [lv] in
+  flatten_lvalue_pack lv
+  |> List.concat_map ~f:add_tuple_idxs
+  |> List.map ~f:Ast.untyped_lvalue_of_typed_lvalue
+
+let variables_accessed_in lv =
+  (* We only care about values being read inside the lvalue here, which means
+     only the expressions inside of LIndexed *)
+  let rec extract_indices lv =
+    match lv.lval with
+    | LVariable _ -> []
+    | LTupleProjection (lv, _) -> extract_indices lv
+    | LIndexed (lv, es) ->
+        (List.concat_map ~f:exprs_in_index es |> List.concat_map ~f:extract_ids)
+        @ extract_indices lv in
+  let rec extract_indices_pack lv =
+    match lv with
+    | LTuplePack {lvals; _} -> List.concat_map ~f:extract_indices_pack lvals
+    | LValue lv -> extract_indices lv in
+  extract_indices_pack lv
+
+(** When an lvalue is assigning to multiple places at once (e.g., a tuple is
+    being unpacked), we want to ensure that the same memory is not being written
+    to multiple times. This lets us preserve the illusion of simultaneous
+    assignment and generally avoid confusion. For the same reasons, we also want
+    to avoid reading the value of a variable which is being updated in this same
+    lvalue. *)
+let verify_lvalue_unique (lv : Ast.typed_lval_pack) =
+  let all_lvals = lvalues_written_to lv in
+  let () =
+    (* check that things being assigned to are all unique *)
+    match overlapping_lvalues all_lvals with
+    | None -> ()
+    | Some ((dupe :: _) :: _ as dupes) ->
+        Semantic_error.cannot_assign_duplicate_unpacking dupe.lmeta.loc dupes
+        |> error in
+  (* check that things being assigned to are not also being read. Note: this is
+     much less refined than the above and forbids some cases that would be
+     harmless, but this is also in general a very weird thing to try to do, so I
+     think that is acceptable *)
+  let all_variables = List.map ~f:id_of_lval (flatten_lvalue_pack lv) in
+  let accessed_lvals = variables_accessed_in lv in
+  let overlap =
+    List.filter_map
+      ~f:(fun id ->
+        match
+          List.filter
+            ~f:(fun o -> Ast.compare_identifier id o = 0)
+            all_variables
+        with
+        | [] -> None
+        | l -> Some Nonempty_list.(id :: l))
+      accessed_lvals
+    |> Nonempty_list.of_list in
+  match overlap with
+  | None -> ()
+  | Some ((dupe :: _) :: _ as dupes) ->
+      Semantic_error.cannot_access_assigning_var dupe.id_loc dupes |> error
+
+let verify_assignable_id loc cf tenv assign_id =
+  let block, global, readonly, decl_location =
+    let var = Env.find tenv assign_id.name in
+    match var with
+    | {kind= `Variable {origin; global; readonly; location}; _} :: _ ->
+        (origin, global, readonly, Some location)
+    | {kind= `StanMath; _} :: _ -> (MathLibrary, true, false, None)
+    | {kind= `UserDefined location | `UserDeclared location; _} :: _ ->
+        (Functions, true, false, Some location)
+    | _ ->
+        Semantic_error.ident_not_in_scope loc assign_id.name
+          (Env.nearest_ident tenv assign_id.name)
+        |> error in
+  verify_assignment_global loc cf block global assign_id decl_location;
+  verify_assignment_read_only loc readonly assign_id decl_location
+
+let rec check_lvalue cf tenv {lval; lmeta= ({loc} : located_meta)} =
+  match lval with
+  | LVariable id ->
+      verify_identifier id;
+      verify_assignable_id id.id_loc cf tenv id;
+      let ad_level, type_ = check_id cf tenv id in
+      {lval= LVariable id; lmeta= {ad_level; type_; loc}}
+  | LTupleProjection (lval, idx) -> (
+      let tlval = (check_lvalue cf tenv) lval in
+      match (tlval.lmeta.type_, tlval.lmeta.ad_level) with
+      | UTuple types_, TupleAD ads -> (
+          match (List.nth_opt types_ (idx - 1), List.nth_opt ads (idx - 1)) with
+          | Some type_, Some ad_level ->
+              { lval= LTupleProjection (tlval, idx)
+              ; lmeta= {ad_level; type_; loc} }
+          | None, None ->
+              Semantic_error.tuple_index_invalid_index loc (List.length types_)
+                idx
+              |> error
+          | _ ->
+              Common.ICE.internal_error
+                "Error in internal representation: tuple types don't match AD"
+              [@coverage off])
+      | _, _ ->
+          Semantic_error.tuple_index_not_tuple loc tlval.lmeta.type_ |> error)
+  | LIndexed (lval, idcs) ->
+      let rec check_inner = function
+        | {lval= LIndexed (lval, idcs); lmeta= ({loc} : located_meta)} ->
+            let lval, flat = check_inner lval in
+            let idcs = List.map ~f:(check_index cf tenv) idcs in
+            let type_ =
+              inferred_unsizedtype_of_indexed ~loc lval.lmeta.type_ idcs in
+            let ad_level =
+              inferred_ad_type_of_indexed lval.lmeta.ad_level type_ idcs in
+            ( {lval= LIndexed (lval, idcs); lmeta= {ad_level; type_; loc}}
+            , flat @ idcs )
+        | {lval= LVariable _ | LTupleProjection _; _} as lval ->
+            (* I think the right thing to do here is treat tuples like
+               variables *)
+            let tval = check_lvalue cf tenv lval in
+            (tval, []) in
+      let lval, flat = check_inner lval in
+      let idcs = List.map ~f:(check_index cf tenv) idcs in
+      let type_ = inferred_unsizedtype_of_indexed ~loc lval.lmeta.type_ idcs in
+      let ad_level =
+        inferred_ad_type_of_indexed lval.lmeta.ad_level type_ idcs in
+      if List.exists ~f:is_multiindex flat then
+        Semantic_error.cannot_assign_to_multiindex loc |> error;
+      {lval= LIndexed (lval, idcs); lmeta= {ad_level; type_; loc}}
+
+let rec check_lvalues cf tenv = function
+  | LValue l -> LValue (check_lvalue cf tenv l)
+  | LTuplePack {lvals; loc} ->
+      let lvals = List.map lvals ~f:(check_lvalues cf tenv) in
+      LTuplePack {lvals; loc}
+
+let check_assignment loc cf tenv assign_lhs assign_op assign_rhs =
+  let lhs = check_lvalues cf tenv assign_lhs in
+  verify_lvalue_unique lhs;
+  let rhs = check_expression cf tenv assign_rhs in
+  let rhs' = check_assignment_operator loc assign_op lhs rhs in
+  mk_typed_statement ~flow_type:incomplete ~loc
+    ~stmt:(Assignment {assign_lhs= lhs; assign_op; assign_rhs= rhs'})
+
+(* tilde/distribution notation *)
+let verify_distribution_pdf_pmf id =
+  if
+    String.(
+      ends_with id.name ~suffix:"_lpdf"
+      || ends_with id.name ~suffix:"_lpmf"
+      || ends_with id.name ~suffix:"_lupdf"
+      || ends_with id.name ~suffix:"_lupmf")
+  then Semantic_error.invalid_tilde_pdf_or_pmf id.id_loc |> error
+
+let verify_distribution_cdf_ccdf loc id =
+  if
+    String.(
+      ends_with id.name ~suffix:"_cdf" || ends_with id.name ~suffix:"_ccdf")
+  then Semantic_error.invalid_tilde_cdf_or_ccdf loc id.name |> error
+
+(* Target+= can only be used in model and functions with right suffix (same for
+   tilde etc) *)
+let verify_valid_distribution_pos loc cf =
+  if in_lp_function cf || cf.current_block = Model then ()
+  else Semantic_error.target_plusequals_outside_model_or_logprob loc |> error
+
+let check_tilde_distribution loc cf tenv id arguments =
+  let name = id.name in
+  let argumenttypes = List.map ~f:arg_type arguments in
+  let name_w_suffix_dist suffix =
+    ( SignatureMismatch.matching_function tenv (name ^ suffix) argumenttypes
+    , suffix ) in
+  let distributions =
+    List.map ~f:name_w_suffix_dist Utils.distribution_suffices in
+  match
+    List.min_elt distributions ~cmp:(fun (m1, _) (m2, _) ->
+        SignatureMismatch.compare_match_results m1 m2)
+  with
+  | Some (UniqueMatch (_, f, p, _), sfx) ->
+      let suffix =
+        Fun_kind.suffix_from_name (name ^ Utils.unnormalized_suffix sfx) in
+      (Promotion.promote_list arguments p, f suffix)
+      (* real return type is enforced by [verify_fundef_dist_rt] *)
+  | None | Some (SignatureErrors ([], _), _) ->
+      (* The laplace_marginal helpers are not in the environment lookup, so we
+         patch them back here *)
+      if Stan_math_signatures.is_embedded_laplace_fn (id.name ^ "_lupmf") then
+        let id = {id with name= id.name ^ "_lupmf"} in
+        let fn_expr =
+          check_laplace_fn ~is_cond_dist:true loc cf tenv id arguments in
+        match fn_expr.expr with
+        | CondDistApp (kind, _, args) -> (args, kind)
+        | _ ->
+            Common.ICE.(
+              internal_errorf
+                "Typechecking a laplace marginal did not return a \
+                 distribution, got %t"
+                [Pretty_printing.pp_typed_expression $ fn_expr]) [@coverage off]
+      else
+        (* Otherwise, the function is non existent *)
+        Semantic_error.invalid_tilde_no_such_dist id.id_loc name
+          (List.hd_exn argumenttypes |> snd |> UnsizedType.is_int_type)
+        |> error
+  | Some (AmbiguousMatch sigs, _) ->
+      Semantic_error.ambiguous_function_promotion loc id.name
+        (Some (List.map ~f:type_of_expr_typed arguments))
+        sigs
+      |> error
+  | Some (SignatureErrors (l, b), _) ->
+      Semantic_error.illtyped_fn_app loc id.name (l, b)
+        (List.map ~f:type_of_expr_typed arguments)
+        (get_callback_locations tenv arguments)
+      |> error
+
+let is_cumulative_density_defined tenv id arguments =
+  let name = id.name in
+  let argumenttypes = List.map ~f:arg_type arguments in
+  let valid_arg_types_for_suffix suffix =
+    match
+      SignatureMismatch.matching_function tenv (name ^ suffix) argumenttypes
+    with
+    | UniqueMatch (ReturnType UReal, _, _, _) -> true
+    | _ -> false in
+  valid_arg_types_for_suffix "_lcdf" && valid_arg_types_for_suffix "_lccdf"
+
+let verify_distribution_cdf_defined loc tenv id truncation args =
+  let check e =
+    if not (is_cumulative_density_defined tenv id (e :: args)) then
+      Semantic_error.invalid_truncation_cdf_or_ccdf loc
+        (get_arg_types (e :: args))
+      |> error in
+  match truncation with
+  | NoTruncate -> ()
+  | TruncateUpFrom e | TruncateDownFrom e -> check e
+  | TruncateBetween (e1, e2) ->
+      check e1;
+      check e2
+
+let check_truncation cf tenv truncation =
+  let check e =
+    check_expression_of_int_or_real_type cf tenv e "Truncation bound" in
+  match truncation with
+  | NoTruncate -> NoTruncate
+  | TruncateUpFrom e -> TruncateUpFrom (check e)
+  | TruncateDownFrom e -> TruncateDownFrom (check e)
+  | TruncateBetween (e1, e2) -> TruncateBetween (check e1, check e2)
+
+let check_tilde loc cf tenv distribution truncation arg args =
+  let te = check_expression cf tenv arg in
+  let tes = List.map ~f:(check_expression cf tenv) args in
+  let ttrunc = check_truncation cf tenv truncation in
+  verify_identifier distribution;
+  verify_distribution_pdf_pmf distribution;
+  verify_valid_distribution_pos loc cf;
+  verify_distribution_cdf_ccdf loc distribution;
+  let promoted_args, kind =
+    check_tilde_distribution loc cf tenv distribution (te :: tes) in
+  let te, tes = (List.hd_exn promoted_args, List.tl_exn promoted_args) in
+  verify_distribution_cdf_defined loc tenv distribution ttrunc tes;
+  let stmt =
+    Tilde {arg= te; distribution; args= tes; truncation= ttrunc; kind} in
+  mk_typed_statement ~stmt ~loc ~flow_type:incomplete
+
+(* Break and continue only occur in loops. *)
+let check_break loc cf =
+  if cf.loop_depth = 0 then Semantic_error.break_outside_loop loc |> error
+  else
+    mk_typed_statement ~stmt:Break
+      ~flow_type:{(complete (CBreak loc)) with breaks= [loc]}
+      ~loc
+
+let check_continue loc cf =
+  if cf.loop_depth = 0 then Semantic_error.continue_outside_loop loc |> error
+  else
+    mk_typed_statement ~stmt:Continue
+      ~flow_type:{(complete (CContinue loc)) with continues= true}
+      ~loc
+
+let check_return loc cf tenv e =
+  match cf.containing_function with
+  | NotInFunction | NonReturning _ ->
+      Semantic_error.expression_return_outside_returning_fn loc |> error
+  | Returning (_, expected) -> (
+      let te = check_expression cf tenv e in
+      let actual = te.emeta.type_ in
+      match SignatureMismatch.check_of_same_type_mod_conv expected actual with
+      | Ok _ ->
+          (* we ignore the promotion from SignatureMismatch so we can get one
+             that _also_ ensures our returns use local_scalar_t *)
+          let promotions =
+            Promotion.get_type_promotion_exn
+              ( UnsizedType.fill_adtype_for_type UnsizedType.AutoDiffable
+                  expected
+              , expected )
+              (te.emeta.ad_level, actual) in
+          let promoted = Promotion.promote te promotions in
+          mk_typed_statement ~stmt:(Return promoted)
+            ~flow_type:(complete (CReturn loc)) ~loc
+      | _ -> Semantic_error.invalid_return loc expected actual |> error)
+
+let check_returnvoid loc cf =
+  match cf.containing_function with
+  | NonReturning _ ->
+      mk_typed_statement ~stmt:ReturnVoid ~flow_type:(complete (CReturn loc))
+        ~loc
+  | _ -> Semantic_error.void_outside_nonreturning_fn loc |> error
+
+let check_printable cf tenv = function
+  | PString s -> PString s
+  (* Print/reject expressions cannot be of function type. *)
+  | PExpr e -> (
+      let te = check_expression cf tenv e in
+      match te.emeta.type_ with
+      | UFun _ | UMathLibraryFunction ->
+          Semantic_error.not_printable te.emeta.loc |> error
+      | _ -> PExpr te)
+
+let check_print loc cf tenv ps =
+  let tps = List.map ~f:(check_printable cf tenv) ps in
+  mk_typed_statement ~stmt:(Print tps) ~flow_type:incomplete ~loc
+
+let check_reject loc cf tenv ps =
+  let tps = List.map ~f:(check_printable cf tenv) ps in
+  mk_typed_statement ~stmt:(Reject tps) ~flow_type:(complete (CReject loc)) ~loc
+
+let check_fatal_error loc cf tenv ps =
+  let tps = List.map ~f:(check_printable cf tenv) ps in
+  mk_typed_statement ~stmt:(FatalError tps)
+    ~flow_type:(complete (CFatalError loc))
+    ~loc
+
+let check_skip loc = mk_typed_statement ~stmt:Skip ~flow_type:incomplete ~loc
+
+and list_until_escape xs =
+  let rec aux accu = function
+    | ({smeta= {flow_type= {controlflow= Complete c; _}; _}; _} as next')
+      :: unreachable :: _ ->
+        add_warning (Warnings.unreachable_statement unreachable.smeta.loc c);
+        List.rev (next' :: accu)
+    | next :: rest -> aux (next :: accu) rest
+    | [] -> List.rev accu in
+  aux [] xs
+
+let compute_block_statement_returntype srt1 srt2 =
+  { srt2 with
+    breaks= srt2.breaks @ srt1.breaks
+  ; continues= srt2.continues || srt1.continues }
+
+(* statements which contain statements, and therefore need to be mutually
+   recursive with check_statement *)
+let rec check_if_then_else loc cf tenv pred_e s_true s_false_opt =
+  let te =
+    check_expression_of_int_type cf tenv pred_e "Condition in conditional" in
+  (* we don't need these nested type environments *)
+  let _, ts_true = check_statement cf tenv s_true in
+  let ts_false_opt =
+    s_false_opt |> Option.map ~f:(check_statement cf tenv) |> Option.map ~f:snd
+  in
+  let stmt = IfThenElse (te, ts_true, ts_false_opt) in
+  let srt1 = ts_true.smeta.flow_type in
+  let srt2 =
+    ts_false_opt
+    |> Option.map ~f:(fun s -> s.smeta.flow_type)
+    |> Option.value ~default:incomplete in
+  let flow_type =
+    match te.expr with
+    | IntNumeral x when int_of_string x = 0 -> srt2
+    | IntNumeral _ -> srt1
+    | _ ->
+        { breaks= srt1.breaks @ srt2.breaks
+        ; continues= srt1.continues || srt2.continues
+        ; controlflow=
+            (match (srt1.controlflow, srt2.controlflow) with
+            | Complete c1, Complete c2 -> Complete (CIfElse (c1, c2))
+            | _ -> Incomplete Next) } in
+  mk_typed_statement ~stmt ~flow_type ~loc
+
+and check_while loc cf tenv cond_e loop_body =
+  let hardcoded_true s = String.exists s ~f:(fun c -> c > '0' && c <= '9') in
+  let te =
+    check_expression_of_int_type cf tenv cond_e "Condition in while-loop" in
+  let _, ts =
+    check_statement {cf with loop_depth= cf.loop_depth + 1} tenv loop_body in
+  let flow_type =
+    match te.expr with
+    | IntNumeral x when hardcoded_true x -> (
+        match ts.smeta.flow_type with
+        | {breaks= []; _} -> complete (CWhile te.emeta.loc)
+        | {controlflow= Complete _; breaks; _} ->
+            incomplete_with (LoopBreaks breaks)
+        | _ -> incomplete)
+    | _ -> incomplete in
+  mk_typed_statement ~stmt:(While (te, ts)) ~flow_type ~loc
+
+and check_for loc cf tenv loop_var lower_bound_e upper_bound_e loop_body =
+  let te1 =
+    check_expression_of_int_type cf tenv lower_bound_e "Lower bound of for-loop"
+  and te2 =
+    check_expression_of_int_type cf tenv upper_bound_e "Upper bound of for-loop"
+  in
+  verify_identifier loop_var;
+  let ts = check_loop_body cf tenv loop_var UnsizedType.UInt loop_body in
+  let flow_type =
+    let ft = ts.smeta.flow_type in
+    match (te1.expr, te2.expr) with
+    | IntNumeral x, IntNumeral y
+      when int_of_string x <= int_of_string y && not ft.continues ->
+        if List.is_empty ft.breaks then ts.smeta.flow_type
+        else incomplete_with (LoopBreaks ft.breaks)
+    | _ -> (
+        match ts.smeta.flow_type.controlflow with
+        | Complete _ when not ft.continues ->
+            incomplete_with
+              (EmptyRange {te1.emeta.loc with end_loc= te2.emeta.loc.end_loc})
+        | _ -> incomplete) in
+  mk_typed_statement
+    ~stmt:
+      (For
+         { loop_variable= loop_var
+         ; lower_bound= te1
+         ; upper_bound= te2
+         ; loop_body= ts })
+    ~flow_type ~loc
+
+and check_foreach_loop_identifier_type loc ty =
+  match ty with
+  | UnsizedType.UArray ut -> ut
+  | UVector | URowVector | UMatrix -> UnsizedType.UReal
+  | _ -> Semantic_error.array_vector_rowvector_matrix_expected loc ty |> error
+
+and check_foreach loc cf tenv loop_var foreach_e loop_body =
+  let te = check_expression cf tenv foreach_e in
+  verify_identifier loop_var;
+  let loop_var_ty =
+    check_foreach_loop_identifier_type te.emeta.loc te.emeta.type_ in
+  let ts = check_loop_body cf tenv loop_var loop_var_ty loop_body in
+  let flow_type =
+    match ts.smeta.flow_type with
+    | {controlflow= Complete _; breaks= []; continues= false} ->
+        incomplete_with (EmptyContainer te.emeta.loc)
+    | _ -> incomplete in
+  mk_typed_statement ~stmt:(ForEach (loop_var, te, ts)) ~flow_type ~loc
+
+and check_loop_body cf tenv loop_var loop_var_ty loop_body =
+  verify_name_fresh tenv loop_var ~is_udf:false;
+  (* Add to type environment as readonly. Check that function args and loop
+     identifiers are not modified in function. (passed by const ref) *)
+  let tenv =
+    Env.add tenv loop_var.name loop_var_ty
+      (`Variable
+         { origin= cf.current_block
+         ; global= false
+         ; readonly= true
+         ; location= loop_var.id_loc }) in
+  snd (check_statement {cf with loop_depth= cf.loop_depth + 1} tenv loop_body)
+
+and check_block loc cf tenv stmts =
+  let _, checked_stmts =
+    List.fold_left_map stmts ~init:tenv ~f:(check_statement cf) in
+  let flow_type =
+    checked_stmts |> list_until_escape
+    |> List.map ~f:(fun s -> s.smeta.flow_type)
+    |> List.fold_left ~init:incomplete ~f:compute_block_statement_returntype
+  in
+  mk_typed_statement ~stmt:(Block checked_stmts) ~flow_type ~loc
+
+and check_profile loc cf tenv name stmts =
+  let _, checked_stmts =
+    List.fold_left_map stmts ~init:tenv ~f:(check_statement cf) in
+  let flow_type =
+    checked_stmts |> list_until_escape
+    |> List.map ~f:(fun s -> s.smeta.flow_type)
+    |> List.fold_left ~init:incomplete ~f:compute_block_statement_returntype
+  in
+  mk_typed_statement ~stmt:(Profile (name, checked_stmts)) ~flow_type ~loc
+
+(* variable declarations *)
+and verify_valid_transformation_for_type loc is_global sized_ty trans =
+  let is_real {emeta; _} = emeta.type_ = UReal in
+  let is_real_transformation =
+    match trans with
+    | Transformation.Lower e -> is_real e
+    | Upper e -> is_real e
+    | LowerUpper (e1, e2) -> is_real e1 || is_real e2
+    | _ -> false in
+  if is_global && sized_ty = SizedType.SInt && is_real_transformation then
+    Semantic_error.non_int_bounds loc |> error;
+  let is_transformation =
+    match trans with Transformation.Identity -> false | _ -> true in
+  if is_global && SizedType.(is_complex_type sized_ty) && is_transformation then
+    Semantic_error.complex_transform loc |> error
+
+and verify_transformed_param_ty loc cf is_global unsized_ty =
+  if
+    is_global
+    && (cf.current_block = Param || cf.current_block = TParam)
+    && UnsizedType.contains_int unsized_ty
+  then Semantic_error.no_int_params loc (cf.current_block = TParam) |> error
+
+and check_sizedtype cf tenv sizedty =
+  let check e msg = check_expression_of_int_type cf tenv e msg in
+  match sizedty with
+  | SizedType.SInt -> SizedType.SInt
+  | SReal -> SReal
+  | SComplex -> SComplex
+  | SVector (mem_pattern, e) ->
+      let te = check e "Vector sizes" in
+      SVector (mem_pattern, te)
+  | SRowVector (mem_pattern, e) ->
+      let te = check e "Row vector sizes" in
+      SRowVector (mem_pattern, te)
+  | SMatrix (mem_pattern, e1, e2) ->
+      let te1 = check e1 "Matrix row size" in
+      let te2 = check e2 "Matrix column size" in
+      SMatrix (mem_pattern, te1, te2)
+  | SComplexVector e ->
+      let te = check e "complex vector sizes" in
+      SComplexVector te
+  | SComplexRowVector e ->
+      let te = check e "complex row vector sizes" in
+      SComplexRowVector te
+  | SComplexMatrix (e1, e2) ->
+      let te1 = check e1 "Complex matrix row size" in
+      let te2 = check e2 "Complex matrix column size" in
+      SComplexMatrix (te1, te2)
+  | SArray (st, e) ->
+      let tst = check_sizedtype cf tenv st in
+      let te = check e "Array sizes" in
+      SArray (tst, te)
+  | STuple subtypes ->
+      let typed_subtypes = List.map ~f:(check_sizedtype cf tenv) subtypes in
+      STuple typed_subtypes
+
+and check_var_decl_initial_value cf tenv {identifier; initial_value} =
+  match initial_value with
+  | Some e -> (
+      let lhs =
+        check_lvalue cf tenv
+          {lval= LVariable identifier; lmeta= {loc= identifier.id_loc}} in
+      let rhs = check_expression cf tenv e in
+      let rhs =
+        (* Hack: need the RHS to be promoted correctly to vars if needed *)
+        {rhs with emeta= {rhs.emeta with ad_level= lhs.lmeta.ad_level}} in
+      match
+        SignatureMismatch.check_of_same_type_mod_conv lhs.lmeta.type_
+          rhs.emeta.type_
+      with
+      | Ok p -> Ast.{identifier; initial_value= Some (Promotion.promote rhs p)}
+      | Error _ ->
+          Semantic_error.illtyped_assignment rhs.emeta.loc Equals lhs.lmeta
+            rhs.emeta
+          |> error)
+  | None -> Ast.{identifier; initial_value= None}
+
+and check_transformation cf tenv ut trans =
+  let check e msg = check_expression_of_scalar_or_type cf tenv ut e msg in
+  match trans with
+  | Transformation.Identity -> Transformation.Identity
+  | Lower e -> Lower (check e "Lower bound")
+  | Upper e -> Upper (check e "Upper bound")
+  | LowerUpper (e1, e2) ->
+      LowerUpper (check e1 "Lower bound", check e2 "Upper bound")
+  | Offset e -> Offset (check e "Offset")
+  | Multiplier e -> Multiplier (check e "Multiplier")
+  | OffsetMultiplier (e1, e2) ->
+      OffsetMultiplier (check e1 "Offset", check e2 "Multiplier")
+  | Ordered -> Ordered
+  | PositiveOrdered -> PositiveOrdered
+  | Simplex -> Simplex
+  | UnitVector -> UnitVector
+  | SumToZero -> SumToZero
+  | CholeskyCorr -> CholeskyCorr
+  | CholeskyCov -> CholeskyCov
+  | Correlation -> Correlation
+  | Covariance -> Covariance
+  | StochasticColumn -> StochasticColumn
+  | StochasticRow -> StochasticRow
+  | TupleTransformation tms ->
+      let typesTrans = Utils.zip_utuple_trans_exn ut tms in
+      let tes =
+        List.map typesTrans ~f:(fun (ut, tm) ->
+            check_transformation cf tenv ut tm) in
+      TupleTransformation tes
+
+and check_var_decl loc cf tenv sized_ty trans
+    (variables : untyped_expression Ast.variable list) annotations is_global =
+  let checked_type =
+    check_sizedtype {cf with in_toplevel_decl= is_global} tenv sized_ty in
+  let unsized_type = SizedType.to_unsized checked_type in
+  let checked_trans = check_transformation cf tenv unsized_type trans in
+  let tenv, tvariables =
+    List.fold_left_map ~init:tenv
+      ~f:(fun tenv' ({identifier; initial_value} as var) ->
+        verify_identifier identifier;
+        verify_name_fresh tenv' identifier ~is_udf:false;
+        let tenv'' =
+          Env.add tenv' identifier.name unsized_type
+            (`Variable
+               { origin= cf.current_block
+               ; global= is_global
+               ; readonly= false
+               ; location= identifier.id_loc }) in
+        warn_self_declare identifier initial_value;
+        (tenv'', check_var_decl_initial_value cf tenv'' var))
+      variables in
+  verify_valid_transformation_for_type loc is_global checked_type checked_trans;
+  verify_transformed_param_ty loc cf is_global unsized_type;
+  let _ : bool =
+    check_decl_annotations (List.hd_exn variables).identifier loc annotations
+      Annotation.(
+        Variable {type_= unsized_type; block= cf.current_block; is_global})
+  in
+  let stmt =
+    VarDecl
+      { decl_type= checked_type
+      ; transformation= checked_trans
+      ; variables= tvariables
+      ; annotations
+      ; is_global } in
+  (tenv, mk_typed_statement ~stmt ~loc ~flow_type:incomplete)
+
+(* function definitions *)
+and exists_matching_fn_declared tenv id arg_tys rt =
+  let options = Env.find tenv id.name in
+  let f = function
+    | Env.{kind= `UserDeclared location; type_= UFun (listedtypes, rt', _, _)}
+      when arg_tys = listedtypes && rt = rt' ->
+        Some location
+    | _ -> None in
+  List.find_map ~f options
+
+and verify_unique_signature tenv loc id arg_tys rt =
+  let existing = Env.find tenv id.name in
+  let same_args = function
+    | Env.{type_= UFun (listedtypes, _, _, _); _}
+      when List.map ~f:snd arg_tys = List.map ~f:snd listedtypes ->
+        true
+    | _ -> false in
+  match List.filter existing ~f:same_args with
+  | [] -> ()
+  | ({type_= UFun (_, rt', _, _); _} as info) :: _ when rt <> rt' ->
+      Semantic_error.fn_overload_rt_only loc id.name rt rt' (Env.location info)
+      |> error
+  | {kind= `StanMath; _} :: _ ->
+      Semantic_error.stan_math_fn_redefined loc id.name
+        (UnsizedType.UFun (arg_tys, rt, Fun_kind.suffix_from_name id.name, AoS))
+      |> error
+  | { kind=
+        `UserDeclared prev | `UserDefined prev | `Variable {location= prev; _}
+    ; _ }
+    :: _ ->
+      Semantic_error.fn_decl_redefined loc id.name
+        (UnsizedType.UFun (arg_tys, rt, Fun_kind.suffix_from_name id.name, AoS))
+        prev
+      |> error
+
+and verify_fundef_overloaded loc tenv id arg_tys rt =
+  if Option.is_some (exists_matching_fn_declared tenv id arg_tys rt) then
+    (* this is the definition to an existing forward declaration *)
+    ()
+  else
+    (* this should be an overload with a unique signature *)
+    verify_unique_signature tenv loc id arg_tys rt;
+  verify_name_fresh tenv id ~is_udf:true
+
+and get_fn_decl_or_defn loc tenv id arg_tys rt (body : Ast.untyped_statement)
+    annotations =
+  let verify_fun_annotations has_body =
+    check_decl_annotations id body.smeta.loc annotations
+      Annotation.(
+        Function
+          { type_=
+              UnsizedType.UFun
+                ( arg_tys
+                , rt
+                , Fun_kind.suffix_from_name id.Ast.name
+                , Mem_pattern.AoS )
+          ; has_body }) in
+  match body with
+  | {stmt= Skip; _} -> (
+      match exists_matching_fn_declared tenv id arg_tys rt with
+      | Some prev -> Semantic_error.fn_decl_exists loc id.name prev |> error
+      | None ->
+          (* Forward declarations are deprecated and cannot have annotations. A
+             valid annotation means the backend knows where to find the function
+             definition. Invalid annotations are ignored so that they do not
+             prevent the error on missing function defintion. *)
+          if verify_fun_annotations false then `UserDefined id.id_loc
+          else `UserDeclared id.id_loc)
+  | _ ->
+      let _ : bool = verify_fun_annotations true in
+      `UserDefined id.id_loc
+
+and verify_fundef_dist_rt loc id return_ty =
+  let is_dist =
+    List.exists
+      ~f:(fun x -> String.ends_with id.name ~suffix:x)
+      Utils.conditioning_suffices in
+  if is_dist && return_ty <> UnsizedType.ReturnType UReal then
+    Semantic_error.non_real_prob_fn_def loc return_ty |> error
+
+and verify_pdf_fundef_first_arg_ty loc id arg_tys =
+  if String.ends_with id.name ~suffix:"_lpdf" then
+    let rt = List.hd arg_tys |> Option.map ~f:snd in
+    match rt with
+    | Some rt when not (UnsizedType.is_discrete_type rt) -> ()
+    | _ -> Semantic_error.prob_density_non_real_variate loc rt |> error
+
+and verify_pmf_fundef_first_arg_ty loc id arg_tys =
+  if String.ends_with id.name ~suffix:"_lpmf" then
+    let rt = List.hd arg_tys |> Option.map ~f:snd in
+    match rt with
+    | Some rt when UnsizedType.is_discrete_type rt -> ()
+    | _ -> Semantic_error.prob_mass_non_int_variate loc rt |> error
+
+and verify_fundef_distinct_arg_ids arg_names =
+  List.fold_left arg_names ~init:String.Map.empty ~f:(fun seen id ->
+      match String.Map.find_opt id.name seen with
+      | None -> String.Map.add seen ~key:id.name ~data:id
+      | Some prev -> Semantic_error.duplicate_arg_names id.id_loc prev |> error)
+  |> ignore
+
+and verify_fundef_return_tys loc return_type (body : typed_statement) =
+  if body.stmt = Skip || return_type = UnsizedType.Void then ()
+  else
+    match body.smeta.flow_type.controlflow with
+    | Complete _ -> ()
+    | Incomplete info ->
+        error (Semantic_error.incompatible_return_types loc info)
+
+and add_function tenv id type_ defined =
+  (* if we're providing a definition, we remove prior declarations to simplify
+     the environment *)
+  match defined with
+  | `UserDefined _ ->
+      let existing_defns = Env.find tenv id.name in
+      let defns =
+        List.filter
+          ~f:(function
+            | Env.{kind= `UserDeclared _; type_= type'; _} when type' = type_ ->
+                false
+            | _ -> true)
+          existing_defns in
+      let new_fn = Env.{kind= `UserDefined id.id_loc; type_} in
+      Env.set_raw tenv id.name (new_fn :: defns)
+  | _ -> Env.add tenv id.name type_ defined
+
+and check_fundef loc cf tenv return_ty id args annotations body =
+  List.iter args ~f:(fun (_, _, id) -> verify_identifier id);
+  verify_identifier id;
+  let arg_types = List.map ~f:(fun (w, y, _) -> (w, y)) args in
+  let arg_identifiers = List.map ~f:(fun (_, _, z) -> z) args in
+  verify_fundef_dist_rt loc id return_ty;
+  verify_pdf_fundef_first_arg_ty loc id arg_types;
+  verify_pmf_fundef_first_arg_ty loc id arg_types;
+  List.iter
+    ~f:(fun id -> verify_name_fresh tenv id ~is_udf:false)
+    arg_identifiers;
+  verify_fundef_distinct_arg_ids arg_identifiers;
+  (* We treat DataOnly arguments as if they are data and AutoDiffable arguments
+     as if they are parameters, for the purposes of type checking. *)
+  let arg_types_internal =
+    List.map
+      ~f:(function
+        | UnsizedType.DataOnly, ut -> (Block.Data, ut)
+        | AutoDiffable, ut -> (Param, ut)
+        | TupleAD _, _ ->
+            Common.ICE.internal_error
+              "TupleAD in function definition, this is unexpected!"
+            [@coverage off])
+      arg_types in
+  let tenv_body =
+    List.fold_left2 arg_identifiers arg_types_internal ~init:tenv
+      ~f:(fun env id (origin, typ) ->
+        Env.add env id.name typ
+          (* readonly so that function args and loop identifiers are not
+             modified in function. (passed by const ref) *)
+          (`Variable {origin; readonly= true; global= false; location= id.id_loc}))
+  in
+  let context =
+    let kind = Fun_kind.suffix_from_name id.name in
+    { cf with
+      containing_function=
+        UnsizedType.returntype_to_type_opt return_ty
+        |> Option.value_map ~default:(NonReturning kind) ~f:(fun r ->
+            Returning (kind, r)) } in
+  let _, checked_body = check_statement context tenv_body body in
+  verify_fundef_return_tys loc return_ty checked_body;
+  let stmt =
+    FunDef
+      { returntype= return_ty
+      ; funname= id
+      ; arguments= args
+      ; annotations
+      ; body= checked_body } in
+  (* NB: **not** tenv_body, so args don't leak out *)
+  (tenv, mk_typed_statement ~flow_type:incomplete ~loc ~stmt)
+
+and check_statement (cf : context_flags_record) (tenv : Env.t)
+    (s : Ast.untyped_statement) : Env.t * typed_statement =
+  let loc = s.smeta.loc in
+  match s.stmt with
+  | NRFunApp ((), id, es) -> (tenv, check_nr_fn_app loc cf tenv id es)
+  | Assignment {assign_lhs; assign_op; assign_rhs} ->
+      (tenv, check_assignment loc cf tenv assign_lhs assign_op assign_rhs)
+  | TargetPE e -> (tenv, check_target_pe loc cf tenv e)
+  | JacobianPE e -> (tenv, check_jacobian_pe loc cf tenv e)
+  | Tilde {arg; distribution; args; truncation; kind= ()} ->
+      (tenv, check_tilde loc cf tenv distribution truncation arg args)
+  | Break -> (tenv, check_break loc cf)
+  | Continue -> (tenv, check_continue loc cf)
+  | Return e -> (tenv, check_return loc cf tenv e)
+  | ReturnVoid -> (tenv, check_returnvoid loc cf)
+  | Print ps -> (tenv, check_print loc cf tenv ps)
+  | Reject ps -> (tenv, check_reject loc cf tenv ps)
+  | FatalError ps -> (tenv, check_fatal_error loc cf tenv ps)
+  | Skip -> (tenv, check_skip loc)
+  (* the following can contain further statements *)
+  | IfThenElse (e, s1, os2) -> (tenv, check_if_then_else loc cf tenv e s1 os2)
+  | While (e, s) -> (tenv, check_while loc cf tenv e s)
+  | For {loop_variable; lower_bound; upper_bound; loop_body} ->
+      ( tenv
+      , check_for loc cf tenv loop_variable lower_bound upper_bound loop_body )
+  | ForEach (id, e, s) -> (tenv, check_foreach loc cf tenv id e s)
+  | Block stmts -> (tenv, check_block loc cf tenv stmts)
+  | Profile (name, vdsl) -> (tenv, check_profile loc cf tenv name vdsl)
+  (* these two are special in that they're allowed to change the type
+     environment *)
+  | VarDecl {decl_type; transformation; variables; is_global; annotations} ->
+      check_var_decl loc cf tenv decl_type transformation variables annotations
+        is_global
+  | FunDef {returntype; funname; arguments; body; annotations} ->
+      check_fundef loc cf tenv returntype funname arguments annotations body
+
+let add_userdefined_functions tenv stmts_opt =
+  match stmts_opt with
+  | None -> tenv
+  | Some {stmts; _} ->
+      let f tenv (s : Ast.untyped_statement) =
+        match s with
+        | { stmt= FunDef {returntype; funname; arguments; body; annotations}
+          ; smeta= {loc} } ->
+            let arg_types = Ast.type_of_arguments arguments in
+            verify_fundef_overloaded loc tenv funname arg_types returntype;
+            let defined =
+              get_fn_decl_or_defn loc tenv funname arg_types returntype body
+                annotations in
+            add_function tenv funname
+              (UFun
+                 ( arg_types
+                 , returntype
+                 , Fun_kind.suffix_from_name funname.name
+                 , AoS ))
+              defined
+        | _ -> tenv in
+      List.fold_left ~init:tenv ~f stmts
+
+let check_toplevel_block block tenv stmts_opt =
+  let cf = context block in
+  match stmts_opt with
+  | Some {stmts; xloc} ->
+      let tenv', stmts =
+        List.fold_left_map stmts ~init:tenv ~f:(check_statement cf) in
+      let _ = list_until_escape stmts in
+      (tenv', Some {stmts; xloc})
+  | None -> (tenv, None)
+
+let check_functions_block ~allow_undefined_functions tenv stmts_opt =
+  let tenv = add_userdefined_functions tenv stmts_opt in
+  let _, typed_fb = check_toplevel_block Functions tenv stmts_opt in
+  let error_on_undefined name funs =
+    List.iter (List.rev funs) ~f:(fun f ->
+        match f with
+        | Env.{kind= `UserDeclared loc; _} ->
+            Semantic_error.fn_decl_without_def loc name |> error
+        | _ -> ()) in
+  if not allow_undefined_functions then Env.iteri tenv error_on_undefined;
+  (tenv, typed_fb)
+
+let verify_correctness_invariant (ast : untyped_program)
+    (decorated_ast : typed_program) =
+  let detyped = untyped_program_of_typed_program decorated_ast in
+  if compare_untyped_program ast detyped = 0 then ()
+  else
+    Common.ICE.internal_errorf
+      "Type checked AST does not match original AST.@\n%s@\n%s"
+      [ Ast.sexp_of_untyped_program detyped |> Sexplib0.Sexp.to_string_hum
+      ; Ast.sexp_of_untyped_program ast |> Sexplib0.Sexp.to_string_hum ]
+    [@coverage off]
+
+let check_program_exn ~allow_undefined_functions
+    ({ functionblock= fb
+     ; datablock= db
+     ; transformeddatablock= tdb
+     ; parametersblock= pb
+     ; transformedparametersblock= tpb
+     ; modelblock= mb
+     ; generatedquantitiesblock= gqb
+     ; comments } as ast) =
+  warnings := [];
+  requires_higher_order_autodiff := [];
+  (* create a new type environment which has only stan-math functions *)
+  let tenv = Lazy.force Env.stan_math_environment in
+  let tenv, typed_fb =
+    check_functions_block ~allow_undefined_functions tenv fb in
+  let tenv, typed_db = check_toplevel_block Data tenv db in
+  let tenv, typed_tdb = check_toplevel_block TData tenv tdb in
+  let tenv, typed_pb = check_toplevel_block Param tenv pb in
+  let tenv, typed_tpb = check_toplevel_block TParam tenv tpb in
+  let _, typed_mb = check_toplevel_block Model tenv mb in
+  let _, typed_gqb = check_toplevel_block GQuant tenv gqb in
+  let prog =
+    { functionblock= typed_fb
+    ; datablock= typed_db
+    ; transformeddatablock= typed_tdb
+    ; parametersblock= typed_pb
+    ; transformedparametersblock= typed_tpb
+    ; modelblock= typed_mb
+    ; generatedquantitiesblock= typed_gqb
+    ; comments } in
+  verify_correctness_invariant ast prog;
+  verify_second_order_derivative_compatibility prog;
+  attach_warnings prog
+
+let check_program ?(allow_undefined_functions = false)
+    ?(allowed_annotations : Annotation.annotation_classifier =
+      fun _ _ _ -> Error None) ast =
+  classify_annotations := allowed_annotations;
+  try Result.Ok (check_program_exn ~allow_undefined_functions ast)
+  with TypecheckerException err -> Result.Error err

@@ -1,0 +1,16 @@
+(library
+ (name middle)
+ (public_name stanc.middle)
+ (libraries std fmt common)
+ (instrumentation
+  (backend bisect_ppx))
+ (inline_tests)
+ (preprocess
+  (pps
+   ppx_compare
+   ppx_sexp_conv
+   ppx_expect_nobase
+   ppx_deriving.map
+   ppx_deriving.fold
+   ppx_deriving.create
+   ppx_deriving.show)))

@@ -1,0 +1,27 @@
+open Middle
+
+let%expect_test "stan2mir returns transformed and optimized MIR" =
+  let flags =
+    { Driver.Flags.default with
+      optimization_level= Analysis_and_optimization.Optimize.O1 } in
+  let mir = Test_utils.compile_mir "model { target += 1 + 2; }" flags in
+  Fmt.pr "%a@." Fmt.(list ~sep:cut Stmt.Located.pp) mir.log_prob;
+  [%expect {|
+    { target += 3;
+    }
+    |}]
+
+let%expect_test "stan2mir reports frontend errors" =
+  let code = "model { target += missing; }" in
+  match Test_utils.compile_mir code Driver.Flags.default with
+  | _ -> print_endline "unexpected success"
+  | exception Failure error ->
+      print_endline error;
+      [%expect
+        {|
+        error: Identifier "missing" not in scope.
+            ┌─ string:1:19
+          1 │  model { target += missing; }
+            │                    ^^^^^^^ Identifier "missing" not in scope.
+            = Did you mean "is_inf"?
+        |}]

@@ -1,0 +1,145 @@
+open Std
+open Grace
+
+let get_context code Middle.Location.{filename; included_from; _} =
+  match (included_from, code) with
+  | None, Some code ->
+      (* If the location is not included from anywhere, and we have code
+         provided, use it *)
+      code
+  | _ -> (
+      (* Otherwise, by the time we are printing an error, all these files are
+         already resolved. *)
+      match !Include_files.include_provider with
+      | FileSystemPaths _ ->
+          (* So we can read directly from the filesystem *)
+          In_channel.with_open_bin filename In_channel.input_all
+      | InMemory m ->
+          (* Or, we know we can find it in the map *)
+          String.Map.find filename m)
+
+let get_source ?printed_filename ?code loc : Source.t =
+  let code = get_context code loc in
+  let name =
+    if Option.is_none loc.included_from then
+      Option.first_some printed_filename (Some loc.filename)
+    else Some loc.filename in
+  let content =
+    (* Tab alignment hack, c.f. https://github.com/johnyob/grace/issues/83 *)
+    String.replace_all ~sub:"\t" ~by:" " code in
+  let source : Source.t = `String {name; content} in
+  source
+
+let clamp_int ~min ~max i = if i < min then min else if i > max then max else i
+
+(** Generate secondary diagnostics identifying where a file was included *)
+let included_diagnostic ?printed_filename ?code loc : Diagnostic.Label.t list =
+  let range_of_loc loc =
+    let source = get_source ?printed_filename ?code loc in
+    let start = loc.byte_num in
+    let end_ = start + String.length "#include" in
+    let end_ = clamp_int ~min:start ~max:(Source.length source) end_ in
+    Range.create ~source (Byte_index.of_int start) (Byte_index.of_int end_)
+  in
+  let[@tail_mod_cons] rec go Middle.Location.{included_from; filename; _} =
+    match included_from with
+    | None -> []
+    | Some loc ->
+        let label =
+          Diagnostic.Label.secondaryf ~range:(range_of_loc loc)
+            "file '%s' included here" filename in
+        label :: go loc in
+  go loc
+
+let range_of_loc_span ?printed_filename ?code (loc : Middle.Location_span.t) :
+    Range.t * Diagnostic.Label.t list =
+  if loc = Middle.Location_span.empty then
+    (* These should only occur when we're raising warnings for things like
+       optimization hazards after running lazy code motion, since the IR
+       pre-optimization always has the locations from the user *)
+    ( Range.initial
+        Source.(`String {name= Some "<unknown location>"; content= ""})
+    , [] )
+  else
+    let Middle.Location_span.{begin_loc; end_loc} = loc in
+    let source = get_source ?printed_filename ?code begin_loc in
+    let max = Source.length source in
+    let start =
+      (* clamp handles errors at end of source *)
+      clamp_int ~min:0 ~max begin_loc.byte_num in
+    let end_ =
+      (* can be needed if error crosses include boundary *)
+      clamp_int ~min:start ~max end_loc.byte_num in
+    ( Range.create ~source (Byte_index.of_int start) (Byte_index.of_int end_)
+    , included_diagnostic ?printed_filename ?code begin_loc )
+
+let box (l : Diagnostic.Label.t) =
+  {l with message= (fun ppf -> (Fmt.hovbox Diagnostic.Message.pp) ppf l.message)}
+
+let unstyle (l : Diagnostic.Label.t) =
+  { l with
+    message= (fun ppf -> (Fmt.styled `None Diagnostic.Message.pp) ppf l.message)
+  }
+
+let compare_labels (a : Diagnostic.Label.t) (b : Diagnostic.Label.t) : int =
+  let ( let*? ) a f =
+    (* helper for short-circuiting *)
+    if a <> 0 then a else f () in
+  let*? () = Source.compare (Range.source a.range) (Range.source b.range) in
+  let*? () = Range.compare a.range b.range in
+  let*? () = Diagnostic.Priority.compare a.priority b.priority in
+  (* Materializing the labels is annoying but should be rare. Most of the time
+     that the first three compares return equal, this is a genuine duplicate *)
+  let label1 = Diagnostic.Message.to_string a.message in
+  let label2 = Diagnostic.Message.to_string b.message in
+  String.compare label1 label2
+
+let dedup_labels labels =
+  let prim, sec =
+    List.partition labels ~f:(function
+      | {Diagnostic.Label.priority= Primary; _} -> true
+      | {priority= Secondary; _} -> false) in
+  prim @ List.sort_uniq sec ~cmp:compare_labels
+
+let make ?printed_filename ?code ?(labels = []) ?(notes = [])
+    ?(summary : Diagnostic.Message.t option) span severity primary =
+  let range, included = range_of_loc_span ?printed_filename ?code span in
+  let labels = dedup_labels (included @ labels) in
+  let kont (l : Diagnostic.Label.t) =
+    let l = box l in
+    let summary = Option.value summary ~default:l.message in
+    let labels = unstyle l :: labels in
+    Diagnostic.create severity ~labels ~notes summary in
+  Diagnostic.Label.kprimaryf kont ~range primary
+
+let context ?printed_filename ?code loc message =
+  let range, included = range_of_loc_span ?printed_filename ?code loc in
+  Diagnostic.Label.kcreatef ~priority:Secondary
+    (fun l -> box l :: included)
+    ~range message
+
+open Grace_ansi_renderer
+
+let config =
+  Config.
+    { default with
+      styles=
+        { Style_sheet.default with
+          header_warning= [`Bold; `Fg `Magenta]
+        ; primary_label_warning= [`Fg `Magenta]
+        ; source_border= [`None; `Faint]
+        ; line_number= [`Fg `Yellow] }
+    ; chars= {Chars.unicode with source_border_left_break= "⋯"}
+    ; num_contextual_lines= 1
+    ; enable_inline_contextual_lines= true }
+
+let config ppf =
+  let use_ansi =
+    match Fmt.style_renderer ppf with `Ansi_tty -> Some true | _ -> Some false
+  in
+  {config with use_ansi}
+
+let pp ppf d = pp_diagnostic ~config:(config ppf) ?code_to_string:None ppf d
+
+let pp_compact ppf =
+  pp_compact_diagnostic ~config:(config ppf) ?code_to_string:None ppf
