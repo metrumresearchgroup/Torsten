@@ -1,0 +1,295 @@
+#ifndef STAN_MATH_REV_FUN_POW_HPP
+#define STAN_MATH_REV_FUN_POW_HPP
+
+#include <stan/math/rev/meta.hpp>
+#include <stan/math/rev/core.hpp>
+#include <stan/math/rev/fun/exp.hpp>
+#include <stan/math/rev/fun/inv.hpp>
+#include <stan/math/rev/fun/inv_sqrt.hpp>
+#include <stan/math/rev/fun/inv_square.hpp>
+#include <stan/math/rev/fun/is_nan.hpp>
+#include <stan/math/rev/fun/log.hpp>
+#include <stan/math/rev/fun/sqrt.hpp>
+#include <stan/math/rev/fun/square.hpp>
+#include <stan/math/rev/fun/value_of_rec.hpp>
+#include <stan/math/prim/core.hpp>
+#include <stan/math/prim/meta.hpp>
+#include <stan/math/prim/err.hpp>
+#include <stan/math/prim/fun/constants.hpp>
+#include <stan/math/prim/fun/copysign.hpp>
+#include <stan/math/prim/fun/is_any_nan.hpp>
+#include <stan/math/prim/fun/isnan.hpp>
+#include <stan/math/prim/fun/is_nan.hpp>
+#include <stan/math/prim/fun/pow.hpp>
+
+#include <cmath>
+#include <complex>
+#include <type_traits>
+
+namespace stan {
+namespace math {
+
+/**
+ * Return the base raised to the power of the exponent (cmath).
+ *
+ * The partial derivatives are
+ *
+ * \f$\frac{\partial}{\partial x} \mbox{pow}(x, y) = y x^{y-1}\f$, and
+ *
+ * \f$\frac{\partial}{\partial y} \mbox{pow}(x, y) = x^y \ \log x\f$.
+ *
+ *
+   \f[
+   \mbox{pow}(x, y) =
+   \begin{cases}
+     x^y & \mbox{if } -\infty\leq x, y \leq \infty \\[6pt]
+     \textrm{NaN} & \mbox{if } x = \textrm{NaN or } y = \textrm{NaN}
+   \end{cases}
+   \f]
+
+   \f[
+   \frac{\partial\, \mbox{pow}(x, y)}{\partial x} =
+   \begin{cases}
+     yx^{y-1} & \mbox{if } -\infty\leq x\leq \infty \\[6pt]
+     \textrm{NaN} & \mbox{if } x = \textrm{NaN or } y = \textrm{NaN}
+   \end{cases}
+   \f]
+
+   \f[
+   \frac{\partial\, \mbox{pow}(x, y)}{\partial y} =
+   \begin{cases}
+     x^y\ln x & \mbox{if } -\infty\leq x\leq \infty \\[6pt]
+     \textrm{NaN} & \mbox{if } x = \textrm{NaN or } y = \textrm{NaN}
+   \end{cases}
+   \f]
+ *
+ * @tparam Scal1 Either a `var`, `arithmetic`, or `complex` type with an inner
+ `var` or `arithmetic` type.
+ * @tparam Scal2 Either a `var`, `arithmetic`, or `complex` type with an inner
+ `var` or `arithmetic` type.
+ * @param base Base variable.
+ * @param exponent Exponent variable.
+ * @return Base raised to the exponent.
+ */
+template <typename Scal1, typename Scal2,
+          require_any_var_t<base_type_t<Scal1>, base_type_t<Scal2>>* = nullptr,
+          require_all_stan_scalar_t<Scal1, Scal2>* = nullptr>
+inline auto pow(const Scal1& base, const Scal2& exponent) {
+  if constexpr (is_complex<Scal1>::value || is_complex<Scal2>::value) {
+    return internal::complex_pow(base, exponent);
+  } else {
+    if constexpr (is_constant_v<Scal2>) {
+      if (exponent == 0.5) {
+        return sqrt(base);
+      } else if (exponent == 1.0) {
+        return base;
+      } else if (exponent == 2.0) {
+        return square(base);
+      } else if (exponent == -2.0) {
+        return inv_square(base);
+      } else if (exponent == -1.0) {
+        return inv(base);
+      } else if (exponent == -0.5) {
+        return inv_sqrt(base);
+      }
+    }
+    return make_callback_var(
+        std::pow(value_of(base), value_of(exponent)),
+        [base, exponent](auto&& vi) mutable {
+          if (value_of(base) == 0.0) {
+            return;  // partials zero, avoids 0 & log(0)
+          }
+          const double vi_mul = vi.adj() * vi.val();
+
+          if constexpr (is_autodiff_v<Scal1>) {
+            base.adj() += vi_mul * value_of(exponent) / value_of(base);
+          }
+          if constexpr (is_autodiff_v<Scal2>) {
+            exponent.adj() += vi_mul * std::log(value_of(base));
+          }
+        });
+  }
+}
+
+/**
+ * Return the base raised to the power of the exponent (cmath). For matrices
+ * this is performed elementwise.
+ * @tparam Mat1 An Eigen type deriving from Eigen::EigenBase, a standard vector,
+ * or a `var_value` with inner Eigen type as defined above. The `scalar_type`
+ *  must be a `var`.
+ * @tparam Mat2 An Eigen type deriving from Eigen::EigenBase, a standard vector,
+ * or a `var_value` with inner Eigen type as defined above. The `scalar_type`
+ *  must be a `var`.
+ * @param base Base variable.
+ * @param exponent Exponent variable.
+ * @return Base raised to the exponent.
+ */
+template <typename Mat1, typename Mat2,
+          require_all_st_var_or_arithmetic<Mat1, Mat2>* = nullptr,
+          require_any_matrix_st<is_var, Mat1, Mat2>* = nullptr,
+          require_all_not_stan_scalar_t<Mat1, Mat2>* = nullptr>
+inline auto pow(const Mat1& base, const Mat2& exponent) {
+  check_consistent_sizes("pow", "base", base, "exponent", exponent);
+  using expr_type = decltype(as_array_or_scalar(value_of(base))
+                                 .pow(as_array_or_scalar(value_of(exponent))));
+  using val_type = std::conditional_t<
+      math::disjunction<is_eigen_array<Mat1>, is_eigen_array<Mat2>>::value,
+      decltype(std::declval<expr_type>().eval()),
+      decltype(std::declval<expr_type>().matrix().eval())>;
+  using ret_type = return_var_matrix_t<val_type, Mat1, Mat2>;
+  using base_t = decltype(as_array_or_scalar(base));
+  using exp_t = decltype(as_array_or_scalar(exponent));
+  using base_arena_t = arena_t<base_t>;
+  using exp_arena_t = arena_t<exp_t>;
+
+  base_arena_t arena_base = as_array_or_scalar(base);
+  exp_arena_t arena_exponent = as_array_or_scalar(exponent);
+  arena_t<ret_type> ret
+      = value_of(arena_base).pow(value_of(arena_exponent)).matrix();
+
+  reverse_pass_callback([arena_base, arena_exponent, ret]() mutable {
+    const auto& are_vals_zero = to_ref(value_of(arena_base) != 0.0);
+    const auto& ret_mul = to_ref(ret.adj().array() * ret.val().array());
+    if constexpr (is_autodiff_v<Mat1>) {
+      arena_base.adj() += (are_vals_zero)
+                              .select(ret_mul * value_of(arena_exponent)
+                                          / value_of(arena_base),
+                                      0);
+    }
+    if constexpr (is_autodiff_v<Mat2>) {
+      arena_exponent.adj()
+          += (are_vals_zero).select(ret_mul * value_of(arena_base).log(), 0);
+    }
+  });
+  return ret_type(ret);
+}
+
+/**
+ * Return the base raised to the power of the exponent (cmath). For matrices
+ * this is performed elementwise.
+ * @tparam Mat1 An Eigen type deriving from Eigen::EigenBase or
+ *  a `var_value` with inner Eigen type as defined above. The `scalar_type`
+ *  must be a `var` or Arithmetic.
+ * @tparam Scal1 An arithmetic type or a `var_value` with inner arithmetic type.
+ * @param base Base variable.
+ * @param exponent Exponent variable.
+ * @return Base raised to the exponent.
+ */
+template <typename Mat1, typename Scal1,
+          require_all_st_var_or_arithmetic<Mat1, Scal1>* = nullptr,
+          require_all_matrix_st<is_var, Mat1>* = nullptr,
+          require_stan_scalar_t<Scal1>* = nullptr>
+inline auto pow(const Mat1& base, const Scal1& exponent) {
+  using ret_type = promote_scalar_t<var, plain_type_t<Mat1>>;
+
+  if constexpr (is_constant_v<Scal1>) {
+    if (exponent == 0.5) {
+      return ret_type(sqrt(base));
+    } else if (exponent == 1.0) {
+      return ret_type(base);
+    } else if (exponent == 2.0) {
+      return ret_type(square(base));
+    } else if (exponent == -2.0) {
+      return ret_type(inv_square(base));
+    } else if (exponent == -1.0) {
+      return ret_type(inv(base));
+    } else if (exponent == -0.5) {
+      return ret_type(inv_sqrt(base));
+    }
+  }
+
+  arena_t<plain_type_t<Mat1>> arena_base = base;
+  arena_t<ret_type> ret
+      = value_of(arena_base).array().pow(value_of(exponent)).matrix();
+
+  reverse_pass_callback([arena_base, exponent, ret]() mutable {
+    const auto& are_vals_zero = to_ref(value_of(arena_base).array() != 0.0);
+    const auto& ret_mul = to_ref(ret.adj().array() * ret.val().array());
+    if constexpr (is_autodiff_v<Mat1>) {
+      arena_base.adj().array()
+          += (are_vals_zero)
+                 .select(ret_mul * value_of(exponent)
+                             / value_of(arena_base).array(),
+                         0);
+    }
+    if constexpr (is_autodiff_v<Scal1>) {
+      exponent.adj()
+          += (are_vals_zero)
+                 .select(ret_mul * value_of(arena_base).array().log(), 0)
+                 .sum();
+    }
+  });
+
+  return ret_type(ret);
+}
+
+/**
+ * Return the base scalar raised to the power of the exponent
+ * matrix elementwise.
+ *
+ * The derivative for the variable is
+ *
+ * \f$\frac{d}{d y} \mbox{pow}(c, y) = c^y \log c \f$.
+ *
+ *
+ * @tparam Mat1 An Eigen type deriving from Eigen::EigenBase or
+ *  a `var_value` with inner Eigen type as defined above. The `scalar_type`
+ * must be a `var`.
+ * @tparam Scal1 An arithmetic type or a `var_value` with inner arithmetic type.
+ * @param base Base scalar.
+ * @param exponent Exponent variable.
+ * @return Base raised to the exponent.
+ */
+template <typename Scal1, typename Mat1,
+          require_all_st_var_or_arithmetic<Scal1, Mat1>* = nullptr,
+          require_stan_scalar_t<Scal1>* = nullptr,
+          require_all_matrix_st<is_var, Mat1>* = nullptr>
+inline auto pow(Scal1 base, const Mat1& exponent) {
+  using ret_type = promote_scalar_t<var, plain_type_t<Mat1>>;
+  arena_t<Mat1> arena_exponent = exponent;
+  arena_t<ret_type> ret
+      = Eigen::pow(value_of(base), value_of(arena_exponent).array());
+
+  reverse_pass_callback([base, arena_exponent, ret]() mutable {
+    if (unlikely(value_of(base) == 0.0)) {
+      return;  // partials zero, avoids 0 & log(0)
+    }
+    const auto& ret_mul = to_ref(ret.adj().array() * ret.val().array());
+    if constexpr (is_autodiff_v<Scal1>) {
+      base.adj()
+          += (ret_mul * value_of(arena_exponent).array() / value_of(base))
+                 .sum();
+    }
+    if constexpr (is_autodiff_v<Mat1>) {
+      arena_exponent.adj().array() += ret_mul * std::log(value_of(base));
+    }
+  });
+  return ret_type(ret);
+}
+
+/**
+ * Returns the elementwise raising of the first argument to the power of the
+ * second argument.
+ *
+ * @tparam T1 type of first argument
+ * @tparam T2 type of second argument
+ * @param a first argument
+ * @param b second argument
+ * @return the elementwise raising of the first argument to the power of the
+ * second argument.
+ */
+template <typename T1, typename T2, require_any_container_t<T1, T2>* = nullptr,
+          require_all_not_matrix_st<is_var, T1, T2>* = nullptr,
+          require_any_var_t<base_type_t<T1>, base_type_t<T2>>* = nullptr>
+inline auto pow(T1&& a, T2&& b) {
+  return apply_scalar_binary(
+      [](auto&& c, auto&& d) {
+        return stan::math::pow(std::forward<decltype(c)>(c),
+                               std::forward<decltype(d)>(d));
+      },
+      std::forward<T1>(a), std::forward<T2>(b));
+}
+
+}  // namespace math
+}  // namespace stan
+#endif
