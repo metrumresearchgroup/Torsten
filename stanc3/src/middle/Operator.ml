@@ -1,0 +1,57 @@
+(** Utilities for Stan's built in operators *)
+
+type t =
+  | Plus
+  | PPlus
+  | Minus
+  | PMinus
+  | Times
+  | Divide
+  | IntDivide
+  | Modulo
+  | LDivide
+  | EltTimes
+  | EltDivide
+  | Pow
+  | EltPow
+  | Or
+  | And
+  | Equals
+  | NEquals
+  | Less
+  | Leq
+  | Greater
+  | Geq
+  | PNot
+  | Transpose
+[@@deriving sexp, compare]
+
+let is_cmp = function
+  | Equals | NEquals | Less | Leq | Greater | Geq -> true
+  | Plus | PPlus | Minus | PMinus | Times | Divide | IntDivide | Modulo
+   |LDivide | EltTimes | EltDivide | Pow | EltPow | Or | And | PNot | Transpose
+    ->
+      false
+
+let pp ppf = function
+  | Plus | PPlus -> Fmt.pf ppf "+"
+  | Minus | PMinus -> Fmt.pf ppf "-"
+  | Times -> Fmt.pf ppf "*"
+  | Divide -> Fmt.pf ppf "/"
+  | IntDivide -> Fmt.pf ppf "%%/%%"
+  | Modulo -> Fmt.pf ppf "%%"
+  | LDivide -> Fmt.pf ppf "\\"
+  | EltTimes -> Fmt.pf ppf ".*"
+  | EltDivide -> Fmt.pf ppf "./"
+  | Pow -> Fmt.pf ppf "^"
+  | EltPow -> Fmt.pf ppf ".^"
+  | Or -> Fmt.pf ppf "||"
+  | And -> Fmt.pf ppf "&&"
+  | Equals -> Fmt.pf ppf "=="
+  | NEquals -> Fmt.pf ppf "!="
+  | Less -> Fmt.pf ppf "<"
+  | Leq -> Fmt.pf ppf "<="
+  | Greater -> Fmt.pf ppf ">"
+  | Geq -> Fmt.pf ppf ">="
+  | PNot -> Fmt.pf ppf "!"
+  | Transpose -> Fmt.pf ppf "'"

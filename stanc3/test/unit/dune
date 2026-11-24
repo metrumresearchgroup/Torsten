@@ -1,0 +1,13 @@
+(library
+ (name unit_tests)
+ (libraries
+  std
+  fmt
+  frontend
+  driver
+  stan_math_backend
+  middle
+  analysis_and_optimization)
+ (inline_tests)
+ (preprocess
+  (pps ppx_expect_nobase ppx_sexp_value)))

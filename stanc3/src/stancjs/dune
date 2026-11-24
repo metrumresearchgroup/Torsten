@@ -1,0 +1,31 @@
+(executable
+ (name stancjs)
+ (libraries std fmt js_of_ocaml driver stan_math_signatures)
+ (modules Stancjs Conversion)
+ (preprocess
+  (pps js_of_ocaml-ppx))
+ (modes js))
+
+(env
+ (release
+  (js_of_ocaml
+   (flags
+    (:standard "--opt" "3" "--target-env" "browser"))))
+ (dev
+  (js_of_ocaml
+   (flags
+    "--pretty"
+    "--no-inline"
+    "--debug-info"
+    "--disable"
+    "staticeval"
+    "--disable"
+    "share"
+    "--enable"
+    "with-js-error"
+    "--target-env"
+    "browser"))))
+
+(alias
+ (name default)
+ (deps stancjs.bc.js))

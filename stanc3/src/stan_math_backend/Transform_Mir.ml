@@ -1,0 +1,830 @@
+open Std
+open Middle
+open Mangle
+
+let translate_funapps_and_kwrds e =
+  let open Expr in
+  let f ({pattern; _} as expr) =
+    match pattern with
+    | FunApp (UserDefined (fname, suffix), args) ->
+        { expr with
+          pattern= FunApp (UserDefined (add_prefix_to_kwrds fname, suffix), args)
+        }
+    | Var s -> {expr with pattern= Var (add_prefix_to_kwrds s)}
+    | _ -> expr in
+  rewrite_bottom_up ~f e
+
+let rec change_kwrds_stmts s =
+  let open Stmt.Pattern in
+  let pattern =
+    match s.Stmt.pattern with
+    | Decl e -> Decl {e with decl_id= add_prefix_to_kwrds e.decl_id}
+    | NRFunApp (UserDefined (s, sfx), e) ->
+        NRFunApp (UserDefined (add_prefix_to_kwrds s, sfx), e)
+    | Assignment (lhs, t, e2) ->
+        Assignment
+          (Stmt.Helpers.map_lhs_variable ~f:add_prefix_to_kwrds lhs, t, e2)
+    | For e ->
+        For
+          { e with
+            loopvar= add_prefix_to_kwrds e.loopvar
+          ; body= change_kwrds_stmts e.body }
+    | x -> map Fun.id change_kwrds_stmts x in
+  {s with pattern}
+
+(** A list of functions which return an Eigen block expression *)
+let eigen_block_expr_fns =
+  ["head"; "tail"; "segment"; "col"; "row"; "block"; "sub_row"; "sub_col"]
+  |> String.Set.of_list
+
+(** Eval indexed eigen types in UDF calls to prevent infinite template expansion
+    if the call is recursive
+
+    Infinite expansion can happen only when the call graph is cyclic. The
+    strategy here is to build the call graph one edge at the time and check if
+    adding that edge creates a cycle. If it does, insert an [eval()] to stop
+    template expansion.
+
+    All relevant function calls are recorded transitively in [callgraph],
+    meaning if [A] calls [B] and [B] calls [C] then [callgraph[A] = {B,C}]. In
+    the worst case every function calls every other, [callgraph] has size O(n^2)
+    and this algorithm is O(n^3) so it's important to track only the function
+    calls that really can propagate eigen templates. *)
+let break_eigen_cycles functions_block =
+  let callgraph = Hashtbl.create (List.length functions_block) in
+  let eval_eigen_cycles fun_args calls (f : _ Program.fun_def) =
+    let open Expr in
+    let rec is_potentially_recursive = function
+      | {pattern= Var name; _} -> String.Set.mem name fun_args
+      | {pattern= Indexed (e, _); _} -> is_potentially_recursive e
+      | {pattern= FunApp (StanLib (fname, _), e :: _); _} ->
+          String.Set.mem fname eigen_block_expr_fns
+          && is_potentially_recursive e
+      | _ -> false in
+    let rec map_args name args =
+      let args = List.map ~f:rewrite_expr args in
+      let can_recurse, eval_args =
+        List.fold_left_map ~init:false
+          ~f:(fun is_rec e ->
+            if is_potentially_recursive e then
+              (true, {e with pattern= FunApp (StanLib ("eval", FnPlain), [e])})
+            else (is_rec, e))
+          args in
+      if not can_recurse then args
+      else if name = f.fdname then eval_args
+      else
+        match Hashtbl.find_opt callgraph name with
+        | Some nested when Hash_set.mem nested f.fdname -> eval_args
+        | Some nested ->
+            (* [calls] records all functions reachable from the current
+               function *)
+            Hash_set.add calls name;
+            Hash_set.iter nested ~f:(Hash_set.add calls);
+            args
+        | None ->
+            Hash_set.add calls name;
+            args
+    and rewrite_expr : Expr.Typed.t -> Expr.Typed.t = function
+      | {pattern= FunApp ((UserDefined (name, _) as kind), args); _} as e ->
+          {e with pattern= FunApp (kind, map_args name args)}
+      | { pattern=
+            FunApp
+              ( (StanLib (_, _) as kind)
+              , ({pattern= Var name; meta= {type_= UFun _; _}} as f) :: args )
+        ; _ } as e ->
+          (* higher-order function -- just pretend it's a direct call *)
+          {e with pattern= FunApp (kind, f :: map_args name args)}
+      | e -> {e with pattern= Pattern.map rewrite_expr e.pattern} in
+    let rec rewrite_stmt s =
+      let open Stmt in
+      match s with
+      | {pattern= Pattern.NRFunApp ((UserDefined (name, _) as kind), args); _}
+        as s ->
+          {s with pattern= NRFunApp (kind, map_args name args)}
+      | s -> {s with pattern= Pattern.map rewrite_expr rewrite_stmt s.pattern}
+    in
+    Program.map_fun_def rewrite_stmt f in
+  let break_cycles (Program.{fdname; fdargs; _} as fd) =
+    let fun_args =
+      List.filter_map fdargs ~f:(fun (_, n, t) ->
+          if UnsizedType.is_eigen_type t then Some n else None)
+      |> String.Set.of_list in
+    if String.Set.is_empty fun_args then fd
+    else
+      let calls = Hash_set.create 16 in
+      let fndef = eval_eigen_cycles fun_args calls fd in
+      if not (Hash_set.is_empty calls) then (
+        (* update [callgraph] with the call paths going through the current
+           function *)
+        Hashtbl.filter_map_inplace callgraph ~f:(fun ~key:_ ~data:x ->
+            if Hash_set.mem x fdname then Some (Hash_set.union calls x)
+            else Some x);
+        Hashtbl.update callgraph fdname
+          ~f:(Option.value_map ~f:(Hash_set.union calls) ~default:calls));
+      fndef in
+  List.map ~f:break_cycles functions_block
+
+let opencl_trigger_restrictions =
+  String.Map.of_list
+    [ ( "bernoulli_lpmf"
+      , [ [ (0, UnsizedType.DataOnly, UnsizedType.UArray UnsizedType.UInt)
+          ; (1, UnsizedType.DataOnly, UnsizedType.UReal) ] ] )
+    ; ( "bernoulli_logit_glm_lpmf"
+      , [ (* Array of conditions under which we do not want to move to OpenCL *)
+          [(1, UnsizedType.DataOnly, UnsizedType.URowVector)]
+          (* Argument 1 (0-based indexing) is a row vector *) ] )
+    ; ( "categorical_logit_glm_lpmf"
+      , [[(1, UnsizedType.DataOnly, UnsizedType.URowVector)]] )
+    ; ( "exponential_lpdf"
+      , [ [ (0, UnsizedType.AutoDiffable, UnsizedType.UVector)
+          ; (1, UnsizedType.DataOnly, UnsizedType.UReal) ] ] )
+    ; ( "neg_binomial_2_log_glm_lpmf"
+      , [[(1, UnsizedType.DataOnly, UnsizedType.URowVector)]] )
+    ; ( "normal_id_glm_lpdf"
+      , [[(1, UnsizedType.DataOnly, UnsizedType.URowVector)]] )
+    ; ( "ordered_logistic_glm_lpmf"
+      , [[(1, UnsizedType.DataOnly, UnsizedType.URowVector)]] )
+    ; ( "poisson_log_glm_lpmf"
+      , [[(1, UnsizedType.DataOnly, UnsizedType.URowVector)]] )
+    ; ("std_normal_lpdf", [[(0, UnsizedType.AutoDiffable, UnsizedType.UVector)]])
+    ; ( "uniform_lpdf"
+      , [ [ (0, UnsizedType.AutoDiffable, UnsizedType.UVector)
+          ; (1, UnsizedType.DataOnly, UnsizedType.UReal)
+          ; (2, UnsizedType.DataOnly, UnsizedType.UReal) ] ] ) ]
+
+let opencl_supported_functions =
+  [ "bernoulli_lpmf"; "bernoulli_logit_lpmf"; "bernoulli_logit_glm_lpmf"
+  ; "beta_lpdf"; "beta_proportion_lpdf"; "binomial_lpmf"
+  ; "categorical_logit_glm_lpmf"; "cauchy_lpdf"; "chi_square_lpdf"
+  ; "double_exponential_lpdf"; "exp_mod_normal_lpdf"; "exponential_lpdf"
+  ; "frechet_lpdf"; "gamma_lpdf"; "gumbel_lpdf"; "inv_chi_square_lpdf"
+  ; "inv_gamma_lpdf"; "logistic_lpdf"; "lognormal_lpdf"; "neg_binomial_lpmf"
+  ; "neg_binomial_2_lpmf"; "neg_binomial_2_log_lpmf"
+  ; "neg_binomial_2_log_glm_lpmf"; "normal_lpdf"; "normal_id_glm_lpdf"
+  ; "ordered_logistic_glm_lpmf"; "pareto_lpdf"; "pareto_type_2_lpdf"
+  ; "poisson_lpmf"; "poisson_log_lpmf"; "poisson_log_glm_lpmf"; "rayleigh_lpdf"
+  ; "scaled_inv_chi_square_lpdf"; "skew_normal_lpdf"; "std_normal_lpdf"
+  ; "student_t_lpdf"; "uniform_lpdf"; "weibull_lpdf"; "binomial_logit_lpmf"
+  ; "binomial_logit_glm_lpmf" ]
+  |> String.Set.of_list
+
+let opencl_suffix = "_opencl__"
+
+let to_matrix_cl e =
+  Expr.{e with pattern= FunApp (StanLib ("to_matrix_cl", FnPlain), [e])}
+
+let rec switch_expr_to_opencl available_cl_vars (Expr.{pattern; _} as e) =
+  let is_avail = List.mem ~set:available_cl_vars in
+  let to_cl (Expr.{pattern; meta= {Expr.Typed.Meta.type_; _}} as e) =
+    match (pattern, type_) with
+    | Var s, _ when is_avail s -> Expr.{e with pattern= Var (s ^ opencl_suffix)}
+    | _, UnsizedType.(UInt | UReal) -> e
+    | _, _ -> to_matrix_cl e in
+  let check_type args (i, ad, t) =
+    let arg = List.nth args i in
+    Expr.Typed.type_of arg = t
+    && UnsizedType.autodifftype_can_convert (Expr.Typed.adlevel_of arg) ad in
+  let is_restricted args = List.exists ~f:(List.for_all ~f:(check_type args)) in
+  let maybe_map_args args req_args =
+    match req_args with
+    | Some x when is_restricted args x -> args
+    | None | Some _ -> List.map args ~f:to_cl in
+  let is_fn_opencl_supported f = String.Set.mem f opencl_supported_functions in
+  match pattern with
+  | FunApp (StanLib (f, sfx), args) when is_fn_opencl_supported f ->
+      let trigger = String.Map.find_opt f opencl_trigger_restrictions in
+      {e with pattern= FunApp (StanLib (f, sfx), maybe_map_args args trigger)}
+  | x ->
+      { e with
+        pattern= Expr.Pattern.map (switch_expr_to_opencl available_cl_vars) x }
+
+let var_context_read_internal ((decl_id_lval : 'a Stmt.Pattern.lvalue), meta, st)
+    =
+  let decl_id = Stmt.Helpers.get_lhs_name decl_id_lval in
+  let decl_var =
+    let type_ = SizedType.to_unsized st in
+    let adlevel = UnsizedType.fill_adtype_for_type DataOnly type_ in
+    Expr.{pattern= Var decl_id; meta= Typed.Meta.{loc= meta; type_; adlevel}}
+  in
+  [ Stmt.Helpers.internal_nrfunapp FnReadData
+      [ decl_var; Expr.Helpers.variable "context__"
+      ; {decl_var with pattern= Lit (Str, remove_prefix decl_id)} ]
+      meta ]
+
+let var_context_read p =
+  (* this never uses the declare-define fast path at the moment *)
+  (var_context_read_internal p, None)
+
+(* Get the dimension expressions that are expected by constrain/unconstrain
+   functions for a sized type.
+
+   For constrains that return square / lower triangular matrices the C++ only
+   wants one of the matrix dimensions. *)
+let read_constrain_dims constrain_transform st =
+  let rec constrain_get_dims st =
+    match st with
+    | SizedType.SInt | SReal | SComplex | STuple _ -> []
+    | SArray (t, dim) -> dim :: constrain_get_dims t
+    | SVector (_, d)
+     |SRowVector (_, d)
+     |SComplexVector d
+     |SComplexRowVector d ->
+        [d]
+    | SMatrix (_, _, dim2) | SComplexMatrix (_, dim2) -> [dim2] in
+  match constrain_transform with
+  | Transformation.CholeskyCorr | Correlation | Covariance ->
+      constrain_get_dims st
+  | _ -> SizedType.get_dims st
+
+let plain_deserializer_read loc out_constrained_st =
+  let ut = SizedType.to_unsized out_constrained_st in
+  let dims = SizedType.get_dims out_constrained_st in
+  let emeta = Expr.Typed.Meta.create ~loc ~type_:ut ~adlevel:AutoDiffable () in
+  Expr.(
+    Helpers.(
+      internal_funapp FnReadDeserializer dims Typed.Meta.{emeta with type_= ut}))
+
+let param_deserializer_read
+    ( decl_id_lval
+    , smeta
+    , Program.{out_constrained_st= cst; out_block; out_trans; _} ) =
+  if not (out_block = Parameters) then ([], None)
+  else
+    let basic_read (cst, out_trans) =
+      let ut = SizedType.to_unsized cst in
+      let emeta =
+        Expr.Typed.Meta.create ~loc:smeta ~type_:ut
+          ~adlevel:(UnsizedType.fill_adtype_for_type AutoDiffable ut)
+          () in
+      let dims = read_constrain_dims out_trans cst in
+      Expr.Helpers.internal_funapp
+        (FnReadParam
+           { constrain= out_trans
+           ; dims
+           ; mem_pattern= SizedType.get_mem_pattern cst })
+        [] emeta in
+    let rec read_stmt (lval, cst, out_trans) =
+      match cst with
+      | SizedType.SArray _ when SizedType.contains_tuple cst ->
+          let tupl, array_dims = SizedType.get_array_dims cst in
+          ( [ Stmt.Helpers.mk_nested_for (List.rev array_dims)
+                (fun loopvars ->
+                  Stmt.
+                    { meta= smeta
+                    ; pattern=
+                        SList
+                          (fst
+                             (read_stmt
+                                (let lbase, idxs = lval in
+                                 ( ( lbase
+                                   , idxs
+                                     @ List.map
+                                         ~f:(fun e -> Index.Single e)
+                                         (List.rev loopvars) )
+                                 , tupl
+                                 , out_trans )))) })
+                smeta ]
+          , None )
+      | SizedType.STuple sts ->
+          let subtys = Utils.(zip_subtypes_tuple_trans_exn sts out_trans) in
+          let sub_sts =
+            List.mapi
+              ~f:(fun iter (st, trans) ->
+                ((Stmt.Pattern.LTupleProjection (lval, iter + 1), []), st, trans))
+              subtys in
+          (List.concat_map ~f:(Fun.compose fst read_stmt) sub_sts, None)
+      | _ -> (
+          let read = basic_read (cst, out_trans) in
+          ( [ Stmt.
+                { pattern=
+                    Pattern.Assignment (lval, SizedType.to_unsized cst, read)
+                ; meta= smeta } ]
+          , (* if we're assigning to a top level variable, we can opt into to
+               the declare-define *)
+            match lval with
+            | Stmt.Pattern.LVariable _, [] -> Some read
+            | _ -> None )) in
+    read_stmt (decl_id_lval, cst, out_trans)
+
+let escape_name str =
+  let no_keywords = add_prefix_to_kwrds str in
+  let only_ascii =
+    String.concat_map ~sep:""
+      ~f:(fun c ->
+        if Char.Ascii.is_alphanum c || c = '_' then String.of_char c
+        else
+          match c with
+          | '-' | '.' -> "_"
+          | _ -> "x" ^ Int.to_string (Char.code c))
+      no_keywords in
+  let can_start_identifier = function
+    | 'a' .. 'z' | 'A' .. 'Z' | '_' -> true
+    | _ -> false in
+  let valid =
+    if String.is_empty only_ascii then "_model"
+    else if not (can_start_identifier only_ascii.[0]) then "_" ^ only_ascii
+    else only_ascii in
+  valid
+
+(** Make sure that all if-while-and-for bodies are safely wrapped in a block in
+    such a way that we can insert a location update before. The blocks make sure
+    that the program with the inserted location update is still well-formed C++
+    though. *)
+let rec ensure_body_in_block (Stmt.{pattern; _} as stmt) =
+  let in_block stmt =
+    let pattern =
+      Stmt.(
+        match stmt.pattern with
+        | Block l | SList l -> Pattern.Block l
+        | _ -> Block [stmt]) in
+    {stmt with pattern} in
+  let ensure_body_in_block_base pattern =
+    Stmt.Pattern.(
+      match pattern with
+      | IfElse (_, _, _) | While (_, _) | For _ -> map Fun.id in_block pattern
+      | _ -> pattern) in
+  let pattern =
+    ensure_body_in_block_base
+      Stmt.(Pattern.map Fun.id ensure_body_in_block pattern) in
+  {stmt with pattern}
+
+let rec flatten_slists_list ls =
+  let flatten_slist stmt =
+    Stmt.(match stmt.pattern with SList ls -> ls | _ -> [stmt]) in
+  let rec flatten_slists_stmt stmt =
+    let pattern =
+      Stmt.(
+        match stmt.pattern with
+        | Block ls ->
+            Pattern.Block
+              (List.concat_map
+                 ~f:(Fun.compose flatten_slist flatten_slists_stmt)
+                 ls)
+        | pattern -> Pattern.map Fun.id flatten_slists_stmt pattern) in
+    {stmt with pattern} in
+  List.concat_map ls ~f:(fun stmt ->
+      Stmt.(
+        match stmt.pattern with
+        | SList ls -> flatten_slists_list ls
+        | _ -> [stmt]))
+  |> List.map ~f:flatten_slists_stmt
+
+let%expect_test "Flatten slists" =
+  let e pattern = Expr.{meta= (); pattern} in
+  let s pattern = Stmt.{meta= (); pattern} in
+  let stmt =
+    Stmt.Pattern.(
+      [ SList
+          [ Block
+              [ SList
+                  [ While (e (Var "hi"), Block [SList [Break |> s] |> s] |> s)
+                    |> s ]
+                |> s ]
+            |> s ]
+        |> s ]
+      |> flatten_slists_list) in
+  let open Sexp_conv in
+  print_s (sexp_of_list (Stmt.sexp_of_t sexp_of_unit sexp_of_unit) stmt);
+  [%expect
+    {|
+    (((pattern
+       (Block
+        (((pattern
+           (While ((pattern (Var hi)) (meta ()))
+            ((pattern (Block (((pattern Break) (meta ()))))) (meta ()))))
+          (meta ())))))
+      (meta ())))
+    |}]
+
+let add_reads vars mkread stmts =
+  let vars = List.map ~f:(fun (id, l, outvar) -> (id, (l, outvar))) vars in
+  let var_names = String.Map.of_list vars in
+  let add_read_to_decl (Stmt.{pattern; _} as stmt) =
+    match pattern with
+    | Decl ({decl_id; _} as decl_rec) when String.Map.mem decl_id var_names -> (
+        let loc, out = String.Map.find decl_id var_names in
+        let param_reader, op_assign =
+          mkread (Stmt.Helpers.lvariable decl_id, loc, out) in
+        match op_assign with
+        | Some e ->
+            [{stmt with pattern= Decl {decl_rec with initialize= Assign e}}]
+        | None -> stmt :: param_reader)
+    | _ -> [stmt] in
+  List.concat_map ~f:add_read_to_decl stmts
+
+let param_serializer_write ?(unconstrain = false)
+    (decl_id, Program.{out_constrained_st; out_trans; _}) =
+  let rec write (var, st, trans) =
+    match (unconstrain, st, trans) with
+    | ( true
+      , SizedType.STuple subtypes
+      , Transformation.TupleTransformation transforms ) ->
+        let tuple_elements =
+          subtypes
+          |> List.mapi ~f:(fun iter x ->
+              (Expr.Helpers.add_tuple_index var (iter + 1), x))
+          |> List.map2 ~f:(fun t (v, st) -> (v, st, t)) transforms in
+        List.concat_map ~f:write tuple_elements
+    | true, SArray _, TupleTransformation _ ->
+        let tupl, array_dims = SizedType.get_array_dims st in
+        [ Stmt.Helpers.mk_nested_for (List.rev array_dims)
+            (fun loopvars ->
+              Stmt.
+                { meta= Location_span.empty
+                ; pattern=
+                    SList
+                      (write
+                         ( List.fold_left ~f:Expr.Helpers.add_int_index ~init:var
+                             (List.map
+                                ~f:(fun e -> Index.Single e)
+                                (List.rev loopvars))
+                         , tupl
+                         , trans )) })
+            Location_span.empty ]
+    | true, _, _ ->
+        [ Stmt.Helpers.internal_nrfunapp
+            (FnWriteParam {unconstrain_opt= Some trans; var})
+            [] Location_span.empty ]
+    | false, _, _ ->
+        [ Stmt.Helpers.internal_nrfunapp
+            (FnWriteParam {unconstrain_opt= None; var})
+            [] Location_span.empty ] in
+  let decl_var =
+    let type_ = SizedType.to_unsized out_constrained_st in
+    { Expr.pattern= Var decl_id
+    ; meta=
+        Expr.Typed.Meta.
+          { loc= Location_span.empty
+          ; type_
+          ; adlevel= UnsizedType.fill_adtype_for_type DataOnly type_ } } in
+  write (decl_var, out_constrained_st, out_trans)
+
+(** Generate write instructions for unconstrained types. For scalars, matrices,
+    vectors, and arrays with one dimension we can write these directly, but for
+    arrays of arrays/vectors/matrices we need to write them in "column major
+    order" *)
+let param_unconstrained_serializer_write
+    (decl_id, smeta, Program.{out_constrained_st; _}) =
+  let rec write (var, st) =
+    match st with
+    | SizedType.STuple subtypes ->
+        let elements =
+          List.mapi
+            ~f:(fun iter x -> (Expr.Helpers.add_tuple_index var (iter + 1), x))
+            subtypes in
+        List.concat_map ~f:write elements
+    | _ when SizedType.is_recursive_container st ->
+        let nonarray_st, array_dims = SizedType.get_scalar_and_dims st in
+        [ Stmt.Helpers.mk_nested_for (List.rev array_dims)
+            (fun loopvars ->
+              Stmt.
+                { meta= Location_span.empty
+                ; pattern=
+                    SList
+                      (write
+                         ( List.fold_left ~f:Expr.Helpers.add_int_index ~init:var
+                             (List.map
+                                ~f:(fun e -> Index.Single e)
+                                (List.rev loopvars))
+                         , nonarray_st )) })
+            smeta ]
+    | _ ->
+        [ Stmt.Helpers.internal_nrfunapp
+            (FnWriteParam {unconstrain_opt= None; var})
+            [] Location_span.empty ] in
+  let var =
+    let type_ = SizedType.to_unsized out_constrained_st in
+    { Expr.pattern= Var decl_id
+    ; meta=
+        Expr.Typed.Meta.
+          { loc= Location_span.empty
+          ; type_
+          ; adlevel= UnsizedType.fill_adtype_for_type DataOnly type_ } } in
+  write (var, out_constrained_st)
+
+(** Reads in parameters from a var_context, the same way as is done in the
+    constructor, and then writes out the unconstrained versions *)
+let var_context_unconstrain_transform (decl_id, smeta, outvar) =
+  let st = outvar.Program.out_constrained_st in
+  Stmt.
+    { pattern=
+        Decl
+          { decl_adtype=
+              UnsizedType.fill_adtype_for_type AutoDiffable
+                (SizedType.to_unsized st)
+          ; decl_id
+          ; decl_type= Type.Sized st
+          ; initialize= Default
+          ; decl_annotations= outvar.out_annotations }
+    ; meta= smeta }
+  :: var_context_read_internal (Stmt.Helpers.lvariable decl_id, smeta, st)
+  @ param_serializer_write ~unconstrain:true (decl_id, outvar)
+
+(** Reads in parameters from a serializer and then writes out the unconstrained
+    versions *)
+let array_unconstrain_transform (decl_id, smeta, outvar) =
+  let decl =
+    Stmt.
+      { pattern=
+          Decl
+            { decl_adtype=
+                UnsizedType.fill_adtype_for_type AutoDiffable
+                  (SizedType.to_unsized outvar.Program.out_constrained_st)
+            ; decl_id
+            ; decl_type= Type.Sized outvar.Program.out_constrained_st
+            ; initialize= Default
+            ; decl_annotations= outvar.out_annotations }
+      ; meta= smeta } in
+  let rec read (lval, st) =
+    match st with
+    | SizedType.STuple subtypes ->
+        let elements =
+          List.mapi
+            ~f:(fun iter x ->
+              ((Stmt.Pattern.LTupleProjection (lval, iter + 1), []), x))
+            subtypes in
+        List.concat_map ~f:read elements
+    | _ when SizedType.contains_tuple st ->
+        let tupl, array_dims = SizedType.get_scalar_and_dims st in
+        [ Stmt.Helpers.mk_nested_for (List.rev array_dims)
+            (fun loopvars ->
+              Stmt.
+                { meta= Location_span.empty
+                ; pattern=
+                    SList
+                      (read
+                         (let lbase, idxs = lval in
+                          ( ( lbase
+                            , idxs
+                              @ List.map
+                                  ~f:(fun e -> Index.Single e)
+                                  (List.rev loopvars) )
+                          , tupl ))) })
+            smeta ]
+    | _ when SizedType.is_recursive_container st ->
+        (* non-tuple containing array *)
+        let nonarray_st, array_dims = SizedType.get_scalar_and_dims st in
+        [ Stmt.Helpers.mk_nested_for (List.rev array_dims)
+            (fun loopvars ->
+              let assign_lval =
+                let lbase, idxs = lval in
+                ( lbase
+                , idxs
+                  @ List.map ~f:(fun e -> Index.Single e) (List.rev loopvars) )
+              in
+              Stmt.
+                { meta= smeta
+                ; pattern=
+                    Assignment
+                      ( assign_lval
+                      , SizedType.to_unsized nonarray_st
+                      , plain_deserializer_read smeta
+                          (SizedType.internal_scalar nonarray_st) ) })
+            smeta ]
+    | _ ->
+        [ Stmt.
+            { meta= smeta
+            ; pattern=
+                Assignment
+                  ( lval
+                  , SizedType.to_unsized st
+                  , plain_deserializer_read smeta st ) } ] in
+  decl
+  :: read (Stmt.Helpers.lvariable decl_id, outvar.Program.out_constrained_st)
+  @ param_serializer_write ~unconstrain:true (decl_id, outvar)
+
+let rec contains_var_expr is_vident accum Expr.{pattern; _} =
+  accum
+  ||
+  match pattern with
+  | Var v when is_vident v -> true
+  | pattern -> Expr.Pattern.fold (contains_var_expr is_vident) false pattern
+
+let rec insert_before f to_insert = function
+  | [] -> to_insert
+  | hd :: tl ->
+      if f hd then to_insert @ (hd :: tl)
+      else hd :: insert_before f to_insert tl
+
+let is_opencl_var = String.ends_with ~suffix:opencl_suffix
+
+let rec collect_vars_expr is_target accum Expr.{pattern; _} =
+  String.Set.union accum
+    (match pattern with
+    | Var s when is_target s -> String.Set.of_list [s]
+    | x -> Expr.Pattern.fold (collect_vars_expr is_target) String.Set.empty x)
+
+let collect_opencl_vars s =
+  let rec go accum s =
+    Stmt.(Pattern.fold (collect_vars_expr is_opencl_var) go accum s.pattern)
+  in
+  go String.Set.empty s
+
+let%expect_test "collect vars expr" =
+  let mkvar s = Expr.{pattern= Var s; meta= Typed.Meta.empty} in
+  let args = List.map ~f:mkvar ["y"; "x_opencl__"; "z"; "w_opencl__"] in
+  let fnapp =
+    Expr.
+      { pattern= FunApp (StanLib ("print", FnPlain), args)
+      ; meta= Typed.Meta.empty } in
+  let open Sexp_conv in
+  Stmt.{pattern= TargetPE fnapp; meta= Location_span.empty}
+  |> collect_opencl_vars |> String.Set.to_list
+  |> sexp_of_list sexp_of_string
+  |> print_s;
+  [%expect {| (w_opencl__ x_opencl__) |}]
+
+let%expect_test "insert before" =
+  let l = [1; 2; 3; 4; 5; 6] |> insert_before (( = ) 6) [999] in
+  let open Sexp_conv in
+  print_s (sexp_of_list sexp_of_int l);
+  [%expect {| (1 2 3 4 5 999 6) |}]
+
+let map_prog_stmt_lists f (p : ('a, 'b, 'c) Program.t) =
+  { p with
+    Program.prepare_data= f p.prepare_data
+  ; log_prob= f p.log_prob
+  ; reverse_mode_log_prob= f p.reverse_mode_log_prob
+  ; generate_quantities= f p.generate_quantities
+  ; transform_inits= f p.transform_inits
+  ; unconstrain_array= f p.unconstrain_array }
+
+let trans_prog ?(use_opencl = false) (p : Program.Typed.t) =
+  (* name mangling of c++ keywords *)
+  let rec map_stmt {Stmt.pattern; meta} =
+    { Stmt.pattern= Stmt.Pattern.map translate_funapps_and_kwrds map_stmt pattern
+    ; meta } in
+  let rename_inout (s, l, e) = (add_prefix_to_kwrds s, l, e) in
+  let rename_fdarg (e1, s, e2) = (e1, add_prefix_to_kwrds s, e2) in
+  let rename_func (s : 'a Program.fun_def) =
+    { s with
+      fdname= add_prefix_to_kwrds s.fdname
+    ; fdargs= List.map ~f:rename_fdarg s.fdargs } in
+  let p =
+    Program.(
+      { p with
+        output_vars= List.map ~f:rename_inout p.output_vars
+      ; input_vars= List.map ~f:rename_inout p.input_vars
+      ; functions_block= List.map ~f:rename_func p.functions_block }
+      |> map translate_funapps_and_kwrds map_stmt Fun.id
+      |> map Fun.id change_kwrds_stmts Fun.id) in
+  let p = {p with functions_block= break_eigen_cycles p.functions_block} in
+  let pos = "pos__" in
+  let init_pos =
+    [ Stmt.Pattern.Decl
+        { decl_adtype= DataOnly
+        ; decl_id= pos
+        ; decl_type= Sized SInt
+        ; initialize= Default
+        ; decl_annotations= [] }
+    ; Assignment (Stmt.Helpers.lvariable pos, UInt, Expr.Helpers.loop_bottom) ]
+    |> List.map ~f:(fun pattern -> Stmt.{pattern; meta= Location_span.empty})
+  in
+  let maybe_add_pos stmts =
+    if
+      List.exists stmts ~f:(function
+        | {Stmt.pattern= Decl {decl_type; _}; _} -> (
+            match Type.to_unsized decl_type with
+            | UInt | UReal | UComplex
+             |UArray (UReal | UInt)
+             |UFun _ | UMathLibraryFunction ->
+                false
+            | UVector | URowVector | UMatrix | UComplexMatrix
+             |UComplexRowVector | UComplexVector | UArray _ | UTuple _ ->
+                true)
+        | _ -> false)
+    then init_pos @ stmts
+    else stmts in
+  let param_writes, tparam_writes, gq_writes =
+    List.map p.output_vars ~f:param_unconstrained_serializer_write
+    |> List.map2 p.output_vars ~f:(fun (_, meta, outvar) writes ->
+        (outvar.Program.out_block, Stmt.{pattern= SList writes; meta}))
+    |> List.partition3_map ~f:(fun (b, x) ->
+        match b with
+        | Program.Parameters -> `Fst x
+        | TransformedParameters -> `Snd x
+        | GeneratedQuantities -> `Trd x) in
+  let tparam_start stmt =
+    Stmt.(
+      match stmt.pattern with
+      | IfElse (cond, _, _)
+        when contains_var_expr
+               (( = ) "emit_transformed_parameters__")
+               false cond ->
+          true
+      | _ -> false) in
+  let gq_start Stmt.{pattern; _} =
+    match pattern with
+    | IfElse
+        ( { pattern=
+              FunApp (_, [{pattern= Var "emit_generated_quantities__"; _}])
+          ; _ }
+        , _
+        , _ ) ->
+        true
+    | _ -> false in
+  let translate_to_open_cl stmts =
+    if use_opencl then
+      let decl Stmt.{pattern; _} =
+        match pattern with
+        | Decl {decl_type= Sized (SInt | SReal); _} -> None
+        | Decl {decl_id; _} -> Some decl_id
+        | _ -> None in
+      let data_var_idents = List.filter_map ~f:decl p.prepare_data in
+      let switch_expr = switch_expr_to_opencl data_var_idents in
+      let rec trans_stmt_to_opencl s =
+        Stmt.
+          { s with
+            pattern= Pattern.map switch_expr trans_stmt_to_opencl s.pattern }
+      in
+      List.map stmts ~f:trans_stmt_to_opencl
+    else stmts in
+  let tparam_writes_cond =
+    if List.is_empty tparam_writes then []
+    else
+      [ Stmt.
+          { pattern=
+              IfElse
+                ( Expr.
+                    { pattern= Var "emit_transformed_parameters__"
+                    ; meta= Typed.Meta.empty }
+                , {pattern= SList tparam_writes; meta= Location_span.empty}
+                , None )
+          ; meta= Location_span.empty } ] in
+  let generate_quantities =
+    (p.generate_quantities
+    |> add_reads p.output_vars param_deserializer_read
+    |> translate_to_open_cl
+    |> insert_before tparam_start param_writes
+    |> insert_before gq_start tparam_writes_cond)
+    @ gq_writes in
+  let log_prob =
+    p.log_prob
+    |> add_reads p.output_vars param_deserializer_read
+    |> translate_to_open_cl in
+  let opencl_vars =
+    String.Set.union_list
+      (List.concat_map
+         ~f:(List.map ~f:collect_opencl_vars)
+         [log_prob; generate_quantities])
+    |> String.Set.to_list in
+  let maybe_add_opencl_events_clear =
+    let event_clear_stmt x =
+      Stmt.
+        { pattern= NRFunApp (CompilerInternal (FnReadWriteEventsOpenCL x), [])
+        ; meta= Location_span.empty } in
+    List.map ~f:event_clear_stmt opencl_vars in
+  let to_matrix_cl_stmts =
+    List.concat_map opencl_vars ~f:(fun vident ->
+        let vident_sans_opencl =
+          String.chop_suffix_exn ~suffix:opencl_suffix vident in
+        let type_of_input_var =
+          match
+            List.find_opt
+              ~f:(fun (s, _, _) -> String.equal s vident_sans_opencl)
+              p.input_vars
+          with
+          | Some (_, _, st) -> SizedType.to_unsized st
+          | None -> UnsizedType.UMatrix in
+        [ Stmt.
+            { pattern=
+                Decl
+                  { decl_adtype= DataOnly
+                  ; decl_id= vident
+                  ; decl_type= Type.Unsized type_of_input_var
+                  ; initialize= Default
+                  ; decl_annotations= [] (* TODO improve/rethink opencl pass *)
+                  }
+            ; meta= Location_span.empty }
+        ; { pattern=
+              Assignment
+                ( Stmt.Helpers.lvariable vident
+                , type_of_input_var
+                , to_matrix_cl
+                    { pattern= Var vident_sans_opencl
+                    ; meta= Expr.Typed.Meta.empty } )
+          ; meta= Location_span.empty } ]) in
+  let p =
+    let params =
+      List.filter
+        ~f:(fun (_, _, ov) -> ov.Program.out_block = Parameters)
+        p.output_vars in
+    { p with
+      log_prob=
+        log_prob @ maybe_add_opencl_events_clear
+        (* First initialization of reverse mode log prob *)
+    ; reverse_mode_log_prob= log_prob @ maybe_add_opencl_events_clear
+    ; prog_name= escape_name p.prog_name
+    ; prepare_data=
+        (p.prepare_data |> add_reads p.input_vars var_context_read)
+        @ to_matrix_cl_stmts
+        |> maybe_add_pos
+    ; transform_inits=
+        List.concat_map ~f:var_context_unconstrain_transform params
+        |> maybe_add_pos
+    ; unconstrain_array= List.concat_map ~f:array_unconstrain_transform params
+    ; generate_quantities } in
+  Program.(
+    p
+    |> map Fun.id ensure_body_in_block Fun.id
+    |> map_prog_stmt_lists flatten_slists_list)

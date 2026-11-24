@@ -1,0 +1,10 @@
+/* $ stanc ../functions-bad9.stan : [exit 1] */
+error: Function "bar" is declared without specifying a definition.
+    ┌─ ../functions-bad9.stan:2:8
+  1 │  functions {
+  2 │    void bar(int x);
+    │         ^^^ Function "bar" is declared without specifying a definition.
+  3 │    void bar(int x, real y);
+    = If this function will be supplied elsewhere after compilation,
+      (e.g., it is being manually implemented in C++)
+      it must be marked with '@extern' .

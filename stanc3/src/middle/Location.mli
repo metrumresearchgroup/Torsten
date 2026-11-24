@@ -1,0 +1,23 @@
+(** Storing locations in the original source *)
+
+(** Source code locations *)
+type t =
+  { filename: string
+  ; line_num: int
+  ; col_num: int
+  ; byte_num: int
+  ; included_from: t option }
+[@@deriving sexp_of]
+
+val compare : t -> t -> int
+val empty : t
+
+val pp :
+     ?print_file:bool
+  -> ?print_line:bool
+  -> (* printed_filename *) string option
+  -> t Fmt.t
+
+val initial_file_loc : t -> t
+(** Returns the position this location lives at in the first (i.e.,
+    non-included) file *)

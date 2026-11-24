@@ -1,0 +1,368 @@
+open Std
+open Std.Sexp_conv
+open Common
+
+module Pattern = struct
+  type ('a, 'b) t =
+    | Assignment of 'a lvalue * UnsizedType.t * 'a
+    | TargetPE of 'a
+    | JacobianPE of 'a
+    | NRFunApp of 'a Fun_kind.t * 'a list
+    | Break
+    | Continue
+    | Return of 'a option
+    | Skip
+    | IfElse of 'a * 'b * 'b option
+    | While of 'a * 'b
+    | For of {loopvar: string; lower: 'a; upper: 'a; body: 'b}
+    | Profile of string * 'b list
+    | Block of 'b list
+    | SList of 'b list
+    | Decl of
+        { decl_adtype: UnsizedType.autodifftype
+        ; decl_id: string
+        ; decl_type: 'a Type.t
+        ; initialize: 'a decl_init
+        ; decl_annotations: Annotation.t list }
+  [@@deriving sexp_of, map, fold]
+
+  and 'e lvalue = 'e lbase * 'e Index.t list [@@deriving sexp_of, map, fold]
+
+  and 'e lbase = LVariable of string | LTupleProjection of 'e lvalue * int
+  [@@deriving sexp_of, map, fold]
+
+  and 'a decl_init = Uninit | Default | Assign of 'a
+  [@@deriving sexp_of, map, fold]
+
+  let fold_map f_expr f_stmt acc = function
+    | ( Assignment _ | TargetPE _ | JacobianPE _ | NRFunApp _ | Break | Continue
+      | Return _ | Skip | Decl _ ) as s ->
+        (fold f_expr Fun.const acc s, s)
+    | IfElse (cond, thn, None) ->
+        let acc, thn = f_stmt (f_expr acc cond) thn in
+        (acc, IfElse (cond, thn, None))
+    | IfElse (cond, thn, Some els) ->
+        let acc, thn = f_stmt (f_expr acc cond) thn in
+        let acc, els = f_stmt acc els in
+        (acc, IfElse (cond, thn, Some els))
+    | While (cond, body) ->
+        let acc, body = f_stmt (f_expr acc cond) body in
+        (acc, While (cond, body))
+    | For {loopvar; lower; upper; body} ->
+        let acc = f_expr (f_expr acc lower) upper in
+        let acc, body = f_stmt acc body in
+        (acc, For {loopvar; lower; upper; body})
+    | Profile (name, stmts) ->
+        let acc, stmts = List.fold_left_map ~f:f_stmt ~init:acc stmts in
+        (acc, Profile (name, stmts))
+    | Block stmts ->
+        let acc, stmts = List.fold_left_map ~f:f_stmt ~init:acc stmts in
+        (acc, Block stmts)
+    | SList stmts ->
+        let acc, stmts = List.fold_left_map ~f:f_stmt ~init:acc stmts in
+        (acc, SList stmts)
+
+  let rec pp_lvalue pp_e ppf (lbase, idcs) =
+    match lbase with
+    | LVariable v -> Fmt.pf ppf "%s%a" v (Index.pp_indices pp_e) idcs
+    | LTupleProjection (lv, ix) ->
+        Fmt.pf ppf "%a.%d%a" (pp_lvalue pp_e) lv ix (Index.pp_indices pp_e) idcs
+
+  let pp pp_e pp_s ppf = function
+    | Assignment (lvalue, _, rhs) ->
+        Fmt.pf ppf "@[<hov>%a =@[<h>@ %a@];@]" (pp_lvalue pp_e) lvalue pp_e rhs
+    | TargetPE expr -> Fmt.pf ppf "@[<h>target +=@ %a;@]" pp_e expr
+    | JacobianPE expr -> Fmt.pf ppf "@[<h>jacobian +=@ %a;@]" pp_e expr
+    | NRFunApp (kind, args) ->
+        Fmt.pf ppf "@[%a%a;@]" (Fun_kind.pp pp_e) kind
+          Fmt.(list pp_e ~sep:comma |> parens)
+          args
+    | Break -> Fmt.string ppf "break;"
+    | Continue -> Fmt.string ppf "continue;"
+    | Skip -> Fmt.string ppf ";"
+    | Return (Some expr) -> Fmt.pf ppf "return %a;" pp_e expr
+    | Return _ -> Fmt.string ppf "return;"
+    | IfElse (pred, s_true, Some s_false) ->
+        Fmt.pf ppf "if(%a) %a else %a" pp_e pred pp_s s_true pp_s s_false
+    | IfElse (pred, s_true, _) -> Fmt.pf ppf "if(%a) %a" pp_e pred pp_s s_true
+    | While (pred, stmt) -> Fmt.pf ppf "while(%a) %a" pp_e pred pp_s stmt
+    | For {loopvar; lower; upper; body} ->
+        Fmt.pf ppf "for(%s in %a:%a) %a" loopvar pp_e lower pp_e upper pp_s body
+    | Profile (name, stmts) ->
+        Fmt.pf ppf "profile(%s){@;<1 2>@[<v>%a@]@;}" name
+          Fmt.(list pp_s ~sep:cut)
+          stmts
+    | Block stmts ->
+        Fmt.pf ppf "{@;<1 2>@[<v>%a@]@;}" Fmt.(list pp_s ~sep:cut) stmts
+    | SList stmts -> Fmt.(list pp_s ~sep:cut |> vbox) ppf stmts
+    | Decl {decl_adtype; decl_id; decl_type; initialize; _} -> (
+        match initialize with
+        | Assign e ->
+            Fmt.pf ppf "@[<hov 2>%a%a@ %s = %a;@]" UnsizedType.pp_autodifftype
+              decl_adtype (Type.pp pp_e) decl_type decl_id pp_e e
+        | Uninit | Default ->
+            Fmt.pf ppf "@[<hov 2>%a%a@ %s;@]" UnsizedType.pp_autodifftype
+              decl_adtype (Type.pp pp_e) decl_type decl_id)
+end
+
+(** Defined in a separate module so that we can define [Typed.t] etc in terms of
+    the module name, since [ppx_deriving] does not support the [nonrec] keyword
+*)
+module Fixed = struct
+  (** Fixed-point of statements *)
+  type ('a, 'b) t = {pattern: ('a Expr.t, ('a, 'b) t) Pattern.t; meta: 'b}
+  [@@deriving sexp_of]
+end
+
+include Fixed
+
+let rec pp ppf {pattern; meta= _} = Pattern.pp Expr.pp pp ppf pattern
+
+let rec rewrite_bottom_up ~f ~g t =
+  g
+    { t with
+      pattern=
+        Pattern.map
+          (Expr.rewrite_bottom_up ~f)
+          (rewrite_bottom_up ~f ~g) t.pattern }
+
+(** Statements with location information and types for contained expressions *)
+module Located = struct
+  module Meta = struct
+    type t = Location_span.t
+
+    let empty = Location_span.empty
+  end
+
+  type t = (Expr.Typed.Meta.t, (Meta.t[@sexp.opaque])) Fixed.t
+  [@@deriving sexp_of]
+
+  let pp = pp
+
+  (** This module acts as a temporary replace for the [stmt_loc_num] type that
+      is currently used within [analysis_and_optimization].
+
+      The original intent of the type was to provide explicit sharing of
+      subterms. My feeling is that ultimately we want to use the recursive type
+      directly and rely on OCaml for sharing *)
+  module Non_recursive = struct
+    type t = {pattern: (Expr.Typed.t, int) Pattern.t; meta: Meta.t}
+  end
+end
+
+module Numbered = struct
+  module Meta = struct
+    type t = int
+
+    let empty = 0
+    let from_int (i : int) : t = i
+  end
+
+  type t = (Expr.Typed.Meta.t, Meta.t) Fixed.t
+
+  let pp = pp
+end
+
+module Helpers = struct
+  let temp_vars exprs : Located.t list * Expr.Typed.t list * (unit -> unit) =
+    let sym, reset = Gensym.enter ~prefix:"tmp" in
+    let rec loop es sym inits vars =
+      match es with
+      | [] -> (inits, vars)
+      | (Expr.{pattern= Var _; _} as e) :: es -> loop es sym inits (e :: vars)
+      | e :: es ->
+          let decl =
+            { pattern=
+                Decl
+                  { decl_adtype= Expr.Typed.adlevel_of e
+                  ; decl_id= sym
+                  ; decl_type= Unsized (Expr.Typed.type_of e)
+                  ; initialize= Default
+                  ; decl_annotations= [] }
+            ; meta= e.meta.loc } in
+          let assign =
+            { decl with
+              pattern= Assignment ((LVariable sym, []), Expr.Typed.type_of e, e)
+            } in
+          loop es
+            (Gensym.next ~prefix:"tmp" ())
+            (decl :: assign :: inits)
+            ({e with pattern= Var sym} :: vars) in
+    let setups, exprs = loop (List.rev exprs) sym [] [] in
+    (setups, exprs, reset)
+
+  let ensure_var bodyfn (expr : Expr.Typed.t) meta =
+    match expr with
+    | {pattern= Var _; _} -> bodyfn expr meta
+    | _ ->
+        let preamble, temp, reset = temp_vars [expr] in
+        let body = bodyfn (List.hd_exn temp) meta in
+        reset ();
+        {body with pattern= Block (preamble @ [body])}
+
+  let internal_nrfunapp fn args meta =
+    {pattern= NRFunApp (CompilerInternal fn, args); meta}
+
+  (** [mk_for] returns a MIR For statement from 0 to [upper] that calls the
+      [bodyfn] with the loop variable inside the loop. *)
+  let mk_for upper bodyfn meta =
+    let loopvar, reset = Gensym.enter ~prefix:"idx" in
+    let loopvar_expr =
+      Expr.
+        { meta= Expr.Typed.Meta.create ~type_:UInt ~loc:meta ~adlevel:DataOnly ()
+        ; pattern= Var loopvar } in
+    let lower = Expr.Helpers.loop_bottom in
+    let body = {meta; pattern= Pattern.Block [bodyfn loopvar_expr]} in
+    reset ();
+    let pattern = Pattern.For {loopvar; lower; upper; body} in
+    {meta; pattern}
+
+  (** [mk_nested_for] returns nested MIR For statements with ranges from 0 to
+      each element of [uppers], and calls the [bodyfn] in the innermost loop
+      with the list of loop variables. *)
+  let rec mk_nested_for uppers bodyfn meta =
+    match uppers with
+    | [] -> bodyfn []
+    | upper :: uppers' ->
+        mk_for upper
+          (fun loopvar ->
+            mk_nested_for uppers'
+              (fun loopvars -> bodyfn (loopvar :: loopvars))
+              Location_span.empty)
+          meta
+
+  (** [mk_for_iteratee] returns a MIR For statement that iterates over the given
+      expression [iteratee]. *)
+  let mk_for_iteratee upper iteratee_bodyfn iteratee meta =
+    let bodyfn loopvar =
+      iteratee_bodyfn
+        (Expr.Helpers.add_int_index iteratee (Index.Single loopvar)) in
+    mk_for upper bodyfn meta
+
+  let rec for_each bodyfn iteratee smeta =
+    let len (e : Expr.Typed.t) =
+      let emeta = e.meta in
+      let emeta' = {emeta with Expr.Typed.Meta.type_= UInt} in
+      Expr.Helpers.internal_funapp FnLength [e] emeta' in
+    match Expr.Typed.type_of iteratee with
+    | UInt | UReal | UComplex -> bodyfn iteratee
+    | UVector | URowVector | UComplexVector | UComplexRowVector ->
+        mk_for_iteratee (len iteratee) bodyfn iteratee smeta
+    | UMatrix | UComplexMatrix ->
+        let emeta = iteratee.meta in
+        let emeta' = {emeta with Expr.Typed.Meta.type_= UInt} in
+        let rows =
+          Expr.
+            { meta= emeta'
+            ; pattern= FunApp (StanLib ("rows", FnPlain), [iteratee]) } in
+        mk_for_iteratee rows (fun e -> for_each bodyfn e smeta) iteratee smeta
+    | UArray _ -> mk_for_iteratee (len iteratee) bodyfn iteratee smeta
+    | UMathLibraryFunction | UFun _ | UTuple _ ->
+        ICE.(internal_errorf "Can't iterate over %t" [Expr.Typed.pp $ iteratee])
+        [@coverage off]
+
+  let contains_fn_kind is_fn_kind ?(init = false) stmt =
+    let rec aux accu {pattern; _} =
+      match pattern with
+      | NRFunApp (kind, _) when is_fn_kind kind -> true
+      | stmt_pattern ->
+          Pattern.fold
+            (fun accu expr ->
+              Expr.Helpers.contains_fn_kind is_fn_kind ~init:accu expr)
+            aux accu stmt_pattern in
+    aux init stmt
+
+  let lvariable v = (Pattern.LVariable v, [])
+
+  let rec get_lhs_name (lval : 'a Pattern.lvalue) =
+    match lval with
+    | LVariable name, _ -> name
+    | LTupleProjection (sub_lval, num), _ ->
+        get_lhs_name sub_lval ^ "." ^ Int.to_string num
+
+  (* Copied from AST's version in AST.ml *)
+  let rec lvalue_of_expr_opt (expr : 'e Expr.t) :
+      'e Expr.t Pattern.lvalue option =
+    let open Option.Syntax in
+    let lbase_of_expr_opt (expr : 'e Expr.t) =
+      match expr.pattern with
+      | Var s -> Some (Pattern.LVariable s)
+      | TupleProjection (l, i) ->
+          let+ lv = lvalue_of_expr_opt l in
+          Pattern.LTupleProjection (lv, i)
+      | _ -> None in
+    match expr.pattern with
+    | Var s -> Some (lvariable s)
+    | Indexed (l, i) ->
+        let+ lv = lbase_of_expr_opt l in
+        (lv, i)
+    | TupleProjection (l, i) ->
+        let+ lv = lvalue_of_expr_opt l in
+        (Pattern.LTupleProjection (lv, i), [])
+    | _ -> None
+
+  let rec expr_of_lvalue (lhs : 'e Expr.t Pattern.lvalue) ~(meta : 'e) :
+      'e Expr.t =
+    let expr_of_lbase = function
+      | Pattern.LVariable v -> Expr.Pattern.Var v
+      | LTupleProjection (lv, ix) ->
+          TupleProjection (expr_of_lvalue ~meta lv, ix) in
+    let pattern =
+      match lhs with
+      | lv, [] -> expr_of_lbase lv
+      | lv, ix -> Expr.Pattern.Indexed ({pattern= expr_of_lbase lv; meta}, ix)
+    in
+    {pattern; meta}
+
+  let rec map_lhs_variable ~(f : string -> string) (lhs : 'e Pattern.lvalue) :
+      'e Pattern.lvalue =
+    match lhs with
+    | LVariable v, idxs -> (LVariable (f v), idxs)
+    | LTupleProjection (lv, ix), idxs ->
+        (LTupleProjection (map_lhs_variable ~f lv, ix), idxs)
+
+  let lhs_indices ((_, idxs) : 'e Pattern.lvalue) : 'e Index.t list = idxs
+
+  let rec lhs_variable (lhs : 'e Pattern.lvalue) : string =
+    match lhs with
+    | LVariable v, _ -> v
+    | LTupleProjection (lv, _), _ -> lhs_variable lv
+
+  (* Reduce an lvalue down to its "base reference", which is a variable with
+     maximum tuple indices after it. For example: x[1,2][3] -> x x.1[1,2].2[3].3
+     -> x.1 x.1.2[1,2][3].3 -> x.1.2 *)
+  let lvalue_base_reference (lvalue : 'e Pattern.lvalue) =
+    let get_tuple_idxs lv =
+      let rec go lv acc =
+        match lv with
+        | Pattern.LVariable _, _ -> acc
+        | LTupleProjection (lv, ix), _ -> go lv (ix :: acc) in
+      go lv [] in
+    let rec build_base_reference lv acc =
+      match acc with
+      | [] -> lv
+      | ix :: idxs ->
+          build_base_reference (Pattern.LTupleProjection (lv, ix), []) idxs
+    in
+    let idxs = get_tuple_idxs lvalue in
+    let base = lvariable (lhs_variable lvalue) in
+    build_base_reference base idxs
+
+  let%expect_test "lvalue base reference" =
+    let lvals =
+      [ (Pattern.LVariable "x", [Index.Single 1; Index.Single 2; Index.Single 3])
+      ; (Pattern.LTupleProjection (lvariable "x", 1), [])
+      ; (LTupleProjection (lvariable "x", 2), [Index.Single 3])
+      ; ( LTupleProjection
+            ((LTupleProjection (lvariable "x", 3), [Index.Single 4]), 5)
+        , [] ) ] in
+    let pp = Fmt.(list ~sep:comma (Pattern.pp_lvalue int)) in
+    Fmt.(str "Before: @[<hov>%a@]" pp) lvals |> print_endline;
+    List.map ~f:lvalue_base_reference lvals
+    |> Fmt.(str "After: @[<hov>%a@]" pp)
+    |> print_endline;
+    [%expect
+      {|
+      Before: x[1, 2, 3], x.1, x.2[3], x.3[4].5
+      After: x, x.1, x.2, x.3.5 |}]
+end

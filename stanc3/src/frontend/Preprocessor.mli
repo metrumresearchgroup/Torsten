@@ -1,0 +1,35 @@
+(** Preprocessor for handling include directives *)
+
+val location_of_position : Lexing.position -> Middle.Location.t
+
+val location_span_of_positions :
+  Lexing.position * Lexing.position -> Middle.Location_span.t
+
+val current_buffer : unit -> Lexing.lexbuf
+(** Buffer at the top of the include stack *)
+
+val current_location : unit -> Middle.Location_span.t
+(** Current location in the top buffer *)
+
+val size : unit -> int
+(** Size of the include stack *)
+
+val init : Lexing.lexbuf -> string -> unit
+(** Push a buffer on to the stack to start *)
+
+val pop_buffer : unit -> Lexing.lexbuf
+(** Pop the buffer at the top of the include stack *)
+
+val add_comment : Ast.comment_type -> unit
+val get_comments : unit -> Ast.comment_type list
+
+val included_files : unit -> string list
+(** List of files that have been included *)
+
+val restore_prior_lexbuf : unit -> Lexing.lexbuf
+(** Restore to a previous lexing buffer (assumes that one exists) and updates
+    positions accordingly. *)
+
+val try_get_new_lexbuf : string -> Lexing.lexbuf
+(** Search include paths for filename and try to create a new lexing buffer with
+    that filename, record that included from specified position *)

@@ -1,0 +1,583 @@
+open Std
+open Middle
+open Middle.Program
+open Middle.Expr
+open Dataflow_types
+
+let rec expr_any pred (e : Expr.Typed.t) =
+  match e.pattern with
+  | Indexed (e, is) -> expr_any pred e || List.exists ~f:(idx_any pred) is
+  | _ -> pred e || Expr.Pattern.fold (accum_any pred) false e.pattern
+
+and idx_any pred (i : Expr.Typed.t Index.t) =
+  Index.fold (accum_any pred) false i
+
+and accum_any pred b e = b || expr_any pred e
+
+let can_side_effect_top_expr (e : Expr.Typed.t) =
+  (* the only StanLib FnTarget function is target() which has no side effects
+     but can return a different result every time *)
+  match e.pattern with
+  | FunApp
+      ((UserDefined (_, (FnTarget | FnJacobian)) | StanLib (_, FnJacobian)), _)
+    ->
+      true
+  | FunApp (CompilerInternal internal_fn, _) ->
+      Internal_fun.can_side_effect internal_fn
+  | _ -> false
+
+let cannot_duplicate_expr ?(preserve_stability = false) (e : Expr.Typed.t) =
+  let pred e =
+    can_side_effect_top_expr e
+    || (match e.pattern with
+      | FunApp ((UserDefined (_, FnRng) | StanLib (_, (FnRng | FnTarget))), _)
+        ->
+          true
+      | _ -> false)
+    || (preserve_stability && UnsizedType.is_autodiffable e.meta.type_) in
+  expr_any pred e
+
+let cannot_remove_expr (e : Expr.Typed.t) = expr_any can_side_effect_top_expr e
+
+let rec fold_expr ~take_expr ~(init : 'c) (expr : Expr.Typed.t) : 'c =
+  Expr.Pattern.fold
+    (fun a e -> fold_expr ~take_expr ~init:(take_expr a e) e)
+    init expr.pattern
+
+let fold_stmts ~take_expr ~take_stmt ~(init : 'c)
+    (stmts : Stmt.Located.t List.t) : 'c =
+  let rec fold_stmt (state : 'c) (stmt : Stmt.Located.t) =
+    Stmt.Pattern.fold
+      (fun a e -> fold_expr ~take_expr ~init:(take_expr a e) e)
+      (fun a s -> fold_stmt (take_stmt a s) s)
+      state stmt.pattern in
+  List.fold_left ~f:(fun a s -> fold_stmt (take_stmt a s) s) ~init stmts
+
+let rec num_expr_value (v : Expr.Typed.t) : (float * string) option =
+  match v with
+  (* internal type promotions should be ignored *)
+  | {pattern= Pattern.Promotion (e, _, _); _} -> num_expr_value e
+  | {pattern= Pattern.Lit ((Real | Int), str); _} ->
+      Some (Float.of_string str, str)
+  | {pattern= Pattern.FunApp (Operator PMinus, [v]); _} -> (
+      match num_expr_value v with
+      | Some (v, s) -> Some (-.v, "-" ^ s)
+      | None -> None)
+  | _ -> None
+
+type bound_values =
+  { lower: [`None | `Nonlit | `Lit of float]
+  ; upper: [`None | `Nonlit | `Lit of float] }
+
+let trans_bounds_values (trans : Expr.Typed.t Transformation.t) : bound_values =
+  let bound_value e =
+    match num_expr_value e with None -> `Nonlit | Some (f, _) -> `Lit f in
+  match trans with
+  | Lower lower -> {lower= bound_value lower; upper= `None}
+  | Upper upper -> {lower= `None; upper= bound_value upper}
+  | LowerUpper (lower, upper) ->
+      {lower= bound_value lower; upper= bound_value upper}
+  | Simplex | StochasticColumn | StochasticRow ->
+      {lower= `Lit 0.; upper= `Lit 1.}
+  | PositiveOrdered -> {lower= `Lit 0.; upper= `None}
+  | UnitVector -> {lower= `Lit (-1.); upper= `Lit 1.}
+  | CholeskyCorr | CholeskyCov | Correlation | Covariance | Ordered | Offset _
+   |Multiplier _ | OffsetMultiplier _ | Identity
+   |SumToZero
+    (* This is a stub, but, until we define a distribution which accepts a
+       tuple, this doesn't matter. *)
+   |TupleTransformation _ ->
+      {lower= `None; upper= `None}
+
+let chop_dist_name (fname : string) : string Option.t =
+  (* Slightly inefficient, would be better to short-circuit *)
+  List.fold_left ~init:None ~f:Option.first_some
+    (List.map
+       ~f:(fun suffix -> String.chop_suffix ~suffix fname)
+       Middle.Utils.distribution_suffices)
+
+let rec top_var_declarations Stmt.{pattern; _} : string Set.Poly.t =
+  match pattern with
+  | Decl {decl_id; _} -> Set.Poly.singleton decl_id
+  | SList l -> Set.Poly.union_list (List.map ~f:top_var_declarations l)
+  | _ -> Set.Poly.empty
+
+let function_names {functions_block; _} : string Set.Poly.t =
+  Set.Poly.of_list (List.map functions_block ~f:(fun {fdname; _} -> fdname))
+
+let data_set ?(exclude_transformed = false) ?(exclude_ints = false)
+    (mir : Program.Typed.t) : string Set.Poly.t =
+  (* Data are input_vars *)
+  let data = Set.Poly.of_list mir.input_vars in
+  (* Possibly remove ints from the data set *)
+  let filtered_data =
+    let remove_ints =
+      Set.Poly.filter ~f:(fun (_, _, st) -> st <> SizedType.SInt) in
+    Set.Poly.map ~f:fst3 ((if exclude_ints then remove_ints else Fun.id) data)
+  in
+  (* Transformed data are declarations in prepare_data but excluding data *)
+  if exclude_transformed then filtered_data
+  else
+    let trans_data =
+      Set.Poly.diff
+        (Set.Poly.union_list
+           (List.map ~f:top_var_declarations mir.prepare_data))
+        (Set.Poly.map ~f:fst3 data) in
+    Set.Poly.union trans_data filtered_data
+
+let parameter_set ?(include_transformed = false) (mir : Program.Typed.t) =
+  Set.Poly.of_list
+    (List.filter_map
+       ~f:(fun (pname, l, {out_trans; out_block; _}) ->
+         if
+           out_block = Parameters
+           || (include_transformed && out_block = TransformedParameters)
+         then Some (pname, out_trans, l)
+         else None)
+       mir.output_vars)
+
+let parameter_names_set ?(include_transformed = false) (mir : Program.Typed.t) =
+  Set.Poly.map ~f:fst3 (parameter_set ~include_transformed mir)
+
+let rec var_declarations Stmt.{pattern; _} : string Set.Poly.t =
+  match pattern with
+  | Decl {decl_id; _} -> Set.Poly.singleton decl_id
+  | IfElse (_, s, None) | While (_, s) | For {body= s; _} -> var_declarations s
+  | IfElse (_, s1, Some s2) ->
+      Set.Poly.union (var_declarations s1) (var_declarations s2)
+  | Block slist | SList slist | Profile (_, slist) ->
+      Set.Poly.union_list (List.map ~f:var_declarations slist)
+  | _ -> Set.Poly.empty
+
+let rec map_rec_expr f e =
+  let recurse = map_rec_expr f in
+  Expr.{e with pattern= f (Pattern.map recurse e.pattern)}
+
+let map_rec_expr_state f state e =
+  let cur_state = ref state in
+  let g e' =
+    let e', state = f !cur_state e' in
+    cur_state := state;
+    e' in
+  let e = map_rec_expr g e in
+  let state = !cur_state in
+  (e, state)
+
+let rec map_rec_stmt_loc f stmt =
+  let recurse = map_rec_stmt_loc f in
+  Stmt.{stmt with pattern= f (Pattern.map Fun.id recurse stmt.pattern)}
+
+let rec top_down_map_rec_stmt_loc f stmt =
+  let recurse = top_down_map_rec_stmt_loc f in
+  Stmt.{stmt with pattern= Pattern.map Fun.id recurse (f stmt.pattern)}
+
+let map_rec_state_stmt_loc f state stmt =
+  let cur_state = ref state in
+  let g stmt =
+    let stmt, state = f !cur_state stmt in
+    cur_state := state;
+    stmt in
+  let stmt = map_rec_stmt_loc g stmt in
+  let state = !cur_state in
+  (stmt, state)
+
+let map_rec_stmt_loc_num flowgraph_to_mir f s =
+  let rec map_rec_stmt_loc_num' (cur_node : int)
+      (stmt : Stmt.Located.Non_recursive.t) =
+    let find_node i = LabelMap.find i flowgraph_to_mir in
+    let recurse i = map_rec_stmt_loc_num' i (find_node i) in
+    Stmt.
+      { pattern= f cur_node (Pattern.map Fun.id recurse stmt.pattern)
+      ; meta= stmt.meta } in
+  map_rec_stmt_loc_num' 1 s
+
+let stmt_loc_of_stmt_loc_num flowgraph_to_mir s =
+  map_rec_stmt_loc_num flowgraph_to_mir (fun _ s' -> s') s
+
+let statement_stmt_loc_of_statement_stmt_loc_num flowgraph_to_mir pattern =
+  (stmt_loc_of_stmt_loc_num flowgraph_to_mir
+     Stmt.Located.{Non_recursive.pattern; meta= Meta.empty})
+    .pattern
+
+(** Forgetful function from numbered to unnumbered programs *)
+let unnumbered_prog_of_numbered_prog flowgraph_to_mir p =
+  Program.map (stmt_loc_of_stmt_loc_num flowgraph_to_mir) p Fun.id
+
+(** See interface file *)
+let fwd_traverse_statement stmt ~init ~f =
+  Stmt.Pattern.(
+    match stmt with
+    | IfElse (pred, then_s, else_s_opt) ->
+        let s', c = f init then_s in
+        Option.value_map else_s_opt
+          ~default:(s', IfElse (pred, c, None))
+          ~f:(fun else_s ->
+            let s'', c' = f s' else_s in
+            (s'', IfElse (pred, c, Some c')))
+    | While (pred, body) ->
+        let s', c = f init body in
+        (s', While (pred, c))
+    | For vars ->
+        let s', c = f init vars.body in
+        (s', For {vars with body= c})
+    | Profile (name, stmts) ->
+        let s', ls =
+          List.fold_left stmts
+            ~f:(fun (s, l) stmt ->
+              let s', c = f s stmt in
+              (s', List.cons c l))
+            ~init:(init, []) in
+        (s', Profile (name, List.rev ls))
+    | Block stmts ->
+        let s', ls =
+          List.fold_left stmts
+            ~f:(fun (s, l) stmt ->
+              let s', c = f s stmt in
+              (s', List.cons c l))
+            ~init:(init, []) in
+        (s', Block (List.rev ls))
+    | SList stmts ->
+        let s', ls =
+          List.fold_left stmts
+            ~f:(fun (s, l) stmt ->
+              let s', c = f s stmt in
+              (s', List.cons c l))
+            ~init:(init, []) in
+        (s', SList (List.rev ls))
+    | Assignment _ as s -> (init, s)
+    | TargetPE _ as s -> (init, s)
+    | JacobianPE _ as s -> (init, s)
+    | NRFunApp _ as s -> (init, s)
+    | Break as s -> (init, s)
+    | Continue as s -> (init, s)
+    | Return _ as s -> (init, s)
+    | Skip as s -> (init, s)
+    | Decl _ as s -> (init, s))
+
+(** See interface file *)
+let vexpr_of_expr_exn Expr.{pattern; _} =
+  match pattern with
+  | Var s -> VVar s
+  | _ ->
+      Common.ICE.internal_error "Non-var expression found, but var expected"
+      [@coverage off]
+
+(** See interface file *)
+let rec expr_var_set Expr.{pattern; meta} =
+  let union_recur exprs = Set.Poly.union_list (List.map exprs ~f:expr_var_set) in
+  match pattern with
+  | Var s -> Set.Poly.singleton (VVar s, meta)
+  | Lit _ -> Set.Poly.empty
+  | FunApp (kind, exprs) -> union_recur (exprs @ Fun_kind.collect_exprs kind)
+  | TernaryIf (expr1, expr2, expr3) -> union_recur [expr1; expr2; expr3]
+  | Indexed (expr, ix) ->
+      Set.Poly.union_list (expr_var_set expr :: List.map ix ~f:index_var_set)
+  | Promotion (expr, _, _) -> expr_var_set expr
+  | TupleProjection (expr, _) -> expr_var_set expr
+  | EAnd (expr1, expr2) | EOr (expr1, expr2) -> union_recur [expr1; expr2]
+
+and index_var_set ix =
+  match ix with
+  | All -> Set.Poly.empty
+  | Single expr -> expr_var_set expr
+  | Upfrom expr -> expr_var_set expr
+  | Between (expr1, expr2) ->
+      Set.Poly.union (expr_var_set expr1) (expr_var_set expr2)
+  | MultiIndex expr -> expr_var_set expr
+
+let expr_var_names_set expr =
+  let get_names (VVar a, _) = a in
+  Set.Poly.map ~f:get_names (expr_var_set expr)
+
+let stmt_rhs stmt =
+  match stmt with
+  | Stmt.Pattern.For vars -> Set.Poly.of_list [vars.lower; vars.upper]
+  | NRFunApp (kind, exprs) ->
+      Set.Poly.of_list (exprs @ Fun_kind.collect_exprs kind)
+  | IfElse (rhs, _, _)
+   |While (rhs, _)
+   |Assignment (_, _, rhs)
+   |TargetPE rhs
+   |JacobianPE rhs
+   |Return (Some rhs) ->
+      Set.Poly.singleton rhs
+  | Return None
+   |Break | Continue | Skip | Decl _ | Profile _ | Block _ | SList _ ->
+      Set.Poly.empty
+
+let stmt_rhs_var_set stmt = Set.Poly.union_map (stmt_rhs stmt) ~f:expr_var_set
+let stmt_rhs_names_set s = Set.Poly.map ~f:fst (stmt_rhs_var_set s)
+
+let rec stmt_referenced_names_set Stmt.{pattern; _} : string Set.Poly.t =
+  let names =
+    Stmt.Pattern.fold
+      (fun acc e -> Set.Poly.union acc (expr_var_names_set e))
+      (fun acc s -> Set.Poly.union acc (stmt_referenced_names_set s))
+      Set.Poly.empty pattern in
+  match pattern with
+  | Assignment (lhs, _, _) -> Set.Poly.add (Stmt.Helpers.lhs_variable lhs) names
+  | _ -> names
+
+(** See interface file *)
+let expr_assigned_var Expr.{pattern; _} =
+  match pattern with
+  | Var s -> VVar s
+  | Indexed ({pattern= Var s; _}, _) -> VVar s
+  | _ ->
+      Common.ICE.internal_error
+        "Unimplemented: analysis of assigning to non-var" [@coverage off]
+
+(** See interface file *)
+let rec summation_terms (Expr.{pattern; _} as rhs) =
+  match pattern with
+  | FunApp (Operator Plus, [e1; e2]) ->
+      List.append (summation_terms e1) (summation_terms e2)
+  | _ -> [rhs]
+
+let rec fn_subst_expr m e =
+  match m e with
+  | Some e' -> e'
+  | _ -> Expr.{e with pattern= Pattern.map (fn_subst_expr m) e.pattern}
+
+let fn_subst_idx m = Index.map (fn_subst_expr m)
+
+let fn_subst_stmt_base_helper g h b =
+  Stmt.Pattern.(
+    match b with
+    | Assignment ((x, l), ut, e2) ->
+        Assignment ((map_lbase g x, List.map ~f:h l), ut, g e2)
+    | x -> map g Fun.id x)
+
+let fn_subst_stmt_base m =
+  fn_subst_stmt_base_helper (fn_subst_expr m) (fn_subst_idx m)
+
+let fn_subst_stmt m = map_rec_stmt_loc (fn_subst_stmt_base m)
+
+let name_map m (e : Expr.Typed.t) =
+  match e.pattern with
+  | Var s -> (
+      match String.Map.find_opt s m with
+      | Some s' -> Some {e with pattern= Var s'}
+      | None -> None)
+  | _ -> None
+
+let name_subst_stmt m = fn_subst_stmt (name_map m)
+
+let var_map m (e : Expr.Typed.t) =
+  match e.pattern with Var s -> String.Map.find_opt s m | _ -> None
+
+let subst_expr m e = fn_subst_expr (var_map m) e
+let subst_idx m = Index.map (subst_expr m)
+let subst_stmt_base m = fn_subst_stmt_base_helper (subst_expr m) (subst_idx m)
+let subst_stmt m = map_rec_stmt_loc (subst_stmt_base m)
+let expr_map m (e : Expr.Typed.t) = ExprMap.find_opt e m
+let expr_subst_expr m e = fn_subst_expr (expr_map m) e
+let expr_subst_idx m = Index.map (expr_subst_expr m)
+
+let expr_subst_stmt_base m =
+  fn_subst_stmt_base_helper (expr_subst_expr m) (expr_subst_idx m)
+
+let rec expr_depth Expr.{pattern; _} =
+  match pattern with
+  | Var _ | Lit (_, _) -> 0
+  | FunApp (kind, args) ->
+      let l = args @ Fun_kind.collect_exprs kind in
+      1
+      + Option.value ~default:0
+          (List.max_elt ~cmp:Int.compare (List.map ~f:expr_depth l))
+  | TernaryIf (e1, e2, e3) ->
+      1
+      + Option.value ~default:0
+          (List.max_elt ~cmp:Int.compare (List.map ~f:expr_depth [e1; e2; e3]))
+  | Indexed (e, l) ->
+      1
+      + max (expr_depth e)
+          (Option.value ~default:0
+             (List.max_elt ~cmp:Int.compare (List.map ~f:idx_depth l)))
+  | Promotion (expr, _, _) -> 1 + expr_depth expr
+  | EAnd (e1, e2) | EOr (e1, e2) ->
+      1
+      + Option.value ~default:0
+          (List.max_elt ~cmp:Int.compare (List.map ~f:expr_depth [e1; e2]))
+  | TupleProjection (e, _) -> 1 + expr_depth e
+
+and idx_depth i =
+  match i with
+  | All -> 0
+  | Single e | Upfrom e | MultiIndex e -> expr_depth e
+  | Between (e1, e2) -> max (expr_depth e1) (expr_depth e2)
+
+let rec update_expr_ad_levels ?(keep_promotions = false) autodiffable_variables
+    (Expr.{pattern; _} as e) =
+  let inner = update_expr_ad_levels ~keep_promotions autodiffable_variables in
+  let all_or_nothing l =
+    (* removing promotions inside containers often leads to uncompilable C++, so
+       if any item in l is autodiffable we need to keep all of them promoted *)
+    let l_drop_promotions = List.map ~f:inner l in
+    if
+      List.exists
+        ~f:(fun e -> UnsizedType.is_autodifftype (Expr.Typed.adlevel_of e))
+        l_drop_promotions
+    then
+      List.map
+        ~f:(update_expr_ad_levels ~keep_promotions:true autodiffable_variables)
+        l
+    else l_drop_promotions in
+  let return_adlevel l =
+    let type_ = Expr.Typed.type_of e in
+    let ads = List.map ~f:Expr.Typed.adlevel_of l in
+    let ad =
+      if List.exists ~f:UnsizedType.is_autodifftype ads then
+        UnsizedType.AutoDiffable
+      else DataOnly in
+    if not (UnsizedType.contains_tuple type_) then ad
+    else
+      UnsizedType.fill_adtype_for_type
+        (UnsizedType.lub_ad_type ads |> Option.value ~default:ad)
+        type_ in
+  match pattern with
+  | Var x ->
+      if Set.Poly.mem x autodiffable_variables then e
+      else
+        let adlevel =
+          UnsizedType.fill_adtype_for_type DataOnly
+            Expr.Typed.Meta.(e.meta.type_) in
+        {e with meta= {e.meta with adlevel}}
+  | Lit (_, _) -> {e with meta= {e.meta with adlevel= DataOnly}}
+  | FunApp (CompilerInternal ((FnMakeArray | FnMakeRowVec) as internal), l) ->
+      let l = all_or_nothing l in
+      { pattern= FunApp (CompilerInternal internal, l)
+      ; meta= {e.meta with adlevel= return_adlevel l} }
+  | FunApp (CompilerInternal FnMakeTuple, l) ->
+      let l = List.map ~f:inner l in
+      { pattern= FunApp (CompilerInternal FnMakeTuple, l)
+      ; meta=
+          {e.meta with adlevel= TupleAD (List.map ~f:Expr.Typed.adlevel_of l)}
+      }
+  | FunApp (kind, l) ->
+      let kind' = Fun_kind.map inner kind in
+      let l = List.map ~f:inner l in
+      {pattern= FunApp (kind', l); meta= {e.meta with adlevel= return_adlevel l}}
+  | TernaryIf (e1, e2, e3) ->
+      let e1 = inner e1 in
+      let e2, e3 =
+        match all_or_nothing [e2; e3] with
+        | [e2; e3] -> (e2, e3)
+        | _ -> assert false in
+      let promote (e : Expr.Typed.t) adlevel =
+        (* both sides of a ternary if must return the same C++ type *)
+        if UnsizedType.compare_autodifftype e.meta.adlevel adlevel < 0 then
+          { e with
+            pattern=
+              Promotion (e, UnsizedType.internal_scalar e.meta.type_, adlevel)
+          }
+        else e in
+      let e2 = promote e2 e3.meta.adlevel in
+      let e3 = promote e3 e2.meta.adlevel in
+      { pattern= TernaryIf (e1, e2, e3)
+      ; meta= {e.meta with adlevel= return_adlevel [e1; e2; e3]} }
+  | EAnd (e1, e2) ->
+      let e1 = inner e1 in
+      let e2 = inner e2 in
+      { pattern= EAnd (e1, e2)
+      ; meta= {e.meta with adlevel= return_adlevel [e1; e2]} }
+  | EOr (e1, e2) ->
+      let e1 = inner e1 in
+      let e2 = inner e2 in
+      { pattern= EOr (e1, e2)
+      ; meta= {e.meta with adlevel= return_adlevel [e1; e2]} }
+  | Promotion _ when keep_promotions -> e
+  | Promotion (expr, ut, _) ->
+      let expr' = inner expr in
+      let adlevel = return_adlevel [expr'] in
+      if
+        UnsizedType.equal ut
+          (UnsizedType.internal_scalar (Expr.Typed.type_of expr'))
+      then expr'
+      else {pattern= Promotion (expr', ut, adlevel); meta= {e.meta with adlevel}}
+  | Indexed (ixed, i_list) ->
+      let ixed = inner ixed in
+      let i_list =
+        List.map ~f:(update_idx_ad_levels autodiffable_variables) i_list in
+      { pattern= Indexed (ixed, i_list)
+      ; meta= {e.meta with adlevel= ixed.meta.adlevel} }
+  | TupleProjection (e, ix) ->
+      (* TODO For the purposes of program analysis, tuples _should_ be treated
+         as n Vars. So for example, autodiffable_variables should possibly
+         include tuple.1 but not tuple.2 In the mean time, what's the most
+         conservative? Make the whole thing AD when any part is? *)
+      let e' = inner e in
+      Expr.Helpers.add_tuple_index e' ix
+
+and update_idx_ad_levels autodiffable_variables =
+  Index.map (update_expr_ad_levels autodiffable_variables)
+
+(** [cleanup_stmts statements] will do a few simple transformations like
+    removing Skips, collapsing empty blocks and SLists, etc. *)
+let cleanup_empty_stmts stmts =
+  let open Stmt in
+  let open Stmt.Pattern in
+  let cleanup_stmt s =
+    let ellide = {s with pattern= Skip} in
+    match s.pattern with
+    | Block [] | SList [] -> ellide
+    | For {body= {pattern= Skip; _}; _} -> ellide
+    | While (_, {pattern= Skip; _}) -> ellide
+    | Block [{pattern= Skip; _}] | SList [{pattern= Skip; _}] -> ellide
+    | _ -> s in
+  let is_decl = function {pattern= Decl _; _} -> true | _ -> false in
+  let flatten_block s =
+    match s.pattern with
+    (* NB: Does not include Profile since we don't want to remove those
+       blocks *)
+    | (SList ls | Block ls) when List.for_all ~f:(Fun.negate is_decl) ls -> ls
+    | _ -> [s] in
+  let ellide_skip s = match s.pattern with Skip -> [] | _ -> [s] in
+  List.map stmts ~f:(rewrite_bottom_up ~f:Fun.id ~g:cleanup_stmt)
+  |> List.concat_map ~f:flatten_block
+  |> List.concat_map ~f:ellide_skip
+
+(** Convert a Type.Unsized to a Type.Sized. This function is useful in the
+    inlining scheme as the Mem_patterns optimization cannot work with decl types
+    for unsized types. (Steve: tmk the inline optimization is the only place we
+    create Decl's with unsized types.)
+
+    Note that there is no true mapping from Sized types to Unsized types. Any
+    sizes are set to 0 and it is assumed that the intent of Types.Unsized with
+    inner UFun types is to size the return type of the UFun. Any Decl that uses
+    this type should have initialize set to false. *)
+let unsafe_unsized_to_sized_type (rt : Expr.Typed.t Type.t) =
+  match rt with
+  | Type.Sized ret_type -> ret_type
+  | Unsized ut ->
+      let rec to_sized a =
+        let open Expr.Helpers in
+        match a with
+        | UnsizedType.UReal -> SizedType.SReal
+        | UInt -> SInt
+        | UComplex -> SComplex
+        | UArray t -> SArray (to_sized t, zero)
+        | UMatrix -> SMatrix (Mem_pattern.AoS, zero, zero)
+        | UVector -> SVector (AoS, zero)
+        | URowVector -> SRowVector (AoS, zero)
+        | UComplexMatrix -> SComplexMatrix (zero, zero)
+        | UComplexVector -> SComplexVector zero
+        | UComplexRowVector -> SComplexRowVector zero
+        | UTuple ts -> STuple (List.map ~f:to_sized ts)
+        | UFun (_, UnsizedType.ReturnType inner_ut, _, _) -> to_sized inner_ut
+        | UFun (_, Void, _, _) | UMathLibraryFunction ->
+            Common.ICE.internal_error
+              "return type of a function was a void user defined function or \
+               math library function." [@coverage off] in
+      to_sized ut
+
+let%expect_test "cleanup" =
+  let open Expr.Helpers in
+  let open Stmt in
+  let open Stmt.Pattern in
+  let swrap pattern = {pattern; meta= Location_span.empty} in
+  let body = Block [Skip |> swrap] |> swrap in
+  let s = For {loopvar= "i"; lower= loop_bottom; upper= loop_bottom; body} in
+  let res = [s |> swrap] |> cleanup_empty_stmts in
+  Fmt.list Stmt.Located.pp Format.std_formatter res;
+  [%expect {| |}]

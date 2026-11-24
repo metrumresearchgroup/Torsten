@@ -1,0 +1,36 @@
+(subdir
+ dunes
+ (rule
+  (deps
+   (sandbox patch_back_source_tree)
+   (glob_files ../expected_errors/*)
+   (:stanfiles
+    ../filename_error.stan
+    ../filename_syntax_error.stan
+    ../includes.stan))
+  (action
+   (with-stdout-to
+    filename_error.dune
+    (run
+     %{project_root}/test/integration/gen_expected_rules.exe
+     txt
+     "--filename-in-msg=foo.stan --include-paths=.."
+     %{stanfiles}))))
+ (rule
+  (deps
+   (sandbox patch_back_source_tree)
+   (glob_files ../expected_cpp/*)
+   (:stanfiles ../filename_good.stan ../empty.stan))
+  (action
+   (with-stdout-to
+    cpp.dune
+    (run
+     %{project_root}/test/integration/gen_expected_rules.exe
+     cpp
+     "--filename-in-msg=foo.stan --include-paths=.. --print-cpp "
+     %{stanfiles})))))
+
+(subdir
+ runs
+ (dynamic_include ../dunes/cpp.dune)
+ (dynamic_include ../dunes/filename_error.dune))

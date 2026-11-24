@@ -1,0 +1,10 @@
+  $ ../../../../../../install/default/bin/stanc --auto-format ode_adams_test_model.stan
+
+[exit 0]
+  $ ../../../../../../install/default/bin/stanc --auto-format ode_bdf_test_model.stan
+
+[exit 0]
+  $ ../../../../../../install/default/bin/stanc --auto-format ode_ckrk_test_model.stan
+[exit 0]
+  $ ../../../../../../install/default/bin/stanc --auto-format ode_rk45_test_model.stan
+[exit 0]

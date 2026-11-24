@@ -1,0 +1,17 @@
+version=0.29.0
+ocaml-version=5.5
+# loosely re-creates the now-removed "compact" profile
+break-separators=before
+break-before-in=auto
+break-collection-expressions=wrap
+dock-collection-brackets=false
+doc-comments=before-except-val
+indicate-nested-or-patterns=space
+field-space=tight
+space-around-lists=false
+space-around-records=false
+space-around-variants=false
+sequence-blank-line=compact
+parse-docstrings=true
+wrap-comments=true
+letop-punning=always
