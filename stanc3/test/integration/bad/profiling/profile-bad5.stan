@@ -1,3 +1,0 @@
-transformed data {
-    real profile;
-}

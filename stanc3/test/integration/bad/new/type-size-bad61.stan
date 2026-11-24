@@ -1,1 +1,0 @@
-model { vector[ while] x;}

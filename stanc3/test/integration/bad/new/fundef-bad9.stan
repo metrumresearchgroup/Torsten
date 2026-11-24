@@ -1,1 +1,0 @@
-generated quantities { void foo(); }

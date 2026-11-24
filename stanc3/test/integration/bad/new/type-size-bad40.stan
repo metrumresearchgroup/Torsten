@@ -1,1 +1,0 @@
-data { unit_vector[ 0.0 while] x;}

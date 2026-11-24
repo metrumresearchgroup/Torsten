@@ -1,1 +1,0 @@
-inv_metric <- structure(c(1.5, 1.0, 1.0, 1.5), .Dim = c(2, 2))

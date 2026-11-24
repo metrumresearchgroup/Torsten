@@ -1,1 +1,0 @@
-model { row_vector [ 1 while] x;}

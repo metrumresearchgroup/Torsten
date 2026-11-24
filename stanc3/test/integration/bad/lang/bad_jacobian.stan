@@ -1,3 +1,0 @@
-transformed parameters {
-    jacobian += while;
-}

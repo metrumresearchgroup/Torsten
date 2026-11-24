@@ -1,3 +1,0 @@
-array[,,] x() {
-    return ones_array(3, 3);
-}

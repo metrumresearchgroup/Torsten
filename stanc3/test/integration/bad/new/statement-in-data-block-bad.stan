@@ -1,1 +1,0 @@
-data { real T; print(0);}

@@ -1,1 +1,0 @@
-data { vector<multiplier = y,> x;}

@@ -1,3 +1,0 @@
-/* this comment
-never
-ends

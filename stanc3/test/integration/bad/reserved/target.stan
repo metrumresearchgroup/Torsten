@@ -1,5 +1,0 @@
-data {
-  real target;
-}
-model {
-}
