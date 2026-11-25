@@ -10,30 +10,30 @@ functions {
     real V1 = parms[3];
     real V2 = parms[4];
     real ka = parms[5];
-    
+
     // Re-parametrization
     real k10 = CL / V1;
     real k12 = Q / V1;
     real k21 = Q / V2;
-    
+
     // Return object (derivative)
     vector[3] y; // 1 element per compartment of
     // the model
-    
+
     // PK component of the ODE system
     y[1] = -ka * x[1];
     y[2] = ka * x[1] - (k10 + k12) * x[2] + k21 * x[3];
     y[3] = k12 * x[2] - k21 * x[3];
-    
+
     return y;
   }
 }
 data {
   int<lower=1> np; /* population size */
-  int<lower=1> nt; // number of events
+  int<lower=1> nt; //  num ber of events per subj, assuming all subj have same number of events
   int<lower=1> nObs; // number of observations
   array[nObs] int<lower=1> iObs; // index of observation
-  
+
   // NONMEM data
   array[np * nt] int<lower=1> cmt;
   array[np * nt] int evid;
@@ -43,23 +43,20 @@ data {
   array[np * nt] real time;
   array[np * nt] real rate;
   array[np * nt] real ii;
-  
+
   array[np * nObs] real<lower=0> cObs; // observed concentration (dependent variable)
 }
 transformed data {
   array[np * nObs] real logCObs;
   array[np] int<lower=1> len;
-  array[np] int<lower=1> len_theta;
-  array[np] int<lower=1> len_biovar;
-  array[np] int<lower=1> len_tlag;
-  
+
   int nTheta = 5; // number of parameters
   int nCmt = 3; // number of compartments
   array[np * nt, nCmt] real biovar;
   array[np * nt, nCmt] real tlag;
-  
+
   logCObs = log(cObs);
-  
+
   for (id in 1 : np) {
     for (j in 1 : nt) {
       for (i in 1 : nCmt) {
@@ -68,45 +65,59 @@ transformed data {
       }
     }
     len[id] = nt;
-    len_theta[id] = nt;
-    len_biovar[id] = nt;
-    len_tlag[id] = nt;
   }
 }
+
 parameters {
-  array[np] real<lower=0> CL;
-  array[np] real<lower=0> Q;
-  array[np] real<lower=0> V1;
-  array[np] real<lower=0> V2;
-  array[np] real<lower=0> ka;
-  array[np] real<lower=0> sigma;
+  // population mean
+  real<lower=0> CL;
+  real<lower=0> Q;
+  real<lower=0> V1;
+  real<lower=0> V2;
+  real<lower=0> ka;
+
+  // residual error
+  real<lower=0> sigma;
+
+  // inter-individual variance scale
+  vector<lower=0>[nTheta] tau;
+
+  // cholesky decompositino of inter-individual correlation
+  cholesky_factor_corr[nTheta] L_Omega;
+
+  matrix[nTheta, np] z;
 }
+
 transformed parameters {
   array[np * nt, nTheta] real theta;
+  vector[nTheta] theta_pop;
+  matrix[nTheta, np] theta_dev;
+  array[np, nTheta] real theta_subj;
   array[np] vector<lower=0>[nt] cHat;
   array[np * nObs] real<lower=0> cHatObs;
-  matrix[3, nt * np] x;
-  
+  matrix[nCmt, nt * np] x;
+
+  theta_pop = [CL, Q, V1, V2, ka]';
+  theta_dev = diag_pre_multiply(tau, L_Omega) * z;
+
+
   for (id in 1 : np) {
+    theta_subj[id, ] = to_array_1d(theta_pop + theta_dev[, id]);
     for (it in 1 : nt) {
-      theta[(id - 1) * nt + it, 1] = CL[id];
-      theta[(id - 1) * nt + it, 2] = Q[id];
-      theta[(id - 1) * nt + it, 3] = V1[id];
-      theta[(id - 1) * nt + it, 4] = V2[id];
-      theta[(id - 1) * nt + it, 5] = ka[id];
+      theta[(id - 1) * nt + it, ] = theta_subj[id, ];
     }
   }
-  
+
   x = pmx_solve_group_bdf(twoCptModelODE, 3, len,
                           time, amt, rate, ii, evid, cmt, addl, ss,
                           theta, biovar, tlag);
-  
+
   for (id in 1 : np) {
     for (j in 1 : nt) {
-      cHat[id][j] = x[2, (id - 1) * nt + j] ./ V1[id];
+      cHat[id][j] = x[2, (id - 1) * nt + j] ./ theta_subj[id, 3];
     }
   }
-  
+
   for (id in 1 : np) {
     for (i in 1 : nObs) {
       cHatObs[(id - 1) * nObs + i] = cHat[id][iObs[i]]; // predictions for observed data records
@@ -115,17 +126,24 @@ transformed parameters {
 }
 model {
   // informative prior
+  CL ~ lognormal(log(10), 0.25);
+  Q ~ lognormal(log(15), 0.5);
+  V1 ~ lognormal(log(35), 0.25);
+  V2 ~ lognormal(log(105), 0.5);
+  ka ~ lognormal(log(2.5), 1);
+  sigma ~ cauchy(0, 1);
+
+  to_vector(z) ~ std_normal();
+
+  // non-informative prior
+  L_Omega ~ lkj_corr_cholesky(2);
+  tau ~ cauchy(0, 2);
+
+  // likelihood
   for (id in 1 : np) {
-    CL[id] ~ lognormal(log(10), 0.25);
-    Q[id] ~ lognormal(log(15), 0.5);
-    V1[id] ~ lognormal(log(35), 0.25);
-    V2[id] ~ lognormal(log(105), 0.5);
-    ka[id] ~ lognormal(log(2.5), 1);
-    sigma[id] ~ cauchy(0, 1);
-    
     for (i in 1 : nObs) {
       logCObs[(id - 1) * nObs + i] ~ normal(log(cHatObs[(id - 1) * nObs + i]),
-                                            sigma[id]);
+                                            sigma);
     }
   }
 }
