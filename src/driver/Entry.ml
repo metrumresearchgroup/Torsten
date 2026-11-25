@@ -34,7 +34,7 @@ type other_output =
   | Formatted of string
   | DebugOutput of string
   | Memory_patterns of string
-  | Info of Yojson.Basic.t
+  | Info of string
   | Version of string
   | Generated of string
   | Warnings of Warnings.t list
@@ -48,10 +48,8 @@ let debug_output_mir output mir = function
       output (DebugOutput (fmt_sexp (Middle.Program.Typed.sexp_of_t mir)))
   | Pretty -> output (DebugOutput (Fmt.str "%a" Program.Typed.pp mir))
 
-let stan2mir
-    ?(allowed_annotations : Middle.Annotation.annotation_classifier option)
-    model_name model (flags : Flags.t) (output : other_output -> unit) :
-    mir_compilation_result =
+let stan2mir model_name model (flags : Flags.t) (output : other_output -> unit)
+    : mir_compilation_result =
   let open Result.Syntax in
   reset_mutable_states model_name flags;
   if flags.version then output (Version (Fmt.str "%s" version));
@@ -63,17 +61,17 @@ let stan2mir
   if flags.debug_settings.print_ast then
     output (DebugOutput (fmt_sexp (Ast.sexp_of_untyped_program ast)));
   let* typed_ast, type_warnings =
-    Typechecker.check_program ?allowed_annotations
-      ~allow_undefined_functions:flags.allow_undefined ast
+    Typechecker.check_program ~allow_undefined_functions:flags.allow_undefined
+      ast
     |> Result.map_error ~f:(fun e -> Errors.Semantic_error e) in
   if flags.debug_settings.print_typed_ast then
     output (DebugOutput (fmt_sexp (Ast.sexp_of_typed_program typed_ast)));
   output (Warnings type_warnings);
+  if flags.info then output (Info (Info.info typed_ast));
   let deprecation_warnings =
     if flags.canonicalizer_settings.deprecations then []
     else Deprecation_analysis.collect_warnings typed_ast in
   output (Warnings deprecation_warnings);
-  if flags.info then output (Info (Info.info typed_ast));
   if flags.auto_format then
     output
       (Formatted
@@ -85,15 +83,9 @@ let stan2mir
                flags.canonicalizer_settings)));
   let mir = Ast_to_Mir.trans_prog model_name typed_ast in
   if flags.warn_uninitialized then
-    output
-      (Warnings
-         (List.map ~f:Warnings.pedantic_warning
-            (Pedantic_analysis.warn_uninitialized mir)));
+    output (Warnings (Pedantic_analysis.warn_uninitialized mir));
   if flags.warn_pedantic then
-    output
-      (Warnings
-         (List.map ~f:Warnings.pedantic_warning
-            (Pedantic_analysis.warn_pedantic mir)));
+    output (Warnings (Pedantic_analysis.warn_pedantic mir));
   if flags.debug_settings.debug_print_factor_graph then
     print_endline
       (Factor_graph.factor_graph_to_dot (Factor_graph.prog_factor_graph mir));
@@ -134,25 +126,20 @@ let stan2mir
     Optimize.optimization_suite
       ~settings:(Flags.get_optimization_settings flags)
       tx_mir in
-  if flags.debug_settings.print_mem_patterns then (
+  if flags.debug_settings.print_mem_patterns then
     output
-      (Memory_patterns (Fmt.str "%a" Memory_patterns.pp_mem_patterns opt_mir));
-    output
-      (Warnings
-         (Memory_patterns.get_warnings ()
-         |> List.map ~f:(fun (loc, reason) ->
-             Warnings.optimization_hazard
-               (loc, "SoA", fun ppf -> Memory_patterns.pp_reason ppf reason)))));
+      (Memory_patterns
+         (Fmt.str "%a%a@\n" Memory_patterns.pp_mem_patterns opt_mir
+            (* TODO should be better associated with the names from above? *)
+            Fmt.(list string)
+            (Memory_patterns.get_warnings ())));
   debug_output_mir output opt_mir flags.debug_settings.print_optimized_mir;
   opt_mir
 
 let stan2cpp model_name model (flags : Flags.t) (output : other_output -> unit)
     : compilation_result =
   let open Result.Syntax in
-  let+ opt_mir =
-    stan2mir
-      ~allowed_annotations:Stan_math_backend.Annotations.recognized_annotation
-      model_name model flags output in
+  let+ opt_mir = stan2mir model_name model flags output in
   let cpp =
     Lower_program.lower_program
       ~standalone_functions:(flags.functions_only || flags.standalone_functions)

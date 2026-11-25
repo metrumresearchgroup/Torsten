@@ -94,264 +94,264 @@ let%expect_test "Factor graph complex example" =
   print_s [%sexp (deps : factor_graph)];
   [%expect
     {|
-    ((factor_map
-      ((((TargetTerm
+((factor_map
+  ((((TargetTerm
+      ((pattern
+        (FunApp (StanLib Times__ FnPlain AoS)
+         (((pattern (Var f))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+          ((pattern (Var f))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
+       (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+     21)
+    ((VVar f)))
+   (((TargetTerm
+      ((pattern
+        (FunApp (StanLib Times__ FnPlain AoS)
+         (((pattern (Var z))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+          ((pattern (Var e))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
+       (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+     21)
+    ((VVar a) (VVar b) (VVar c) (VVar d) (VVar e)))
+   (((TargetTerm
+      ((pattern
+        (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+         (((pattern (Var a))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+          ((pattern (Var b))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
           ((pattern
-            (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-             (((pattern (Var a))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-              ((pattern (Var b))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-              ((pattern
-                (Promotion
-                 ((pattern (Lit Int 1))
-                  (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                 UReal DataOnly))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
-           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-         10)
-        ((VVar a) (VVar b)))
-       (((TargetTerm
+            (Promotion
+             ((pattern (Lit Int 1))
+              (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+             UReal DataOnly))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
+       (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+     10)
+    ((VVar a) (VVar b)))
+   (((TargetTerm
+      ((pattern
+        (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+         (((pattern (Var b))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
           ((pattern
-            (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-             (((pattern (Var b))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-              ((pattern
-                (Promotion
-                 ((pattern (Lit Int 0))
-                  (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                 UReal DataOnly))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly))))
-              ((pattern
-                (Promotion
-                 ((pattern (Lit Int 1))
-                  (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                 UReal DataOnly))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
-           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-         9)
-        ((VVar b)))
-       (((TargetTerm
+            (Promotion
+             ((pattern (Lit Int 0))
+              (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+             UReal DataOnly))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly))))
           ((pattern
-            (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-             (((pattern (Var c))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-              ((pattern (Var x))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-              ((pattern
-                (Promotion
-                 ((pattern (Lit Int 1))
-                  (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                 UReal DataOnly))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
-           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-         17)
-        ((VVar a) (VVar c)))
-       (((TargetTerm
+            (Promotion
+             ((pattern (Lit Int 1))
+              (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+             UReal DataOnly))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
+       (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+     9)
+    ((VVar b)))
+   (((TargetTerm
+      ((pattern
+        (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+         (((pattern (Var c))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+          ((pattern (Var x))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
           ((pattern
-            (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-             (((pattern (Var d))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-              ((pattern (Var c))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-              ((pattern (Var b))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
-           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-         18)
-        ((VVar b) (VVar c) (VVar d)))
-       (((TargetTerm
-          ((pattern
-            (FunApp (Operator Times)
-             (((pattern (Var f))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-              ((pattern (Var f))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
-           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-         21)
-        ((VVar f)))
-       (((TargetTerm
-          ((pattern
-            (FunApp (Operator Times)
-             (((pattern (Var z))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-              ((pattern (Var e))
-               (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
-           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-         21)
-        ((VVar a) (VVar b) (VVar c) (VVar d) (VVar e)))))
-     (var_map
-      (((VVar a)
-        (((TargetTerm
+            (Promotion
+             ((pattern (Lit Int 1))
+              (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+             UReal DataOnly))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
+       (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+     17)
+    ((VVar a) (VVar c)))
+   (((TargetTerm
+      ((pattern
+        (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+         (((pattern (Var d))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+          ((pattern (Var c))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+          ((pattern (Var b))
+           (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
+       (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+     18)
+    ((VVar b) (VVar c) (VVar d)))))
+ (var_map
+  (((VVar a)
+    (((TargetTerm
+       ((pattern
+         (FunApp (StanLib Times__ FnPlain AoS)
+          (((pattern (Var z))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var e))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      21)
+     ((TargetTerm
+       ((pattern
+         (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+          (((pattern (Var a))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var b))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
            ((pattern
-             (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-              (((pattern (Var a))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var b))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern
-                 (Promotion
-                  ((pattern (Lit Int 1))
-                   (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                  UReal DataOnly))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          10)
-         ((TargetTerm
+             (Promotion
+              ((pattern (Lit Int 1))
+               (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+              UReal DataOnly))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      10)
+     ((TargetTerm
+       ((pattern
+         (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+          (((pattern (Var c))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var x))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
            ((pattern
-             (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-              (((pattern (Var c))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var x))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern
-                 (Promotion
-                  ((pattern (Lit Int 1))
-                   (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                  UReal DataOnly))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          17)
-         ((TargetTerm
+             (Promotion
+              ((pattern (Lit Int 1))
+               (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+              UReal DataOnly))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      17)))
+   ((VVar b)
+    (((TargetTerm
+       ((pattern
+         (FunApp (StanLib Times__ FnPlain AoS)
+          (((pattern (Var z))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var e))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      21)
+     ((TargetTerm
+       ((pattern
+         (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+          (((pattern (Var a))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var b))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
            ((pattern
-             (FunApp (Operator Times)
-              (((pattern (Var z))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var e))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          21)))
-       ((VVar b)
-        (((TargetTerm
+             (Promotion
+              ((pattern (Lit Int 1))
+               (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+              UReal DataOnly))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      10)
+     ((TargetTerm
+       ((pattern
+         (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+          (((pattern (Var b))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
            ((pattern
-             (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-              (((pattern (Var a))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var b))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern
-                 (Promotion
-                  ((pattern (Lit Int 1))
-                   (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                  UReal DataOnly))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          10)
-         ((TargetTerm
+             (Promotion
+              ((pattern (Lit Int 0))
+               (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+              UReal DataOnly))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly))))
            ((pattern
-             (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-              (((pattern (Var b))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern
-                 (Promotion
-                  ((pattern (Lit Int 0))
-                   (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                  UReal DataOnly))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly))))
-               ((pattern
-                 (Promotion
-                  ((pattern (Lit Int 1))
-                   (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                  UReal DataOnly))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          9)
-         ((TargetTerm
+             (Promotion
+              ((pattern (Lit Int 1))
+               (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+              UReal DataOnly))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      9)
+     ((TargetTerm
+       ((pattern
+         (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+          (((pattern (Var d))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var c))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var b))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      18)))
+   ((VVar c)
+    (((TargetTerm
+       ((pattern
+         (FunApp (StanLib Times__ FnPlain AoS)
+          (((pattern (Var z))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var e))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      21)
+     ((TargetTerm
+       ((pattern
+         (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+          (((pattern (Var c))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var x))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
            ((pattern
-             (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-              (((pattern (Var d))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var c))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var b))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          18)
-         ((TargetTerm
-           ((pattern
-             (FunApp (Operator Times)
-              (((pattern (Var z))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var e))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          21)))
-       ((VVar c)
-        (((TargetTerm
-           ((pattern
-             (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-              (((pattern (Var c))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var x))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern
-                 (Promotion
-                  ((pattern (Lit Int 1))
-                   (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                  UReal DataOnly))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          17)
-         ((TargetTerm
-           ((pattern
-             (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-              (((pattern (Var d))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var c))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var b))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          18)
-         ((TargetTerm
-           ((pattern
-             (FunApp (Operator Times)
-              (((pattern (Var z))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var e))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          21)))
-       ((VVar d)
-        (((TargetTerm
-           ((pattern
-             (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-              (((pattern (Var d))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var c))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var b))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          18)
-         ((TargetTerm
-           ((pattern
-             (FunApp (Operator Times)
-              (((pattern (Var z))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var e))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          21)))
-       ((VVar e)
-        (((TargetTerm
-           ((pattern
-             (FunApp (Operator Times)
-              (((pattern (Var z))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var e))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          21)))
-       ((VVar f)
-        (((TargetTerm
-           ((pattern
-             (FunApp (Operator Times)
-              (((pattern (Var f))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var f))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          21))))))
+             (Promotion
+              ((pattern (Lit Int 1))
+               (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+              UReal DataOnly))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      17)
+     ((TargetTerm
+       ((pattern
+         (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+          (((pattern (Var d))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var c))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var b))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      18)))
+   ((VVar d)
+    (((TargetTerm
+       ((pattern
+         (FunApp (StanLib Times__ FnPlain AoS)
+          (((pattern (Var z))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var e))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      21)
+     ((TargetTerm
+       ((pattern
+         (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+          (((pattern (Var d))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var c))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var b))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      18)))
+   ((VVar e)
+    (((TargetTerm
+       ((pattern
+         (FunApp (StanLib Times__ FnPlain AoS)
+          (((pattern (Var z))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var e))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      21)))
+   ((VVar f)
+    (((TargetTerm
+       ((pattern
+         (FunApp (StanLib Times__ FnPlain AoS)
+          (((pattern (Var f))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var f))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      21))))))
     |}]
 
 let complex_example =
@@ -391,129 +391,117 @@ let%expect_test "Priors complex example" =
           VExprMap.t)];
   [%expect
     {|
-    (((VVar a)
-      (((((TargetTerm
+(((VVar a)
+  (((((TargetTerm
+       ((pattern
+         (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+          (((pattern (Var a))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
            ((pattern
-             (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-              (((pattern (Var a))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern
-                 (Promotion
-                  ((pattern (Lit Int 0))
-                   (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                  UReal DataOnly))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly))))
-               ((pattern
-                 (Promotion
-                  ((pattern (Lit Int 1))
-                   (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                  UReal DataOnly))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          9)
-         ((TargetTerm
+             (Promotion
+              ((pattern (Lit Int 0))
+               (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+              UReal DataOnly))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly))))
            ((pattern
-             (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-              (((pattern (Var e))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var a))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern
-                 (Promotion
-                  ((pattern (Lit Int 1))
-                   (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                  UReal DataOnly))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          14)
-         ((TargetTerm
+             (Promotion
+              ((pattern (Lit Int 1))
+               (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+              UReal DataOnly))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      9)
+     ((TargetTerm
+       ((pattern
+         (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+          (((pattern (Var e))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var a))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
            ((pattern
-             (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-              (((pattern (Var f))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var a))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern
-                 (Promotion
-                  ((pattern (Lit Int 1))
-                   (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                  UReal DataOnly))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          15)))
-       ((begin_loc
-         ((filename string) (line_num 7) (col_num 10) (byte_num 93)
-          (included_from ())))
-        (end_loc
-         ((filename string) (line_num 7) (col_num 17) (byte_num 100)
-          (included_from ()))))))
-     ((VVar b)
-      (((((TargetTerm
+             (Promotion
+              ((pattern (Lit Int 1))
+               (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+              UReal DataOnly))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      14)
+     ((TargetTerm
+       ((pattern
+         (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+          (((pattern (Var f))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var a))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
            ((pattern
-             (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-              (((pattern (Var b))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var a))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern
-                 (Promotion
-                  ((pattern (Lit Int 1))
-                   (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                  UReal DataOnly))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          10)
-         ((TargetTerm
+             (Promotion
+              ((pattern (Lit Int 1))
+               (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+              UReal DataOnly))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      15)))
+   ((begin_loc
+     ((filename string) (line_num 7) (col_num 10) (included_from ())))
+    (end_loc
+     ((filename string) (line_num 7) (col_num 17) (included_from ()))))))
+ ((VVar b)
+  (((((TargetTerm
+       ((pattern
+         (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+          (((pattern (Var b))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var a))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
            ((pattern
-             (FunApp (StanLib normal_lpdf (FnDist Density Unnormalized))
-              (((pattern (Var d))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern (Var b))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
-               ((pattern
-                 (Promotion
-                  ((pattern (Lit Int 1))
-                   (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
-                  UReal DataOnly))
-                (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
-            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
-          13)))
-       ((begin_loc
-         ((filename string) (line_num 8) (col_num 10) (byte_num 111)
-          (included_from ())))
-        (end_loc
-         ((filename string) (line_num 8) (col_num 17) (byte_num 118)
-          (included_from ()))))))
-     ((VVar c)
-      ((())
-       ((begin_loc
-         ((filename string) (line_num 9) (col_num 10) (byte_num 129)
-          (included_from ())))
-        (end_loc
-         ((filename string) (line_num 9) (col_num 17) (byte_num 136)
-          (included_from ()))))))
-     ((VVar d)
-      ((())
-       ((begin_loc
-         ((filename string) (line_num 10) (col_num 10) (byte_num 147)
-          (included_from ())))
-        (end_loc
-         ((filename string) (line_num 10) (col_num 17) (byte_num 154)
-          (included_from ()))))))
-     ((VVar e)
-      ((())
-       ((begin_loc
-         ((filename string) (line_num 11) (col_num 10) (byte_num 165)
-          (included_from ())))
-        (end_loc
-         ((filename string) (line_num 11) (col_num 17) (byte_num 172)
-          (included_from ()))))))
-     ((VVar f)
-      ((())
-       ((begin_loc
-         ((filename string) (line_num 12) (col_num 10) (byte_num 183)
-          (included_from ())))
-        (end_loc
-         ((filename string) (line_num 12) (col_num 17) (byte_num 190)
-          (included_from ())))))))
+             (Promotion
+              ((pattern (Lit Int 1))
+               (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+              UReal DataOnly))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      10)
+     ((TargetTerm
+       ((pattern
+         (FunApp (StanLib normal_lpdf (FnLpdf true) AoS)
+          (((pattern (Var d))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern (Var b))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable))))
+           ((pattern
+             (Promotion
+              ((pattern (Lit Int 1))
+               (meta ((type_ UInt) (loc <opaque>) (adlevel DataOnly))))
+              UReal DataOnly))
+            (meta ((type_ UReal) (loc <opaque>) (adlevel DataOnly)))))))
+        (meta ((type_ UReal) (loc <opaque>) (adlevel AutoDiffable)))))
+      13)))
+   ((begin_loc
+     ((filename string) (line_num 8) (col_num 10) (included_from ())))
+    (end_loc
+     ((filename string) (line_num 8) (col_num 17) (included_from ()))))))
+ ((VVar c)
+  ((())
+   ((begin_loc
+     ((filename string) (line_num 9) (col_num 10) (included_from ())))
+    (end_loc
+     ((filename string) (line_num 9) (col_num 17) (included_from ()))))))
+ ((VVar d)
+  ((())
+   ((begin_loc
+     ((filename string) (line_num 10) (col_num 10) (included_from ())))
+    (end_loc
+     ((filename string) (line_num 10) (col_num 17) (included_from ()))))))
+ ((VVar e)
+  ((())
+   ((begin_loc
+     ((filename string) (line_num 11) (col_num 10) (included_from ())))
+    (end_loc
+     ((filename string) (line_num 11) (col_num 17) (included_from ()))))))
+ ((VVar f)
+  ((())
+   ((begin_loc
+     ((filename string) (line_num 12) (col_num 10) (included_from ())))
+    (end_loc
+     ((filename string) (line_num 12) (col_num 17) (included_from ())))))))
     |}]

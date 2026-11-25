@@ -32,9 +32,9 @@ let print_or_write_and_exit output_file data =
   if not (String.equal output_file "") then write output_file data
   else print_and_exit data
 
-let output_callback break output_file printed_filename code :
+let output_callback break output_file printed_filename :
     Driver.Entry.other_output -> unit = function
-  | Info i -> break (print_and_exit (Yojson.Basic.pretty_to_string i))
+  | Info s -> break (print_and_exit s)
   | Version s ->
       (* note: in practice, handled by Cmdliner for this driver *)
       break (print_and_exit (s ^ " (" ^ Sys.os_type ^ ")"))
@@ -44,7 +44,7 @@ let output_callback break output_file printed_filename code :
   | DebugOutput s | Memory_patterns s ->
       (* historically, these flags didn't prevent you from continuing *)
       print_string s
-  | Warnings ws -> Warnings.pp_warnings Fmt.stderr ?printed_filename ?code ws
+  | Warnings ws -> Warnings.pp_warnings Fmt.stderr ?printed_filename ws
 
 let stanc ?tty_colors ?(debug_lex : bool = false) ?(debug_parse : bool = false)
     ?(print_cpp : bool = false) ?name ~output_file ~model_file
@@ -64,13 +64,11 @@ let stanc ?tty_colors ?(debug_lex : bool = false) ?(debug_parse : bool = false)
       , Option.first_some flags.filename_in_msg (Some "stdin") )
     else (model_file, `File model_file, flags.filename_in_msg) in
   Return.with_return @@ fun return ->
-  let code =
-    match model_source with `File _ -> None | `Code code -> Some code in
   match
     Driver.Entry.stan2cpp
       (Option.value ~default:model_file_name name)
       model_source flags
-      (output_callback return output_file printed_filename code)
+      (output_callback return output_file printed_filename)
   with
   | Ok cpp_str ->
       if print_cpp then print_endline cpp_str;
@@ -80,7 +78,9 @@ let stanc ?tty_colors ?(debug_lex : bool = false) ?(debug_parse : bool = false)
         else output_file in
       write out cpp_str
   | Error e ->
-      Errors.pp Fmt.stderr ?printed_filename ?code e;
+      (match model_source with
+      | `File _ -> Errors.pp Fmt.stderr ?printed_filename e
+      | `Code code -> Errors.pp Fmt.stderr ?printed_filename ~code e);
       exit_err
 
 (** Deal with multiple modalities. [Cmdliner.Cmd.groups] would probably be

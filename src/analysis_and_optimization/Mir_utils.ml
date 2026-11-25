@@ -19,8 +19,8 @@ let can_side_effect_top_expr (e : Expr.Typed.t) =
      but can return a different result every time *)
   match e.pattern with
   | FunApp
-      ((UserDefined (_, (FnTarget | FnJacobian)) | StanLib (_, FnJacobian)), _)
-    ->
+      ( (UserDefined (_, (FnTarget | FnJacobian)) | StanLib (_, FnJacobian, _))
+      , _ ) ->
       true
   | FunApp (CompilerInternal internal_fn, _) ->
       Internal_fun.can_side_effect internal_fn
@@ -30,7 +30,7 @@ let cannot_duplicate_expr ?(preserve_stability = false) (e : Expr.Typed.t) =
   let pred e =
     can_side_effect_top_expr e
     || (match e.pattern with
-      | FunApp ((UserDefined (_, FnRng) | StanLib (_, (FnRng | FnTarget))), _)
+      | FunApp ((UserDefined (_, FnRng) | StanLib (_, (FnRng | FnTarget), _)), _)
         ->
           true
       | _ -> false)
@@ -59,7 +59,7 @@ let rec num_expr_value (v : Expr.Typed.t) : (float * string) option =
   | {pattern= Pattern.Promotion (e, _, _); _} -> num_expr_value e
   | {pattern= Pattern.Lit ((Real | Int), str); _} ->
       Some (Float.of_string str, str)
-  | {pattern= Pattern.FunApp (Operator PMinus, [v]); _} -> (
+  | {pattern= Pattern.FunApp (StanLib ("PMinus__", FnPlain, _), [v]); _} -> (
       match num_expr_value v with
       | Some (v, s) -> Some (-.v, "-" ^ s)
       | None -> None)
@@ -308,16 +308,6 @@ let stmt_rhs stmt =
 let stmt_rhs_var_set stmt = Set.Poly.union_map (stmt_rhs stmt) ~f:expr_var_set
 let stmt_rhs_names_set s = Set.Poly.map ~f:fst (stmt_rhs_var_set s)
 
-let rec stmt_referenced_names_set Stmt.{pattern; _} : string Set.Poly.t =
-  let names =
-    Stmt.Pattern.fold
-      (fun acc e -> Set.Poly.union acc (expr_var_names_set e))
-      (fun acc s -> Set.Poly.union acc (stmt_referenced_names_set s))
-      Set.Poly.empty pattern in
-  match pattern with
-  | Assignment (lhs, _, _) -> Set.Poly.add (Stmt.Helpers.lhs_variable lhs) names
-  | _ -> names
-
 (** See interface file *)
 let expr_assigned_var Expr.{pattern; _} =
   match pattern with
@@ -330,7 +320,7 @@ let expr_assigned_var Expr.{pattern; _} =
 (** See interface file *)
 let rec summation_terms (Expr.{pattern; _} as rhs) =
   match pattern with
-  | FunApp (Operator Plus, [e1; e2]) ->
+  | FunApp (StanLib ("Plus__", FnPlain, _), [e1; e2]) ->
       List.append (summation_terms e1) (summation_terms e2)
   | _ -> [rhs]
 
@@ -344,9 +334,8 @@ let fn_subst_idx m = Index.map (fn_subst_expr m)
 let fn_subst_stmt_base_helper g h b =
   Stmt.Pattern.(
     match b with
-    | Assignment ((x, l), ut, e2) ->
-        Assignment ((map_lbase g x, List.map ~f:h l), ut, g e2)
-    | x -> map g Fun.id x)
+    | Assignment ((x, l), ut, e2) -> Assignment ((x, List.map ~f:h l), ut, g e2)
+    | x -> map g (fun y -> y) x)
 
 let fn_subst_stmt_base m =
   fn_subst_stmt_base_helper (fn_subst_expr m) (fn_subst_idx m)
@@ -407,34 +396,10 @@ and idx_depth i =
   | Single e | Upfrom e | MultiIndex e -> expr_depth e
   | Between (e1, e2) -> max (expr_depth e1) (expr_depth e2)
 
-let rec update_expr_ad_levels ?(keep_promotions = false) autodiffable_variables
-    (Expr.{pattern; _} as e) =
-  let inner = update_expr_ad_levels ~keep_promotions autodiffable_variables in
-  let all_or_nothing l =
-    (* removing promotions inside containers often leads to uncompilable C++, so
-       if any item in l is autodiffable we need to keep all of them promoted *)
-    let l_drop_promotions = List.map ~f:inner l in
-    if
-      List.exists
-        ~f:(fun e -> UnsizedType.is_autodifftype (Expr.Typed.adlevel_of e))
-        l_drop_promotions
-    then
-      List.map
-        ~f:(update_expr_ad_levels ~keep_promotions:true autodiffable_variables)
-        l
-    else l_drop_promotions in
-  let return_adlevel l =
-    let type_ = Expr.Typed.type_of e in
-    let ads = List.map ~f:Expr.Typed.adlevel_of l in
-    let ad =
-      if List.exists ~f:UnsizedType.is_autodifftype ads then
-        UnsizedType.AutoDiffable
-      else DataOnly in
-    if not (UnsizedType.contains_tuple type_) then ad
-    else
-      UnsizedType.fill_adtype_for_type
-        (UnsizedType.lub_ad_type ads |> Option.value ~default:ad)
-        type_ in
+let rec update_expr_ad_levels autodiffable_variables (Expr.{pattern; _} as e) =
+  let max_adlevel l =
+    UnsizedType.lub_ad_type (List.map ~f:Expr.Typed.adlevel_of l) |> Option.get
+  in
   match pattern with
   | Var x ->
       if Set.Poly.mem x autodiffable_variables then e
@@ -444,59 +409,37 @@ let rec update_expr_ad_levels ?(keep_promotions = false) autodiffable_variables
             Expr.Typed.Meta.(e.meta.type_) in
         {e with meta= {e.meta with adlevel}}
   | Lit (_, _) -> {e with meta= {e.meta with adlevel= DataOnly}}
-  | FunApp (CompilerInternal ((FnMakeArray | FnMakeRowVec) as internal), l) ->
-      let l = all_or_nothing l in
-      { pattern= FunApp (CompilerInternal internal, l)
-      ; meta= {e.meta with adlevel= return_adlevel l} }
   | FunApp (CompilerInternal FnMakeTuple, l) ->
-      let l = List.map ~f:inner l in
+      let l = List.map ~f:(update_expr_ad_levels autodiffable_variables) l in
       { pattern= FunApp (CompilerInternal FnMakeTuple, l)
       ; meta=
           {e.meta with adlevel= TupleAD (List.map ~f:Expr.Typed.adlevel_of l)}
       }
   | FunApp (kind, l) ->
-      let kind' = Fun_kind.map inner kind in
-      let l = List.map ~f:inner l in
-      {pattern= FunApp (kind', l); meta= {e.meta with adlevel= return_adlevel l}}
+      let kind' =
+        Fun_kind.map (update_expr_ad_levels autodiffable_variables) kind in
+      let l = List.map ~f:(update_expr_ad_levels autodiffable_variables) l in
+      {pattern= FunApp (kind', l); meta= {e.meta with adlevel= max_adlevel l}}
   | TernaryIf (e1, e2, e3) ->
-      let e1 = inner e1 in
-      let e2, e3 =
-        match all_or_nothing [e2; e3] with
-        | [e2; e3] -> (e2, e3)
-        | _ -> assert false in
-      let promote (e : Expr.Typed.t) adlevel =
-        (* both sides of a ternary if must return the same C++ type *)
-        if UnsizedType.compare_autodifftype e.meta.adlevel adlevel < 0 then
-          { e with
-            pattern=
-              Promotion (e, UnsizedType.internal_scalar e.meta.type_, adlevel)
-          }
-        else e in
-      let e2 = promote e2 e3.meta.adlevel in
-      let e3 = promote e3 e2.meta.adlevel in
+      let e1 = update_expr_ad_levels autodiffable_variables e1 in
+      let e2 = update_expr_ad_levels autodiffable_variables e2 in
+      let e3 = update_expr_ad_levels autodiffable_variables e3 in
       { pattern= TernaryIf (e1, e2, e3)
-      ; meta= {e.meta with adlevel= return_adlevel [e1; e2; e3]} }
+      ; meta= {e.meta with adlevel= max_adlevel [e1; e2; e3]} }
   | EAnd (e1, e2) ->
-      let e1 = inner e1 in
-      let e2 = inner e2 in
-      { pattern= EAnd (e1, e2)
-      ; meta= {e.meta with adlevel= return_adlevel [e1; e2]} }
+      let e1 = update_expr_ad_levels autodiffable_variables e1 in
+      let e2 = update_expr_ad_levels autodiffable_variables e2 in
+      {pattern= EAnd (e1, e2); meta= {e.meta with adlevel= max_adlevel [e1; e2]}}
   | EOr (e1, e2) ->
-      let e1 = inner e1 in
-      let e2 = inner e2 in
-      { pattern= EOr (e1, e2)
-      ; meta= {e.meta with adlevel= return_adlevel [e1; e2]} }
-  | Promotion _ when keep_promotions -> e
-  | Promotion (expr, ut, _) ->
-      let expr' = inner expr in
-      let adlevel = return_adlevel [expr'] in
-      if
-        UnsizedType.equal ut
-          (UnsizedType.internal_scalar (Expr.Typed.type_of expr'))
-      then expr'
-      else {pattern= Promotion (expr', ut, adlevel); meta= {e.meta with adlevel}}
+      let e1 = update_expr_ad_levels autodiffable_variables e1 in
+      let e2 = update_expr_ad_levels autodiffable_variables e2 in
+      {pattern= EOr (e1, e2); meta= {e.meta with adlevel= max_adlevel [e1; e2]}}
+  | Promotion (expr, ut, ad) ->
+      let expr' = update_expr_ad_levels autodiffable_variables expr in
+      { pattern= Promotion (expr', ut, ad)
+      ; meta= {e.meta with adlevel= max_adlevel [expr']} }
   | Indexed (ixed, i_list) ->
-      let ixed = inner ixed in
+      let ixed = update_expr_ad_levels autodiffable_variables ixed in
       let i_list =
         List.map ~f:(update_idx_ad_levels autodiffable_variables) i_list in
       { pattern= Indexed (ixed, i_list)
@@ -506,8 +449,9 @@ let rec update_expr_ad_levels ?(keep_promotions = false) autodiffable_variables
          as n Vars. So for example, autodiffable_variables should possibly
          include tuple.1 but not tuple.2 In the mean time, what's the most
          conservative? Make the whole thing AD when any part is? *)
-      let e' = inner e in
-      Expr.Helpers.add_tuple_index e' ix
+      let e' = update_expr_ad_levels autodiffable_variables e in
+      { pattern= TupleProjection (e', ix)
+      ; meta= {e.meta with adlevel= e'.meta.adlevel} }
 
 and update_idx_ad_levels autodiffable_variables =
   Index.map (update_expr_ad_levels autodiffable_variables)
@@ -551,18 +495,19 @@ let unsafe_unsized_to_sized_type (rt : Expr.Typed.t Type.t) =
   | Type.Sized ret_type -> ret_type
   | Unsized ut ->
       let rec to_sized a =
-        let open Expr.Helpers in
         match a with
         | UnsizedType.UReal -> SizedType.SReal
         | UInt -> SInt
         | UComplex -> SComplex
-        | UArray t -> SArray (to_sized t, zero)
-        | UMatrix -> SMatrix (Mem_pattern.AoS, zero, zero)
-        | UVector -> SVector (AoS, zero)
-        | URowVector -> SRowVector (AoS, zero)
-        | UComplexMatrix -> SComplexMatrix (zero, zero)
-        | UComplexVector -> SComplexVector zero
-        | UComplexRowVector -> SComplexRowVector zero
+        | UArray t -> SArray (to_sized t, Expr.Helpers.int 0)
+        | UMatrix ->
+            SMatrix (Mem_pattern.AoS, Expr.Helpers.int 0, Expr.Helpers.int 0)
+        | UVector -> SVector (AoS, Expr.Helpers.int 0)
+        | URowVector -> SRowVector (AoS, Expr.Helpers.int 0)
+        | UComplexMatrix ->
+            SComplexMatrix (Expr.Helpers.int 0, Expr.Helpers.int 0)
+        | UComplexVector -> SComplexVector (Expr.Helpers.int 0)
+        | UComplexRowVector -> SComplexRowVector (Expr.Helpers.int 0)
         | UTuple ts -> STuple (List.map ~f:to_sized ts)
         | UFun (_, UnsizedType.ReturnType inner_ut, _, _) -> to_sized inner_ut
         | UFun (_, Void, _, _) | UMathLibraryFunction ->

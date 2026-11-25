@@ -1,0 +1,18 @@
+  $ stanc --auto-format gauss.stan
+parameters {
+  real x;
+}
+model {
+  x ~ normal(0, 1);
+}
+
+[exit 0]
+  $ stanc --auto-format gauss3D.stan
+parameters {
+  array[3] real x;
+}
+model {
+  x ~ normal(0, 1);
+}
+
+[exit 0]

@@ -1,1 +1,0 @@
-/* $ stanc --include-paths=../../included  ../included-brackets.stan : [exit 0] */

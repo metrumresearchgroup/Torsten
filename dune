@@ -13,4 +13,4 @@
    (:standard -O3)))
  (dev
   (flags
-   (:standard %{dune-warnings} -g -warn-error -71))))
+   (:standard -g))))

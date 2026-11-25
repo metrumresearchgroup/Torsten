@@ -191,15 +191,8 @@ Show help
              transformed it.
   
          -f SETTING
-             Debugging features. Turn a single optimization on or off. On with
-             -fNAME or off with -fno-NAME. Option may be given more than once.
-             When a pass is named twice the last setting wins. NAME is one of
-             inlining, static-loop-unrolling, one-step-loop-unrolling,
-             vectorize-loops, list-collapsing, block-fixing,
-             allow-uninitialized-decls, constant-propagation,
-             expression-propagation, copy-propagation, dead-code-elimination,
-             partial-evaluation, lazy-code-motion, ad-levels,
-             preserve-stability or soa.
+             Debugging features. Valid values: -fsoa to force on the Struct of
+             Arrays optimization. -fno-soa to force it off.
   
   EXIT STATUS
          0   on success.
@@ -256,19 +249,20 @@ Error when a folder is passed
   [124]
   $ rm -r foo.d
 
+Error when nonsense argument is passed
+  $ stanc -fno-generated-quantities
+  Usage: %%NAME%% [--help] [OPTION]… [MODEL_FILE]
+  %%NAME%%: option '-f': invalid value 'no-generated-quantities', expected
+            either 'soa' or 'no-soa'
+  [124]
+
 Error when unreadable file is passed
   $ touch unreadable.stan
   $ chmod -r unreadable.stan
   $ stanc unreadable.stan
-  error: file 'unreadable.stan' not found or cannot be opened
+  Error: file 'unreadable.stan' not found or cannot be opened
   [1]
   $ rm unreadable.stan
-
-Error when nonexistent file is passed
-  $ stanc notfound.stan
-  Usage: %%NAME%% [--help] [OPTION]… [MODEL_FILE]
-  %%NAME%%: MODEL_FILE argument: no 'notfound.stan' file
-  [124]
 
 Can read from stdin
   $ echo 'parameters {real y;}' | stanc - --auto-format
@@ -278,12 +272,13 @@ Can read from stdin
   
 Filename is set to stdin when reading from stdin
   $ echo 'parameters {real y}' | stanc -
-  error: Syntax error: Ill-formed declaration.
-      ┌─ stdin:1:19
-    1 │  parameters {real y}
-      │                    ^ here.
-    2 │  
-      = Expected ";" after variable declaration.
+  Syntax error in 'stdin', line 1, column 18 to column 19, parsing error:
+     -------------------------------------------------
+       1:  parameters {real y}
+                             ^
+     -------------------------------------------------
+  
+  Ill-formed declaration. Expected ";" after variable declaration.
   [1]
 
 Flags can be passed multiple times

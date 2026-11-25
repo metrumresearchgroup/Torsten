@@ -1023,11 +1023,8 @@ let () =
     ("cumulative_sum", ReturnType UComplexRowVector, [UComplexRowVector], AoS);
   add_unqualified ("determinant", ReturnType UReal, [UMatrix], SoA);
   add_unqualified ("diag_matrix", ReturnType UMatrix, [UVector], AoS);
-  add_unqualified ("diag_matrix", ReturnType UMatrix, [URowVector], AoS);
   add_unqualified
     ("diag_matrix", ReturnType UComplexMatrix, [UComplexVector], AoS);
-  add_unqualified
-    ("diag_matrix", ReturnType UComplexMatrix, [UComplexRowVector], AoS);
   add_unqualified
     ("diag_post_multiply", ReturnType UMatrix, [UMatrix; UVector], SoA);
   add_unqualified
@@ -2236,17 +2233,6 @@ let () =
   add_unqualified
     ("sort_indices_desc", ReturnType (UArray UInt), [URowVector], AoS);
   List.iter
-    ~f:(fun t1 ->
-      List.iter
-        ~f:(fun t2 ->
-          List.iter
-            ~f:(fun t3 ->
-              add_unqualified
-                ("solve_sylvester", ReturnType UComplexMatrix, [t1; t2; t3], AoS))
-            [UnsizedType.UMatrix; UComplexMatrix])
-        [UnsizedType.UMatrix; UComplexMatrix])
-    [UnsizedType.UMatrix; UComplexMatrix];
-  List.iter
     ~f:(fun i ->
       let t = bare_array_type (UMatrix, i) in
       add_unqualified ("stochastic_column_jacobian", ReturnType t, [t], SoA);
@@ -2559,9 +2545,7 @@ let () =
   add_unqualified ("zeros_int_array", ReturnType (UArray UInt), [UInt], SoA);
   add_unqualified ("zeros_array", ReturnType (UArray UReal), [UInt], SoA);
   add_unqualified ("zeros_row_vector", ReturnType URowVector, [UInt], SoA);
-  add_unqualified ("zeros_vector", ReturnType UVector, [UInt], SoA);
-  add_unqualified
-    ("zip_index", ReturnType UVector, [UMatrix; UArray UInt; UArray UInt], SoA)
+  add_unqualified ("zeros_vector", ReturnType UVector, [UInt], SoA)
 
 (* variadics *)
 

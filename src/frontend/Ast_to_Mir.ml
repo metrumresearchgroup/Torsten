@@ -4,7 +4,7 @@ open Middle
 let trans_fn_kind kind name =
   let fname = Utils.stdlib_distribution_name name in
   match kind with
-  | Ast.StanLib suffix -> Fun_kind.StanLib (fname, suffix)
+  | Ast.StanLib suffix -> Fun_kind.StanLib (fname, suffix, AoS)
   | UserDefined suffix -> UserDefined (fname, suffix)
 
 let without_underscores s =
@@ -35,7 +35,8 @@ let rec op_to_funapp op args type_ =
     Ast.expr_ad_lub args |> Option.get
     (* correctness inherited from typechecking *) in
   Expr.
-    { pattern= FunApp (Operator op, trans_exprs args)
+    { pattern=
+        FunApp (StanLib (Operator.to_string op, FnPlain, AoS), trans_exprs args)
     ; meta= Expr.Typed.Meta.create ~type_ ~adlevel ~loc () }
 
 and trans_expr {Ast.expr; Ast.emeta} =
@@ -62,7 +63,7 @@ and trans_expr {Ast.expr; Ast.emeta} =
   | FunApp (fn_kind, {name; _}, args) | CondDistApp (fn_kind, {name; _}, args)
     ->
       FunApp (trans_fn_kind fn_kind name, trans_exprs args) |> ewrap
-  | GetTarget -> FunApp (StanLib ("target", FnTarget), []) |> ewrap
+  | GetTarget -> FunApp (StanLib ("target", FnTarget, AoS), []) |> ewrap
   | ArrayExpr eles ->
       FunApp (CompilerInternal FnMakeArray, trans_exprs eles) |> ewrap
   | RowVectorExpr eles ->
@@ -253,7 +254,7 @@ let same_shape decl_id decl_var id var meta =
     [ Stmt.
         { pattern=
             NRFunApp
-              ( StanLib ("check_matching_dims", FnPlain)
+              ( StanLib ("check_matching_dims", FnPlain, AoS)
               , Expr.Helpers.
                   [str "constraint"; str decl_id; decl_var; str id; var] )
         ; meta } ]
@@ -457,7 +458,6 @@ let rec check_transformed_sizedtype transform_action tr name st =
               Decl
                 { decl_type= Sized SInt
                 ; decl_id
-                ; decl_annotations= []
                 ; decl_adtype= DataOnly
                 ; initialize= Assign te }
           ; meta= te.meta.loc } in
@@ -507,7 +507,7 @@ let rec check_transformed_sizedtype transform_action tr name st =
           | Constrain, CholeskyCov ->
               [ { Stmt.pattern=
                     NRFunApp
-                      ( StanLib ("check_greater_or_equal", FnPlain)
+                      ( StanLib ("check_greater_or_equal", FnPlain, AoS)
                       , Expr.Helpers.
                           [ str ("cholesky_factor_cov " ^ name)
                           ; str
@@ -553,8 +553,8 @@ let var_constrain_check_stmts dconstrain loc adlevel decl_id decl_var trans
       @ check_decl decl_var st trans loc adlevel
   | _ -> []
 
-let create_decl_with_assign decl_id declc decl_type initial_value
-    decl_annotations transform smeta =
+let create_decl_with_assign decl_id declc decl_type initial_value transform
+    smeta =
   let rhs = Option.map ~f:trans_expr initial_value in
   let decl_adtype =
     UnsizedType.fill_adtype_for_type declc.dadlevel (Type.to_unsized decl_type)
@@ -568,13 +568,7 @@ let create_decl_with_assign decl_id declc decl_type initial_value
             () } in
   let decl =
     Stmt.
-      { pattern=
-          Decl
-            { decl_adtype
-            ; decl_id
-            ; decl_type
-            ; initialize= Default
-            ; decl_annotations }
+      { pattern= Decl {decl_adtype; decl_id; decl_type; initialize= Default}
       ; meta= smeta } in
   let rhs_assignment =
     Option.map
@@ -632,9 +626,8 @@ let rec trans_stmt ud_dists (declc : decl_context) (ts : Ast.typed_statement) =
   | Ast.Tilde {arg; distribution; args; truncation; kind} ->
       let sfx =
         match kind with
-        | UserDefined (FnDist (Density, _)) | StanLib (FnDist (Density, _)) ->
-            "_lpdf"
-        | UserDefined (FnDist (Mass, _)) | StanLib (FnDist (Mass, _)) -> "_lpmf"
+        | UserDefined (FnLpdf _) | StanLib (FnLpdf _) -> "_lpdf"
+        | UserDefined (FnLpmf _) | StanLib (FnLpmf _) -> "_lpmf"
         | _ ->
             Common.ICE.internal_errorf
               "Impossible: tilde with non-distribution after typechecking, \
@@ -703,8 +696,7 @@ let rec trans_stmt ud_dists (declc : decl_context) (ts : Ast.typed_statement) =
                 { decl_adtype= Expr.Typed.adlevel_of iteratee'
                 ; decl_id= loopvar.name
                 ; decl_type= Unsized decl_type
-                ; initialize= Default
-                ; decl_annotations= [] } } in
+                ; initialize= Default } } in
       let assignment var =
         Stmt.
           { pattern=
@@ -719,8 +711,7 @@ let rec trans_stmt ud_dists (declc : decl_context) (ts : Ast.typed_statement) =
       Common.ICE.internal_error
         "Found function definition statement outside of function block"
       [@coverage off]
-  | Ast.VarDecl {decl_type; transformation; variables; annotations; is_global= _}
-    ->
+  | Ast.VarDecl {decl_type; transformation; variables; is_global= _} ->
       List.concat_map
         ~f:(fun Ast.{identifier; initial_value} ->
           let transform = Transformation.map trans_expr transformation in
@@ -728,7 +719,7 @@ let rec trans_stmt ud_dists (declc : decl_context) (ts : Ast.typed_statement) =
           let size_checks, dt = check_sizedtype decl_id decl_type in
           size_checks
           @ create_decl_with_assign decl_id declc (Type.Sized dt) initial_value
-              annotations transform smeta)
+              transform smeta)
         variables
   | Ast.Block stmts -> Block (List.concat_map ~f:trans_stmt stmts) |> swrap
   | Ast.Profile (name, stmts) ->
@@ -742,12 +733,8 @@ let rec trans_stmt ud_dists (declc : decl_context) (ts : Ast.typed_statement) =
 and trans_packed_assign loc trans_stmt lvals rhs assign_op =
   (* TODO tuple-unpacking: could be more efficient in case where rhs is a tuple
      expr and names don't overlap *)
-  let smeta =
-    Ast.
-      { loc
-      ; flow_type= {controlflow= Incomplete Next; breaks= []; continues= false}
-      } in
-  let sym, reset = Common.Gensym.enter ~prefix:"unpack" in
+  let smeta = Ast.{loc; return_type= Incomplete} in
+  let sym, reset = Common.Gensym.enter () in
   let rhs_type = rhs.emeta.type_ in
   let temp =
     { Stmt.pattern=
@@ -755,8 +742,7 @@ and trans_packed_assign loc trans_stmt lvals rhs assign_op =
           { decl_adtype= rhs.emeta.ad_level
           ; decl_id= sym
           ; decl_type= Unsized rhs_type
-          ; initialize= Uninit
-          ; decl_annotations= [] }
+          ; initialize= Uninit }
     ; meta= rhs.emeta.loc } in
   let assign =
     { temp with
@@ -820,13 +806,12 @@ and trans_single_assignment smeta assign_lhs assign_rhs assign_op =
 
 let trans_fun_def ud_dists (ts : Ast.typed_statement) =
   match ts.stmt with
-  | Ast.FunDef {returntype; funname; arguments; annotations; body} ->
+  | Ast.FunDef {returntype; funname; arguments; body} ->
       [ Program.
           { fdrt= returntype
           ; fdname= funname.name
-          ; fdsuffix= Fun_kind.(suffix_from_name funname.name)
+          ; fdsuffix= Fun_kind.(suffix_from_name funname.name |> without_propto)
           ; fdargs= List.map ~f:trans_arg arguments
-          ; fdannotations= annotations
           ; fdbody=
               trans_stmt ud_dists
                 {transform_action= IgnoreTransform; dadlevel= AutoDiffable}
@@ -848,12 +833,7 @@ let trans_block ud_dists declc block prog =
   let f stmt (accum1, accum2, accum3) =
     match stmt with
     | { Ast.stmt=
-          VarDecl
-            { decl_type= type_
-            ; variables
-            ; transformation
-            ; annotations
-            ; is_global= true }
+          VarDecl {decl_type= type_; variables; transformation; is_global= true}
       ; smeta } ->
         let outvars, sizes, stmts =
           List.split3
@@ -872,11 +852,10 @@ let trans_block ud_dists declc block prog =
                        ; out_unconstrained_st=
                            transform_sizedtype transform type_
                        ; out_block= block
-                       ; out_annotations= annotations
                        ; out_trans= transform } ) in
                  let stmts =
                    create_decl_with_assign decl_id declc (Sized type_)
-                     initial_value annotations transform smeta.loc in
+                     initial_value transform smeta.loc in
                  (outvar, size, stmts))
                variables in
         ( outvars @ accum1
@@ -987,7 +966,8 @@ let trans_prog filename (p : Ast.typed_program) : Program.Typed.t =
           IfElse (cond, {pattern= Return None; meta= Location_span.empty}, None)
       ; meta= Location_span.empty } in
   let iexpr pattern = Expr.{pattern; meta= Typed.Meta.empty} in
-  let fnot e = FunApp (Operator PNot, [e]) |> iexpr in
+  let fnot e =
+    FunApp (StanLib (Operator.to_string PNot, FnPlain, AoS), [e]) |> iexpr in
   let tparam_early_return =
     let to_var fv = iexpr (Var (Flag_vars.to_string fv)) in
     let v1 = to_var EmitTransformedParameters in

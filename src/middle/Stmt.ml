@@ -22,8 +22,7 @@ module Pattern = struct
         { decl_adtype: UnsizedType.autodifftype
         ; decl_id: string
         ; decl_type: 'a Type.t
-        ; initialize: 'a decl_init
-        ; decl_annotations: Annotation.t list }
+        ; initialize: 'a decl_init }
   [@@deriving sexp_of, map, fold]
 
   and 'e lvalue = 'e lbase * 'e Index.t list [@@deriving sexp_of, map, fold]
@@ -95,7 +94,7 @@ module Pattern = struct
     | Block stmts ->
         Fmt.pf ppf "{@;<1 2>@[<v>%a@]@;}" Fmt.(list pp_s ~sep:cut) stmts
     | SList stmts -> Fmt.(list pp_s ~sep:cut |> vbox) ppf stmts
-    | Decl {decl_adtype; decl_id; decl_type; initialize; _} -> (
+    | Decl {decl_adtype; decl_id; decl_type; initialize} -> (
         match initialize with
         | Assign e ->
             Fmt.pf ppf "@[<hov 2>%a%a@ %s = %a;@]" UnsizedType.pp_autodifftype
@@ -165,7 +164,7 @@ end
 
 module Helpers = struct
   let temp_vars exprs : Located.t list * Expr.Typed.t list * (unit -> unit) =
-    let sym, reset = Gensym.enter ~prefix:"tmp" in
+    let sym, reset = Gensym.enter () in
     let rec loop es sym inits vars =
       match es with
       | [] -> (inits, vars)
@@ -177,16 +176,13 @@ module Helpers = struct
                   { decl_adtype= Expr.Typed.adlevel_of e
                   ; decl_id= sym
                   ; decl_type= Unsized (Expr.Typed.type_of e)
-                  ; initialize= Default
-                  ; decl_annotations= [] }
+                  ; initialize= Default }
             ; meta= e.meta.loc } in
           let assign =
             { decl with
               pattern= Assignment ((LVariable sym, []), Expr.Typed.type_of e, e)
             } in
-          loop es
-            (Gensym.next ~prefix:"tmp" ())
-            (decl :: assign :: inits)
+          loop es (Gensym.generate ()) (decl :: assign :: inits)
             ({e with pattern= Var sym} :: vars) in
     let setups, exprs = loop (List.rev exprs) sym [] [] in
     (setups, exprs, reset)
@@ -206,7 +202,7 @@ module Helpers = struct
   (** [mk_for] returns a MIR For statement from 0 to [upper] that calls the
       [bodyfn] with the loop variable inside the loop. *)
   let mk_for upper bodyfn meta =
-    let loopvar, reset = Gensym.enter ~prefix:"idx" in
+    let loopvar, reset = Gensym.enter () in
     let loopvar_expr =
       Expr.
         { meta= Expr.Typed.Meta.create ~type_:UInt ~loc:meta ~adlevel:DataOnly ()
@@ -254,7 +250,8 @@ module Helpers = struct
         let rows =
           Expr.
             { meta= emeta'
-            ; pattern= FunApp (StanLib ("rows", FnPlain), [iteratee]) } in
+            ; pattern= FunApp (StanLib ("rows", FnPlain, AoS), [iteratee]) }
+        in
         mk_for_iteratee rows (fun e -> for_each bodyfn e smeta) iteratee smeta
     | UArray _ -> mk_for_iteratee (len iteratee) bodyfn iteratee smeta
     | UMathLibraryFunction | UFun _ | UTuple _ ->
@@ -271,6 +268,61 @@ module Helpers = struct
               Expr.Helpers.contains_fn_kind is_fn_kind ~init:accu expr)
             aux accu stmt_pattern in
     aux init stmt
+
+  (** [for_scalar unsizedtype...] generates a For statement that loops over the
+      scalars in the underlying [unsizedtype].
+
+      We can call [bodyfn] directly on scalars, make a direct For loop around
+      Eigen types, or for Arrays we call mk_for_iteratee but inserting a
+      recursive call into the [bodyfn] that will operate on the nested type. In
+      this way we recursively create for loops that loop over the outermost
+      layers first. *)
+  let rec for_scalar st bodyfn var smeta =
+    match st with
+    | SizedType.SInt | SReal | SComplex -> bodyfn st var
+    | SVector (_, d)
+     |SRowVector (_, d)
+     |SComplexVector d
+     |SComplexRowVector d ->
+        mk_for_iteratee d (bodyfn st) var smeta
+    | SMatrix (mem_pattern, d1, d2) ->
+        mk_for_iteratee d1
+          (fun e -> for_scalar (SRowVector (mem_pattern, d2)) bodyfn e smeta)
+          var smeta
+    | SComplexMatrix (d1, d2) ->
+        mk_for_iteratee d1
+          (fun e -> for_scalar (SComplexRowVector d2) bodyfn e smeta)
+          var smeta
+    | SArray (t, d) ->
+        mk_for_iteratee d (fun e -> for_scalar t bodyfn e smeta) var smeta
+    | STuple _ -> bodyfn st var
+
+  (** Exactly like for_scalar, but iterating through array dimensions in the
+      inverted order.*)
+  let for_scalar_inv st bodyfn (var : Expr.Typed.t) smeta =
+    let var = {var with pattern= Indexed (var, [])} in
+    let invert_index_order (Expr.{pattern; _} as e) =
+      match pattern with
+      | Indexed (obj, []) -> obj
+      | Indexed (obj, idxs) -> {e with pattern= Indexed (obj, List.rev idxs)}
+      | _ -> e in
+    let rec go st bodyfn var smeta =
+      match st with
+      | SizedType.SArray (t, d) ->
+          let bodyfn' _ var = mk_for_iteratee d (bodyfn st) var smeta in
+          go t bodyfn' var smeta
+      | SMatrix (mem_pattern, d1, d2) ->
+          let bodyfn' _ var = mk_for_iteratee d1 (bodyfn st) var smeta in
+          go (SRowVector (mem_pattern, d2)) bodyfn' var smeta
+      | SComplexMatrix (d1, d2) ->
+          let bodyfn' _ var = mk_for_iteratee d1 (bodyfn st) var smeta in
+          go (SComplexRowVector d2) bodyfn' var smeta
+      | _ -> for_scalar st bodyfn var smeta in
+    go st (fun st var -> bodyfn st (invert_index_order var)) var smeta
+
+  let assign_indexed decl_type (lval, idxs) meta varfn var =
+    let indices = Expr.Helpers.collect_indices var in
+    {meta; pattern= Assignment ((lval, idxs @ indices), decl_type, varfn var)}
 
   let lvariable v = (Pattern.LVariable v, [])
 

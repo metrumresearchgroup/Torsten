@@ -22,11 +22,11 @@ module Pattern = struct
     | Var varname -> Fmt.string ppf varname
     | Lit (Str, str) -> Fmt.pf ppf "%S" str
     | Lit (_, str) -> Fmt.string ppf str
-    | FunApp (Operator op, [lhs; rhs]) ->
-        Fmt.pf ppf "(%a %a %a)" pp_e lhs Operator.pp op pp_e rhs
-    | FunApp (Operator (Transpose as op), [v]) ->
-        Fmt.pf ppf "(%a %a)" pp_e v Operator.pp op
-    | FunApp (Operator op, [v]) -> Fmt.pf ppf "%a(%a)" Operator.pp op pp_e v
+    | FunApp (StanLib (name, FnPlain, _), [lhs; rhs])
+      when Option.is_some (Operator.of_string_opt name) ->
+        Fmt.pf ppf "(%a %a %a)" pp_e lhs Operator.pp
+          (Option.get (Operator.of_string_opt name))
+          pp_e rhs
     | FunApp (fun_kind, args) ->
         Fmt.pf ppf "%a(@[<hov>%a@])" (Fun_kind.pp pp_e) fun_kind
           Fmt.(list pp_e ~sep:Fmt.comma)
@@ -94,7 +94,8 @@ module Helpers = struct
 
   let complex (r, i) =
     { meta= {Typed.Meta.empty with type_= UComplex}
-    ; pattern= FunApp (StanLib ("to_complex", FnPlain), [float r; float i]) }
+    ; pattern= FunApp (StanLib ("to_complex", FnPlain, AoS), [float r; float i])
+    }
 
   let str i = {meta= Typed.Meta.empty; pattern= Lit (Str, i)}
   let variable v = {meta= Typed.Meta.empty; pattern= Var v}
@@ -102,10 +103,13 @@ module Helpers = struct
   let one = int 1
 
   let unary_op op e =
-    {meta= Typed.Meta.empty; pattern= FunApp (Operator op, [e])}
+    { meta= Typed.Meta.empty
+    ; pattern= FunApp (StanLib (Operator.to_string op, FnPlain, AoS), [e]) }
 
   let binop e1 op e2 =
-    {meta= Typed.Meta.empty; pattern= FunApp (Operator op, [e1; e2])}
+    { meta= Typed.Meta.empty
+    ; pattern= FunApp (StanLib (Operator.to_string op, FnPlain, AoS), [e1; e2])
+    }
 
   let binop_list es op ~default =
     match es with
@@ -248,25 +252,15 @@ module Helpers = struct
       a tuple type. *)
   let add_tuple_index e i =
     let mtype =
-      match Typed.type_of e with
+      match Typed.(type_of e) with
       | UTuple ts -> List.nth ts (i - 1)
       | t ->
           ICE.(
             internal_errorf
-              "Internal error: Attempted to apply tuple index to an expression \
-               %t with non-tuple type: %t"
-              [Typed.pp $ e; UnsizedType.pp $ t]) [@coverage off] in
-    let adlevel =
-      match Typed.adlevel_of e with
-      | TupleAD ts -> List.nth ts (i - 1)
-      | t ->
-          ICE.(
-            internal_errorf
-              "Internal error: Attempted to apply tuple index to an expression \
-               %t with type %t but non-tuple adtype: %t"
-              [ Typed.pp $ e; UnsizedType.pp $ Typed.type_of e
-              ; UnsizedType.pp_autodifftype $ t ]) [@coverage off] in
-    let meta = Typed.Meta.{e.meta with type_= mtype; adlevel} in
+              "Internal error: Attempted to apply tuple index to a non-tuple \
+               type: %t"
+              [UnsizedType.pp $ t]) [@coverage off] in
+    let meta = Typed.Meta.{e.meta with type_= mtype} in
     let pattern = Pattern.TupleProjection (e, i) in
     {meta; pattern}
 

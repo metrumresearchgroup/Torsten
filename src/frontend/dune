@@ -1,16 +1,7 @@
 (library
  (name frontend)
  (public_name stanc.frontend)
- (libraries
-  std
-  menhirLib
-  yojson
-  fmt
-  middle
-  stan_math_signatures
-  grace
-  grace.ansi_renderer
-  grace.json_conv)
+ (libraries std menhirLib yojson fmt middle stan_math_signatures)
  (instrumentation
   (backend bisect_ppx))
  (modules :standard \ parser_messages_add_type parser_strip_redundant_state)
@@ -35,30 +26,9 @@
  (modules parser_messages_add_type)
  (libraries str))
 
-(executable
- (name parser_strip_redundant_state)
- (modules parser_strip_redundant_state)
- (libraries str std))
-
-(rule
- (with-stdout-to
-  parser_new.messages
-  (run menhir --list-errors %{dep:parser.mly})))
-
 (rule
  (progn
-  (pipe-stdout
-   (run
-    menhir
-    %{dep:parser.mly}
-    --merge-errors
-    %{dep:parser_new.messages}
-    --merge-errors
-    %{dep:parser.messages})
-   (with-stdout-to
-    parser_updated_trimmed.messages
-    (run ./parser_strip_redundant_state.exe)))
-  (diff? %{dep:parser.messages} parser_updated_trimmed.messages)
+  (diff %{dep:parser.messages} %{dep:parser_updated_trimmed.messages})
   (with-stdout-to
    parsing_errors.ml
    (pipe-stdout
@@ -71,6 +41,34 @@
      --compile-errors
      parser.messages)
     (run ./parser_messages_add_type.exe)))))
+
+(rule
+ (with-stdout-to
+  parser_new.messages
+  (run menhir --list-errors %{dep:parser.mly})))
+
+(rule
+ (with-stdout-to
+  parser_updated.messages
+  (run
+   menhir
+   %{dep:parser.mly}
+   --merge-errors
+   %{dep:parser_new.messages}
+   --merge-errors
+   %{dep:parser.messages})))
+
+(executable
+ (name parser_strip_redundant_state)
+ (modules parser_strip_redundant_state)
+ (libraries str std))
+
+(rule
+ (with-stdin-from
+  %{dep:parser_updated.messages}
+  (with-stdout-to
+   parser_updated_trimmed.messages
+   (run ./parser_strip_redundant_state.exe))))
 
 (rule
  (alias runtest)

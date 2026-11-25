@@ -14,16 +14,13 @@ type other_output =
   | Formatted of string
   | DebugOutput of string
   | Memory_patterns of string
-  | Info of Yojson.Basic.t
+  | Info of string
   | Version of string
   | Generated of string
   | Warnings of Warnings.t list
 
-val version : string
-
 val stan2mir :
-     ?allowed_annotations:Middle.Annotation.annotation_classifier
-  -> string
+     string
   -> [`Code of string | `File of string]
   -> Flags.t
   -> (other_output -> unit)

@@ -19,7 +19,7 @@ jobs:
           - os: ubuntu-latest
             sdk: ""
             profile: static
-            name: ubuntu
+            name: linux
           - os: macos-15-intel
             sdk: "10.11"
             profile: release
@@ -177,7 +177,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            name: ubuntu
+            name: linux
           - os: macos-latest
             name: macos
           - os: macos-14

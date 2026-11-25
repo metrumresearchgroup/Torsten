@@ -327,19 +327,13 @@ module Debug_Options = struct
        factor graph for the model(s) implemented in the Stan program." in
     Arg.(value & flag & info ["debug-print-factor-graph"] ~doc ~docs)
 
-  let optimization_overrides =
-    let open Analysis_and_optimization.Optimize in
+  let force_soa =
     let doc =
-      Fmt.str
-        "Debugging features. Turn a single optimization on or off. On with \
-         $(b,-f)NAME or off with $(b,-fno-)NAME. Option may be given more than \
-         once. When a pass is named twice the last setting wins. NAME is %s."
-        (Arg.doc_alts_enum optimization_pass_names) in
-    (* errors list only the [no-] names for a [no-] setting, else only the
-       enabling names *)
+      "Debugging features. Valid values: $(b,-fsoa) to force on the Struct of \
+       Arrays optimization. $(b,-fno-soa) to force it off." in
     Arg.(
       value
-      & opt_all (enum optimization_flags) []
+      & opt (some @@ enum [("soa", true); ("no-soa", false)]) None
       & info ["f"] ~doc ~docv:"SETTING" ~docs)
 end
 
@@ -378,7 +372,7 @@ module Conversion = struct
     and+ print_transformed_mir = debug_transformed_mir
     and+ print_optimized_mir = debug_optimized_mir
     and+ print_mem_patterns = debug_mem_patterns
-    and+ optimization_overrides
+    and+ force_soa
     and+ print_lir = debug_lir
     and+ debug_generate_data
     and+ debug_generate_inits
@@ -391,7 +385,7 @@ module Conversion = struct
       ; print_transformed_mir
       ; print_optimized_mir
       ; print_mem_patterns
-      ; optimization_overrides
+      ; force_soa
       ; print_lir
       ; debug_generate_data
       ; debug_generate_inits
@@ -506,5 +500,5 @@ let info =
       ; info ~doc:"on internal compiler errors. Please file a bug!" exit_ice ]
   in
   Cmd.info "%%NAME%%"
-    ~version:(Driver.Entry.version ^ " (" ^ Sys.os_type ^ ")")
+    ~version:("%%NAME%%3 %%VERSION%%" ^ " (" ^ Sys.os_type ^ ")")
     ~sdocs:Manpage.s_options ~doc ~man ~exits

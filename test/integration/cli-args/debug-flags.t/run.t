@@ -304,7 +304,7 @@ Flags not used elsewhere in the tests
        (((stmt
           (VarDecl (decl_type SInt)
            (transformation (Lower ((expr (IntNumeral 0)) (emeta ((loc <opaque>))))))
-           (is_global true) (annotations ())
+           (is_global true)
            (variables (((identifier ((name N) (id_loc <opaque>))) (initial_value ()))))))
          (smeta ((loc <opaque>))))
         ((stmt
@@ -315,7 +315,7 @@ Flags not used elsewhere in the tests
            (transformation
             (LowerUpper ((expr (IntNumeral 0)) (emeta ((loc <opaque>))))
              ((expr (IntNumeral 1)) (emeta ((loc <opaque>))))))
-           (is_global true) (annotations ())
+           (is_global true)
            (variables (((identifier ((name y) (id_loc <opaque>))) (initial_value ()))))))
          (smeta ((loc <opaque>))))))
       (xloc <opaque>))))
@@ -327,7 +327,7 @@ Flags not used elsewhere in the tests
            (transformation
             (LowerUpper ((expr (IntNumeral 0)) (emeta ((loc <opaque>))))
              ((expr (IntNumeral 1)) (emeta ((loc <opaque>))))))
-           (is_global true) (annotations ())
+           (is_global true)
            (variables (((identifier ((name theta) (id_loc <opaque>))) (initial_value ()))))))
          (smeta ((loc <opaque>))))))
       (xloc <opaque>))))
@@ -364,11 +364,9 @@ Flags not used elsewhere in the tests
             (Lower
              ((expr (IntNumeral 0))
               (emeta ((loc <opaque>) (ad_level DataOnly) (type_ UInt))))))
-           (is_global true) (annotations ())
+           (is_global true)
            (variables (((identifier ((name N) (id_loc <opaque>))) (initial_value ()))))))
-         (smeta
-          ((loc <opaque>)
-           (flow_type ((controlflow (Incomplete Next)) (breaks ()) (continues false))))))
+         (smeta ((loc <opaque>) (return_type Incomplete))))
         ((stmt
           (VarDecl
            (decl_type
@@ -381,11 +379,9 @@ Flags not used elsewhere in the tests
               (emeta ((loc <opaque>) (ad_level DataOnly) (type_ UInt))))
              ((expr (IntNumeral 1))
               (emeta ((loc <opaque>) (ad_level DataOnly) (type_ UInt))))))
-           (is_global true) (annotations ())
+           (is_global true)
            (variables (((identifier ((name y) (id_loc <opaque>))) (initial_value ()))))))
-         (smeta
-          ((loc <opaque>)
-           (flow_type ((controlflow (Incomplete Next)) (breaks ()) (continues false))))))))
+         (smeta ((loc <opaque>) (return_type Incomplete))))))
       (xloc <opaque>))))
    (transformeddatablock ())
    (parametersblock
@@ -398,11 +394,9 @@ Flags not used elsewhere in the tests
               (emeta ((loc <opaque>) (ad_level DataOnly) (type_ UInt))))
              ((expr (IntNumeral 1))
               (emeta ((loc <opaque>) (ad_level DataOnly) (type_ UInt))))))
-           (is_global true) (annotations ())
+           (is_global true)
            (variables (((identifier ((name theta) (id_loc <opaque>))) (initial_value ()))))))
-         (smeta
-          ((loc <opaque>)
-           (flow_type ((controlflow (Incomplete Next)) (breaks ()) (continues false))))))))
+         (smeta ((loc <opaque>) (return_type Incomplete))))))
       (xloc <opaque>))))
    (transformedparametersblock ())
    (modelblock
@@ -412,8 +406,7 @@ Flags not used elsewhere in the tests
            (arg
             ((expr (Variable ((name theta) (id_loc <opaque>))))
              (emeta ((loc <opaque>) (ad_level AutoDiffable) (type_ UReal)))))
-           (distribution ((name beta) (id_loc <opaque>)))
-           (kind (StanLib (FnDist Density Unnormalized)))
+           (distribution ((name beta) (id_loc <opaque>))) (kind (StanLib (FnLpdf true)))
            (args
             (((expr
                (Promotion
@@ -428,23 +421,19 @@ Flags not used elsewhere in the tests
                 (UReal DataOnly)))
               (emeta ((loc <opaque>) (ad_level DataOnly) (type_ UReal))))))
            (truncation NoTruncate)))
-         (smeta
-          ((loc <opaque>)
-           (flow_type ((controlflow (Incomplete Next)) (breaks ()) (continues false))))))
+         (smeta ((loc <opaque>) (return_type Incomplete))))
         ((stmt
           (Tilde
            (arg
             ((expr (Variable ((name y) (id_loc <opaque>))))
              (emeta ((loc <opaque>) (ad_level DataOnly) (type_ (UArray UInt))))))
            (distribution ((name bernoulli) (id_loc <opaque>)))
-           (kind (StanLib (FnDist Mass Unnormalized)))
+           (kind (StanLib (FnLpmf true)))
            (args
             (((expr (Variable ((name theta) (id_loc <opaque>))))
               (emeta ((loc <opaque>) (ad_level AutoDiffable) (type_ UReal))))))
            (truncation NoTruncate)))
-         (smeta
-          ((loc <opaque>)
-           (flow_type ((controlflow (Incomplete Next)) (breaks ()) (continues false))))))))
+         (smeta ((loc <opaque>) (return_type Incomplete))))))
       (xloc <opaque>))))
    (generatedquantitiesblock ()) (comments <opaque>))
 
@@ -472,8 +461,8 @@ Flags not used elsewhere in the tests
   
   generate_quantities {
     data real theta;
-    if(!(emit_transformed_parameters__ || emit_generated_quantities__)) return;
-    if(!(emit_generated_quantities__)) return; }
+    if(PNot__(emit_transformed_parameters__ || emit_generated_quantities__)) return;
+    if(PNot__(emit_generated_quantities__)) return; }
   output_vars {
     parameters real theta; //real
   }
@@ -485,11 +474,11 @@ Flags not used elsewhere in the tests
   
   prepare_data {
     data int N;
-    FnReadData__(N, context__, "N");
+    N = FnReadData__("N")[1];
     (FnCheck(trans(Lower 0))(var_name N)(var N))__(0);
     FnValidateSize__("y", "N", N);
     data array[int, N] y;
-    FnReadData__(y, context__, "y");
+    y = FnReadData__("y");
     (FnCheck(trans(Lower 0))(var_name y)(var y))__(0);
     (FnCheck(trans(Upper 1))(var_name y)(var y))__(1); }
   
@@ -518,16 +507,16 @@ Flags not used elsewhere in the tests
       theta = (FnReadParam(constrain(LowerUpper 0 1))(dims())(mem_pattern AoS))__(
       );
     (FnWriteParam(unconstrain_opt())(var theta))__();
-    if(!(emit_transformed_parameters__ || emit_generated_quantities__)) {
+    if(PNot__(emit_transformed_parameters__ || emit_generated_quantities__)) {
       return;
     }
-    if(!(emit_generated_quantities__)) {
+    if(PNot__(emit_generated_quantities__)) {
       return;
     } }
   
   transform_inits {
     real theta;
-    FnReadData__(theta, context__, "theta");
+    theta = FnReadData__("theta")[1];
     (FnWriteParam(unconstrain_opt((LowerUpper 0 1)))(var theta))__(); }
   output_vars {
     parameters real theta; //real
@@ -540,11 +529,11 @@ Flags not used elsewhere in the tests
   
   prepare_data {
     data int N;
-    FnReadData__(N, context__, "N");
+    N = FnReadData__("N")[1];
     (FnCheck(trans(Lower 0))(var_name N)(var N))__(0);
     FnValidateSize__("y", "N", N);
     data array[int, N] y;
-    FnReadData__(y, context__, "y");
+    y = FnReadData__("y");
     (FnCheck(trans(Lower 0))(var_name y)(var y))__(0);
     (FnCheck(trans(Upper 1))(var_name y)(var y))__(1); }
   
@@ -573,16 +562,16 @@ Flags not used elsewhere in the tests
       theta = (FnReadParam(constrain(LowerUpper 0 1))(dims())(mem_pattern AoS))__(
       );
     (FnWriteParam(unconstrain_opt())(var theta))__();
-    if(!(emit_transformed_parameters__ || emit_generated_quantities__)) {
+    if(PNot__(emit_transformed_parameters__ || emit_generated_quantities__)) {
       return;
     }
-    if(!(emit_generated_quantities__)) {
+    if(PNot__(emit_generated_quantities__)) {
       return;
     } }
   
   transform_inits {
     real theta;
-    FnReadData__(theta, context__, "theta");
+    theta = FnReadData__("theta")[1];
     (FnWriteParam(unconstrain_opt((LowerUpper 0 1)))(var theta))__(); }
   output_vars {
     parameters real theta; //real
@@ -600,16 +589,13 @@ Flags not used elsewhere in the tests
   }
 
   $ stanc parse_error.stan --debug-parse
-  error: Syntax error: Ill-formed program.
-      ┌─ parse_error.stan:1:1
-    1 │  datta {}
-      │  ^^^^^ here.
-    2 │  
-      = Expected "functions {", "data {", "transformed data {", "parameters {",
-        "transformed parameters {", "model {", or "generated quantities {".
-        (Parse error state 464)
+  Syntax error in 'parse_error.stan', line 1, column 0 to column 5, parsing error:
+     -------------------------------------------------
+       1:  datta {}
+           ^
+     -------------------------------------------------
+  
+  Ill-formed program. Expected "functions {", "data {", "transformed data {", "parameters {",
+  "transformed parameters {", "model {", or "generated quantities {".
+  (Parse error state 444)
   [1]
-<<<<<<< HEAD
-||||||| parent of 994559f8c (dune promote)
-=======
->>>>>>> 994559f8c (dune promote)

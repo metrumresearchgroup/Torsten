@@ -8,10 +8,10 @@ RUN apk update && apk add --no-cache opam build-base bzip2 git tar curl ca-certi
 RUN adduser -D jenkins
 USER jenkins
 
-# Init opam, create and switch to 5.5.2, update shell environment
+# Init opam, create and switch to 5.5.0, update shell environment
 RUN opam init --disable-sandboxing --bare -y
-RUN opam update && opam switch create 5.5.2 ocaml-base-compiler.5.5.2 -y
-RUN opam switch 5.5.2
+RUN opam switch create 5.5.0 ocaml-base-compiler.5.5.0 -y
+RUN opam switch 5.5.0
 RUN eval $(opam env)
 
 COPY install_build_deps.sh ./

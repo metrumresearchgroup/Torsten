@@ -1,1 +1,0 @@
-/* $ stanc --include-paths=../../included  ../included-quote.stan : [exit 0] */
