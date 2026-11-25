@@ -1,20 +1,18 @@
-(subdir
- dunes
- (rule
-  (deps
-   (sandbox patch_back_source_tree)
-   (glob_files ../expected_cpp/*)
-   (:stanfiles
-    (glob_files ../*.stan)))
-  (action
-   (with-stdout-to
-    cpp.dune
-    (run
-     %{project_root}/test/integration/gen_expected_rules.exe
-     cpp
-     "--print-cpp --use-opencl"
-     %{stanfiles})))))
+(rule
+ (targets cpp.output)
+ (deps
+  (package stanc)
+  (:stanfiles
+   (glob_files *.stan)))
+ (action
+  (with-stdout-to
+   %{targets}
+   (run
+    %{project_root}/test/integration/run_bin_on_args.exe
+    "%{bin:stanc} --print-cpp --use-opencl"
+    %{stanfiles}))))
 
-(subdir
- run
- (dynamic_include ../dunes/cpp.dune))
+(rule
+ (alias runtest)
+ (action
+  (diff cpp.expected cpp.output)))

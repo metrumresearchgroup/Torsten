@@ -68,7 +68,7 @@ type type_mismatch =
   | TypeMismatch of UnsizedType.t * UnsizedType.t * details option
 
 and details =
-  | SuffixMismatch of Fun_kind.suffix * Fun_kind.suffix
+  | SuffixMismatch of unit Fun_kind.suffix * unit Fun_kind.suffix
   | ReturnTypeMismatch of UnsizedType.returntype * UnsizedType.returntype
   | InputMismatch of function_mismatch
 
@@ -92,7 +92,7 @@ type ('unique, 'error) generic_match_result =
 
 type match_result =
   ( UnsizedType.returntype
-    * (Middle.Fun_kind.suffix -> Ast.fun_kind)
+    * (bool Middle.Fun_kind.suffix -> Ast.fun_kind)
     * Promotion.t list
     * Location_span.t option
   , signature_error list * bool )
@@ -193,8 +193,10 @@ let rec check_same_type depth t1 t2 =
           | Error (TypeMismatch _) -> Error (TypeMismatch (t1, t2, None))
           | Error e -> Error e))
   | UFun (_, _, s1, _), UFun (_, _, s2, _)
-    when Fun_kind.compare_no_propto s1 s2 <> 0 ->
-      Error (SuffixMismatch (s1, s2)) |> wrap_func
+    when Fun_kind.without_propto s1 <> Fun_kind.without_propto s2 ->
+      Error
+        (SuffixMismatch (Fun_kind.without_propto s1, Fun_kind.without_propto s2))
+      |> wrap_func
   | UFun (_, rt1, _, _), UFun (_, rt2, _, _) when rt1 <> rt2 ->
       Error (ReturnTypeMismatch (rt1, rt2)) |> wrap_func
   | UFun (l1, _, _, _), UFun (l2, _, _, _) -> (
@@ -307,11 +309,10 @@ let check_variadic_args ~allow_lpdf mandatory_arg_tys mandatory_fun_arg_tys
         List.split_n fun_args (List.length mandatory_fun_arg_tys) in
       let wrap_func_error x =
         TypeMismatch (minimal_func_type, func_type, Some x) |> wrap_err in
+      let suffix = Fun_kind.without_propto suffix in
       if
-        match suffix with
-        | FnPlain -> true
-        | (FnDist (Density, _) | FnDist (Mass, _)) when allow_lpdf -> true
-        | _ -> false
+        suffix = FnPlain
+        || (allow_lpdf && (suffix = FnLpdf () || suffix = FnLpmf ()))
       then
         match check_compatible_arguments 1 mandatory mandatory_fun_arg_tys with
         | Error x -> wrap_func_error (InputMismatch x)
@@ -335,8 +336,8 @@ let check_variadic_args ~allow_lpdf mandatory_arg_tys mandatory_fun_arg_tys
 let suffix_str = function
   | Fun_kind.FnPlain -> "a pure function"
   | FnRng -> "an rng function"
-  | FnDist (Density, _) -> "a probability density function"
-  | FnDist (Mass, _) -> "a probability mass function"
+  | FnLpdf () -> "a probability density function"
+  | FnLpmf () -> "a probability mass function"
   | FnTarget -> "an _lp function"
   | FnJacobian -> "a _jacobian function"
 
@@ -349,7 +350,7 @@ let index_str = function
 
 let data_only_msg ppf () =
   let open Fmt in
-  pf ppf "@[(%a@ %a.)@]" text
+  pf ppf "(%a@ %a.)" text
     "Local variables are assumed to depend on parameters; same goes for \
      function inputs unless they are marked with the keyword"
     (styled (`Fg `Green) (quote string))
@@ -391,7 +392,7 @@ let pp_mismatch_details ~skipped ppf details =
         n_expected arguments n_expected pp_excluded_message skipped
         (actual_style int) n_found arguments n_found
   | InputMismatch (ArgError (n, DataOnlyError)) ->
-      pf ppf "@[<hov>The@ %a is marked data-only.@ %a@]" pp_skipped_index_str n
+      pf ppf "@[<hov>The@ %a is marked data-only. %a@]" pp_skipped_index_str n
         data_only_msg ()
   | InputMismatch
       (ArgError
@@ -412,7 +413,7 @@ let pp_mismatch_details ~skipped ppf details =
             found)
         ppf ()
 
-let to_grace (name, arg_tys, (sigs, omitted)) =
+let pp_signature_mismatch ppf (name, arg_tys, (sigs, omitted)) =
   let open Fmt in
   let ctx = ref Map.empty in
   let rec pp_explain_rec ppf = function
@@ -502,37 +503,14 @@ let to_grace (name, arg_tys, (sigs, omitted)) =
   let pp_omitted =
     Fmt.if' omitted
       (Fmt.styled `Faint (any "@,(Additional signatures omitted)")) in
-  let open Grace.Diagnostic in
-  let summary =
-    Message.createf "@[Ill-typed arguments supplied to function %a.@]" quoted
-      name in
-  let notes =
-    [ Message.createf "@[<v>%a@ %a@]" (Fmt.styled `Bold string)
-        "Supplied arguments:" pp_args arg_tys
-    ; Message.createf "@[<v>%a@ %a%a@]" (Fmt.styled `Bold string)
-        "Available signatures:"
-        (list ~sep:cut pp_signature)
-        sigs pp_omitted () ] in
-  (~summary, ~notes)
+  pf ppf "@[<v>Ill-typed arguments supplied to function %a:@ %a@ %a@ %a%a@]"
+    quoted name pp_args arg_tys (Fmt.styled `Bold string)
+    "Available signatures:"
+    (list ~sep:cut pp_signature)
+    sigs pp_omitted ()
 
-let list_valid_assignmentoperator_rhs lt assop =
-  (match assop with
-    | Operator.Divide -> Stan_math_signatures.lookup_stan_math_function "divide"
-    | assop -> Stan_math_signatures.operator_to_stan_math_signatures assop)
-  |> List.concat_map ~f:(function
-    | [(ad1, lhs); (ad2, rhs)], UnsizedType.ReturnType rtype, _, _
-      when rtype = lhs
-           && not
-                ((assop = Operator.EltTimes || assop = Operator.EltDivide)
-                && UnsizedType.is_scalar_type rtype) ->
-        if rhs = UReal then
-          [ ( [(ad1, lhs); (ad2, UInt)]
-            , UnsizedType.Void
-            , Fun_kind.FnPlain
-            , Mem_pattern.SoA )
-          ; ([(ad1, lhs); (ad2, UReal)], Void, FnPlain, SoA) ]
-        else [([(ad1, lhs); (ad2, rhs)], Void, FnPlain, SoA)]
-    | _ -> [])
+let list_valid_assignmentoperator_rhs lt op =
+  Stan_math_signatures.make_assignmentoperator_stan_math_signatures op
   |> List.filter_map ~f:(fun (args, _, _, _) ->
       match args with
       | [(_, a); (_, b)] -> (

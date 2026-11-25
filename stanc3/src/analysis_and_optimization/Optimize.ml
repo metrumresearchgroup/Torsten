@@ -68,32 +68,27 @@ let transform_program_blockwise (mir : Program.Typed.t)
   ; reverse_mode_log_prob= transform' None mir.reverse_mode_log_prob
   ; generate_quantities= transform' None mir.generate_quantities }
 
-let map_no_loc ?(meta = Location_span.empty) l =
-  List.map ~f:(fun s -> Stmt.{pattern= s; meta}) l
+let map_no_loc l =
+  List.map ~f:(fun s -> Stmt.{pattern= s; meta= Location_span.empty}) l
 
-let block_no_loc ?meta l = Stmt.Pattern.Block (map_no_loc ?meta l)
+let slist_no_loc l = Stmt.Pattern.SList (map_no_loc l)
+let block_no_loc l = Stmt.Pattern.Block (map_no_loc l)
 
-let slist_concat ~meta l stmt =
-  let slist_no_loc l = Stmt.Pattern.SList (map_no_loc ~meta l) in
+let slist_concat_no_loc l stmt =
   match l with [] -> stmt | l -> slist_no_loc (l @ [stmt])
 
 let gen_inline_var (name : string) (id_var : string) =
-  Gensym.next ~prefix:"inline" ~extra:("_" ^ name ^ "_" ^ id_var) ()
+  Gensym.generate ~prefix:("inline_" ^ name ^ "_" ^ id_var ^ "_") ()
 
 let replace_fresh_local_vars (fname : string) stmt =
   let f (m : string String.Map.t) = function
-    | Stmt.Pattern.Decl
-        {decl_adtype; decl_type; decl_id; initialize; decl_annotations} ->
+    | Stmt.Pattern.Decl {decl_adtype; decl_type; decl_id; initialize} ->
         let new_name =
           match String.Map.find_opt decl_id m with
           | Some existing -> existing
           | None -> gen_inline_var fname decl_id in
         ( Stmt.Pattern.Decl
-            { decl_adtype
-            ; decl_id= new_name
-            ; decl_type
-            ; initialize
-            ; decl_annotations }
+            {decl_adtype; decl_id= new_name; decl_type; initialize}
         , String.Map.add m ~key:decl_id ~data:new_name )
     | Stmt.Pattern.For {loopvar; lower; upper; body} ->
         let new_name =
@@ -117,28 +112,13 @@ let subst_args_stmt args es =
   let m = String.Map.of_list (List.combine args es) in
   subst_stmt m
 
-let has_early_returns s =
-  let rec return_behavior s =
-    match s.Stmt.pattern with
-    | Return _ -> `FinalReturn
-    | Block l | SList l | Profile (_, l) ->
-        let rec find = function
-          | [] -> `NoReturn
-          | [s] -> return_behavior s
-          | s :: tl -> (
-              match return_behavior s with
-              | `NoReturn -> find tl
-              | `FinalReturn | `EarlyReturn -> `EarlyReturn) in
-        find l
-    | For {body; _} | While (_, body) -> (
-        match return_behavior body with `FinalReturn -> `EarlyReturn | r -> r)
-    | IfElse (_, thn, els) -> (
-        match (return_behavior thn, Option.map ~f:return_behavior els) with
-        | `EarlyReturn, _ | _, Some `EarlyReturn -> `EarlyReturn
-        | `FinalReturn, _ | _, Some `FinalReturn -> `FinalReturn
-        | `NoReturn, (None | Some `NoReturn) -> `NoReturn)
-    | _ -> `NoReturn in
-  return_behavior s = `EarlyReturn
+(** Count the number of returns that happen in a statement *)
+let rec count_returns Stmt.{pattern; _} : int =
+  Stmt.Pattern.fold Fun.const
+    (fun acc -> function
+      | Stmt.{pattern= Return _; _} -> acc + 1
+      | stmt -> acc + count_returns stmt)
+    0 pattern
 
 (* The strategy here is to wrap the function body in a dummy loop, then replace
    returns with breaks. One issue is early return from internal loops - in those
@@ -149,24 +129,27 @@ let has_early_returns s =
    dummy loop. *)
 let handle_early_returns (fname : string) opt_var stmt =
   let returned = gen_inline_var fname "early_ret_check" in
-  let set_returned =
-    Stmt.
-      { pattern=
-          Assignment (Stmt.Helpers.lvariable returned, UInt, Expr.Helpers.one)
-      ; meta= Location_span.empty } in
-  let has_early_return = has_early_returns stmt in
-  let generate_inner_breaks stmt_pattern =
+  let generate_inner_breaks num_returns stmt_pattern =
     match stmt_pattern with
     | Stmt.Pattern.Return opt_ret -> (
         match (opt_var, opt_ret) with
-        | None, None when has_early_return ->
-            Stmt.Pattern.SList
-              [ set_returned
-              ; {pattern= Stmt.Pattern.Break; meta= Location_span.empty} ]
-        | None, None -> Block []
-        | Some name, Some e when has_early_return ->
+        | None, None when num_returns > 1 -> Stmt.Pattern.Break
+        | None, None -> Stmt.Pattern.Block []
+        | Some name, Some e when num_returns > 1 ->
             SList
-              [ set_returned
+              [ Stmt.
+                  { pattern=
+                      Assignment
+                        ( Stmt.Helpers.lvariable returned
+                        , UInt
+                        , Expr.
+                            { pattern= Lit (Int, "1")
+                            ; meta=
+                                Expr.Typed.Meta.
+                                  { type_= UInt
+                                  ; adlevel= DataOnly
+                                  ; loc= Location_span.empty } } )
+                  ; meta= Location_span.empty }
               ; Stmt.
                   { pattern=
                       Assignment
@@ -183,7 +166,7 @@ let handle_early_returns (fname : string) opt_var stmt =
             ICE.internal_error
               "Expected a void function but found a non-empty return statement."
             [@coverage off])
-    | Stmt.Pattern.(For _ | While _) as loop when has_early_return ->
+    | Stmt.Pattern.For _ as loop when num_returns > 1 ->
         Stmt.Pattern.SList
           [ Stmt.{pattern= loop; meta= Location_span.empty}
           ; Stmt.
@@ -200,7 +183,8 @@ let handle_early_returns (fname : string) opt_var stmt =
                     , None )
               ; meta= Location_span.empty } ]
     | x -> x in
-  if has_early_return then
+  let num_returns = count_returns stmt in
+  if num_returns > 1 then
     Stmt.Pattern.SList
       [ Stmt.
           { pattern=
@@ -208,8 +192,7 @@ let handle_early_returns (fname : string) opt_var stmt =
                 { decl_adtype= DataOnly
                 ; decl_id= returned
                 ; decl_type= Sized SInt
-                ; initialize= Default
-                ; decl_annotations= [] }
+                ; initialize= Default }
           ; meta= Location_span.empty }
       ; Stmt.
           { pattern=
@@ -242,9 +225,10 @@ let handle_early_returns (fname : string) opt_var stmt =
                         { type_= UInt
                         ; adlevel= DataOnly
                         ; loc= Location_span.empty } }
-                ; body= map_rec_stmt_loc generate_inner_breaks stmt }
+                ; body=
+                    map_rec_stmt_loc (generate_inner_breaks num_returns) stmt }
           ; meta= Location_span.empty } ]
-  else (map_rec_stmt_loc generate_inner_breaks stmt).pattern
+  else (map_rec_stmt_loc (generate_inner_breaks num_returns) stmt).pattern
 
 let inline_list f es =
   let dse_list = List.map ~f es in
@@ -257,47 +241,43 @@ let inline_list f es =
   let es = List.map ~f:(function _, _, x -> x) dse_list in
   (d_list, s_list, es)
 
-type function_inline_map =
-  { plain:
-      (ExprSet.elt Middle.Type.t option * string list * Stmt.Located.t)
-      Std.String.Map.t
-  ; unnormalized:
-      (ExprSet.elt Middle.Type.t option * string list * Stmt.Located.t)
-      Std.String.Map.t }
-
-let compute_suffix_and_map propto suffix fim =
+let compute_suffix_and_name propto suffix fname =
   let open Fun_kind in
   match suffix with
-  | FnDist (x, Unnormalized) when propto = Unnormalized ->
-      (FnDist (x, Unnormalized), fim.unnormalized)
-  | FnDist (x, _) -> (FnDist (x, Normalized), fim.plain)
-  | _ -> (suffix, fim.plain)
+  | FnLpdf propto' when propto' && propto ->
+      ( FnLpdf true
+      , with_unnormalized_suffix fname |> Option.value ~default:fname )
+  | FnLpdf _ -> (FnLpdf false, fname)
+  | FnLpmf propto' when propto' && propto ->
+      ( FnLpmf true
+      , with_unnormalized_suffix fname |> Option.value ~default:fname )
+  | FnLpmf _ -> (FnLpmf false, fname)
+  | _ -> (suffix, fname)
 
 (* Triple is (declaration list, statement list, return expression) *)
 let rec inline_function_expression propto adt fim (Expr.{pattern; _} as e) =
-  let inline_expr = inline_function_expression propto adt fim in
   match pattern with
   | Var _ -> ([], [], e)
   | Lit (_, _) -> ([], [], e)
   | Promotion (expr, ut, ad) ->
-      let d, sl, expr' = inline_expr expr in
+      let d, sl, expr' = inline_function_expression propto adt fim expr in
       (d, sl, {e with pattern= Promotion (expr', ut, ad)})
   | FunApp (kind, es) -> (
+      let d_list, s_list, es =
+        inline_list (inline_function_expression propto adt fim) es in
       match kind with
-      | CompilerInternal _ | Operator _ ->
-          let d_list, s_list, es = inline_list inline_expr es in
+      | CompilerInternal _ ->
           (d_list, s_list, {e with pattern= FunApp (kind, es)})
-      | StanLib (fname, suffix) ->
-          let d_list, s_list, es = inline_list inline_expr es in
-          let suffix, _ = compute_suffix_and_map propto suffix fim in
+      | StanLib (fname, suffix, mem) ->
+          let suffix, _ = compute_suffix_and_name propto suffix fname in
           ( d_list
           , s_list
-          , {e with pattern= FunApp (Fun_kind.StanLib (fname, suffix), es)} )
+          , {e with pattern= FunApp (Fun_kind.StanLib (fname, suffix, mem), es)}
+          )
       | UserDefined (fname, suffix) -> (
-          let suffix, fim' = compute_suffix_and_map propto suffix fim in
-          match String.Map.find_opt fname fim' with
+          let suffix, fname' = compute_suffix_and_name propto suffix fname in
+          match String.Map.find_opt fname' fim with
           | None ->
-              let d_list, s_list, es = inline_list inline_expr es in
               ( d_list
               , s_list
               , { e with
@@ -305,8 +285,6 @@ let rec inline_function_expression propto adt fim (Expr.{pattern; _} as e) =
               )
           | Some (rt, args, body) ->
               let inline_return_name = gen_inline_var fname "return" in
-              let d_list, s_list, es =
-                inline_function_arguments fname propto adt fim args es in
               let handle =
                 handle_early_returns fname (Some inline_return_name) in
               let d_list2, s_list2, (e : Expr.Typed.t) =
@@ -320,8 +298,7 @@ let rec inline_function_expression propto adt fim (Expr.{pattern; _} as e) =
                             (Type.to_unsized decl_type)
                       ; decl_id= inline_return_name
                       ; decl_type
-                      ; initialize= Uninit
-                      ; decl_annotations= [] } ]
+                      ; initialize= Uninit } ]
                   (* We should minimize the code that's having its variables
                      replaced to avoid conflict with the (two) new dummy
                      variables introduced by inlining *)
@@ -338,9 +315,9 @@ let rec inline_function_expression propto adt fim (Expr.{pattern; _} as e) =
               let s_list = s_list @ s_list2 in
               (d_list, s_list, e)))
   | TernaryIf (e1, e2, e3) ->
-      let dl1, sl1, e1 = inline_bind "ternary" "test" propto adt fim e1 in
-      let dl2, sl2, e2 = inline_expr e2 in
-      let dl3, sl3, e3 = inline_expr e3 in
+      let dl1, sl1, e1 = inline_function_expression propto adt fim e1 in
+      let dl2, sl2, e2 = inline_function_expression propto adt fim e2 in
+      let dl3, sl3, e3 = inline_function_expression propto adt fim e3 in
       ( dl1 @ dl2 @ dl3
       , sl1
         @ [ Stmt.(
@@ -351,16 +328,16 @@ let rec inline_function_expression propto adt fim (Expr.{pattern; _} as e) =
           ]
       , {e with pattern= TernaryIf (e1, e2, e3)} )
   | Indexed (e', i_list) ->
-      let dl, sl, e' = inline_expr e' in
+      let dl, sl, e' = inline_function_expression propto adt fim e' in
       let d_list, s_list, i_list =
         inline_list (inline_function_index propto adt fim) i_list in
       (d_list @ dl, s_list @ sl, {e with pattern= Indexed (e', i_list)})
   | TupleProjection (e', ix) ->
-      let dl, sl, e' = inline_expr e' in
+      let dl, sl, e' = inline_function_expression propto adt fim e' in
       (dl, sl, {e with pattern= TupleProjection (e', ix)})
   | EAnd (e1, e2) ->
-      let dl1, sl1, e1 = inline_bind "eand" "test" propto adt fim e1 in
-      let dl2, sl2, e2 = inline_expr e2 in
+      let dl1, sl1, e1 = inline_function_expression propto adt fim e1 in
+      let dl2, sl2, e2 = inline_function_expression propto adt fim e2 in
       let sl2 =
         [ Stmt.(
             Pattern.IfElse
@@ -369,8 +346,8 @@ let rec inline_function_expression propto adt fim (Expr.{pattern; _} as e) =
               , None )) ] in
       (dl1 @ dl2, sl1 @ sl2, {e with pattern= EAnd (e1, e2)})
   | EOr (e1, e2) ->
-      let dl1, sl1, e1 = inline_bind "eor" "test" propto adt fim e1 in
-      let dl2, sl2, e2 = inline_expr e2 in
+      let dl1, sl1, e1 = inline_function_expression propto adt fim e1 in
+      let dl2, sl2, e2 = inline_function_expression propto adt fim e2 in
       let sl2 =
         [ Stmt.(
             Pattern.IfElse
@@ -380,62 +357,24 @@ let rec inline_function_expression propto adt fim (Expr.{pattern; _} as e) =
               )) ] in
       (dl1 @ dl2, sl1 @ sl2, {e with pattern= EOr (e1, e2)})
 
-(** like [inline_function_expression] but the resulting expression is guaranteed
-    to be 'simple', i.e. a variable or literal. This variable should be treated
-    as 'local', only in scope after the returned statements. *)
-and inline_bind ?(f = Fun.id) name tag propto adt fim e =
-  let decls, stmts, e = inline_function_expression propto adt fim e in
-  match e.pattern with
-  | Var _ | Lit _
-   |Promotion ({pattern= Var _; _}, _, _)
-   |Promotion ({pattern= Lit _; _}, _, _) ->
-      (decls, stmts, e)
-  | _ ->
-      (* nontrivial values get bound to a variable to avoid re-evaluation *)
-      let temp = gen_inline_var name tag in
-      let e = f e in
-      ( decls
-      , stmts (* NB: Breaking the usual pattern on purpose *)
-        @ [ Stmt.Pattern.Decl
-              { decl_adtype= e.meta.adlevel
-              ; decl_type=
-                  Sized (unsafe_unsized_to_sized_type (Unsized e.meta.type_))
-              ; decl_id= temp
-              ; decl_annotations= []
-              ; initialize= Assign e } ]
-      , {e with pattern= Var temp} )
-
-and inline_function_arguments fname propto adt fim args es =
-  let inline_function_argument (name, e) =
-    let f (e : Expr.Typed.t) =
-      if UnsizedType.is_container e.meta.type_ then
-        (* Avoid copies *)
-        Expr.Helpers.internal_funapp FnToRef [e] e.meta
-      else e in
-    inline_bind ~f (fname ^ "_" ^ name) "arg" propto adt fim e in
-  inline_list inline_function_argument (List.combine args es)
-
 and inline_function_index propto adt fim i =
-  let inline_expr = inline_function_expression propto adt fim in
   match i with
   | All -> ([], [], All)
   | Single e ->
-      let dl, sl, e = inline_expr e in
+      let dl, sl, e = inline_function_expression propto adt fim e in
       (dl, sl, Single e)
   | Upfrom e ->
-      let dl, sl, e = inline_expr e in
+      let dl, sl, e = inline_function_expression propto adt fim e in
       (dl, sl, Upfrom e)
   | Between (e1, e2) ->
-      let dl1, sl1, e1 = inline_expr e1 in
-      let dl2, sl2, e2 = inline_expr e2 in
+      let dl1, sl1, e1 = inline_function_expression propto adt fim e1 in
+      let dl2, sl2, e2 = inline_function_expression propto adt fim e2 in
       (dl1 @ dl2, sl1 @ sl2, Between (e1, e2))
   | MultiIndex e ->
-      let dl, sl, e = inline_expr e in
+      let dl, sl, e = inline_function_expression propto adt fim e in
       (dl, sl, MultiIndex e)
 
-let rec inline_function_statement propto adt fim ?(on_continue = [])
-    Stmt.{pattern; meta} =
-  let inline_expr = inline_function_expression propto adt fim in
+let rec inline_function_statement propto adt fim Stmt.{pattern; meta} =
   Stmt.
     { pattern=
         (match pattern with
@@ -443,8 +382,8 @@ let rec inline_function_statement propto adt fim ?(on_continue = [])
             let e1 = Stmt.Helpers.expr_of_lvalue lhs ~meta:e2.meta in
             (* This inner e2 is wrong. We are giving the wrong type to Var x.
                But it doesn't really matter as we discard it later. *)
-            let dl1, sl1, e1 = inline_expr e1 in
-            let dl2, sl2, e2 = inline_expr e2 in
+            let dl1, sl1, e1 = inline_function_expression propto adt fim e1 in
+            let dl2, sl2, e2 = inline_function_expression propto adt fim e2 in
             let lhs' =
               match Stmt.Helpers.lvalue_of_expr_opt e1 with
               | Some x -> x
@@ -452,68 +391,64 @@ let rec inline_function_statement propto adt fim ?(on_continue = [])
                   ICE.internal_error
                     "Internal error in inline optimization: lhs could not be \
                      converted round-trip to expression" [@coverage off] in
-            slist_concat ~meta
+            slist_concat_no_loc
               (dl2 @ dl1 @ sl2 @ sl1)
               (Assignment (lhs', ut, e2))
         | TargetPE e ->
-            let d, s, e = inline_expr e in
-            slist_concat ~meta (d @ s) (TargetPE e)
+            let d, s, e = inline_function_expression propto adt fim e in
+            slist_concat_no_loc (d @ s) (TargetPE e)
         | JacobianPE e ->
-            let d, s, e = inline_expr e in
-            slist_concat ~meta (d @ s) (JacobianPE e)
-        | NRFunApp
-            (((CompilerInternal _ | StanLib _ | Operator _) as kind), exprs) ->
-            let d, s, es = inline_list inline_expr exprs in
-            slist_concat ~meta (d @ s) (NRFunApp (kind, es))
-        | NRFunApp (UserDefined (fname, sfx), exprs) -> (
-            let sfx, fim' = compute_suffix_and_map propto sfx fim in
-            match String.Map.find_opt fname fim' with
-            | None ->
-                let d, s, es = inline_list inline_expr exprs in
-                slist_concat ~meta (d @ s)
-                  (NRFunApp (UserDefined (fname, sfx), es))
-            | Some (_, args, b) ->
-                let b = replace_fresh_local_vars fname b in
-                let b = handle_early_returns fname None b in
-                let d, s, es =
-                  inline_function_arguments fname propto adt fim args exprs
-                in
-                slist_concat ~meta (d @ s)
-                  (subst_args_stmt args es
-                     {pattern= b; meta= Location_span.empty})
-                    .pattern)
-        | Return None -> Return None
-        | Return (Some expr) ->
-            let d, s, e = inline_expr expr in
-            slist_concat ~meta (d @ s) (Return (Some e))
+            let d, s, e = inline_function_expression propto adt fim e in
+            slist_concat_no_loc (d @ s) (JacobianPE e)
+        | NRFunApp (kind, exprs) ->
+            let d_list, s_list, es =
+              inline_list (inline_function_expression propto adt fim) exprs
+            in
+            slist_concat_no_loc (d_list @ s_list)
+              (match kind with
+              | CompilerInternal _ | StanLib _ -> NRFunApp (kind, es)
+              | UserDefined (s, _) -> (
+                  match String.Map.find_opt s fim with
+                  | None -> NRFunApp (kind, es)
+                  | Some (_, args, b) ->
+                      let b = replace_fresh_local_vars s b in
+                      let b = handle_early_returns s None b in
+                      (subst_args_stmt args es
+                         {pattern= b; meta= Location_span.empty})
+                        .pattern))
+        | Return e -> (
+            match e with
+            | None -> Return None
+            | Some expr ->
+                let d, s, e = inline_function_expression propto adt fim expr in
+                slist_concat_no_loc (d @ s) (Return (Some e)))
         | IfElse (expr, s1, s2) ->
-            let d, s, e = inline_expr expr in
-            slist_concat ~meta (d @ s)
+            let d, s, e = inline_function_expression propto adt fim expr in
+            slist_concat_no_loc (d @ s)
               (IfElse
                  ( e
-                 , inline_function_statement propto adt fim ~on_continue s1
-                 , Option.map
-                     ~f:(inline_function_statement propto adt fim ~on_continue)
-                     s2 ))
+                 , inline_function_statement propto adt fim s1
+                 , Option.map ~f:(inline_function_statement propto adt fim) s2
+                 ))
         | While (expr, stmt) ->
-            let d', s', e = inline_expr expr in
-            slist_concat ~meta (d' @ s')
+            let d', s', e = inline_function_expression propto adt fim expr in
+            slist_concat_no_loc (d' @ s')
               (While
                  ( e
                  , if List.is_empty s' then
-                     inline_function_statement propto adt fim ~on_continue:s'
-                       stmt
+                     inline_function_statement propto adt fim stmt
                    else
                      { pattern=
                          Block
-                           ([ inline_function_statement propto adt fim
-                                ~on_continue:s' stmt ]
+                           ([inline_function_statement propto adt fim stmt]
                            @ map_no_loc s')
                      ; meta= Location_span.empty } ))
         | For {loopvar; lower; upper; body} ->
-            let d_lower, s_lower, lower = inline_expr lower in
-            let d_upper, s_upper, upper = inline_expr upper in
-            slist_concat ~meta
+            let d_lower, s_lower, lower =
+              inline_function_expression propto adt fim lower in
+            let d_upper, s_upper, upper =
+              inline_function_expression propto adt fim upper in
+            slist_concat_no_loc
               (d_lower @ d_upper @ s_lower @ s_upper)
               (For
                  { loopvar
@@ -521,46 +456,28 @@ let rec inline_function_statement propto adt fim ?(on_continue = [])
                  ; upper
                  ; body=
                      (if List.is_empty s_upper then
-                        inline_function_statement propto adt fim
-                          ~on_continue:s_upper body
+                        inline_function_statement propto adt fim body
                       else
                         { pattern=
                             Block
-                              ([ inline_function_statement propto adt fim
-                                   ~on_continue:s_upper body ]
+                              ([inline_function_statement propto adt fim body]
                               @ map_no_loc s_upper)
                         ; meta= Location_span.empty }) })
         | Profile (name, l) ->
             Profile
-              ( name
-              , List.map l
-                  ~f:(inline_function_statement propto adt ~on_continue fim) )
+              (name, List.map l ~f:(inline_function_statement propto adt fim))
         | Block l ->
-            Block
-              (List.map l
-                 ~f:(inline_function_statement propto adt ~on_continue fim))
+            Block (List.map l ~f:(inline_function_statement propto adt fim))
         | SList l ->
-            SList
-              (List.map l
-                 ~f:(inline_function_statement propto adt ~on_continue fim))
-        | Decl
-            { decl_adtype
-            ; decl_id
-            ; decl_type
-            ; initialize= Assign expr
-            ; decl_annotations } ->
-            let d, s, e = inline_expr expr in
-            slist_concat ~meta (d @ s)
-              (Decl
-                 { decl_adtype
-                 ; decl_id
-                 ; decl_type
-                 ; initialize= Assign e
-                 ; decl_annotations })
+            SList (List.map l ~f:(inline_function_statement propto adt fim))
+        | Decl {decl_adtype; decl_id; decl_type; initialize= Assign expr} ->
+            let d, s, e = inline_function_expression propto adt fim expr in
+            slist_concat_no_loc (d @ s)
+              (Decl {decl_adtype; decl_id; decl_type; initialize= Assign e})
         | Decl r -> Decl r
         | Skip -> Skip
         | Break -> Break
-        | Continue -> slist_concat ~meta on_continue Continue)
+        | Continue -> Continue)
     ; meta }
 
 let create_function_inline_map adt l =
@@ -574,21 +491,17 @@ let create_function_inline_map adt l =
               (UnsizedType.returntype_to_type_opt fdrt)
           , List.map ~f:(fun (_, name, _) -> name) fdargs
           , inline_function_statement propto adt accum fdbody ) in
-        match Middle.Fun_kind.suffix_from_name fdname with
-        | FnDist _ ->
-            let data = create_data Normalized in
-            let data' = create_data Unnormalized in
-            { plain= String.Map.add ~key:fdname ~data accum.plain
-            ; unnormalized=
-                String.Map.add ~key:fdname ~data:data' accum.unnormalized }
-        | _ ->
-            let data = create_data Unnormalized in
-            if String.Map.mem fdname accum.plain then accum
-            else {accum with plain= String.Map.add accum.plain ~key:fdname ~data}
-        ) in
-  List.fold_left l
-    ~init:{plain= String.Map.empty; unnormalized= String.Map.empty}
-    ~f
+        match Fun_kind.with_unnormalized_suffix fdname with
+        | None ->
+            let data = create_data true in
+            if String.Map.mem fdname accum then accum
+            else String.Map.add accum ~key:fdname ~data
+        | Some fdname' ->
+            let data = create_data false in
+            let data' = create_data true in
+            let m = String.Map.of_list [(fdname, data); (fdname', data')] in
+            String.Map.union accum m ~f:(fun _ v1 _ -> Some v1)) in
+  List.fold_left l ~init:String.Map.empty ~f
 
 let function_inlining (mir : Program.Typed.t) =
   (* We add only the functions with a single definition to the inline map.
@@ -609,12 +522,12 @@ let function_inlining (mir : Program.Typed.t) =
   let dataonly_inline_function_statements =
     List.map
       ~f:
-        (inline_function_statement Unnormalized UnsizedType.DataOnly
-           dataonly_inline_map) in
+        (inline_function_statement true UnsizedType.DataOnly dataonly_inline_map)
+  in
   let autodiffable_inline_function_statements =
     List.map
       ~f:
-        (inline_function_statement Unnormalized UnsizedType.AutoDiffable
+        (inline_function_statement true UnsizedType.AutoDiffable
            autodiff_inline_map) in
   { mir with
     transform_inits= autodiffable_inline_function_statements mir.transform_inits
@@ -700,13 +613,15 @@ let unroll_loop_one_step_statement _ =
                       { decl_adtype= DataOnly
                       ; decl_id= lower_name
                       ; decl_type= Sized SInt
-                      ; decl_annotations= []
                       ; initialize= Assign lower }
                 ; meta= lower.meta.loc } ] )
           else (lower, []) in
         let unrolled =
           Stmt.Pattern.IfElse
-            ( Expr.{lower with pattern= FunApp (Operator Geq, [upper; lower])}
+            ( Expr.
+                { lower with
+                  pattern=
+                    FunApp (StanLib ("Geq__", FnPlain, AoS), [upper; lower]) }
             , { Stmt.pattern=
                   (let body_unrolled =
                      subst_args_stmt [loopvar] [lower]
@@ -721,7 +636,7 @@ let unroll_loop_one_step_statement _ =
                                { lower with
                                  pattern=
                                    FunApp
-                                     ( Operator Plus
+                                     ( StanLib ("Plus__", FnPlain, AoS)
                                      , [lower; Expr.Helpers.loop_bottom] ) } }
                      ; meta= Location_span.empty } in
                    match body_unrolled.pattern with
@@ -747,15 +662,17 @@ let one_step_loop_unrolling mir =
 
 let can_duplicate_expr e = not (cannot_duplicate_expr e)
 
-let elementwise_operator = function
-  | Operator.Times -> Operator.EltTimes
-  | Divide -> EltDivide
-  | Pow -> EltPow
-  | op -> op
+let elementwise_function name =
+  match Operator.of_string_opt name with
+  | Some Times -> Some (Operator.to_string EltTimes)
+  | Some Divide -> Some (Operator.to_string EltDivide)
+  | Some Pow -> Some (Operator.to_string EltPow)
+  | _ -> None
 
 let expr_reads_target =
   expr_any (function
-    | { pattern= FunApp ((UserDefined (_, FnTarget) | StanLib (_, FnTarget)), _)
+    | { pattern=
+          FunApp ((UserDefined (_, FnTarget) | StanLib (_, FnTarget, _)), _)
       ; _ } ->
         true
     | _ -> false)
@@ -814,37 +731,24 @@ let vectorized_for (meta : Stmt.Located.Meta.t) (conflict_info : conflicts)
               Expr.Helpers.infer_type_of_indexed base.meta.type_ idcs' in
             Widened
               {Expr.pattern= Indexed (base, idcs'); meta= {e.meta with type_}})
-    | FunApp (Operator op, args) -> (
+    | FunApp (StanLib (name, FnPlain, mem), args) -> (
         match widen_all args with
         | Error -> Error
         | Scalar args' | Widened args' -> (
-            let make_op op =
-              match Partial_evaluator.stan_operator_return_type op args' with
+            let make_funcall name =
+              match Partial_evaluator.stan_math_return_type name args' with
               | Some
                   (ReturnType
                      ((UVector | URowVector | UArray (UInt | UReal)) as type_))
                 ->
                   Widened
                     Expr.
-                      { pattern= FunApp (Operator op, args')
+                      { pattern= FunApp (StanLib (name, FnPlain, mem), args')
                       ; meta= {e.meta with type_} }
               | _ -> Error in
-            match make_op op with
-            | Error -> make_op (elementwise_operator op)
-            | r -> r))
-    | FunApp (StanLib (name, FnPlain), args) -> (
-        match widen_all args with
-        | Error -> Error
-        | Scalar args' | Widened args' -> (
-            match Partial_evaluator.stan_math_return_type name args' with
-            | Some
-                (ReturnType
-                   ((UVector | URowVector | UArray (UInt | UReal)) as type_)) ->
-                Widened
-                  Expr.
-                    { pattern= FunApp (StanLib (name, FnPlain), args')
-                    ; meta= {e.meta with type_} }
-            | _ -> Error))
+            match (make_funcall name, elementwise_function name) with
+            | Error, Some name -> make_funcall name
+            | e, _ -> e))
     | _ -> Error
   and widen_all es =
     (* functions allow widening any and all inputs*)
@@ -899,13 +803,17 @@ let vectorized_for (meta : Stmt.Located.Meta.t) (conflict_info : conflicts)
           | [] -> None
           | stmts -> Profile (name, stmts) |> swrap_opt ))
     | TargetPE
-        ({pattern= FunApp (StanLib (name, (FnDist _ as suffix)), args); _} as e)
+        ({ pattern=
+             FunApp
+               (StanLib (name, ((FnLpdf _ | FnLpmf _) as suffix), mem), args)
+         ; _ } as e)
       when (not conflict_info.target) && can_vectorize_expr e -> (
         match widen_all args with
         | Error -> dont_vectorize
         | Scalar args' ->
             let funapp =
-              {e with pattern= FunApp (StanLib (name, suffix), args')} in
+              {e with pattern= FunApp (StanLib (name, suffix, mem), args')}
+            in
             ( TargetPE
                 Expr.Helpers.(
                   binop (binop upper Minus (binop lower Minus one)) Times funapp)
@@ -915,7 +823,8 @@ let vectorized_for (meta : Stmt.Located.Meta.t) (conflict_info : conflicts)
             match Partial_evaluator.stan_math_return_type name args'' with
             | Some (ReturnType UReal) ->
                 ( TargetPE
-                    {e with pattern= FunApp (StanLib (name, suffix), args'')}
+                    { e with
+                      pattern= FunApp (StanLib (name, suffix, mem), args'') }
                   |> swrap_vec
                 , None )
             | _ -> dont_vectorize))
@@ -1048,64 +957,6 @@ let copy_propagation mir =
 let is_skip_break_continue s =
   match s with Stmt.Pattern.Skip | Break | Continue -> true | _ -> false
 
-(** Remove declarations of local variables that are never mentioned again. *)
-let remove_unreferenced_decls globals s =
-  let rec remove_unreferenced_decls_stmt used (s : Stmt.Located.t) =
-    let remove_unreferenced_decls_list used stmts =
-      (* fold_right so that we reach a decl after we have considered every
-         statement after it *)
-      List.fold_right stmts ~init:([], used) ~f:(fun s (acc, used) ->
-          match remove_unreferenced_decls_stmt used s with
-          | None -> (acc, used)
-          | Some (s', used') -> (s' :: acc, used')) in
-    match s.pattern with
-    | Decl {initialize= Assign e; _} when cannot_remove_expr e ->
-        Some (s, Set.Poly.union used (expr_var_names_set e))
-    | Decl {decl_id; _}
-      when not (Set.Poly.mem decl_id globals || Set.Poly.mem decl_id used) ->
-        None
-    | SList l ->
-        let l', used = remove_unreferenced_decls_list used l in
-        Some ({s with pattern= SList l'}, used)
-    | Block l ->
-        (* [Block] and [Profile] are scopes, so locals cannot be used later *)
-        let l', inner = remove_unreferenced_decls_list Set.Poly.empty l in
-        Some ({s with pattern= Block l'}, Set.Poly.union used inner)
-    | Profile (name, l) ->
-        let l', inner = remove_unreferenced_decls_list Set.Poly.empty l in
-        Some ({s with pattern= Profile (name, l')}, Set.Poly.union used inner)
-    | IfElse (e, b1, b2) ->
-        let b1', used1 = clean_statement used b1 in
-        let b2', used2 =
-          match b2 with
-          | Some b ->
-              let b', used' = clean_statement used b in
-              (Some b', used')
-          | None -> (None, used) in
-        Some
-          ( {s with pattern= IfElse (e, b1', b2')}
-          , Set.Poly.union_list [used1; used2; expr_var_names_set e] )
-    | While (e, b) ->
-        let b', used' = clean_statement used b in
-        Some
-          ( {s with pattern= While (e, b')}
-          , Set.Poly.union used' (expr_var_names_set e) )
-    | For {loopvar; lower; upper; body} ->
-        let body', used' = clean_statement used body in
-        Some
-          ( {s with pattern= For {loopvar; lower; upper; body= body'}}
-          , Set.Poly.union_list
-              [used'; expr_var_names_set lower; expr_var_names_set upper] )
-    | Break | Continue | Skip -> Some (s, used)
-    | Decl _ | Assignment _ | TargetPE _ | JacobianPE _ | NRFunApp _ | Return _
-      ->
-        Some (s, Set.Poly.union used (stmt_referenced_names_set s))
-  and clean_statement used stmt =
-    match remove_unreferenced_decls_stmt used stmt with
-    | Some result -> result
-    | None -> ({stmt with pattern= Skip}, used) in
-  fst (clean_statement Set.Poly.empty s)
-
 (* TODO: could also implement partial dead code elimination *)
 let dead_code_elimination (mir : Program.Typed.t) =
   (* TODO: think about whether we should treat function bodies as local scopes
@@ -1136,6 +987,14 @@ let dead_code_elimination (mir : Program.Typed.t) =
                  (Stmt.Helpers.lhs_indices lhs)
           then stmt
           else Skip
+      (* NOTE: we never get rid of declarations as we might not be able to
+         remove an assignment to a variable
+            due to side effects. *)
+      (* TODO: maybe we should revisit that. *)
+      | Decl ({decl_id; initialize= Assign e; _} as decl) ->
+          if Set.Poly.mem decl_id live_variables_s || cannot_remove_expr e then
+            stmt
+          else Decl {decl with initialize= Uninit}
       | Decl _ | TargetPE _ | JacobianPE _
        |NRFunApp (_, _)
        |Break | Continue | Return _ | Skip ->
@@ -1179,8 +1038,7 @@ let dead_code_elimination (mir : Program.Typed.t) =
           SList l' in
     let dead_code_elim_stmt =
       map_rec_stmt_loc_num flowgraph_to_mir dead_code_elim_stmt_base in
-    dead_code_elim_stmt (LabelMap.find 1 flowgraph_to_mir)
-    |> remove_unreferenced_decls (Monotone_framework.globals mir) in
+    dead_code_elim_stmt (LabelMap.find 1 flowgraph_to_mir) in
   transform_program mir transform
 
 let partial_evaluation p =
@@ -1336,7 +1194,8 @@ let lazy_code_motion ?(preserve_stability = false) (mir : Program.Typed.t) =
         | _ when cannot_duplicate_expr ~preserve_stability e ->
             (* Immovable expressions might have movable subexpressions *)
             Expr.Pattern.fold collect_expressions accum e.pattern
-        | _ -> ExprMap.add accum ~key:e ~data:(Gensym.next ~prefix:"lcm" ())
+        | _ ->
+            ExprMap.add accum ~key:e ~data:(Gensym.generate ~prefix:"lcm_" ())
       in
       ExprSet.fold
         (Monotone_framework.used_expressions_stmt s.pattern)
@@ -1352,8 +1211,7 @@ let lazy_code_motion ?(preserve_stability = false) (mir : Program.Typed.t) =
                   { decl_adtype= Expr.Typed.adlevel_of key
                   ; decl_id= data
                   ; decl_type= Type.Unsized (Expr.Typed.type_of key)
-                  ; initialize= Default
-                  ; decl_annotations= [] (* TODO annotations: correct? *) }
+                  ; initialize= Default }
             ; meta= Location_span.empty }
           :: accum) in
     let lazy_code_motion_base i stmt =
@@ -1473,18 +1331,19 @@ let block_fixing mir =
 
 (** A generic optimization pass for finding a minimal set of variables that are
     generated by some circumstance, and then updating the MIR with that set.
-    @param transfer_variables:
-      the variables in the set after the given statement
+    @param gen_variables:
+      the variables that must be added to the set at the given statement
     @param update_expr: update an MIR expression given the variable set
     @param update_stmt:
       Function for updating an MIR statement given the variable set
     @param extra_variables:
-      add variables that are implied to be in the set (usually empty, sometimes
-      unrepresented variables like _in__ variables)
+      the set of variables that are implied to be in the set by a given variable
+      in the set (usually empty, sometimes unrepresented variables like _in__
+      variables)
     @param initial_variables: the initial known members of the set of variables
     @param stmt the MIR statement to optimize. *)
 let optimize_minimal_variables
-    ~(transfer_variables :
+    ~(gen_variables :
           Stmt.Located.Non_recursive.t LabelMap.t
        -> int
        -> string Set.Poly.t
@@ -1494,7 +1353,7 @@ let optimize_minimal_variables
           (Expr.Typed.t, (Expr.Typed.Meta.t, 'a) Stmt.t) Stmt.Pattern.t
        -> string Set.Poly.t
        -> (Expr.Typed.t, (Expr.Typed.Meta.t, 'a) Stmt.t) Stmt.Pattern.t)
-    ?(extra_variables : string Set.Poly.t -> string Set.Poly.t = Fun.id)
+    ~(extra_variables : string -> string Set.Poly.t)
     ~(initial_variables : string Set.Poly.t) (stmt : Stmt.Located.t) =
   let rev_flowgraph, flowgraph_to_mir =
     Monotone_framework.inverse_flowgraph_of_stmt stmt in
@@ -1504,9 +1363,11 @@ let optimize_minimal_variables
   let mfp_variables =
     Monotone_framework.minimal_variables_mfp
       (module Circular_Fwd_Flowgraph)
-      flowgraph_to_mir initial_variables transfer_variables in
+      flowgraph_to_mir initial_variables gen_variables in
   let optimize_min_vars_stmt_base i stmt_pattern =
-    let variable_set = extra_variables (LabelMap.find i mfp_variables).exit in
+    let variable_set =
+      let exits = (LabelMap.find i mfp_variables).exit in
+      Set.Poly.union exits (Set.Poly.union_map exits ~f:extra_variables) in
     let stmt_val =
       Stmt.Pattern.map (update_expr variable_set) (fun x -> x) stmt_pattern
     in
@@ -1517,24 +1378,16 @@ let optimize_minimal_variables
 (* XXX: This optimization current promotes/demotes entire tuples at once. This
    could be significantly better *)
 let optimize_ad_levels (mir : Program.Typed.t) =
-  let transfer_ad_variables
+  let gen_ad_variables
       (flowgraph_to_mir : Stmt.Located.Non_recursive.t LabelMap.t) (l : int)
       (ad_variables : string Set.Poly.t) =
     let mir_node = (LabelMap.find l flowgraph_to_mir).pattern in
-    let gen =
-      match mir_node with
-      | Assignment (lval, _, e)
-        when expr_reads_target e
-             || UnsizedType.is_autodifftype
-                @@ Expr.Typed.adlevel_of (update_expr_ad_levels ad_variables e)
-        ->
-          Set.Poly.singleton (Stmt.Helpers.lhs_variable lval)
-      | _ -> Set.Poly.empty in
-    let kill =
-      match mir_node with
-      | Decl {decl_id; decl_adtype= DataOnly; _} -> Set.Poly.singleton decl_id
-      | _ -> Set.Poly.empty in
-    Monotone_framework.transfer_gen_kill ad_variables gen kill in
+    match mir_node with
+    | Assignment (lval, _, e)
+      when UnsizedType.is_autodifftype
+           @@ Expr.Typed.adlevel_of (update_expr_ad_levels ad_variables e) ->
+        Set.Poly.singleton (Stmt.Helpers.lhs_variable lval)
+    | _ -> Set.Poly.empty in
   let global_initial_ad_variables =
     Set.Poly.of_list
       (List.filter_map
@@ -1543,21 +1396,14 @@ let optimize_ad_levels (mir : Program.Typed.t) =
          mir.output_vars) in
   let initial_ad_variables fundef_opt _ =
     match (fundef_opt : Stmt.Located.t Program.fun_def option) with
-    | Some {fdargs; fdbody= Some s; _} ->
-        let autodiffable_args =
-          List.filter_map fdargs ~f:(fun (_, name, ut) ->
-              if UnsizedType.is_autodiffable ut then Some name else None) in
-        if List.is_empty autodiffable_args then Set.Poly.empty
-        else
-          (* because the return type of a function will be AD, the only safe
-             thing is to treat all variables in the function as possibly AD.
-             Note that this only really affects non-inlined functions. *)
-          Set.Poly.union (var_declarations s)
-            (Set.Poly.of_list autodiffable_args)
-    | _ -> global_initial_ad_variables in
-  let extra_variables variables =
-    Set.Poly.union variables (Set.Poly.map variables ~f:(fun v -> v ^ "_in__"))
+    | None -> global_initial_ad_variables
+    | Some {fdargs; _} ->
+        Set.Poly.union global_initial_ad_variables
+          (Set.Poly.of_list
+             (List.filter_map fdargs ~f:(fun (_, name, ut) ->
+                  if UnsizedType.is_autodiffable ut then Some name else None)))
   in
+  let extra_variables v = Set.Poly.singleton (v ^ "_in__") in
   let update_stmt stmt_pattern variable_set =
     match stmt_pattern with
     | Stmt.Pattern.Decl ({decl_id; decl_type; _} as decl)
@@ -1579,9 +1425,21 @@ let optimize_ad_levels (mir : Program.Typed.t) =
           ; decl_adtype=
               UnsizedType.fill_adtype_for_type UnsizedType.DataOnly
                 (Type.to_unsized decl_type) }
+    | Assignment (lval, ty, ({Expr.pattern= Promotion (e, ut, ad); _} as prom))
+      when (not (Set.Poly.mem (Stmt.Helpers.lhs_variable lval) variable_set))
+           && UnsizedType.has_autodiff ad ->
+        (* When a variable has been downcast, we need to remove any promotions
+           it was going to recieve or else C++ compilation will fail *)
+        Assignment
+          ( lval
+          , ty
+          , { prom with
+              pattern=
+                Promotion (e, ut, UnsizedType.fill_adtype_for_type DataOnly ty)
+            } )
     | s -> s in
   let transform fundef_opt stmt =
-    optimize_minimal_variables ~transfer_variables:transfer_ad_variables
+    optimize_minimal_variables ~gen_variables:gen_ad_variables
       ~update_expr:update_expr_ad_levels ~update_stmt ~extra_variables
       ~initial_variables:(initial_ad_variables fundef_opt stmt)
       stmt in
@@ -1604,23 +1462,23 @@ let optimize_ad_levels (mir : Program.Typed.t) =
 
     @param mir: The program's whole MIR. *)
 let optimize_soa (mir : Program.Typed.t) =
-  Memory_patterns.reset_warnings ();
-  let transfer_aos_variables
+  let gen_aos_variables
       (flowgraph_to_mir : Stmt.Located.Non_recursive.t LabelMap.t) (l : int)
       (aos_variables : string Set.Poly.t) =
     let mir_node mir_idx = LabelMap.find mir_idx flowgraph_to_mir in
-    let gen = Memory_patterns.query_demotable_stmt aos_variables (mir_node l) in
-    Set.Poly.union aos_variables gen in
+    Memory_patterns.query_demotable_stmt aos_variables (mir_node l) in
   let initial_variables =
     List.fold_left ~init:Set.Poly.empty
       ~f:(Memory_patterns.query_initial_demotable_stmt false)
       mir.reverse_mode_log_prob in
   let mod_exprs aos_exits mod_expr =
     map_rec_expr (Memory_patterns.modify_expr_pattern aos_exits) mod_expr in
+  let modify_stmt_patt stmt_pattern variable_set =
+    Memory_patterns.modify_stmt_pattern stmt_pattern variable_set in
   let transform stmt =
-    optimize_minimal_variables ~transfer_variables:transfer_aos_variables
-      ~update_expr:mod_exprs ~update_stmt:Memory_patterns.modify_stmt_pattern
-      ~initial_variables stmt in
+    optimize_minimal_variables ~gen_variables:gen_aos_variables
+      ~update_expr:mod_exprs ~update_stmt:modify_stmt_patt ~initial_variables
+      stmt ~extra_variables:(fun _ -> initial_variables) in
   let transform' s =
     match transform {pattern= SList s; meta= Location_span.empty} with
     | {pattern= SList (l : Stmt.Located.t list); _} -> l
@@ -1670,63 +1528,6 @@ let settings_const b =
 
 let all_optimizations : optimization_settings = settings_const true
 let no_optimizations : optimization_settings = settings_const false
-
-type optimization_pass =
-  | Function_inlining
-  | Static_loop_unrolling
-  | One_step_loop_unrolling
-  | Vectorize_loops
-  | List_collapsing
-  | Block_fixing
-  | Allow_uninitialized_decls
-  | Constant_propagation
-  | Expression_propagation
-  | Copy_propagation
-  | Dead_code_elimination
-  | Partial_evaluation
-  | Lazy_code_motion
-  | Optimize_ad_levels
-  | Preserve_stability
-  | Optimize_soa
-
-let set_optimization pass enabled settings =
-  match pass with
-  | Function_inlining -> {settings with function_inlining= enabled}
-  | Static_loop_unrolling -> {settings with static_loop_unrolling= enabled}
-  | One_step_loop_unrolling -> {settings with one_step_loop_unrolling= enabled}
-  | Vectorize_loops -> {settings with vectorize_loops= enabled}
-  | List_collapsing -> {settings with list_collapsing= enabled}
-  | Block_fixing -> {settings with block_fixing= enabled}
-  | Allow_uninitialized_decls ->
-      {settings with allow_uninitialized_decls= enabled}
-  | Constant_propagation -> {settings with constant_propagation= enabled}
-  | Expression_propagation -> {settings with expression_propagation= enabled}
-  | Copy_propagation -> {settings with copy_propagation= enabled}
-  | Dead_code_elimination -> {settings with dead_code_elimination= enabled}
-  | Partial_evaluation -> {settings with partial_evaluation= enabled}
-  | Lazy_code_motion -> {settings with lazy_code_motion= enabled}
-  | Optimize_ad_levels -> {settings with optimize_ad_levels= enabled}
-  | Preserve_stability -> {settings with preserve_stability= enabled}
-  | Optimize_soa -> {settings with optimize_soa= enabled}
-
-let optimization_pass_names =
-  [ ("inlining", Function_inlining)
-  ; ("static-loop-unrolling", Static_loop_unrolling)
-  ; ("one-step-loop-unrolling", One_step_loop_unrolling)
-  ; ("vectorize-loops", Vectorize_loops); ("list-collapsing", List_collapsing)
-  ; ("block-fixing", Block_fixing)
-  ; ("allow-uninitialized-decls", Allow_uninitialized_decls)
-  ; ("constant-propagation", Constant_propagation)
-  ; ("expression-propagation", Expression_propagation)
-  ; ("copy-propagation", Copy_propagation)
-  ; ("dead-code-elimination", Dead_code_elimination)
-  ; ("partial-evaluation", Partial_evaluation)
-  ; ("lazy-code-motion", Lazy_code_motion); ("ad-levels", Optimize_ad_levels)
-  ; ("preserve-stability", Preserve_stability); ("soa", Optimize_soa) ]
-
-let optimization_flags =
-  List.concat_map optimization_pass_names ~f:(fun (name, pass) ->
-      [(name, (pass, true)); ("no-" ^ name, (pass, false))])
 
 type optimization_level = O0 | O1 | Oexperimental
 
@@ -1794,12 +1595,6 @@ let optimization_suite ?(settings = all_optimizations) mir =
       (* Book: Machine idioms and instruction combining *)
     ; (list_collapsing, settings.list_collapsing)
       (* Book: Machine idioms and instruction combining *)
-    ; (optimize_ad_levels, settings.optimize_ad_levels)
-      (* hack: optimize_ad_levels should only need to run after optimize_soa,
-         but because it can turn variables into data (which are all AoS) it can
-         lead to compilation errors due to missing overloads in math. So we run
-         it twice to prevent variables that will interact with demoted variables
-         from ever getting tagged as SoA compatible. *)
     ; (optimize_soa, settings.optimize_soa)
     ; (optimize_ad_levels, settings.optimize_ad_levels)
       (* Remove decls immediately assigned to *)

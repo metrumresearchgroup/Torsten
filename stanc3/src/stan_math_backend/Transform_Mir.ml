@@ -57,7 +57,7 @@ let break_eigen_cycles functions_block =
     let rec is_potentially_recursive = function
       | {pattern= Var name; _} -> String.Set.mem name fun_args
       | {pattern= Indexed (e, _); _} -> is_potentially_recursive e
-      | {pattern= FunApp (StanLib (fname, _), e :: _); _} ->
+      | {pattern= FunApp (StanLib (fname, _, _), e :: _); _} ->
           String.Set.mem fname eigen_block_expr_fns
           && is_potentially_recursive e
       | _ -> false in
@@ -67,7 +67,9 @@ let break_eigen_cycles functions_block =
         List.fold_left_map ~init:false
           ~f:(fun is_rec e ->
             if is_potentially_recursive e then
-              (true, {e with pattern= FunApp (StanLib ("eval", FnPlain), [e])})
+              ( true
+              , {e with pattern= FunApp (StanLib ("eval", FnPlain, AoS), [e])}
+              )
             else (is_rec, e))
           args in
       if not can_recurse then args
@@ -89,7 +91,7 @@ let break_eigen_cycles functions_block =
           {e with pattern= FunApp (kind, map_args name args)}
       | { pattern=
             FunApp
-              ( (StanLib (_, _) as kind)
+              ( (StanLib (_, _, _) as kind)
               , ({pattern= Var name; meta= {type_= UFun _; _}} as f) :: args )
         ; _ } as e ->
           (* higher-order function -- just pretend it's a direct call *)
@@ -171,7 +173,7 @@ let opencl_supported_functions =
 let opencl_suffix = "_opencl__"
 
 let to_matrix_cl e =
-  Expr.{e with pattern= FunApp (StanLib ("to_matrix_cl", FnPlain), [e])}
+  Expr.{e with pattern= FunApp (StanLib ("to_matrix_cl", FnPlain, AoS), [e])}
 
 let rec switch_expr_to_opencl available_cl_vars (Expr.{pattern; _} as e) =
   let is_avail = List.mem ~set:available_cl_vars in
@@ -191,25 +193,409 @@ let rec switch_expr_to_opencl available_cl_vars (Expr.{pattern; _} as e) =
     | None | Some _ -> List.map args ~f:to_cl in
   let is_fn_opencl_supported f = String.Set.mem f opencl_supported_functions in
   match pattern with
-  | FunApp (StanLib (f, sfx), args) when is_fn_opencl_supported f ->
+  | FunApp (StanLib (f, sfx, mem_pattern), args) when is_fn_opencl_supported f
+    ->
       let trigger = String.Map.find_opt f opencl_trigger_restrictions in
-      {e with pattern= FunApp (StanLib (f, sfx), maybe_map_args args trigger)}
+      { e with
+        pattern=
+          FunApp (StanLib (f, sfx, mem_pattern), maybe_map_args args trigger) }
   | x ->
       { e with
         pattern= Expr.Pattern.map (switch_expr_to_opencl available_cl_vars) x }
 
-let var_context_read_internal ((decl_id_lval : 'a Stmt.Pattern.lvalue), meta, st)
-    =
+let rec base_type = function
+  | SizedType.SArray (t, _) -> base_type t
+  | SVector _ | SRowVector _ | SMatrix _ -> UnsizedType.UReal
+  | SComplexVector _ | SComplexRowVector _ | SComplexMatrix _ -> UComplex
+  | x -> SizedType.to_unsized x
+
+let pos = "pos__"
+
+let meta_from_sizedtype st =
+  let type_ = SizedType.to_unsized st in
+  { Expr.Typed.Meta.empty with
+    type_
+  ; adlevel= UnsizedType.fill_adtype_for_type DataOnly type_ }
+
+let munge_tuple_name name = String.replace_all ~sub:"." ~by:"_dot_" name
+let make_tuple_temp name = munge_tuple_name name ^ "_temp__"
+
+(** This function is essentially copied from [var_context_read], but rather than
+    calling ReadDataFn, this indexes into the flattened versions of the tuple
+    data created by [var_context_read] when it encounters an array of tuples
+
+    @param enclosing_tuple_name
+      The name (in the sense of [Stmt.Helpers.get_lhs_name]) of the element of
+      the tuple this recursive call is handling. This is used to generate the
+      appropriate [_flat__] variable to pull from
+    @param origin_type
+      The type of the flat variable for this call, if one exists. In situations
+      where this is an array of tuples still, this type is unused. *)
+let rec var_context_read_inside_tuple enclosing_tuple_name origin_type
+    ((decl_id_lval : 'a Stmt.Pattern.lvalue), _, st) =
+  let smeta =
+    (* avoid a bunch of redundant current_statement assigns *)
+    Location_span.empty in
+  let unsized = SizedType.to_unsized st in
+  let scalar = base_type st in
+  let flat_type = UnsizedType.UArray scalar in
   let decl_id = Stmt.Helpers.get_lhs_name decl_id_lval in
   let decl_var =
-    let type_ = SizedType.to_unsized st in
-    let adlevel = UnsizedType.fill_adtype_for_type DataOnly type_ in
-    Expr.{pattern= Var decl_id; meta= Typed.Meta.{loc= meta; type_; adlevel}}
+    { Expr.pattern= Var decl_id
+    ; meta= Expr.Typed.Meta.{loc= smeta; type_= unsized; adlevel= DataOnly} }
   in
-  [ Stmt.Helpers.internal_nrfunapp FnReadData
-      [ decl_var; Expr.Helpers.variable "context__"
-      ; {decl_var with pattern= Lit (Str, remove_prefix decl_id)} ]
-      meta ]
+  let swrap stmt = {Stmt.pattern= stmt; meta= smeta} in
+  let pos_var = {Expr.pattern= Var pos; meta= Expr.Typed.Meta.empty} in
+  let flat_name decl_id = munge_tuple_name decl_id ^ "_flat__" in
+  let enclosing_tuple_flat, enclosing_tuple_pos =
+    let name = munge_tuple_name enclosing_tuple_name in
+    (name ^ "_flat__", name ^ "_flat__pos__") in
+  let origin_name =
+    let var = Expr.Helpers.variable enclosing_tuple_flat in
+    { var with
+      meta=
+        { var.meta with
+          type_= origin_type
+        ; adlevel= UnsizedType.fill_adtype_for_type DataOnly origin_type } }
+  in
+  let type_size =
+    Expr.Helpers.(
+      binop (variable enclosing_tuple_pos) Plus (SizedType.io_size st)) in
+  let end_position = Expr.Helpers.(binop type_size Minus loop_bottom) in
+  let origin =
+    match unsized with
+    | UInt | UReal | UComplex ->
+        (* Scalars get one index *)
+        Expr.Helpers.add_int_index origin_name
+          (Index.Single (Expr.Helpers.variable enclosing_tuple_pos))
+    | _ ->
+        Expr.Helpers.add_int_index origin_name
+          (Index.Between
+             (Expr.Helpers.variable enclosing_tuple_pos, end_position)) in
+  let incr_tuple_pos =
+    Stmt.Pattern.Assignment
+      (Stmt.Helpers.lvariable enclosing_tuple_pos, UInt, type_size)
+    |> swrap in
+  match st with
+  | SInt | SReal | SComplex ->
+      [Assignment (decl_id_lval, unsized, origin) |> swrap; incr_tuple_pos]
+  | SArray ((SInt | SReal), _) ->
+      [Assignment (decl_id_lval, flat_type, origin) |> swrap; incr_tuple_pos]
+  | STuple subtypes ->
+      let elements =
+        List.mapi
+          ~f:(fun iter x ->
+            ( (Stmt.Pattern.LTupleProjection (decl_id_lval, iter + 1), [])
+            , smeta
+            , x ))
+          subtypes in
+      let enclosing_names =
+        List.mapi
+          ~f:(fun i _ -> enclosing_tuple_name ^ "." ^ Int.to_string (i + 1))
+          subtypes in
+      List.map2
+        ~f:(fun name projection ->
+          var_context_read_inside_tuple name origin_type projection)
+        enclosing_names elements
+      |> List.concat
+  | SArray _ when SizedType.contains_tuple st ->
+      let tupl, dims = SizedType.get_array_dims st in
+      let tuple_component_names, tuple_types =
+        match tupl with
+        | STuple subtypes ->
+            ( List.mapi
+                ~f:(fun i _ ->
+                  enclosing_tuple_name ^ "." ^ Int.to_string (i + 1))
+                subtypes
+            , subtypes )
+        | _ -> ([], []) in
+      let temps =
+        List.map2
+          ~f:(fun name t ->
+            Stmt.Pattern.Decl
+              { decl_adtype=
+                  UnsizedType.fill_adtype_for_type DataOnly
+                    (SizedType.to_unsized t)
+              ; decl_id= make_tuple_temp name
+              ; decl_type= Sized t
+              ; initialize= Default }
+            |> swrap)
+          tuple_component_names tuple_types in
+      let loop =
+        let final_assignment loopvars =
+          let assign_lval =
+            let lbase, idxs = decl_id_lval in
+            ( lbase
+            , idxs @ List.map ~f:(fun e -> Index.Single e) (List.rev loopvars)
+            ) in
+          [ Stmt.Pattern.Assignment
+              ( assign_lval
+              , unsized
+              , Expr.Helpers.tuple_expr
+                  (List.map2
+                     ~f:(fun n st ->
+                       Expr.
+                         { pattern= Var (make_tuple_temp n)
+                         ; meta= meta_from_sizedtype st })
+                     tuple_component_names tuple_types) )
+            |> swrap ] in
+        [ Stmt.Helpers.mk_nested_for (List.rev dims)
+            (fun loopvars ->
+              Stmt.
+                { meta= smeta
+                ; pattern=
+                    SList
+                      ((List.map2
+                          ~f:(fun io_name st ->
+                            let temp_name = make_tuple_temp io_name in
+                            var_context_read_inside_tuple io_name
+                              (UnsizedType.wind_array_type
+                                 (SizedType.to_unsized st, List.length dims))
+                              (Stmt.Helpers.lvariable temp_name, smeta, st))
+                          tuple_component_names tuple_types
+                       |> List.concat)
+                      @ final_assignment loopvars) })
+            smeta ] in
+      [Block (temps @ loop) |> swrap]
+  | SVector _ | SRowVector _ | SMatrix _ | SComplexMatrix _
+   |SComplexRowVector _ | SComplexVector _ | SArray _ ->
+      let decl, assign, flat_var =
+        let decl_id_flat = flat_name decl_id in
+        ( Stmt.Pattern.Decl
+            { decl_adtype= AutoDiffable
+            ; decl_id= decl_id_flat
+            ; decl_type= Unsized flat_type
+            ; initialize= Default }
+          |> swrap
+        , Assignment (Stmt.Helpers.lvariable decl_id_flat, flat_type, origin)
+          |> swrap
+        , { Expr.pattern= Var decl_id_flat
+          ; meta=
+              Expr.Typed.Meta.{loc= smeta; type_= flat_type; adlevel= DataOnly}
+          } ) in
+      let bodyfn _ var =
+        let pos_increment =
+          [ Assignment
+              ( Stmt.Helpers.lvariable pos
+              , UInt
+              , Expr.Helpers.(binop pos_var Plus one) )
+            |> swrap ] in
+        let read_indexed _ =
+          { Expr.pattern= Indexed (flat_var, [Single pos_var])
+          ; meta= Expr.Typed.Meta.{flat_var.meta with type_= scalar} } in
+        SList
+          (Stmt.Helpers.assign_indexed (SizedType.to_unsized st) decl_id_lval
+             smeta read_indexed var
+          :: pos_increment)
+        |> swrap in
+      let pos_reset =
+        Stmt.Pattern.Assignment
+          (Stmt.Helpers.lvariable pos, UInt, Expr.Helpers.loop_bottom)
+        |> swrap in
+      [ Block
+          [ decl; assign; pos_reset
+          ; Stmt.Helpers.for_scalar_inv st bodyfn decl_var smeta; incr_tuple_pos
+          ]
+        |> swrap ]
+
+let rec var_context_read_internal
+    ((decl_id_lval : 'a Stmt.Pattern.lvalue), smeta, st) =
+  let unsized = SizedType.to_unsized st in
+  let scalar = base_type st in
+  let flat_type = UnsizedType.UArray scalar in
+  let decl_id = Stmt.Helpers.get_lhs_name decl_id_lval in
+  let decl_var =
+    { Expr.pattern= Var decl_id
+    ; meta= Expr.Typed.Meta.{loc= smeta; type_= unsized; adlevel= DataOnly} }
+  in
+  let swrap stmt = {Stmt.pattern= stmt; meta= smeta} in
+  let swrap_noloc stmt =
+    (* not strictly necessary, but lets us cut down on the number of
+       curent_statement__ = X lines in the generated code *)
+    {Stmt.pattern= stmt; meta= Location_span.empty} in
+  let pos_var = {Expr.pattern= Var pos; meta= Expr.Typed.Meta.empty} in
+  let flat_name decl_id = munge_tuple_name decl_id ^ "_flat__" in
+  let readfnapp decl_id flat_type =
+    Expr.Helpers.internal_funapp FnReadData
+      [{decl_var with pattern= Lit (Str, remove_prefix decl_id)}]
+      Expr.Typed.Meta.{decl_var.meta with type_= flat_type} in
+  match st with
+  | SInt | SReal | SComplex ->
+      let e =
+        { Expr.pattern=
+            Indexed
+              (readfnapp decl_id flat_type, [Single Expr.Helpers.loop_bottom])
+        ; meta= {decl_var.meta with type_= unsized} } in
+      [Assignment (decl_id_lval, unsized, e) |> swrap]
+  | SArray ((SInt | SReal), _) ->
+      [ Assignment (decl_id_lval, flat_type, readfnapp decl_id flat_type)
+        |> swrap ]
+  | STuple subtypes ->
+      let sub_sts =
+        List.mapi
+          ~f:(fun iter x ->
+            ( (Stmt.Pattern.LTupleProjection (decl_id_lval, iter + 1), [])
+            , (if iter = 0 then smeta
+                 (* don't repeat locations in inner loops *)
+               else Location_span.empty)
+            , x ))
+          subtypes in
+      List.concat_map ~f:var_context_read_internal sub_sts
+  | SArray _ when SizedType.contains_tuple st ->
+      (* The IO format for tuples is complicated in this case. Therefore, we
+         need to do the following
+
+         1. Make "_flat__" decls for everything
+
+         2. Declare a temp for each item of this tuple
+
+         3. in a loop:
+
+         - i. call [var_context_read_inside_tuple] with the temp variable as the
+         destination this function does essentially the same things recursively,
+         but it doesn't create more "_flat__" variables for deeper nested
+         arrays-of-tuples.
+
+         - ii. assign those temps (forwarding as tuple) to this variable,
+         properly indexed. *)
+      let tupl, dims = SizedType.get_array_dims st in
+      let flat_decls =
+        (* Here we need to go recursively all the way down the tuple *)
+        let flat_io_names =
+          UnsizedType.enumerate_tuple_names_io decl_id
+            (SizedType.to_unsized tupl) in
+        let flat_vars = List.map ~f:flat_name flat_io_names in
+        let flat_types = SizedType.flatten_tuple_io tupl in
+        List.map3
+          ~f:(fun variable_name io_name st ->
+            let typ = SizedType.to_unsized st in
+            let scalar_type = UnsizedType.internal_scalar typ in
+            let array_type = UnsizedType.UArray scalar_type in
+            [ Stmt.Pattern.Decl
+                { decl_adtype= AutoDiffable
+                ; decl_id= variable_name
+                ; decl_type= Unsized array_type
+                ; initialize= Default }
+              |> swrap_noloc
+            ; Assignment
+                ( Stmt.Helpers.lvariable variable_name
+                , typ
+                , readfnapp io_name array_type )
+              |> swrap
+            ; Stmt.Pattern.Decl
+                { decl_adtype= DataOnly
+                ; decl_id= variable_name ^ "pos__"
+                ; decl_type= Unsized UInt
+                ; initialize= Default }
+              |> swrap_noloc
+            ; Stmt.Pattern.Assignment
+                ( Stmt.Helpers.lvariable (variable_name ^ "pos__")
+                , UInt
+                , Expr.Helpers.loop_bottom )
+              |> swrap_noloc ])
+          flat_vars flat_io_names flat_types
+        |> List.concat in
+      (* from now on, we only care about things at this level, calling
+         [var_context_read_inside_tuple] *)
+      let tuple_component_names, tuple_types =
+        match tupl with
+        | STuple subtypes ->
+            ( List.mapi
+                ~f:(fun i _ -> decl_id ^ "." ^ Int.to_string (i + 1))
+                subtypes
+            , subtypes )
+        | _ -> (* impossible by above pattern patch *) ([], []) in
+      let temps =
+        List.map2
+          ~f:(fun name t ->
+            Stmt.Pattern.Decl
+              { decl_adtype=
+                  UnsizedType.fill_adtype_for_type DataOnly
+                    (SizedType.to_unsized t)
+              ; decl_id= make_tuple_temp name
+              ; decl_type= Sized t
+              ; initialize= Default }
+            |> swrap_noloc)
+          tuple_component_names tuple_types in
+      let loop =
+        let final_assignment loopvars =
+          let assign_lval =
+            let lbase, idxs = decl_id_lval in
+            ( lbase
+            , idxs @ List.map ~f:(fun e -> Index.Single e) (List.rev loopvars)
+            ) in
+          [ Stmt.Pattern.Assignment
+              ( assign_lval
+              , unsized
+              , Expr.Helpers.tuple_expr
+                  (List.map2
+                     ~f:(fun n st ->
+                       Expr.
+                         { pattern= Var (make_tuple_temp n)
+                         ; meta= meta_from_sizedtype st })
+                     tuple_component_names tuple_types) )
+            |> swrap_noloc ] in
+        [ Stmt.Helpers.mk_nested_for (List.rev dims)
+            (fun loopvars ->
+              SList
+                ((List.map2
+                    ~f:(fun io_name st ->
+                      let temp_name = make_tuple_temp io_name in
+                      var_context_read_inside_tuple io_name
+                        (UnsizedType.wind_array_type
+                           (SizedType.to_unsized st, List.length dims))
+                        ( Stmt.Helpers.lvariable temp_name
+                        , Location_span.empty
+                        , st ))
+                    tuple_component_names tuple_types
+                 |> List.concat)
+                @ final_assignment loopvars)
+              |> swrap_noloc)
+            Location_span.empty ] in
+      [Block (flat_decls @ temps @ loop) |> swrap]
+  | SVector _ | SRowVector _ | SMatrix _ | SComplexMatrix _
+   |SComplexRowVector _ | SComplexVector _ | SArray _ ->
+      let decl, assign, flat_var =
+        let decl_id_flat = flat_name decl_id in
+        ( Stmt.Pattern.Decl
+            { decl_adtype= AutoDiffable
+            ; decl_id= decl_id_flat
+            ; decl_type= Unsized flat_type
+            ; initialize= Uninit }
+          |> swrap
+        , Assignment
+            ( Stmt.Helpers.lvariable decl_id_flat
+            , flat_type
+            , readfnapp decl_id flat_type )
+          |> swrap
+        , { Expr.pattern= Var decl_id_flat
+          ; meta=
+              Expr.Typed.Meta.{loc= smeta; type_= flat_type; adlevel= DataOnly}
+          } ) in
+      let bodyfn _ var =
+        let pos_increment =
+          [ Assignment
+              ( Stmt.Helpers.lvariable pos
+              , UInt
+              , Expr.Helpers.(binop pos_var Plus one) )
+            |> swrap_noloc ] in
+        let read_indexed _ =
+          { Expr.pattern= Indexed (flat_var, [Single pos_var])
+          ; meta= Expr.Typed.Meta.{flat_var.meta with type_= scalar} } in
+        SList
+          (Stmt.Helpers.assign_indexed (SizedType.to_unsized st) decl_id_lval
+             Location_span.empty read_indexed var
+          :: pos_increment)
+        |> swrap_noloc in
+      let pos_reset =
+        Stmt.Pattern.Assignment
+          (Stmt.Helpers.lvariable pos, UInt, Expr.Helpers.loop_bottom)
+        |> swrap_noloc in
+      [ Block
+          [ decl; assign; pos_reset
+          ; Stmt.Helpers.for_scalar_inv st bodyfn decl_var Location_span.empty
+          ]
+        |> swrap ]
 
 let var_context_read p =
   (* this never uses the declare-define fast path at the moment *)
@@ -450,13 +836,12 @@ let param_serializer_write ?(unconstrain = false)
             (FnWriteParam {unconstrain_opt= None; var})
             [] Location_span.empty ] in
   let decl_var =
-    let type_ = SizedType.to_unsized out_constrained_st in
     { Expr.pattern= Var decl_id
     ; meta=
         Expr.Typed.Meta.
           { loc= Location_span.empty
-          ; type_
-          ; adlevel= UnsizedType.fill_adtype_for_type DataOnly type_ } } in
+          ; type_= SizedType.to_unsized out_constrained_st
+          ; adlevel= DataOnly } } in
   write (decl_var, out_constrained_st, out_trans)
 
 (** Generate write instructions for unconstrained types. For scalars, matrices,
@@ -493,13 +878,12 @@ let param_unconstrained_serializer_write
             (FnWriteParam {unconstrain_opt= None; var})
             [] Location_span.empty ] in
   let var =
-    let type_ = SizedType.to_unsized out_constrained_st in
     { Expr.pattern= Var decl_id
     ; meta=
         Expr.Typed.Meta.
           { loc= Location_span.empty
-          ; type_
-          ; adlevel= UnsizedType.fill_adtype_for_type DataOnly type_ } } in
+          ; type_= SizedType.to_unsized out_constrained_st
+          ; adlevel= DataOnly } } in
   write (var, out_constrained_st)
 
 (** Reads in parameters from a var_context, the same way as is done in the
@@ -514,8 +898,7 @@ let var_context_unconstrain_transform (decl_id, smeta, outvar) =
                 (SizedType.to_unsized st)
           ; decl_id
           ; decl_type= Type.Sized st
-          ; initialize= Default
-          ; decl_annotations= outvar.out_annotations }
+          ; initialize= Default }
     ; meta= smeta }
   :: var_context_read_internal (Stmt.Helpers.lvariable decl_id, smeta, st)
   @ param_serializer_write ~unconstrain:true (decl_id, outvar)
@@ -532,8 +915,7 @@ let array_unconstrain_transform (decl_id, smeta, outvar) =
                   (SizedType.to_unsized outvar.Program.out_constrained_st)
             ; decl_id
             ; decl_type= Type.Sized outvar.Program.out_constrained_st
-            ; initialize= Default
-            ; decl_annotations= outvar.out_annotations }
+            ; initialize= Default }
       ; meta= smeta } in
   let rec read (lval, st) =
     match st with
@@ -625,7 +1007,7 @@ let%expect_test "collect vars expr" =
   let args = List.map ~f:mkvar ["y"; "x_opencl__"; "z"; "w_opencl__"] in
   let fnapp =
     Expr.
-      { pattern= FunApp (StanLib ("print", FnPlain), args)
+      { pattern= FunApp (StanLib ("print", FnPlain, AoS), args)
       ; meta= Typed.Meta.empty } in
   let open Sexp_conv in
   Stmt.{pattern= TargetPE fnapp; meta= Location_span.empty}
@@ -669,14 +1051,12 @@ let trans_prog ?(use_opencl = false) (p : Program.Typed.t) =
       |> map translate_funapps_and_kwrds map_stmt Fun.id
       |> map Fun.id change_kwrds_stmts Fun.id) in
   let p = {p with functions_block= break_eigen_cycles p.functions_block} in
-  let pos = "pos__" in
   let init_pos =
     [ Stmt.Pattern.Decl
         { decl_adtype= DataOnly
         ; decl_id= pos
         ; decl_type= Sized SInt
-        ; initialize= Default
-        ; decl_annotations= [] }
+        ; initialize= Default }
     ; Assignment (Stmt.Helpers.lvariable pos, UInt, Expr.Helpers.loop_bottom) ]
     |> List.map ~f:(fun pattern -> Stmt.{pattern; meta= Location_span.empty})
   in
@@ -792,9 +1172,7 @@ let trans_prog ?(use_opencl = false) (p : Program.Typed.t) =
                   { decl_adtype= DataOnly
                   ; decl_id= vident
                   ; decl_type= Type.Unsized type_of_input_var
-                  ; initialize= Default
-                  ; decl_annotations= [] (* TODO improve/rethink opencl pass *)
-                  }
+                  ; initialize= Default }
             ; meta= Location_span.empty }
         ; { pattern=
               Assignment

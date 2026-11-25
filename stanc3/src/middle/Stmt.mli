@@ -20,8 +20,7 @@ module Pattern : sig
         { decl_adtype: UnsizedType.autodifftype
         ; decl_id: string
         ; decl_type: 'a Type.t
-        ; initialize: 'a decl_init
-        ; decl_annotations: Annotation.t list }
+        ; initialize: 'a decl_init }
   [@@deriving sexp_of, map, fold]
 
   and 'e lvalue = 'e lbase * 'e Index.t list [@@deriving sexp_of, map, fold]
@@ -113,8 +112,37 @@ module Helpers : sig
     -> Location_span.t
     -> Located.t
 
+  val mk_for_iteratee :
+       Expr.Typed.t
+    -> (Expr.Typed.t -> Located.t)
+    -> Expr.Typed.t
+    -> Location_span.t
+    -> Located.t
+
   val for_each :
     (Expr.Typed.t -> Located.t) -> Expr.Typed.t -> Location_span.t -> Located.t
+
+  val for_scalar :
+       Expr.Typed.t SizedType.t
+    -> (Expr.Typed.t SizedType.t -> Expr.Typed.t -> Located.t)
+    -> Expr.Typed.t
+    -> Location_span.t
+    -> Located.t
+
+  val for_scalar_inv :
+       Expr.Typed.t SizedType.t
+    -> (Expr.Typed.t SizedType.t -> Expr.Typed.t -> Located.t)
+    -> Expr.Typed.t
+    -> Location_span.t
+    -> Located.t
+
+  val assign_indexed :
+       UnsizedType.t
+    -> 'b Expr.t Pattern.lvalue
+    -> 'a
+    -> ('b Expr.t -> 'b Expr.t)
+    -> 'b Expr.t
+    -> ('b, 'a) t
 
   val get_lhs_name : 'a Pattern.lvalue -> string
   (** The name of the lhs. This adds "." and an index to tuple projections *)

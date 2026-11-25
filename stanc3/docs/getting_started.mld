@@ -49,11 +49,6 @@ failures. If you are knowingly changing the output, and the differences highligh
 [dune runtest] look correct, you can run [dune promote] to change the expected output to match
 your current tests.
 
-Many of our tests are so-called 'golden' style tests that invoke the compiler on
-a [.stan] file and save their output for inspection. These outputs live in
-[expected_<kind>/] folders next to the [.stan] files, where [kind] might be
-something like [cpp] for showing the C++ output.
-
 {4 Test coverage}
 
 We have support for computing test coverage using the {{:https://github.com/aantron/bisect_ppx}bisect_ppx}
@@ -196,3 +191,4 @@ good starting command is
 {[
 OCAML_LANDMARKS="on,output=prof.txt" stanc.exe mymodel.stan
 ]}
+

@@ -35,7 +35,11 @@ val distributions : (string * string list) list
 (** Helpers for dealing with operators as signatures *)
 
 val operator_to_stan_math_fns : Operator.t -> string list
-val operator_to_stan_math_signatures : Operator.t -> UnsizedType.signature list
+val string_operator_to_stan_math_fns : string -> string
+val pretty_print_math_lib_operator_sigs : Operator.t -> string list
+
+val make_assignmentoperator_stan_math_signatures :
+  Operator.t -> UnsizedType.signature list
 
 (** Special functions for the variadic signatures exposed *)
 

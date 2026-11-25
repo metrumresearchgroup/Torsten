@@ -20,8 +20,3 @@ module.exports.print_warnings = function(m){
         }
     }
 }
-
-
-module.exports.print_json = function(m){
-  console.log(JSON.stringify(m, null, 2))
-}

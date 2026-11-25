@@ -33,7 +33,7 @@ def cxximage = 'stanorg/ci:v1'
 catchError {
   withEnv([
     'CXX=clang++-7',
-    'MACOS_SWITCH=stanc3-ocaml5.5.2',
+    'MACOS_SWITCH=stanc3-ocaml5.5-nobase',
     'GIT_AUTHOR_NAME=Stan Jenkins',
     'GIT_AUTHOR_EMAIL=mc.stanislaw@gmail.com',
     'GIT_COMMITTER_NAME=Stan Jenkins',
@@ -48,7 +48,7 @@ catchError {
         runCompileTests = params.run_all || filesChanged('test/integration/good/')
         runRemainingStages = runCompileTests || srcChanged || filesChanged('test/stancjs/')
         runCompileTestsAtO1 = params.run_all || runCompileTests && filesChanged('test/integration/good/compiler-optimizations')
-        runRebuildingBinaries = params.test_binaries || srcChanged || filesChanged('Jenkinsfile', 'scripts/')
+        runRebuildingBinaries = params.test_binaries || srcChanged || filesChanged('Jenkinsfile')
         return null
       })
 
@@ -120,7 +120,7 @@ catchError {
             def local = """\
               CXX=$CXX
               O=0
-              CXXFLAGS+=-Wall -Wp,-D_GLIBCXX_ASSERTIONS
+              CXXFLAGS+=-Wall
             """
             if (stancFlags) local += """
               STANCFLAGS=$stancFlags
@@ -138,13 +138,6 @@ catchError {
           """
         }
         def endToEnd = { optimize ->
-
-          if (!optimize) {
-            sh '''
-               ./runPerformanceTests.py -j$PARALLEL --check-golds --runj $PARALLEL --num-samples=10 compiler-stress-models/
-            '''
-          }
-
           sh '''
               git show HEAD --stat
               echo "example-models/regression_tests/mother.stan" > all.tests

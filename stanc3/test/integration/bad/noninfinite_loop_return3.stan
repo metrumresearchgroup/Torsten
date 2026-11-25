@@ -2,7 +2,7 @@ functions {
   real not_endless() {
     while (1) {
       if (0) return 1.0;
-      if (1) break;
+      if (0) break;
       return 2.0;
     }
   }

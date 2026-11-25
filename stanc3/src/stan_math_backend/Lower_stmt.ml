@@ -25,7 +25,6 @@ let math_fn_translations = function
       Some "stan::math::validate_non_negative_index"
   | FnValidateSizePositive -> Some "stan::math::validate_positive_index"
   | FnValidateSizeUnitVector -> Some "stan::math::validate_unit_vector_index"
-  | FnReadData -> Some "stan::io::read_from_context"
   | FnReadWriteEventsOpenCL x -> Some (x ^ ".wait_for_read_write_events")
   | _ -> None
 
@@ -96,8 +95,26 @@ let rec initialize_value st adtype =
           [SizedType.pp Expr.Typed.pp $ st; UnsizedType.pp_autodifftype $ adtype])
       [@coverage off]
 
-let lower_possibly_opencl_decl name ut default
+(** Initialize an object of a given size.*)
+let lower_assign_sized st adtype (initialize : 'a Stmt.Pattern.decl_init) =
+  match initialize with
+  | Assign e -> Some (lower_expr e)
+  | Default -> Some (initialize_value st adtype)
+  | Uninit -> None
+
+let lower_unsized_decl name ut adtype =
+  let type_ =
+    match (Transform_Mir.is_opencl_var name, ut) with
+    | _, UnsizedType.(UInt | UReal) | false, _ ->
+        lower_unsizedtype_local adtype ut
+    | true, UArray UInt -> TypeLiteral "matrix_cl<int>"
+    | true, _ -> TypeLiteral "matrix_cl<double>" in
+  make_variable_defn ~type_ ~name ()
+
+let lower_possibly_opencl_decl name st adtype
     (initialize : 'a Stmt.Pattern.decl_init) =
+  let ut = SizedType.to_unsized st in
+  let mem_pattern = SizedType.get_mem_pattern st in
   match (Transform_Mir.is_opencl_var name, ut) with
   | _, UnsizedType.(UInt | UReal) | false, _ -> (
       match initialize with
@@ -107,38 +124,12 @@ let lower_possibly_opencl_decl name ut default
             ; _ } ->
           (* Peephole optimization for param reads, avoids copying *)
           Auto
-      | Assign Expr.{pattern= FunApp (CompilerInternal FnToRef, _); _} ->
-          (* Peephole optimization for function arguments *)
-          if UnsizedType.is_eigen_type ut then TypeLiteral "decltype(auto)"
-          else Types.const_ref default
-      | _ -> default)
+      | _ -> lower_possibly_var_decl adtype ut mem_pattern)
   | true, UArray UInt -> TypeLiteral "matrix_cl<int>"
   | true, _ -> TypeLiteral "matrix_cl<double>"
 
-let lower_unsized_decl name ut adtype (initialize : 'a Stmt.Pattern.decl_init) =
-  let type_ =
-    lower_possibly_opencl_decl name ut
-      (lower_unsizedtype_local adtype ut)
-      initialize in
-  let init =
-    match initialize with
-    | Assign e -> Assignment (lower_expr e)
-    | _ -> Uninitialized in
-  make_variable_defn ~type_ ~name ~init ()
-
-(** Initialize an object of a given size.*)
-let lower_assign_sized st adtype (initialize : 'a Stmt.Pattern.decl_init) =
-  match initialize with
-  | Assign e -> Some (lower_expr e)
-  | Default -> Some (initialize_value st adtype)
-  | Uninit -> None
-
 let lower_sized_decl name st adtype initialize =
-  let ut = SizedType.to_unsized st in
-  let type_ =
-    lower_possibly_opencl_decl name ut
-      (lower_possibly_var_decl adtype ut (SizedType.get_mem_pattern st))
-      initialize in
+  let type_ = lower_possibly_opencl_decl name st adtype initialize in
   let init =
     lower_assign_sized st adtype initialize
     |> Option.value_map ~default:Uninitialized ~f:(fun i -> Assignment i) in
@@ -147,7 +138,7 @@ let lower_sized_decl name st adtype initialize =
 let lower_decl vident pst adtype initialize =
   match pst with
   | Type.Sized st -> VariableDefn (lower_sized_decl vident st adtype initialize)
-  | Unsized ut -> VariableDefn (lower_unsized_decl vident ut adtype initialize)
+  | Unsized ut -> VariableDefn (lower_unsized_decl vident ut adtype)
 
 let lower_profile name body =
   let profile =
@@ -245,8 +236,8 @@ let rec lower_statement Stmt.{pattern; meta} : stmt list =
       ( (((LVariable _ | LTupleProjection _) as lhs), [])
       , _
       , (( {meta= {Expr.Typed.Meta.type_= UInt | UReal | UComplex; _}; _}
-         | {pattern= FunApp (CompilerInternal (FnReadParam _), _); _} ) as rhs)
-      ) ->
+         | { pattern= FunApp (CompilerInternal (FnReadData | FnReadParam _), _)
+           ; _ } ) as rhs) ) ->
       Assign (lower_nonrange_lbase lhs, lower_expr rhs) |> wrap_e
   | Assignment ((LVariable assignee, idcs), (UInt | UReal | UComplex), rhs)
     when List.for_all ~f:is_single_index idcs ->
@@ -299,7 +290,9 @@ let rec lower_statement Stmt.{pattern; meta} : stmt list =
         Expression
           (Exprs.fun_call "stan::math::stan_print" [pstream; lower_expr a])
       in
-      let body = List.map ~f:print args @ [Deref pstream <<: Var "std::endl"] in
+      let body =
+        List.map ~f:print args
+        @ [Expression (Deref pstream << [Cpp.Literal "std::endl"])] in
       [Stmts.if_block pstream body]
   | NRFunApp (CompilerInternal FnReject, args) ->
       [throw_exn "std::domain_error" args]
@@ -330,14 +323,10 @@ let rec lower_statement Stmt.{pattern; meta} : stmt list =
   | NRFunApp (CompilerInternal f, args) ->
       let fname = trans_math_fn f in
       Exprs.fun_call fname (lower_exprs args) |> wrap_e
-  | NRFunApp (StanLib (fname, _), args) ->
+  | NRFunApp (StanLib (fname, _, _), args) ->
       Exprs.fun_call (stan_namespace_qualify fname) (lower_exprs args) |> wrap_e
   | NRFunApp (UserDefined (fname, suffix), args) ->
       lower_user_defined_fun fname suffix args |> wrap_e
-  | NRFunApp (Operator op, _) ->
-      Common.ICE.(
-        internal_errorf "Attempted to codegen a statement of only Operator %t"
-          [Operator.pp $ op]) [@coverage off]
   | Skip -> []
   | IfElse (cond, ifbranch, elsebranch) ->
       [ IfElse
@@ -355,7 +344,7 @@ let rec lower_statement Stmt.{pattern; meta} : stmt list =
   | Return e -> [Return (Option.map ~f:lower_expr e)]
   | Block ls -> [Stmts.block (lower_statements ls)]
   | SList ls -> lower_statements ls
-  | Decl {decl_adtype; decl_id; decl_type; initialize; decl_annotations= _} ->
+  | Decl {decl_adtype; decl_id; decl_type; initialize} ->
       [lower_decl decl_id decl_type decl_adtype initialize]
   | Profile (name, ls) -> [lower_profile name (lower_statements ls)]
 

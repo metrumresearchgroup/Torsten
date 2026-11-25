@@ -320,16 +320,6 @@ let constant_propagation_transfer ?(preserve_stability = false)
                   ->
                     String.Map.add m ~key:s ~data:e'
                 | _ -> String.Map.remove s m)
-            | Decl {decl_id= s; decl_adtype; initialize= Assign e; _} -> (
-                match Partial_evaluator.try_eval_expr (subst_expr m e) with
-                | { pattern=
-                      Promotion ({pattern= Lit (_, _); _}, _, _) | Lit (_, _)
-                  ; _ } as e'
-                  when not
-                         (preserve_stability
-                         && UnsizedType.is_autodifftype decl_adtype) ->
-                    String.Map.add m ~key:s ~data:e'
-                | _ -> String.Map.remove s m)
             | Decl {decl_id= s; _} -> String.Map.remove s m
             | Assignment (lhs, _, _) ->
                 String.Map.remove (Middle.Stmt.Helpers.lhs_variable lhs) m
@@ -423,7 +413,7 @@ let copy_propagation_transfer (globals : string Set.Poly.t)
             | Assignment
                 ((LVariable assignee, []), _, {pattern= Var assigner; meta}) ->
                 let m' = kill_var assignee expr_map in
-                if Set.Poly.mem assignee globals then m'
+                if Set.Poly.mem assignee globals then expr_map
                 else
                   String.Map.add m' ~key:assignee
                     ~data:Expr.{pattern= Var assigner; meta}
@@ -461,7 +451,7 @@ let assigned_vars_stmt (s : (Expr.Typed.t, 'a) Stmt.Pattern.t) =
   | TargetPE _ | JacobianPE _ -> Set.Poly.singleton "target"
   | NRFunApp
       ( ( UserDefined (_, (FnTarget | FnJacobian))
-        | StanLib (_, (FnTarget | FnJacobian)) )
+        | StanLib (_, (FnTarget | FnJacobian), _) )
       , _ ) ->
       Set.Poly.singleton "target"
   | For {loopvar= x; _} -> Set.Poly.singleton x
@@ -506,7 +496,7 @@ let reaching_definitions_transfer
             Set.Poly.filter p ~f:(fun (y, _) -> y = "target")
         | NRFunApp
             ( ( UserDefined (_, (FnTarget | FnJacobian))
-              | StanLib (_, (FnTarget | FnJacobian)) )
+              | StanLib (_, (FnTarget | FnJacobian), _) )
             , _ ) ->
             Set.Poly.filter p ~f:(fun (y, _) -> y = "target")
         | NRFunApp (_, _)
@@ -547,16 +537,14 @@ let live_variables_transfer (never_kill : string Set.Poly.t)
       let gen = top_free_vars_stmt flowgraph_to_mir mir_node in
       let kill =
         match mir_node with
-        | Assignment ((LVariable x, []), _, _)
-         |Decl {decl_id= x; _}
-         |For {loopvar= x; _} ->
+        | Assignment ((LVariable x, []), _, _) | Decl {decl_id= x; _} ->
             Set.Poly.singleton x
         | TargetPE _ | JacobianPE _
          |NRFunApp (_, _)
          |Break | Continue | Return _ | Skip
          |IfElse (_, _, _)
          |While (_, _)
-         |Profile _ | Block _ | SList _
+         |For _ | Profile _ | Block _ | SList _
          |Assignment (_, _, _) ->
             Set.Poly.empty in
       transfer_gen_kill p gen (Set.Poly.diff kill never_kill)
@@ -794,30 +782,32 @@ let used_not_latest_expressions_transfer (used : ExprSet.t LabelMap.t)
     with type labels = int
      and type properties = ExprSet.t)
 
-(** The nodes of a flowgraph in reverse postorder from the initials set.
+(** The transfer function for the first forward analysis part of determining
+    optimal ad-levels for variables *)
+let minimal_variables_fwd_transfer
+    (gen_variable :
+         Stmt.Located.Non_recursive.t LabelMap.t
+      -> int
+      -> string Set.Poly.t
+      -> string Set.Poly.t)
+    (flowgraph_to_mir : Stmt.Located.Non_recursive.t LabelMap.t) =
+  (module struct
+    type labels = int
+    type properties = string Set.Poly.t
 
-    For motivation, see
-    {{:https://eli.thegreenplace.net/2015/directed-graph-traversal-orderings-and-applications-to-data-flow-analysis/}
-     Eli Bendersky's post}:
-    {v
-    the most efficient way to run forward data-flow analyses is in RPO. In the
-    absence of cycles, RPO (topological order) makes sure we've seen all of a
-    node's predecessors before we get to it. This means we can perform the
-    analysis in a single pass over the graph.
-    v} *)
-let reverse_postorder (module F : FLOWGRAPH with type labels = int) =
-  let visited = Hash_set.create (LabelMap.cardinal F.successors) in
-  let nodes = ref [] in
-  let rec visit root =
-    (* postorder traversal. The 'reverse' comes for free because we are consing
-       onto the list *)
-    if not (Hash_set.mem visited root) then (
-      Hash_set.add visited root;
-      Set.Poly.iter ~f:visit (LabelMap.find root F.successors);
-      nodes := root :: !nodes) in
-  Set.Poly.iter F.initials ~f:visit;
-  LabelMap.iter F.successors ~f:(fun ~key ~data:_ -> visit key);
-  Array.of_list !nodes
+    let transfer_function l p =
+      let mir_node = (LabelMap.find l flowgraph_to_mir).pattern in
+      let gen = gen_variable flowgraph_to_mir l p in
+      let kill =
+        match mir_node with
+        (* This probably isn't necessary because Stan doesn't allow shadowing,
+           right? *)
+        | Decl {decl_id; decl_adtype= DataOnly; _} -> Set.Poly.singleton decl_id
+        | _ -> Set.Poly.empty in
+      transfer_gen_kill p gen kill
+  end : TRANSFER_FUNCTION
+    with type labels = int
+     and type properties = string Set.Poly.t)
 
 (** The central definition of a monotone dataflow analysis framework. Given a
     compatible flowgraph, lattice and transfer function, we can run the mfp
@@ -837,33 +827,28 @@ let monotone_framework (type p) (module F : FLOWGRAPH with type labels = int)
 
     let mfp () =
       (* STEP 1: initialize data structures *)
-      let labels = reverse_postorder (module F) in
-      let positions =
-        LabelMap.of_seq (Array.to_seqi labels |> Seq.map (fun (a, b) -> (b, a)))
-      in
-      (* The worklist holds indices into [labels], so processing the min element
-         means we are processing predecessors first, whenever possible *)
-      let workset = ref (Int.Set.of_list (List.range 0 (Array.length labels))) in
-      let analysis_in =
-        Hashtbl.of_seq
-          (LabelMap.to_seq F.successors
-          |> Seq.map (fun (l, _) ->
-              (l, if Set.Poly.mem l F.initials then L.initial else L.bottom)))
-      in
+      let workstack = Stack.create () in
+      (* TODO: does the order matter a lot for efficiency here? *)
+      LabelMap.iter F.successors ~f:(fun ~key ~data ->
+          Set.Poly.iter data ~f:(fun succ -> Stack.push (key, succ) workstack));
+      let analysis_in = Hashtbl.create 32 in
+      LabelMap.iter
+        ~f:(fun ~key:l ~data:_ ->
+          Hashtbl.add analysis_in ~key:l
+            ~data:(if Set.Poly.mem l F.initials then L.initial else L.bottom))
+        F.successors;
       (* STEP 2: iterate *)
-      while not (Int.Set.is_empty !workset) do
-        let earliest = Int.Set.min_elt !workset in
-        workset := Int.Set.remove earliest !workset;
-        let l = labels.(earliest) in
+      while Stack.length workstack <> 0 do
+        let l, l' = Stack.pop workstack in
+        let old_analysis_in_l' = Hashtbl.find analysis_in l' in
         let new_analysis_in_l' =
           T.transfer_function l (Hashtbl.find analysis_in l) in
-        Set.Poly.iter (LabelMap.find l F.successors) ~f:(fun l' ->
-            let old_analysis_in_l' = Hashtbl.find analysis_in l' in
-            if not (L.leq new_analysis_in_l' old_analysis_in_l') then (
-              Hashtbl.add analysis_in ~key:l'
-                ~data:(L.lub old_analysis_in_l' new_analysis_in_l');
-              let successor_idx = LabelMap.find l' positions in
-              workset := Int.Set.add successor_idx !workset))
+        if not (L.leq new_analysis_in_l' old_analysis_in_l') then
+          let () =
+            Hashtbl.add analysis_in ~key:l'
+              ~data:(L.lub old_analysis_in_l' new_analysis_in_l') in
+          Set.Poly.iter (LabelMap.find l' F.successors) ~f:(fun l'' ->
+              Stack.push (l', l'') workstack)
       done;
       (* STEP 3: present final results *)
       let analysis_in_out =
@@ -1074,85 +1059,25 @@ let lazy_expressions_mfp
     @param Flowgraph The set of nodes to analyze
     @param flowgraph_to_mir Map of nodes to their actual values in the MIR
     @param initial_variables The set of variables to start in the set
-    @param transfer_variables
-      Computes the variables that should be in the set after each node *)
+    @param gen_variable
+      Used in the transfer function to deduce variables that should be in the
+      set *)
 let minimal_variables_mfp
     (module Circular_Fwd_Flowgraph : Monotone_framework_sigs.FLOWGRAPH
       with type labels = int)
     (flowgraph_to_mir : Stmt.Located.Non_recursive.t LabelMap.t)
     (initial_variables : string Set.Poly.t)
-    (transfer_variables :
+    (gen_variable :
          Stmt.Located.Non_recursive.t LabelMap.t
       -> int
       -> string Set.Poly.t
       -> string Set.Poly.t) =
   let (module Lattice) = minimal_variables_lattice initial_variables in
   let (module Transfer) =
-    (module struct
-      type labels = int
-      type properties = string Set.Poly.t
-
-      let transfer_function = transfer_variables flowgraph_to_mir
-    end : TRANSFER_FUNCTION
-      with type labels = int
-       and type properties = string Set.Poly.t) in
+    minimal_variables_fwd_transfer gen_variable flowgraph_to_mir in
   let (module Mf) =
     monotone_framework
       (module Circular_Fwd_Flowgraph)
       (module Lattice)
       (module Transfer) in
   Mf.mfp ()
-
-module Tests = struct
-  (* A chain of [n] diamonds: 1 -> {a, b} -> join -> {a, b} -> join ... *)
-  let diamond_chain n =
-    let a i = (3 * i) + 2 and b i = (3 * i) + 3 and join i = (3 * i) + 4 in
-    let edges =
-      (1, [a 0; b 0])
-      :: List.concat_map (List.range 0 n) ~f:(fun i ->
-          [ (a i, [join i]); (b i, [join i])
-          ; (join i, if i = n - 1 then [] else [a (i + 1); b (i + 1)]) ]) in
-    (module struct
-      type labels = int
-
-      let initials = Set.Poly.singleton 1
-
-      let successors =
-        LabelMap.of_list
-          (List.map edges ~f:(fun (l, succs) -> (l, Set.Poly.of_list succs)))
-    end : Monotone_framework_sigs.FLOWGRAPH
-      with type labels = int)
-
-  let%expect_test "mfp visits each node of an acyclic graph once" =
-    let n = 20 in
-    let (module F) = diamond_chain n in
-    let calls = ref 0 in
-    let (module Lattice) =
-      powerset_lattice
-        (module struct
-          type vals = int
-
-          let initial = Set.Poly.empty
-        end) in
-    let (module Transfer) =
-      (module struct
-        type labels = int
-        type properties = int Set.Poly.t
-
-        let transfer_function l p =
-          incr calls;
-          Set.Poly.add l p
-      end : Monotone_framework_sigs.TRANSFER_FUNCTION
-        with type labels = int
-         and type properties = int Set.Poly.t) in
-    let (module Mf) =
-      monotone_framework (module F) (module Lattice) (module Transfer) in
-    let result = Mf.mfp () in
-    let last = LabelMap.find ((3 * (n - 1)) + 4) result in
-    Fmt.pr "nodes: %d, transfer calls during iteration: %d, facts at exit: %d@."
-      (LabelMap.cardinal F.successors)
-      (!calls - LabelMap.cardinal F.successors)
-      (Set.Poly.cardinal last.exit);
-    [%expect
-      {| nodes: 61, transfer calls during iteration: 61, facts at exit: 61 |}]
-end

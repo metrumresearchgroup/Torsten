@@ -65,13 +65,11 @@ let parens_lval = map_lval_with no_parens
 let rec parens_stmt ({stmt; smeta} : typed_statement) : typed_statement =
   let stmt =
     match stmt with
-    | VarDecl
-        {decl_type= d; transformation= t; variables; annotations; is_global} ->
+    | VarDecl {decl_type= d; transformation= t; variables; is_global} ->
         VarDecl
           { decl_type= Middle.SizedType.map no_parens d
           ; transformation= Middle.Transformation.map keep_parens t
           ; variables= List.map ~f:(map_variable no_parens) variables
-          ; annotations
           ; is_global }
     | For {loop_variable; lower_bound; upper_bound; loop_body} ->
         For
@@ -90,7 +88,7 @@ let rec blocks_stmt ({stmt; smeta} : typed_statement) : typed_statement =
         blocks_stmt
         @@ mk_typed_statement
              ~stmt:(Block [{stmt; smeta}])
-             ~flow_type:smeta.flow_type ~loc:smeta.loc in
+             ~return_type:smeta.return_type ~loc:smeta.loc in
   let stmt =
     match stmt with
     | While (e, s) -> While (e, stmt_to_block s)

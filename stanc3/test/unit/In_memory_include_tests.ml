@@ -22,13 +22,18 @@ let%expect_test "no includes" =
   print_ast_or_error include_model;
   [%expect
     {|
-    error: Could not find include file 'foo.stan'.
+    Syntax error in 'string', line 2, column 0 to column 19, include error:
+       -------------------------------------------------
+         1:
+         2:  #include <foo.stan>
+             ^
+         3:  data {
+         4:      int a;
+       -------------------------------------------------
 
-        ┌─ string:2:1
-      2 │  #include <foo.stan>
-        │  ^^^^^^^^^^^^^^^^^^^ here.
-        = stanc was not given information about any files to include.
-    |}]
+    Could not find include file 'foo.stan'.
+    stanc was given information about the following files:
+    None |}]
 
 let%expect_test "wrong include" =
   Include_files.include_provider :=
@@ -36,13 +41,18 @@ let%expect_test "wrong include" =
   print_ast_or_error include_model;
   [%expect
     {|
-    error: Could not find include file 'foo.stan'.
+    Syntax error in 'string', line 2, column 0 to column 19, include error:
+       -------------------------------------------------
+         1:
+         2:  #include <foo.stan>
+             ^
+         3:  data {
+         4:      int a;
+       -------------------------------------------------
 
-        ┌─ string:2:1
-      2 │  #include <foo.stan>
-        │  ^^^^^^^^^^^^^^^^^^^ here.
-        = stanc was given information about the following files: bar.stan
-    |}]
+    Could not find include file 'foo.stan'.
+    stanc was given information about the following files:
+    bar.stan |}]
 
 let a = {|
 // comment here
@@ -60,22 +70,18 @@ let%expect_test "recursive include" =
   print_ast_or_error a;
   [%expect
     {|
-    error: File 'include/b.stan' recursively included itself.
+    Syntax error in 'include/b.stan', line 2, column 0, included from
+    'include/a.stan', line 3, column 0, included from
+    'include/b.stan', line 2, column 0, included from
+    'string', line 3, column 0, include error:
+       -------------------------------------------------
+         1:
+         2:  #include <include/a.stan>
+             ^
+         3:  // comment here
+       -------------------------------------------------
 
-        ┌─ include/a.stan:3:1
-      3 │  #include <include/b.stan>
-        │  ^^^^^^^^^^^^^^^^^^^^^^^^^ here.
-        ┌─ include/b.stan:2:1
-      1 │
-      2 │  #include <include/a.stan>
-        │  -------- file 'include/a.stan' included here
-      3 │  // comment here
-        ┌─ string:3:1
-      2 │  // comment here
-      3 │  #include <include/b.stan>
-        │  -------- file 'include/b.stan' included here
-      4 │
-    |}]
+    File include/a.stan recursively included itself. |}]
 
 let foo = {|
 functions {
@@ -97,7 +103,6 @@ let%expect_test "good include" =
             (FunDef (returntype (ReturnType UInt))
              (funname ((name foo) (id_loc <opaque>)))
              (arguments ((AutoDiffable UReal ((name a) (id_loc <opaque>)))))
-             (annotations ())
              (body
               ((stmt
                 (Block
@@ -111,7 +116,6 @@ let%expect_test "good include" =
       (((stmts
          (((stmt
             (VarDecl (decl_type SInt) (transformation Identity) (is_global true)
-             (annotations ())
              (variables
               (((identifier ((name a) (id_loc <opaque>))) (initial_value ()))))))
            (smeta ((loc <opaque>))))))

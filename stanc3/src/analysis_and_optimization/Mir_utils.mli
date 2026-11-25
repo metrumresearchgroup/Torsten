@@ -137,11 +137,6 @@ val stmt_rhs_names_set : ('a Expr.t, 'b) Stmt.Pattern.t -> vexpr Set.Poly.t
 (** The set of variable names in an expression, including inside an index. For
     use in RHS sets, not LHS assignment sets, except in a target term. *)
 
-val stmt_referenced_names_set : ('a, 'b) Stmt.t -> string Set.Poly.t
-(** The set of variable names referenced in the statement. This includes things
-    the left hand side of an assignment, but excludes newly declared decls
-    unless they are separately used later. *)
-
 val expr_assigned_var : Expr.Typed.t -> vexpr
 (** The variable being assigned to when the expression is the LHS *)
 
@@ -180,8 +175,7 @@ val expr_subst_stmt_base :
 val expr_depth : Expr.Typed.t -> int
 (** Calculate how deeply nested an expression is. *)
 
-val update_expr_ad_levels :
-  ?keep_promotions:bool -> string Set.Poly.t -> Expr.Typed.t -> Expr.Typed.t
+val update_expr_ad_levels : string Set.Poly.t -> Expr.Typed.t -> Expr.Typed.t
 (** Recompute all AD-levels in the metadata of an expression from the bottom up,
     making the variables in the first argument autodiffable *)
 

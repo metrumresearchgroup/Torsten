@@ -28,7 +28,9 @@ type 'e index =
 [@@deriving sexp_of, compare, map, fold]
 
 (** Front-end function kinds *)
-type fun_kind = StanLib of Fun_kind.suffix | UserDefined of Fun_kind.suffix
+type fun_kind =
+  | StanLib of bool Fun_kind.suffix
+  | UserDefined of bool Fun_kind.suffix
 [@@deriving compare, sexp_of]
 
 (** Expression shapes (used for both typed and untyped expressions, where we
@@ -173,7 +175,6 @@ type ('e, 's, 'l, 'f) statement =
       { decl_type: 'e SizedType.t
       ; transformation: 'e Transformation.t
       ; is_global: bool
-      ; annotations: Annotation.t list
       ; variables: 'e variable list }
   | FunDef of
       { returntype: UnsizedType.returntype
@@ -181,29 +182,24 @@ type ('e, 's, 'l, 'f) statement =
       ; arguments:
           (Middle.UnsizedType.autodifftype * Middle.UnsizedType.t * identifier)
           list
-      ; annotations: Annotation.t list
       ; body: 's }
 [@@deriving sexp_of, compare, map, fold]
 
-type statement_type =
-  {controlflow: completeness; breaks: Location_span.t list; continues: bool}
-
-and completeness = Incomplete of incomplete | Complete of complete
-
-and incomplete =
-  | Next
-  | LoopBreaks of Location_span.t list
-  | EmptyRange of Location_span.t
-  | EmptyContainer of Location_span.t
-
-and complete =
-  | CWhile of Location_span.t
-  | CIfElse of complete * complete
-  | CContinue of Location_span.t
-  | CBreak of Location_span.t
-  | CReturn of Location_span.t
-  | CReject of Location_span.t
-  | CFatalError of Location_span.t
+(** Statement return types which we will decorate statements with during type
+    checking:
+    - [Complete] corresponds to statements that exit the function (return or
+      error) in every branch
+    - [Incomplete] corresponds to statements which pass control flow to
+      following statements in at least some branches
+    - [NonlocalControlFlow] is simila to [Incomplete] but specifically used when
+      breaks are present in loops. Normally, an infinite loop with [Incomplete]
+      return type is fine (and considered [Complete]), since it either returns
+      or diverges. However, in the presence of break statements, control flow
+      may jump to the end of the loop. *)
+type statement_returntype =
+  | Incomplete
+  | NonlocalControlFlow (* is any break present *)
+  | Complete
 [@@deriving sexp_of]
 
 type ('e, 'm, 'l, 'f) statement_with =
@@ -218,7 +214,8 @@ type untyped_statement =
 let mk_untyped_statement ~stmt ~loc : untyped_statement = {stmt; smeta= {loc}}
 
 type stmt_typed_located_meta =
-  {loc: (Middle.Location_span.t[@sexp.opaque]); flow_type: statement_type}
+  { loc: (Middle.Location_span.t[@sexp.opaque])
+  ; return_type: statement_returntype }
 [@@deriving sexp_of]
 
 (** Typed statements also have meta-data after type checking: a location_span,
@@ -232,7 +229,8 @@ type typed_statement =
   statement_with
 [@@deriving sexp_of]
 
-let mk_typed_statement ~stmt ~loc ~flow_type = {stmt; smeta= {loc; flow_type}}
+let mk_typed_statement ~stmt ~loc ~return_type =
+  {stmt; smeta= {loc; return_type}}
 
 (** Program shapes, where we obtain types of programs if we substitute typed or
     untyped statements for 's *)
@@ -390,6 +388,10 @@ let rec lvalue_of_expr_opt ({expr; emeta} : untyped_expression) =
 let type_of_arguments (l : (UnsizedType.autodifftype * UnsizedType.t * 'a) list)
     : UnsizedType.argumentlist =
   List.map ~f:(fun (a, t, _) -> (a, t)) l
+
+let get_loc_lvalue_pack lhs =
+  match lhs with
+  | LValue ({lmeta= {loc; _}; _} : typed_lval) | LTuplePack {loc; _} -> loc
 
 (* XXX: the parser produces inaccurate locations: smeta.loc.begin_loc is the
    last token before the current statement and all the whitespace between two

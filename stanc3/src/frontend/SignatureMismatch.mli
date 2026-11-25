@@ -5,7 +5,7 @@ type type_mismatch = private
   | TypeMismatch of UnsizedType.t * UnsizedType.t * details option
 
 and details =
-  | SuffixMismatch of Fun_kind.suffix * Fun_kind.suffix
+  | SuffixMismatch of unit Fun_kind.suffix * unit Fun_kind.suffix
   | ReturnTypeMismatch of UnsizedType.returntype * UnsizedType.returntype
   | InputMismatch of function_mismatch
 
@@ -29,7 +29,7 @@ type ('unique, 'error) generic_match_result =
 (** The match result for general (non-variadic) functions *)
 type match_result =
   ( UnsizedType.returntype
-    * (Middle.Fun_kind.suffix -> Ast.fun_kind)
+    * (bool Middle.Fun_kind.suffix -> Ast.fun_kind)
     * Promotion.t list
     * Location_span.t option
   , signature_error list * bool )
@@ -92,10 +92,10 @@ val quoted : string Fmt.t
 val pp_mismatch_details :
   skipped:string list -> Format.formatter -> details -> unit
 
-val to_grace :
-     string * UnsizedType.t list * (signature_error list * bool)
-  -> (summary:Grace.Diagnostic.Message.t
-     * notes:Grace.Diagnostic.Message.t list)
+val pp_signature_mismatch :
+     Format.formatter
+  -> string * UnsizedType.t list * (signature_error list * bool)
+  -> unit
 
 val list_valid_assignmentoperator_rhs :
   UnsizedType.t -> Operator.t -> UnsizedType.t list
