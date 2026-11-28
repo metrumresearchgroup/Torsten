@@ -52,7 +52,7 @@ namespace torsten {
        * @param theta parameter for each ODE among the group
        * @param x_r real data for each ODE among the group
        * @param x_i int data for each ODE among the group
-       */ 
+       */
       template <typename Tt, typename T_initial, typename T_param>
       inline
       Eigen::Matrix<typename stan::return_type_t<Tt, T_initial, T_param>, // NOLINT
@@ -93,7 +93,7 @@ namespace torsten {
        * @param theta parameter for each ODE among the group
        * @param x_r real data for each ODE among the group
        * @param x_i int data for each ODE among the group
-       */ 
+       */
       template <typename Tt, typename T_initial, typename T_param>
       inline
       Eigen::Matrix<typename stan::return_type_t<Tt, T_initial, T_param>, // NOLINT
@@ -116,7 +116,7 @@ namespace torsten {
         const int np = theta.size(); // population size
 
         using Ode = ode_t<F, Tt, T_initial, T_param, ode_pars_t...>;
-    
+
         MPI_Comm comm = torsten::mpi::Session::ode_parm_comm().comm();
         int rank = torsten::mpi::Session::ode_parm_comm().rank();
         int size = torsten::mpi::Session::ode_parm_comm().size();
@@ -193,9 +193,9 @@ namespace torsten {
             begin_id += len[i] * n;
           }
         }
-        
+
         if(is_invalid) {
-          throw std::runtime_error(rank_fail_msg.str());
+          throw std::domain_error(rank_fail_msg.str());
         }
 
         return res;
@@ -217,7 +217,7 @@ namespace torsten {
        * @param theta parameter for each ODE among the group
        * @param x_r real data for each ODE among the group
        * @param x_i int data for each ODE among the group
-       */ 
+       */
       template <typename Tt, typename T_initial, typename T_param>
       inline
       Eigen::Matrix<typename stan::return_type_t<Tt, T_initial, T_param>, // NOLINT
@@ -322,9 +322,9 @@ namespace torsten {
             begin_id += len[i] * n;
           }
         }
-        
+
         if(is_invalid) {
-          throw std::runtime_error(rank_fail_msg.str());
+          throw std::domain_error(rank_fail_msg.str());
         }
 
         return res;
@@ -342,7 +342,7 @@ namespace torsten {
        * @param theta parameter for each ODE among the group
        * @param x_r real data for each ODE among the group
        * @param x_i int data for each ODE among the group
-       */ 
+       */
       inline Eigen::MatrixXd operator()(const F& f,
                                         const std::vector<std::vector<double> >& y0,    // NOLINT
                                         double t0,
@@ -426,7 +426,7 @@ namespace torsten {
         }
 
         if(is_invalid) {
-          throw std::runtime_error(rank_fail_msg.str());
+          throw std::domain_error(rank_fail_msg.str());
         }
 
         return res;
@@ -445,7 +445,7 @@ namespace torsten {
        * @param theta parameter for each ODE among the group
        * @param x_r real data for each ODE among the group
        * @param x_i int data for each ODE among the group
-       */ 
+       */
       inline Eigen::MatrixXd operator()(const F& f,
                                         const std::vector<std::vector<double> >& y0,    // NOLINT
                                         double t0,

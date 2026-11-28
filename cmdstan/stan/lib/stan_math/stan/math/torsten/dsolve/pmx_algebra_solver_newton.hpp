@@ -348,7 +348,7 @@ struct NewtonSolver {
  * negative.
  * @throw <code>std::invalid_argument</code> if max_num_steps is not positive.
  * @throw <code>boost::math::evaluation_error</code> (which is a subclass of
- * <code>std::runtime_error</code>) if solver exceeds max_num_steps.
+ * <code>std::domain_error</code>) if solver exceeds max_num_steps.
  */
 template <typename F, typename T1, typename T_u, typename T_f, typename... Args>
 Eigen::Matrix<typename PMXNLSystem<F, T1, Args...>::scalar_t, -1, 1> pmx_algebra_solver_newton_tol (
