@@ -307,7 +307,7 @@ namespace torsten {
           "Torsten failed to find steady state, due to "
           "either system's intrinsic lack of such a state "
           "or improper algebra solver controls. Details: ";
-        throw std::runtime_error(std::string(text) + e.what());
+        throw std::domain_error(std::string(text) + e.what());
       }
     }
   };
